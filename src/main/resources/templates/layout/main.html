@@ -31,8 +31,10 @@
           href="https://fonts.gstatic.com"
           crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
-          rel="stylesheet">
+  <!--   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+          rel="stylesheet">--> 
+          
+           <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
           
    
 
@@ -48,9 +50,7 @@
   <span>🔥 <strong>Oferta de lanzamiento:</strong> Auditoría + estrategia gratis para los primeros 5 proyectos del mes — <strong>quedan 3 lugares</strong></span>
 </div>
 
-<header
-    th:replace="~{themes/__${theme}__/fragments/navbar :: navbar}">
-</header>
+<div th:replace="~{themes/__${theme}__/fragments/navbar :: navbar}"></div>
 
 <!--  <div
     th:replace="~{themes/__${theme}__/fragments/cart :: cart}">

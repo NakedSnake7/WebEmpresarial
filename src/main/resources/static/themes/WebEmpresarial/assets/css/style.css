@@ -1,6 +1,4 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-
 
    :root {
   --bg:#05080f;--bg2:#090d1a;--card:rgba(255,255,255,.042);--cb:rgba(255,255,255,.085);
@@ -34,13 +32,28 @@ section{padding:96px 0;position:relative}
 .urgency-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;box-shadow:0 0 8px var(--amber);animation:ring-pulse 1.8s ease-in-out infinite;flex-shrink:0}
 
 /* HEADER */
+/* HEADER */
 header{
-  position:sticky;top:0;z-index:200;
-  backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
-  background:rgba(5,8,15,.82);border-bottom:1px solid var(--cb);
+  position:sticky;
+  top:0;
+  z-index:1000;
+  backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  background:rgba(5,8,15,.82);
+  border-bottom:1px solid var(--cb);
   transition:background var(--t) var(--ease);
 }
-.nav{min-height:68px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+
+.nav{
+  min-height:68px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  position:relative;
+}
+
+
 .logo{font-family:var(--fd);font-size:1.15rem;font-weight:900;letter-spacing:-.025em;display:flex;align-items:center;gap:7px}
 .logo-ring{width:26px;height:26px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;position:relative}
 .logo-ring::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:ring-pulse 2.2s ease-in-out infinite}
@@ -58,13 +71,90 @@ header{
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
 
-.mobile-nav{display:none;position:fixed;top:69px;left:0;right:0;background:rgba(5,8,15,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--cb);padding:0 24px;max-height:0;overflow:hidden;transition:max-height .4s var(--ease),padding .3s ease;z-index:150}
-.mobile-nav.open{max-height:420px;padding:20px 24px 28px}
-.mobile-nav a{display:block;padding:14px 0;border-bottom:1px solid var(--cb);font-family:var(--fd);font-size:1.05rem;font-weight:700;color:var(--muted);transition:color var(--t)}
-.mobile-nav a:last-child{border-bottom:none}
-.mobile-nav a:hover{color:var(--cyan)}
-.mobile-cta{margin-top:16px!important;display:block;width:100%;text-align:center;padding:14px!important;border-radius:var(--rsm)!important;background:var(--cyan)!important;color:#05080f!important;border-bottom:none!important}
+.mobile-nav{
+  display:none;
+}
 
+@media (max-width:768px){
+
+  .mobile-nav{
+    display:block;
+
+    position:fixed;
+    top:62px;
+    left:0;
+    width:100%;
+
+    background:rgba(5,8,15,.98);
+    backdrop-filter:blur(20px);
+
+    border-bottom:1px solid var(--cb);
+
+    padding:0 24px;
+
+    max-height:0;
+    overflow:hidden;
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:
+      max-height .35s ease,
+      padding .25s ease,
+      opacity .25s ease;
+
+    z-index:999;
+  }
+
+  .mobile-nav.open{
+    max-height:420px;
+    padding:20px 24px 28px;
+
+    opacity:1;
+    visibility:visible;
+  }
+
+  .mobile-nav a{
+    display:block;
+    padding:14px 0;
+
+    border-bottom:1px solid var(--cb);
+
+    font-family:var(--fd);
+    font-size:1.05rem;
+    font-weight:700;
+
+    color:var(--muted);
+
+    transition:color var(--t);
+  }
+
+  .mobile-nav a:last-child{
+    border-bottom:none;
+  }
+
+  .mobile-nav a:hover{
+    color:var(--cyan);
+  }
+
+  .mobile-cta{
+    margin-top:16px !important;
+
+    display:block;
+    width:100%;
+
+    text-align:center;
+
+    padding:14px !important;
+
+    border-radius:var(--rsm) !important;
+
+    background:var(--cyan) !important;
+    color:#05080f !important;
+
+    border-bottom:none !important;
+  }
+}
 /* HERO */
 .hero{padding:120px 0 96px;text-align:center;position:relative;overflow:hidden}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(103,232,249,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 40%,transparent 100%);pointer-events:none}
@@ -265,7 +355,6 @@ select option{color:#111;background:#fff}
   :root{--r:18px;--rsm:11px}
   .nav-links{display:none}
   .hamburger{display:flex}
-  .mobile-nav{display:block}
   .nav{min-height:62px}
   section{padding:60px 0}
   .hero{padding:84px 0 60px}
