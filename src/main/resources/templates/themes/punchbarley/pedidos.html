@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(
+    'Mis Pedidos',
+    ~{::content}
+)}">
+
+<!-- CONTENIDO -->
+<section th:fragment="content" class="orders-page">
+
+    <div class="container">
+
+        <div class="orders-card">
+
+            <div class="orders-header">
+                <h1>Mis Pedidos</h1>
+                <p>Consulta el historial y estado de tus compras.</p>
+            </div>
+
+            <!-- SIN PEDIDOS -->
+            <div th:if="${#lists.isEmpty(pedidos)}"
+                 class="orders-empty">
+                 
+                   <svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 7h16l-1.5 10h-13z"/>
+                    <path d="M9 11h6"/>
+                </svg>
+
+                <h3>Aún no tienes pedidos</h3>
+
+                <p>Cuando realices una compra aparecerá aquí.</p>
+
+                <a href="/#products" class="btn-primary">
+                    Explorar productos
+                </a>
+
+            </div>
+
+            <!-- CON PEDIDOS -->
+            <div th:if="${!#lists.isEmpty(pedidos)}"
+                 class="orders-table-wrapper">
+
+                <table class="orders-table">
+
+                    <thead>
+                    <tr>
+                        <th># Pedido</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="pedido : ${pedidos}">
+
+                        <td>#<span th:text="${pedido.id}"></span></td>
+
+                        <td th:text="${#temporals.format(pedido.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
+
+                        <td>$<span th:text="${pedido.total}"></span></td>
+
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${pedido.orderStatusBadge}"
+                                  th:text="${pedido.orderStatusLabel}">
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <a th:href="@{/pedidos/{id}(id=${pedido.id})}"
+                               class="btn-order-detail">
+                                Ver detalle
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</html>

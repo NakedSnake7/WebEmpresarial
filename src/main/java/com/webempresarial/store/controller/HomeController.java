@@ -48,46 +48,126 @@ public class HomeController {
         model.addAttribute("categorias", categorias);
         model.addAttribute("products", productos);
     }
-
-    // =========================
-    //  HOME
-    // =========================
-    @GetMapping({"/", "/inicio"})
-    public String home(Model model, HttpServletRequest request) {
+    
+ // =========================
+ // LAYOUT GLOBAL
+ // =========================
+    private void aplicarLayout(Model model, HttpServletRequest request) {
 
         String theme = storeThemeResolver.getTheme(request);
 
         model.addAttribute("theme", theme);
 
-        // SOLO TIENDAS
-        if (!theme.equals("WebEmpresarial")) {
+        switch (theme) {
 
-            cargarDatosGlobales(model);
-            
-            model.addAttribute(
-            	    "title",
-            	    "WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales"
-            	);
+            // =========================
+            // WEBEMPRESARIAL
+            // =========================
+            case "WebEmpresarial":
 
-            	model.addAttribute(
-            	    "description",
-            	    "Construimos ecommerce, sitios corporativos y sistemas web para empresas que quieren vender, automatizar y escalar."
-            	);
+                model.addAttribute("showCart", false);
+                model.addAttribute("showCheckout", false);
+                model.addAttribute("showAuth", false);
+                model.addAttribute("showScripts", true);
 
-            model.addAttribute(
-                "resenasIniciales",
-                resenaRepository.findAll(
-                    PageRequest.of(
-                        0,
-                        4,
-                        Sort.by(Sort.Direction.DESC, "estrellas")
-                    )
-                ).getContent()
-            );
+                break;
+
+            // =========================
+            // STRIDE
+            // =========================
+            case "stride":
+
+                model.addAttribute("showCart", true);
+                model.addAttribute("showCheckout", true);
+                model.addAttribute("showAuth", true);
+                model.addAttribute("showScripts", true);
+
+                break;
+
+            // =========================
+            // PUNCHBARLEY
+            // =========================
+            case "punchbarley":
+
+                model.addAttribute("showCart", true);
+                model.addAttribute("showCheckout", true);
+                model.addAttribute("showAuth", true);
+                model.addAttribute("showScripts", true);
+
+                break;
+
+            // =========================
+            // DEFAULT
+            // =========================
+            default:
+
+                model.addAttribute("showCart", false);
+                model.addAttribute("showCheckout", false);
+                model.addAttribute("showAuth", false);
+                model.addAttribute("showScripts", true);
         }
+    }
+
+
+ // =========================
+//  HOME
+// =========================
+    @GetMapping({"/", "/inicio"})
+    public String home(Model model, HttpServletRequest request) {
+
+        aplicarLayout(model, request);
+
+        String theme = storeThemeResolver.getTheme(request);
+
+        if (theme.equals("WebEmpresarial")) {
+            model.addAttribute(
+                "title",
+                "WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales"
+            );
+
+            model.addAttribute(
+                "description",
+                "Construimos ecommerce, sitios corporativos y sistemas web para empresas que quieren vender, automatizar y escalar."
+            );
+
+            return storeThemeResolver.view(request, "index");
+        }
+
+        cargarDatosGlobales(model);
+
+        model.addAttribute("title", getStoreTitle(theme));
+        model.addAttribute("description", getStoreDescription(theme));
+
+        model.addAttribute(
+            "resenasIniciales",
+            resenaRepository.findAll(
+                PageRequest.of(
+                    0,
+                    4,
+                    Sort.by(Sort.Direction.DESC, "estrellas")
+                )
+            ).getContent()
+        );
 
         return storeThemeResolver.view(request, "index");
     }
+    
+private String getStoreTitle(String theme) {
+    return switch (theme) {
+        case "stride" -> "Stride | Tienda online";
+        case "punchbarley" -> "Punch Barley | Tienda online";
+        default -> "Tienda online";
+    };
+}
+
+private String getStoreDescription(String theme) {
+    return switch (theme) {
+        case "stride" -> "Compra productos de Stride en nuestra tienda online.";
+        case "punchbarley" -> "Compra productos de Punch Barley en nuestra tienda online.";
+        default -> "Compra productos en nuestra tienda online.";
+    };
+}
+
     // =========================
     //  BLOQUEAR LANDING DIRECTO
     // =========================
@@ -101,6 +181,7 @@ public class HomeController {
     // =========================
     @GetMapping("/menu")
     public String verMenu(Model model, HttpServletRequest request) {
+        aplicarLayout(model, request);
         cargarDatosGlobales(model);
         return storeThemeResolver.view(request, "index");
     }
@@ -131,16 +212,18 @@ public class HomeController {
     @GetMapping("/producto-detalle/{id}")
     public String verDetalleProducto(@PathVariable Long id, Model model, HttpServletRequest request) {
 
-    	ProductoDetailDTO producto = productoService.obtenerDetalleProducto(id);
+        aplicarLayout(model, request);
+
+        ProductoDetailDTO producto = productoService.obtenerDetalleProducto(id);
         model.addAttribute("producto", producto);
 
         return storeThemeResolver.view(request, "producto-detalle");
-        }
+    }
     // =========================
     //  FRAGMENTO RESEÑAS
     // =========================
     @GetMapping("/fragmento-resenas")
-    public String cargarResenasFragment(Model model) {
+    public String cargarResenasFragment(Model model, HttpServletRequest request) {
 
         model.addAttribute(
             "resenas",
@@ -149,28 +232,31 @@ public class HomeController {
             )
         );
 
-        return "fragments/resenas :: resenas";
+        return storeThemeResolver.fragment(request, "resenas") + " :: resenas";
     }
 
     // =========================
     //  LISTA COMPLETA RESEÑAS
     // =========================
     @GetMapping("/lista")
-    public String listarResenas(Model model) {
+    public String listarResenas(Model model, HttpServletRequest request) {
+
+        aplicarLayout(model, request);
 
         model.addAttribute(
             "resenas",
             resenaRepository.findAllByOrderByEstrellasDesc()
         );
 
-        return "resenas";
+        return storeThemeResolver.view(request, "resenas");
     }
 
     // =========================
     //  CHECKOUT CANCELADO
     // =========================
     @GetMapping("/checkout-cancel")
-    public String checkoutCancel(HttpServletRequest request) {
+    public String checkoutCancel(Model model, HttpServletRequest request) {
+        aplicarLayout(model, request);
         return storeThemeResolver.view(request, "checkout-cancel");
     }
 
@@ -178,7 +264,8 @@ public class HomeController {
     //  COMPRA EXITOSA
     // =========================
     @GetMapping("/gracias")
-    public String gracias(HttpServletRequest request) {
+    public String gracias(Model model, HttpServletRequest request) {
+        aplicarLayout(model, request);
         return storeThemeResolver.view(request, "gracias");
     }
 
@@ -198,7 +285,10 @@ public class HomeController {
     //  PRIVACIDAD
     // =========================
     @GetMapping("/privacy")
-    public String privacy(HttpServletRequest request) {
+    public String privacy(Model model, HttpServletRequest request) {
+
+        aplicarLayout(model, request);
+
         return storeThemeResolver.view(request, "privacy");
     }
 }

@@ -1,0 +1,73 @@
+<!-- ===== CART FRAGMENT ===== -->
+<div th:fragment="cart">
+
+    <aside id="cartDropdown"
+           class="cart-dropdown">
+
+        <!-- HEADER -->
+        <div class="cart-header">
+            <h4>Carrito</h4>
+        </div>
+
+
+        <!-- PRODUCTOS -->
+        <ul id="cartItems"
+            class="cart-items">
+        </ul>
+
+
+        <!-- RESUMEN -->
+        <div id="cartResumenDesglose"
+             class="cart-summary">
+        </div>
+
+
+        <!-- ENVÍO GRATIS -->
+        <div id="envioGratisContainer"
+             class="shipping-container">
+
+            <div id="envioGratisMensaje"
+                 class="shipping-message">
+            </div>
+
+            <div class="shipping-progress">
+
+                <div id="envioGratisBarra"
+                     class="shipping-progress-bar"
+                     role="progressbar"
+                     style="width:0%">
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- CUPÓN -->
+        <div class="coupon-container">
+
+            <input id="couponInput"
+                   type="text"
+                   placeholder="Código de cupón">
+
+            <button id="applyCouponBtn"
+                    type="button">
+                Aplicar
+            </button>
+
+        </div>
+
+        <small id="couponError"
+               class="coupon-error">
+        </small>
+
+
+        <!-- ACTION -->
+        <button id="checkoutButton"
+                type="button"
+                class="checkout-btn">
+            Ir al pago
+        </button>
+
+    </aside>
+
+</div>

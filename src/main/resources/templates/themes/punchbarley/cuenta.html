@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(
+        'Mi Cuenta',
+        ~{::content}
+      )}">
+
+<section th:fragment="content" id="account-page">
+
+    <div class="container">
+
+        <div class="account-card">
+
+            <!-- HEADER -->
+            <div class="account-header">
+
+                <h1 class="account-title">
+                    Mi cuenta
+                </h1>
+
+                <p class="account-subtitle">
+                    Administra tu información personal y tus direcciones.
+                </p>
+
+            </div>
+
+
+            <!-- ===================== -->
+            <!-- VISTA -->
+            <!-- ===================== -->
+            <div id="vistaCuenta">
+
+                <div class="account-grid">
+
+                    <div class="account-field">
+
+                        <span>Nombre</span>
+
+                        <strong th:text="${usuario.fullName}">
+                            Nombre
+                        </strong>
+
+                    </div>
+
+                    <div class="account-field">
+
+                        <span>Email</span>
+
+                        <strong th:text="${usuario.email}">
+                            correo@email.com
+                        </strong>
+
+                    </div>
+
+                    <div class="account-field">
+
+                        <span>Teléfono</span>
+
+                        <strong th:text="${usuario.phone}">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DIRECCIÓN -->
+                <div class="address-block">
+
+                    <h3>
+                        Dirección de envío
+                    </h3>
+
+                    <form th:action="@{/cuenta/direccion}"
+                          method="post">
+
+                        <textarea name="address"
+                                  class="account-input"
+                                  rows="4"
+                                  th:text="${direccion}"
+                                  placeholder="Calle, número, colonia, ciudad, CP">
+                        </textarea>
+
+                        <button class="btn-primary"
+                                type="submit">
+
+                            Guardar dirección
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+
+                <!-- ACTIONS -->
+                <div class="account-actions">
+
+                    <button class="btn-ghost"
+                            onclick="activarEdicion()">
+
+                        Editar datos
+
+                    </button>
+
+                    <a href="/logout"
+                       class="btn-ghost danger">
+
+                        Cerrar sesión
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- ===================== -->
+            <!-- EDICIÓN -->
+            <!-- ===================== -->
+            <div id="formEdicion"
+                 class="d-none">
+
+                <form th:action="@{/cuenta/actualizar}"
+                      method="post">
+
+                    <div class="account-grid">
+
+                        <div>
+
+                            <label>
+                                Nombre
+                            </label>
+
+                            <input type="text"
+                                   name="fullName"
+                                   class="account-input"
+                                   th:value="${usuario.fullName}"
+                                   required>
+
+                        </div>
+
+
+                        <div>
+
+                            <label>
+                                Email
+                            </label>
+
+                            <input type="email"
+                                   class="account-input"
+                                   th:value="${usuario.email}"
+                                   disabled>
+
+                        </div>
+
+
+                        <div>
+
+                            <label>
+                                Teléfono
+                            </label>
+
+                            <input type="text"
+                                   name="phone"
+                                   class="account-input"
+                                   th:value="${usuario.phone}">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="account-actions">
+
+                        <button type="submit"
+                                class="btn-primary">
+
+                            Guardar cambios
+
+                        </button>
+
+                        <button type="button"
+                                class="btn-ghost"
+                                onclick="cancelarEdicion()">
+
+                            Cancelar
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    <script>
+function activarEdicion() {
+    document.getElementById("vistaCuenta").classList.add("d-none");
+    document.getElementById("formEdicion").classList.remove("d-none");
+}
+
+function cancelarEdicion() {
+    document.getElementById("formEdicion").classList.add("d-none");
+    document.getElementById("vistaCuenta").classList.remove("d-none");
+}
+</script>
+
+</section>
+
+
+
+</html>

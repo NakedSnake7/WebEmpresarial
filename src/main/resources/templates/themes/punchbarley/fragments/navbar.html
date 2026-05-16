@@ -1,0 +1,24 @@
+<header th:fragment="navbar" id="header">
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">PUNCH BARLEY</a>
+  <ul class="nav-links">
+    <li><a href="#cervezas">Cervezas</a></li>
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#packs">Packs</a></li>
+  </ul>
+  <a href="#cervezas" class="nav-cta">Ordenar ahora</a>
+</nav>
+<!-- CART FLOAT -->
+<div class="cart-float" onclick="toggleCart()">
+  🛒
+  <div class="cart-count" id="cartCount">0</div>
+</div>
+ 
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastMsg">Cerveza agregada al carrito</span>
+</div>
+</header>

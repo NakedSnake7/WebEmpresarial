@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<section th:fragment="auth">
+
+    <!-- MODAL REGISTRO -->
+    <div class="modal fade"
+         id="registroModal"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content rounded-4 shadow">
+
+                <!-- Header -->
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Crear cuenta
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <!-- Form -->
+                <form id="registroForm">
+
+                    <div class="modal-body">
+
+                        <!-- Nombre -->
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nombre completo
+                            </label>
+
+                            <input type="text"
+                                   name="fullName"
+                                   class="form-control"
+                                   required>
+
+                        </div>
+
+                        <!-- Correo -->
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Correo electrónico
+                            </label>
+
+                            <input type="email"
+                                   name="email"
+                                   class="form-control"
+                                   required>
+
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Teléfono (opcional)
+                            </label>
+
+                            <input type="tel"
+                                   name="phone"
+                                   class="form-control">
+
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Contraseña
+                            </label>
+
+                            <input type="password"
+                                   name="password"
+                                   class="form-control"
+                                   required>
+
+                        </div>
+
+                        <!-- Feedback -->
+                        <div id="registroMsg"
+                             class="small text-center d-none">
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+
+                            Cancelar
+
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                id="registroBtn">
+
+                            Registrarme
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+</html>	

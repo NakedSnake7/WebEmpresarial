@@ -1,0 +1,39 @@
+<div th:fragment="resenas">
+
+    <div class="reseña"
+         th:each="r : ${resenas}">
+
+        <!-- GRID ITEM (NO SE ANIMA) -->
+        <div class="card review-card shadow-sm border-0">
+
+            <!-- 🔮 WRAPPER VISUAL (SÍ SE ANIMA) -->
+            <div class="review-card-inner">
+
+                <div class="review-img-wrapper">
+                    <img th:src="${r.imagenUrl}"
+                         th:alt="${r.nombre}">
+                </div>
+
+                <div class="card-body review-body">
+                    <h5 class="card-title mb-1">
+                        <span th:text="${r.nombre}"></span>
+                        <span th:if="${r.verificado}" class="text-success">✔</span>
+                    </h5>
+
+                    <div class="mb-2 text-warning">
+                        <i class="fas fa-star"
+                           th:each="i : ${#numbers.sequence(1, r.estrellas)}"></i>
+                        <i class="far fa-star"
+                           th:each="i : ${#numbers.sequence(r.estrellas + 1, 5)}"></i>
+                    </div>
+
+                    <p class="small review-comment"
+                       th:text="${r.comentario}">
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>

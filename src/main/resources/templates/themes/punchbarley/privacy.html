@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+
+<head>
+
+    <title th:fragment="title">
+        Política de Privacidad | STRIDE
+    </title>
+
+</head>
+
+<body>
+
+<th:block th:fragment="content">
+
+    <!-- CONTENT -->
+    <section class="privacy-page">
+
+        <div class="container">
+
+            <div class="privacy-card">
+
+                <!-- HEADER -->
+                <div class="privacy-header">
+
+                    <span class="privacy-eyebrow">
+                        LEGAL
+                    </span>
+
+                    <h1>
+                        Política de Privacidad
+                    </h1>
+
+                    <p class="privacy-date">
+                        Última actualización:
+                        <strong>27 de enero de 2026</strong>
+                    </p>
+
+                </div>
+
+
+                <!-- BODY -->
+                <div class="privacy-content">
+
+                    <p>
+                        En <strong>STRIDE</strong> respetamos tu privacidad y protegemos
+                        tus datos personales conforme a la legislación aplicable.
+                    </p>
+
+                    <h2>Marco legal</h2>
+
+                    <p>
+                        Esta política regula el tratamiento de la información
+                        recopilada dentro de nuestra plataforma.
+                    </p>
+
+
+                    <h2>Información recopilada</h2>
+
+                    <ul>
+                        <li>Nombre completo</li>
+                        <li>Correo electrónico</li>
+                        <li>Teléfono</li>
+                        <li>Dirección de envío</li>
+                        <li>Historial de compras</li>
+                    </ul>
+
+
+                    <h2>Uso de la información</h2>
+
+                    <ul>
+                        <li>Procesar pedidos</li>
+                        <li>Enviar actualizaciones</li>
+                        <li>Soporte al cliente</li>
+                        <li>Mejorar experiencia</li>
+                    </ul>
+
+
+                    <h2>Protección de datos</h2>
+
+                    <p>
+                        Implementamos medidas de seguridad para proteger tu información.
+                    </p>
+
+
+                    <h2>Cookies</h2>
+
+                    <p>
+                        Utilizamos cookies para mejorar navegación y análisis.
+                    </p>
+
+
+                    <h2>Contacto</h2>
+
+                    <p>
+                        <strong>contacto@stride.com</strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- COOKIE BANNER -->
+    <div id="cookie-banner"
+         class="cookie-banner hidden">
+
+        <div class="cookie-inner">
+
+            <div class="cookie-text">
+
+                Utilizamos cookies para mejorar tu experiencia.
+
+                <a href="/privacy">
+                    Ver política
+                </a>
+
+            </div>
+
+            <div class="cookie-actions">
+
+                <button id="reject-cookies"
+                        class="cookie-btn-outline">
+                    Rechazar
+                </button>
+
+                <button id="accept-cookies"
+                        class="cookie-btn-solid">
+                    Aceptar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const banner = document.getElementById("cookie-banner");
+            const consent = localStorage.getItem("cookie_consent");
+
+            if (!consent) {
+                banner.classList.remove("hidden");
+            }
+
+            document.getElementById("accept-cookies")
+                .addEventListener("click", () => {
+                    localStorage.setItem("cookie_consent", "accepted");
+                    banner.remove();
+                });
+
+            document.getElementById("reject-cookies")
+                .addEventListener("click", () => {
+                    localStorage.setItem("cookie_consent", "rejected");
+                    banner.remove();
+                });
+
+        });
+    </script>
+
+</th:block>
+
+</body>
+</html>

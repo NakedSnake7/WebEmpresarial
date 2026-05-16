@@ -1,0 +1,130 @@
+<section id="products" th:fragment="products">
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="section-header reveal">
+      <h2 class="section-title">Destacados De La Temporada</h2>
+      <p class="section-sub">Selección curada por nuestro equipo</p>
+    </div>
+
+    <!-- GRID -->
+    <div class="products-grid">
+
+      <div class="product-card reveal"
+           th:each="product, iterStat : ${products}"
+           th:classappend="'reveal-delay-' + ${iterStat.index + 1}"
+           th:onclick="|window.location.href='@{/producto-detalle/{id}(id=${product.id})}'|"
+           style="cursor:pointer;">
+
+        <!-- IMAGEN -->
+        <div class="product-img-wrap">
+
+          <img th:src="${product.imageUrl}"
+               th:alt="${product.productName}"
+               loading="lazy">
+
+          <!-- BADGE PROMO -->
+          <span class="product-badge badge-sale"
+                th:if="${product.tienePromocion}">
+            OFERTA
+          </span>
+
+          <!-- BADGE AGOTADO -->
+          <span class="product-badge badge-sold"
+                th:if="${product.stockSimple == 0}">
+            SOLD OUT
+          </span>
+
+          <!-- WISHLIST -->
+          <button class="wishlist-btn"
+                  onclick="event.stopPropagation(); this.classList.toggle('active')">
+            ❤️
+          </button>
+
+        </div>
+
+        <!-- INFO -->
+        <div class="product-info">
+
+          <!-- CATEGORIA -->
+          <p class="product-brand"
+          th:text="${product.marcaNombre}">
+          </p>  
+
+          <!-- NOMBRE -->
+          <p class="product-name"
+             th:text="${product.productName}">
+          </p>
+
+          <!-- RATING -->
+          <div class="product-rating">
+            <div class="stars">★★★★★</div>
+            <span class="rating-count">(0 reseñas)</span>
+          </div>
+
+
+
+<div class="product-prices">
+
+    <!-- CON PROMOCION -->
+    <div th:if="${product.tienePromocion}">
+
+        <!-- con variantes -->
+        <div th:if="${product.tieneVariantes}">
+
+            <span class="price-old"
+                  th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+            </span>
+
+            <span class="price-real text-success"
+                  th:text="|$${#numbers.formatDecimal(product.precioConDescuento,1,2)}|">
+            </span>
+
+        </div>
+
+        <!-- sin variantes -->
+        <div th:if="${!product.tieneVariantes}">
+
+            <span class="price-old"
+                  th:text="|$${#numbers.formatDecimal(product.precio,1,2)}|">
+            </span>
+
+            <span class="price-real text-success"
+                  th:text="|$${#numbers.formatDecimal(product.precioConDescuento,1,2)}|">
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- NORMAL -->
+    <div th:if="${!product.tienePromocion}">
+
+        <span class="price-real"
+              th:if="${product.tieneVariantes}"
+              th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+        </span>
+
+        <span class="price-real"
+              th:if="${!product.tieneVariantes}"
+              th:text="|$${#numbers.formatDecimal(product.precio,1,2)}|">
+        </span>
+
+    </div>
+
+</div>
+          <!-- CTA -->
+          <a th:href="@{/producto-detalle/{id}(id=${product.id})}"
+             class="btn-cart"
+             onclick="event.stopPropagation();">
+             Ver producto
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>

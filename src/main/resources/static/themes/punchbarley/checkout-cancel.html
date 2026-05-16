@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pago cancelado | WeedTlan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Estilos personalizados -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card-cancel {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .icon-cancel {
+            font-size: 70px;
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border: none;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0a800;
+            color: #000;
+        }
+
+        .btn-outline-light {
+            border-color: #aaa;
+            color: #fff;
+        }
+
+        .btn-outline-light:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .small-text {
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card-cancel">
+    <div class="icon-cancel">⚠️</div>
+
+    <h3 class="mb-3">Pago no completado</h3>
+
+    <p>
+        Tu pago fue <strong>cancelado o no se finalizó correctamente</strong>.
+        No se realizó ningún cargo y tu pedido <strong>no fue procesado</strong>.
+    </p>
+
+    <p class="small-text">
+        Esto puede ocurrir si cerraste la ventana de pago, el banco rechazó la operación
+        o simplemente decidiste intentarlo más tarde.
+    </p>
+
+    <hr class="bg-secondary">
+
+    <div class="d-flex flex-column gap-2">
+        <a href="/" class="btn btn-primary btn-block mb-2">
+            🔄 Intentar de nuevo
+        </a>
+
+        <a href="/contacto" class="btn btn-outline-light btn-block">
+            📩 Contactar soporte
+        </a>
+    </div>
+
+    <p class="small-text mt-4">
+        Si tienes dudas, escríbenos con confianza.<br>
+        <strong>WeedTlan</strong> 🌿
+    </p>
+</div>
+ <script>
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get("order_id");
+
+if (orderId) {
+  document.getElementById("order-info").innerText =
+    "Pedido #" + orderId + " no fue completado.";
+}
+ </script>
+
+
+
+</body>
+</html>

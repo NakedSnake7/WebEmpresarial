@@ -1,0 +1,22 @@
+<section id="newsletter" th:fragment="newsletter">
+
+  <div class="container">
+    <div class="newsletter-icon reveal">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </div>
+    <h2 class="newsletter-title reveal">Sé El Primero En Saberlo</h2>
+    <p class="newsletter-sub reveal">Drops exclusivos, ofertas secretas y acceso anticipado. Sin spam.</p>
+    <div class="reveal" id="newsletter-form-wrap">
+      <div class="newsletter-form" id="newsletter-form">
+        <input type="email" id="newsletter-input" placeholder="tu@email.com" aria-label="Correo electrónico">
+        <button class="btn-subscribe" onclick="Newsletter.submit()">Suscribirme</button>
+      </div>
+      <p class="newsletter-error" id="newsletter-error">Ingresa un email válido</p>
+    </div>
+    <div class="newsletter-success" id="newsletter-success">¡Listo! Bienvenido a STRIDE 🧡</div>
+    <p class="newsletter-privacy reveal">Al suscribirte aceptas nuestra política de privacidad. Cancela cuando quieras.</p>
+  </div>
+</section>

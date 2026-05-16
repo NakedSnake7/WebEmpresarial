@@ -31,11 +31,9 @@
           href="https://fonts.gstatic.com"
           crossorigin>
 
-  <!--   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
-          rel="stylesheet">--> 
+
           
-           <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-          
+        
    
 
     <!-- CSS dinámico -->
@@ -45,37 +43,32 @@
 </head>
 
 <body>
-<div class="urgency-bar">
-  <div class="urgency-dot"></div>
-  <span>🔥 <strong>Oferta de lanzamiento:</strong> Auditoría + estrategia gratis para los primeros 5 proyectos del mes — <strong>quedan 3 lugares</strong></span>
-</div>
+
 
 <div th:replace="~{themes/__${theme}__/fragments/navbar :: navbar}"></div>
 
-<!--  <div
-    th:replace="~{themes/__${theme}__/fragments/cart :: cart}">
+<th:block th:if="${showCart}">
+    <div th:replace="~{themes/__${theme}__/fragments/cart :: cart}"></div>
+</th:block>
+
+<th:block th:if="${showCheckout}">
+    <div th:replace="~{themes/__${theme}__/fragments/checkout :: checkout}"></div>
+</th:block>
+
+<th:block th:if="${showAuth}">
+    <div th:replace="~{themes/__${theme}__/fragments/auth :: auth}"></div>
+</th:block>
+
+<!-- AQUÍ VA EL CONTENIDO DE index.html -->
+<main>
+    <div th:replace="${content}"></div>
+</main>
+
+<footer th:replace="~{themes/__${theme}__/fragments/footer :: footer}"></footer>
+
+<div th:if="${showScripts}"
+     th:replace="~{themes/__${theme}__/fragments/scripts :: scripts}">
 </div>
-
-<div
-    th:replace="~{themes/__${theme}__/fragments/checkout :: checkout}">
-</div>
-
-<div
-    th:replace="~{themes/__${theme}__/fragments/auth :: auth}">
-</div>
--->
-   <!-- AQUÍ VA EL CONTENIDO DE index.html -->
-    <main th:replace="${content}"></main>
-
-
-<footer
-    th:replace="~{themes/__${theme}__/fragments/footer :: footer}">
-</footer>
-
-<div
-    th:replace="~{themes/__${theme}__/fragments/scripts :: scripts}">
-</div>
-
 
     <script>
         document.documentElement.classList.add('js-enabled');

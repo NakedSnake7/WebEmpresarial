@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(
+        'Punch Barley',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Cerveza Artesanal · Hecha en México</p>
+    <img src="/mnt/user-data/uploads/1000050072.png" alt="Punch Barley Logo" class="hero-logo-img">
+    <h1 class="hero-headline">
+      El sabor que<br>
+      <span>da el golpe</span>
+    </h1>
+    <p class="hero-sub">Cerveza artesanal elaborada con los mejores ingredientes. Cada lote, un carácter único. Cada sorbo, una experiencia que no se olvida.</p>
+    <div class="hero-buttons">
+      <a href="#cervezas" class="btn-primary">Ver Cervezas</a>
+      <a href="#nosotros" class="btn-secondary">Nuestra Historia</a>
+    </div>
+  </div>
+</section>
+ 
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item">Envío gratis en pedidos +6 cervezas</div>
+  <div class="trust-item">Ingredientes 100% naturales</div>
+  <div class="trust-item">Elaboración artesanal mexicana</div>
+  <div class="trust-item">Pago seguro</div>
+</div>
+ 
+<!-- BEERS -->
+<section class="beers-section" id="cervezas">
+  <div class="beers-header reveal">
+    <p class="section-label">Nuestras Cervezas</p>
+    <h2 class="section-title">Cada una con su propia personalidad</h2>
+  </div>
+ 
+  <div class="beers-grid">
+    <!-- Card 1 -->
+    <div class="beer-card reveal">
+      <div class="beer-badge badge-best">Más vendida</div>
+      <div class="beer-visual">
+        <div class="beer-can can-golden">
+          <div class="beer-shine"></div>
+          <div class="can-label">
+            <div class="can-label-name">GOLDEN<br>PUNCH</div>
+            <div class="can-label-abv">5.2% ABV</div>
+          </div>
+        </div>
+        <div class="beer-glow"></div>
+      </div>
+      <div class="beer-info">
+        <div class="beer-style">Golden Ale</div>
+        <div class="beer-name">Golden Punch</div>
+        <div class="beer-desc">Suave y refrescante con notas de miel y cítricos. El equilibrio perfecto para cualquier ocasión.</div>
+        <div class="beer-footer">
+          <div class="beer-price"><span>$</span>95 <small style="font-size:0.6rem;font-family:'Oswald',sans-serif;color:rgba(240,230,200,0.4);letter-spacing:0.1em;">MXN</small></div>
+          <button class="btn-add" onclick="addToCart('Golden Punch', 95)">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Card 2 -->
+    <div class="beer-card reveal">
+      <div class="beer-badge badge-limited">Edición Limitada</div>
+      <div class="beer-visual">
+        <div class="beer-can can-dark">
+          <div class="beer-shine"></div>
+          <div class="can-label">
+            <div class="can-label-name">DARK<br>KNIGHT</div>
+            <div class="can-label-abv">7.8% ABV</div>
+          </div>
+        </div>
+        <div class="beer-glow"></div>
+      </div>
+      <div class="beer-info">
+        <div class="beer-style">Imperial Stout</div>
+        <div class="beer-name">Dark Knight</div>
+        <div class="beer-desc">Negra e intensa. Notas de chocolate amargo, café y caramelo tostado que te envuelven en la oscuridad.</div>
+        <div class="beer-footer">
+          <div class="beer-price"><span>$</span>120 <small style="font-size:0.6rem;font-family:'Oswald',sans-serif;color:rgba(240,230,200,0.4);letter-spacing:0.1em;">MXN</small></div>
+          <button class="btn-add" onclick="addToCart('Dark Knight', 120)">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Card 3 -->
+    <div class="beer-card reveal">
+      <div class="beer-badge badge-new">Nueva</div>
+      <div class="beer-visual">
+        <div class="beer-can can-amber">
+          <div class="beer-shine"></div>
+          <div class="can-label">
+            <div class="can-label-name">AMBER<br>HOOK</div>
+            <div class="can-label-abv">6.1% ABV</div>
+          </div>
+        </div>
+        <div class="beer-glow"></div>
+      </div>
+      <div class="beer-info">
+        <div class="beer-style">Amber Ale</div>
+        <div class="beer-name">Amber Hook</div>
+        <div class="beer-desc">Ámbar profundo con aroma a caramelo y lúpulo terroso. Un gancho suave al paladar que no olvidarás.</div>
+        <div class="beer-footer">
+          <div class="beer-price"><span>$</span>105 <small style="font-size:0.6rem;font-family:'Oswald',sans-serif;color:rgba(240,230,200,0.4);letter-spacing:0.1em;">MXN</small></div>
+          <button class="btn-add" onclick="addToCart('Amber Hook', 105)">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Card 4 -->
+    <div class="beer-card reveal">
+      <div class="beer-visual">
+        <div class="beer-can can-pale">
+          <div class="beer-shine"></div>
+          <div class="can-label">
+            <div class="can-label-name">PALE<br>JABS</div>
+            <div class="can-label-abv">4.8% ABV</div>
+          </div>
+        </div>
+        <div class="beer-glow"></div>
+      </div>
+      <div class="beer-info">
+        <div class="beer-style">Pale Ale</div>
+        <div class="beer-name">Pale Jabs</div>
+        <div class="beer-desc">Liviana y frutada. Notas tropicales de maracuyá y mango que te conectan directo con el verano.</div>
+        <div class="beer-footer">
+          <div class="beer-price"><span>$</span>98 <small style="font-size:0.6rem;font-family:'Oswald',sans-serif;color:rgba(240,230,200,0.4);letter-spacing:0.1em;">MXN</small></div>
+          <button class="btn-add" onclick="addToCart('Pale Jabs', 98)">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- STORY -->
+<div class="story-section" id="nosotros">
+  <div class="story-visual">
+    <div class="story-pattern"></div>
+    <div class="story-center">
+      <div class="story-emblem">
+        <div class="story-emblem-inner"></div>
+      </div>
+      <div class="story-year">2018</div>
+      <div class="story-since">Fundada en México</div>
+    </div>
+  </div>
+  <div class="story-content reveal">
+    <p class="section-label">Nuestra Historia</p>
+    <h2 class="section-title">Nacimos para<br>romper lo ordinario</h2>
+    <p class="story-text">Punch Barley nació de una obsesión: crear cervezas que tengan carácter, que cuenten una historia y que dejen una huella. Lo que comenzó en un pequeño garage con equipos improvisados hoy es una cervecería artesanal que envía a toda la República Mexicana.</p>
+    <p class="story-text">Cada receta es el resultado de meses de prueba, pasión y respeto por los ingredientes. Trabajamos con malta seleccionada, lúpulo importado y agua pura para garantizar que cada lata sea perfecta.</p>
+ 
+    <div class="story-stats">
+      <div>
+        <div class="stat-number">4+</div>
+        <div class="stat-label">Estilos distintos</div>
+      </div>
+      <div>
+        <div class="stat-number">12K</div>
+        <div class="stat-label">Litros elaborados</div>
+      </div>
+      <div>
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Clientes satisfechos</div>
+      </div>
+    </div>
+ 
+    <a href="#cervezas" class="btn-primary">Explorar cervezas</a>
+  </div>
+</div>
+ 
+<!-- PROCESS -->
+<section class="process-section" id="proceso">
+  <div class="process-header reveal">
+    <p class="section-label">Proceso</p>
+    <h2 class="section-title">Del grano a tu vaso</h2>
+  </div>
+ 
+  <div class="process-steps">
+    <div class="process-line"></div>
+ 
+    <div class="process-step reveal">
+      <div class="step-number">01</div>
+      <div class="step-icon">🌾</div>
+      <div class="step-title">Selección</div>
+      <div class="step-desc">Malta premium importada, lúpulo fresco y levaduras artesanales cuidadosamente elegidas.</div>
+    </div>
+ 
+    <div class="process-step reveal">
+      <div class="step-number">02</div>
+      <div class="step-icon">🫧</div>
+      <div class="step-title">Macerado</div>
+      <div class="step-desc">Cocción controlada que extrae los azúcares y aromas únicos de cada ingrediente.</div>
+    </div>
+ 
+    <div class="process-step reveal">
+      <div class="step-number">03</div>
+      <div class="step-icon">⏳</div>
+      <div class="step-title">Fermentación</div>
+      <div class="step-desc">Proceso lento y controlado donde la levadura trabaja su magia por días.</div>
+    </div>
+ 
+    <div class="process-step reveal">
+      <div class="step-number">04</div>
+      <div class="step-icon">🍺</div>
+      <div class="step-title">Embotellado</div>
+      <div class="step-desc">Envasado artesanal y control de calidad antes de llegar a tus manos.</div>
+    </div>
+  </div>
+</section>
+ 
+<!-- FEATURED PACK -->
+<section class="pack-section" id="packs">
+  <div class="pack-inner">
+    <div class="pack-visual reveal">
+      <div class="pack-tag">AHORRA 20%</div>
+      <div class="pack-cans">
+        <div class="pack-can can-golden"><div class="beer-shine"></div></div>
+        <div class="pack-can can-dark"><div class="beer-shine"></div></div>
+        <div class="pack-can can-amber"><div class="beer-shine"></div></div>
+        <div class="pack-can can-pale"><div class="beer-shine"></div></div>
+      </div>
+    </div>
+ 
+    <div class="pack-info reveal">
+      <p class="section-label">Pack Recomendado</p>
+      <h2 class="section-title">El Pack<br>Punch Full</h2>
+      <p class="pack-desc">La forma perfecta de conocer todo nuestro catálogo. Cuatro cervezas distintas, cuatro experiencias únicas. Ideal para compartir o para descubrir tu favorita.</p>
+ 
+      <div class="pack-includes">
+        <div class="pack-includes-title">Incluye</div>
+        <div class="pack-item">2x Golden Punch (Golden Ale — 5.2%)</div>
+        <div class="pack-item">2x Dark Knight (Imperial Stout — 7.8%)</div>
+        <div class="pack-item">2x Amber Hook (Amber Ale — 6.1%)</div>
+        <div class="pack-item">2x Pale Jabs (Pale Ale — 4.8%)</div>
+        <div class="pack-item">Envío gratis a toda la República Mexicana</div>
+      </div>
+ 
+      <div class="pack-price-row">
+        <div class="pack-price-new">$650 <small style="font-size:1rem;font-family:'Oswald',sans-serif;color:rgba(240,230,200,0.5);letter-spacing:0.1em;">MXN</small></div>
+        <div class="pack-price-old">$818 MXN</div>
+        <div class="pack-save">−20%</div>
+      </div>
+ 
+      <button class="btn-primary" onclick="addToCart('Pack Punch Full (8 latas)', 650)">Pedir Pack Ahora →</button>
+    </div>
+  </div>
+</section>
+ 
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="testimonials-header reveal">
+    <p class="section-label">Opiniones</p>
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+  </div>
+ 
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">La Golden Punch es increíble. Nada que envidiarle a las mejores cervezas artesanales que he probado. Entrega rápida y bien embalada.</p>
+      <div class="testimonial-author">Rodrigo M.</div>
+      <div class="testimonial-role">Ciudad de México</div>
+    </div>
+ 
+    <div class="testimonial-card reveal">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">El Pack Punch Full fue un regalo para unos amigos y quedaron fascinados. La Dark Knight especialmente nos dejó sin palabras. Pediremos de nuevo.</p>
+      <div class="testimonial-author">Valentina C.</div>
+      <div class="testimonial-role">Guadalajara, México</div>
+    </div>
+ 
+    <div class="testimonial-card reveal">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">Soy muy exigente con la cerveza artesanal y Punch Barley superó mis expectativas. La Amber Hook tiene una profundidad de sabor que no esperaba. 100% recomendada.</p>
+      <div class="testimonial-author">Felipe A.</div>
+      <div class="testimonial-role">Monterrey, México</div>
+    </div>
+  </div>
+</section>
+ 
+<!-- NEWSLETTER -->
+<section class="newsletter-section">
+  <div class="newsletter-inner reveal">
+    <p class="section-label">Club Punch Barley</p>
+    <h2 class="section-title">Únete y recibe ofertas exclusivas</h2>
+    <p class="newsletter-desc">Sé el primero en conocer nuevas recetas, ediciones limitadas y descuentos especiales para nuestra comunidad cervecera.</p>
+    <div class="newsletter-form">
+      <input type="email" class="newsletter-input" placeholder="tu@correo.com">
+      <button class="newsletter-btn" onclick="subscribeNewsletter()">Suscribirme</button>
+    </div>
+    <p class="newsletter-note">Sin spam. Solo lo bueno. Puedes cancelar cuando quieras.</p>
+  </div>
+
+ 
+
+</section>
+
+
+</th:block>
+
+</body>
+</html>

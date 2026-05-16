@@ -3,16 +3,32 @@ package com.webempresarial.store.theme;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import java.util.Map;
 
 @Component
 public class StoreThemeResolver {
 
-    // THEMES VÁLIDOS
-    private static final Set<String> VALID_THEMES = Set.of(
-        "WebEmpresarial",
-        "stride",
-        "espacio"
+    private static final String DEFAULT_THEME = "WebEmpresarial";
+
+    private static final Map<String, String> DOMAIN_THEME = Map.of(
+
+        // =========================
+        // PRODUCCIÓN
+        // =========================
+
+        "webempresarial.com", "WebEmpresarial",
+        "www.webempresarial.com", "WebEmpresarial",
+
+        "stride.midominio.com", "stride",
+        "punchbarley.midominio.com", "punchbarley",
+
+        // =========================
+        // LOCAL
+        // =========================
+
+        "webempresarial.local", "WebEmpresarial",
+        "stride.local", "stride",
+        "punchbarley.local", "punchbarley"
     );
 
     public String getTheme(HttpServletRequest request) {
@@ -23,54 +39,24 @@ public class StoreThemeResolver {
             host = request.getServerName();
         }
 
-        // DEFAULT
         if (host == null || host.isBlank()) {
-            return "WebEmpresarial";
+            return DEFAULT_THEME;
         }
 
         host = host.toLowerCase().split(":")[0];
 
-        // =========================
-        // LOCALHOST
-        // =========================
-
+        // localhost directo
         if (
             host.equals("localhost") ||
             host.equals("127.0.0.1")
         ) {
-            return "WebEmpresarial";
+            return DEFAULT_THEME;
         }
 
-        // =========================
-        // DOMINIO PRINCIPAL
-        // =========================
-
-        if (
-            host.equals("webempresarial.com") ||
-            host.equals("www.webempresarial.com")
-        ) {
-            return "WebEmpresarial";
-        }
-
-        // =========================
-        // SUBDOMINIOS
-        // stride.midominio.com
-        // =========================
-
-        if (host.endsWith("midominio.com")) {
-
-            String subdomain = host.split("\\.")[0];
-
-            if (VALID_THEMES.contains(subdomain)) {
-                return subdomain;
-            }
-        }
-
-        // =========================
-        // FALLBACK
-        // =========================
-
-        return "WebEmpresarial";
+        return DOMAIN_THEME.getOrDefault(
+            host,
+            DEFAULT_THEME
+        );
     }
 
     public String view(HttpServletRequest request, String page) {

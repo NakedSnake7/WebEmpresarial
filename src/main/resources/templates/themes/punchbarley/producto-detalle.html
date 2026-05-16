@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body
+th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
+
+<section>
+<style>
+  /* ── VARIABLES: hereda las del sistema global ── */
+  /* --bg, --surface, --surface-2, --accent, --accent-hover,
+     --text, --muted, --border, --success,
+     --font-display, --font-body, --radius, --radius-sm,
+     --ease, --transition  → definidas en el CSS global */
+
+  .pw {
+    font-family: var(--font-body);
+    background: var(--bg);
+    min-height: 100vh;
+    padding-top: 68px; /* altura navbar fija */
+  }
+  
+
+  /* ── BREADCRUMB ── */
+  .pd-breadcrumb {
+    padding: 14px 5%;
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .pd-breadcrumb a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+  .pd-breadcrumb a:hover { color: var(--text); }
+  .pd-breadcrumb .sep { margin: 0 8px; opacity: .4; }
+  .pd-breadcrumb .current { color: rgba(255,255,255,.55); }
+
+  /* ── LAYOUT ── */
+  .pd-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 68px);
+  }
+
+  /* ══════════════════════════════
+     COLUMNA GALERÍA
+  ══════════════════════════════ */
+  .pd-gallery {
+    padding: 36px 40px 36px 5%;
+    position: sticky;
+    top: 68px;
+    height: calc(100vh - 68px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pd-main-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface-2);
+    flex: 1;
+  }
+  .pd-main-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .6s var(--ease);
+  }
+  .pd-main-wrap:hover img { transform: scale(1.05); }
+
+  .pd-badge-tl {
+    position: absolute;
+    top: 14px; left: 14px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: .12em;
+    background: var(--accent);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 20px;
+    z-index: 2;
+  }
+  .pd-badge-tr {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(10px);
+    color: rgba(255,255,255,.85);
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    z-index: 2;
+  }
+
+  .pd-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .pd-thumb {
+    aspect-ratio: 1/1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color var(--transition);
+  }
+  .pd-thumb.active { border-color: var(--accent); }
+  .pd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ══════════════════════════════
+     COLUMNA INFO
+  ══════════════════════════════ */
+  .pd-info {
+    padding: 40px 5% 60px 40px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+  }
+
+  /* Meta */
+  .pd-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pd-brand {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: .18em;
+    color: var(--accent);
+  }
+  .pd-reviews {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pd-stars { display: flex; gap: 2px; color: #f59e0b; }
+  .pd-stars svg { width: 12px; height: 12px; fill: #f59e0b; }
+  .pd-rating-num { font-size: 12px; font-weight: 500; color: var(--text); }
+  .pd-rating-ct  { font-size: 12px; color: var(--muted); }
+
+  /* Título */
+  .pd-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    line-height: .95;
+    letter-spacing: .04em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .pd-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  /* Precio */
+  .pd-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .pd-price-now {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: .04em;
+    color: var(--text);
+  }
+  .pd-price-was {
+    font-size: 15px;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .pd-save-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    padding: 4px 11px;
+    border-radius: 20px;
+    background: rgba(255, 92, 0, .15);
+    border: 1px solid rgba(255, 92, 0, .3);
+    color: var(--accent);
+  }
+
+  /* Divider */
+  .pd-divider { height: 1px; background: var(--border); }
+
+  /* Urgencia */
+  .pd-urgency {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 92, 0, .07);
+    border: 1px solid rgba(255, 92, 0, .25);
+  }
+  .pd-urg-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 5px;
+    animation: urgPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes urgPulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,92,0,.4); }
+    50%      { opacity: .6; box-shadow: 0 0 0 5px rgba(255,92,0,0); }
+  }
+  .pd-urg-text {
+    font-size: 13px;
+    color: rgba(255,255,255,.8);
+    line-height: 1.5;
+  }
+  .pd-urg-text strong { color: var(--accent); }
+  .pd-urg-bar {
+    height: 3px;
+    background: rgba(255,92,0,.2);
+    border-radius: 10px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .pd-urg-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: var(--accent);
+    transition: width .5s var(--ease);
+  }
+
+  /* Countdown */
+  .pd-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .pd-cd-label {
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pd-cd-time {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    letter-spacing: .12em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stock simple */
+  .pd-stock-simple {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .pd-stock-simple strong { color: var(--text); }
+
+  /* Variantes */
+  .pd-var-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .pd-var-label { font-size: 12px; letter-spacing: .06em; color: var(--muted); }
+  .pd-var-sel   { font-size: 12px; font-weight: 500; color: var(--text); }
+  .pd-size-guide {
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: color var(--transition);
+  }
+  .pd-size-guide:hover { color: var(--accent); }
+
+  .pd-var-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .pd-vbtn {
+    padding: 11px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    color: rgba(255,255,255,.75);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+    line-height: 1.3;
+  }
+  .pd-vbtn:hover:not(.pd-vbtn-out) {
+    border-color: rgba(255,255,255,.3);
+    color: var(--text);
+  }
+  .pd-vbtn.pd-vbtn-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .pd-vbtn.pd-vbtn-out {
+    opacity: .3;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    font-weight: 400;
+  }
+  .pd-vbtn small {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    margin-top: 3px;
+    opacity: .7;
+  }
+
+  /* Cantidad */
+  .pd-qty-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pd-qty-lbl { font-size: 12px; letter-spacing: .06em; color: var(--muted); }
+  .pd-qty-ctrl {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .pd-qbtn {
+    width: 42px; height: 42px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-body);
+    transition: background var(--transition), color var(--transition);
+  }
+  .pd-qbtn:hover { background: rgba(255,255,255,.06); color: var(--accent); }
+  .pd-qval {
+    width: 44px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 500;
+    color: var(--text);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-qty-note { font-size: 11px; color: var(--muted); }
+
+  /* CTA principal */
+  .pd-btn-cart {
+    width: 100%;
+    padding: 17px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  }
+  .pd-btn-cart:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255,92,0,.35);
+  }
+  .pd-btn-cart:active { transform: scale(.985); }
+  .pd-btn-cart:disabled {
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .pd-btn-cart.added { background: var(--success) !important; }
+
+  /* WhatsApp — solo soporte */
+  .pd-wa-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    width: 100%;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .pd-wa-row:hover { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.14); }
+  .pd-wa-text { font-size: 13px; color: var(--muted); }
+  .pd-wa-link { font-size: 13px; font-weight: 500; color: #25c662; }
+
+  /* Trust strip */
+  .pd-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .pd-trust-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 14px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: border-color var(--transition);
+  }
+  .pd-trust-item:hover { border-color: rgba(255,255,255,.14); }
+  .pd-trust-icon {
+    width: 18px; height: 18px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.5;
+    flex-shrink: 0;
+  }
+  .pd-trust-lbl {
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* Acordeón */
+  .pd-accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .pd-acc-item + .pd-acc-item { border-top: 1px solid var(--border); }
+  .pd-acc-head {
+    width: 100%;
+    padding: 15px 18px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: .1em;
+    color: var(--text);
+    text-align: left;
+    transition: background var(--transition), color var(--transition);
+  }
+  .pd-acc-head:hover { background: rgba(255,255,255,.03); color: var(--accent); }
+  .pd-acc-arrow {
+    width: 16px; height: 16px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.5;
+    flex-shrink: 0;
+    transition: transform .25s var(--ease), stroke var(--transition);
+  }
+  .pd-acc-head:hover .pd-acc-arrow { stroke: var(--accent); }
+  .pd-acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s var(--ease), padding .35s var(--ease);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    font-weight: 300;
+    padding: 0 18px;
+  }
+  .pd-acc-body.open {
+    max-height: 400px;
+    padding: 0 18px 18px;
+  }
+
+  /* ── STICKY MOBILE ── */
+  .pd-sticky-mobile {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,10,.92);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    padding: 12px 5%;
+    z-index: 900;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .pd-layout { grid-template-columns: 1fr; }
+    .pd-gallery {
+      position: relative;
+      top: 0;
+      height: auto;
+      padding: 20px 5%;
+    }
+    .pd-main-wrap { flex: none; aspect-ratio: 1/1; }
+    .pd-info {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding: 28px 5% 100px;
+    }
+    .pd-title { font-size: clamp(2rem, 8vw, 3rem); }
+    .pd-sticky-mobile { display: block; }
+    .pd-btn-cart.desktop-only { display: none; }
+  }
+@media (max-width: 480px) {
+
+  .pd-var-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pd-trust-strip {
+    grid-template-columns: 1fr;
+  }
+
+}
+</style>
+
+<div class="pw">
+
+  <!-- BREADCRUMB -->
+  <div class="pd-breadcrumb">
+    <a href="/">Inicio</a>
+    <span class="sep">/</span>
+    <a th:href="@{/categoria/{id}(id=${producto.categoriaId})}"
+       th:text="${producto.categoriaNombre}">Categoría</a>
+    <span class="sep">/</span>
+    <span class="current" th:text="${producto.productName}">Producto</span>
+  </div>
+
+  <div class="pd-layout">
+
+    <!-- ══ GALERÍA ══ -->
+    <div class="pd-gallery">
+
+      <div class="pd-main-wrap">
+        <img id="mainImage"
+             th:src="${producto.imageUrl}"
+             th:alt="${producto.productName}">
+
+        <span class="pd-badge-tl">Destacado</span>
+
+        <span class="pd-badge-tr"
+              th:if="${producto.tienePromocion}"
+              th:text="${'−' + #numbers.formatDecimal(producto.descuentoPorcentaje,1,0) + '%'}">
+          −30%
+        </span>
+      </div>
+
+      <div class="pd-thumbs">
+        <div class="pd-thumb active"
+             onclick="setMain(this, this.querySelector('img').src)">
+          <img th:src="${producto.imageUrl}" th:alt="${producto.productName}">
+        </div>
+<div class="pd-thumb"
+     th:if="${producto.imagenes != null}"
+     th:each="img : ${producto.imagenes}"
+     onclick="setMain(this, this.querySelector('img').src)">
+          <img th:src="${img}" th:alt="${producto.productName}">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ INFO ══ -->
+    <div class="pd-info">
+
+      <!-- Meta: marca + estrellas -->
+      <div class="pd-meta">
+<span class="pd-brand"
+      th:text="${#strings.isEmpty(producto.marcaNombre) ? producto.categoriaNombre : producto.marcaNombre}">
+</span>
+       <div class="pd-reviews">
+          <div class="pd-stars">
+            <svg viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5"/></svg>
+            <svg viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5"/></svg>
+            <svg viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5"/></svg>
+            <svg viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5"/></svg>
+            <svg viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5"/></svg>
+          </div>
+          <span class="pd-rating-num">4.8</span>
+          <span class="pd-rating-ct">(124 reseñas)</span>
+        </div>
+      </div>
+
+      <!-- Título con acento naranja en primera palabra -->
+<h1 class="pd-title">
+
+  <em th:text="${#strings.arraySplit(producto.productName,' ')[0]}">
+    Producto
+  </em>
+
+  <th:block
+    th:if="${#strings.contains(producto.productName,' ')}"
+    th:text="${' ' + #strings.substringAfter(producto.productName,' ')}">
+  </th:block>
+
+</h1>
+      
+
+      <!-- Precio -->
+      <div class="pd-price-row">
+        <span class="pd-price-now">
+<span th:text="${#numbers.formatDecimal((producto.precioConDescuento ?: producto.precio), 1, 2)}">
+        </span>
+        <span class="pd-price-was"
+              th:if="${producto.tienePromocion}">
+          $<span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">999.00</span>
+        </span>
+        <span class="pd-save-tag"
+              th:if="${producto.tienePromocion}"
+              th:text="${'Ahorras $' + #numbers.formatDecimal(producto.precio - producto.precioConDescuento, 1, 2)}">
+          Ahorras $300
+        </span>
+      </div>
+
+      <div class="pd-divider"></div>
+
+      <!-- Urgencia -->
+      <div class="pd-urgency"
+           th:if="${producto.tieneVariantes or (producto.stockSimple != null and producto.stockSimple <= 5)}">
+        <div class="pd-urg-dot"></div>
+        <div style="flex:1">
+          <div class="pd-urg-text" id="urgText">
+            Quedan pocas unidades — los últimos se vendieron hoy.
+          </div>
+          <div class="pd-urg-bar"><div class="pd-urg-fill" id="urgBar" style="width:18%"></div></div>
+        </div>
+      </div>
+
+      <!-- Countdown (solo con promo) -->
+      <div class="pd-countdown" th:if="${producto.tienePromocion}">
+        <span class="pd-cd-label">Oferta termina en</span>
+        <span class="pd-cd-time" id="cdTimer">--:--:--</span>
+      </div>
+
+      <!-- Stock simple -->
+      <p class="pd-stock-simple" th:if="${!producto.tieneVariantes}">
+        Stock disponible: <strong th:text="${producto.stockSimple}">10</strong> unidades
+      </p>
+
+      <!-- Variantes -->
+      <div th:if="${producto.tieneVariantes}">
+        <div class="pd-var-header">
+          <div>
+            <span class="pd-var-label">Talla — </span>
+            <span class="pd-var-sel" id="varSelLabel">Selecciona</span>
+          </div>
+          <button class="pd-size-guide" type="button">Guía de tallas</button>
+        </div>
+        <div class="pd-var-grid" id="varGrid"></div>
+      </div>
+
+      <!-- Cantidad -->
+      <div class="pd-qty-area">
+        <span class="pd-qty-lbl">Cantidad</span>
+        <div class="pd-qty-ctrl">
+          <button class="pd-qbtn" type="button" onclick="chgQty(-1)">−</button>
+          <div class="pd-qval" id="qtyVal">1</div>
+          <button class="pd-qbtn" type="button" onclick="chgQty(1)">+</button>
+        </div>
+        <span class="pd-qty-note" id="qtyNote"></span>
+      </div>
+
+      <!-- Botón carrito (desktop) -->
+      <button class="pd-btn-cart desktop-only"
+              type="button"
+              id="btnCart">
+        Agregar al carrito
+      </button>
+
+      <!-- WhatsApp solo preguntas -->
+      <button class="pd-wa-row" type="button" id="btnWa">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#25c662">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.07.528 4.015 1.455 5.715L.057 23.882l6.305-1.652A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-4.99-1.368l-.358-.213-3.742.981.997-3.65-.233-.374A9.818 9.818 0 012.18 12 9.82 9.82 0 0112 2.182 9.82 9.82 0 0121.818 12 9.82 9.82 0 0112 21.818z"/>
+        </svg>
+        <span class="pd-wa-text">¿Tienes dudas sobre este producto?</span>
+        <span class="pd-wa-link">Pregúntanos por WhatsApp</span>
+      </button>
+
+      <!-- Trust strip -->
+      <div class="pd-trust-strip">
+        <div class="pd-trust-item">
+          <svg class="pd-trust-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="pd-trust-lbl">Pago 100% seguro</span>
+        </div>
+        <div class="pd-trust-item">
+          <svg class="pd-trust-icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span class="pd-trust-lbl">Devolución sin preguntas</span>
+        </div>
+        <div class="pd-trust-item">
+          <svg class="pd-trust-icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span class="pd-trust-lbl">Envío 2–5 días hábiles</span>
+        </div>
+      </div>
+
+      <!-- Acordeón -->
+      <div class="pd-accordion">
+        <div class="pd-acc-item">
+          <button class="pd-acc-head" type="button" onclick="togAcc(0)">
+            <span>Descripción</span>
+            <svg class="pd-acc-arrow" id="accarr0" viewBox="0 0 16 16"><polyline points="4 6 8 10 12 6"/></svg>
+          </button>
+          <div class="pd-acc-body open" id="accb0" th:text="${producto.description}">
+            Descripción del producto.
+          </div>
+        </div>
+        <div class="pd-acc-item">
+          <button class="pd-acc-head" type="button" onclick="togAcc(1)">
+            <span>Envíos</span>
+            <svg class="pd-acc-arrow" id="accarr1" viewBox="0 0 16 16"><polyline points="4 6 8 10 12 6"/></svg>
+          </button>
+          <div class="pd-acc-body" id="accb1">
+            Envíos nacionales de 2 a 5 días hábiles. Envío gratis en pedidos mayores a $999. Número de guía al correo registrado.
+          </div>
+        </div>
+        <div class="pd-acc-item">
+          <button class="pd-acc-head" type="button" onclick="togAcc(2)">
+            <span>Cambios y devoluciones</span>
+            <svg class="pd-acc-arrow" id="accarr2" viewBox="0 0 16 16"><polyline points="4 6 8 10 12 6"/></svg>
+          </button>
+          <div class="pd-acc-body" id="accb2">
+            Cambios dentro de los 30 días naturales por defecto de fábrica. Producto sin uso y en empaque original. Sin costos ocultos.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sticky bar mobile -->
+  <div class="pd-sticky-mobile" id="stickyBar">
+    <button class="pd-btn-cart"
+            type="button"
+            id="btnCartMobile"
+            style="margin:0">
+      Agregar al carrito
+    </button>
+  </div>
+
+</div>
+
+<!-- ══ SCRIPTS ══ -->
+
+
+<script th:inline="javascript">
+  const variantes = /*[[${producto.variantes}]]*/ [];
+  const productoId = /*[[${producto.id}]]*/ 0;
+  const productoNombre = /*[[${producto.productName}]]*/ '';
+  const tienePromocion = /*[[${producto.tienePromocion}]]*/ false;
+
+  const productoPrecio = /*[[${producto.precioConDescuento != null 
+      ? producto.precioConDescuento 
+      : producto.precio}]]*/ 0;
+
+  const WA_NUMBER = '522221234567';
+</script>
+
+<script>
+  /* ── GALERÍA ── */
+  function setMain(thumb, src) {
+    document.getElementById('mainImage').src = src;
+    document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+  }
+
+  /* ── CANTIDAD ── */
+  let qty = 1, maxQty = 999;
+  function chgQty(n) {
+    qty = Math.max(1, Math.min(maxQty, qty + n));
+    document.getElementById('qtyVal').textContent = qty;
+  }
+
+  /* ── VARIANTES ── */
+  let varianteSel = null;
+
+  function getLabel(v) {
+    const a = v.atributos || {};
+    return a.Talla || a.talla || a.Color || a.color || v.nombre || 'Variante';
+  }
+
+  function renderVariantes() {
+    const grid = document.getElementById('varGrid');
+    if (!grid || !variantes.length) return;
+    grid.innerHTML = '';
+    variantes.forEach(v => {
+      const stock = Number(v.stock || 0);
+      const btn = document.createElement('button');
+      btn.className = 'pd-vbtn' + (stock <= 0 ? ' pd-vbtn-out' : '');
+      btn.disabled  = stock <= 0;
+      btn.innerHTML = getLabel(v) + '<small>' + (stock > 0 ? stock + ' pzs' : 'Agotado') + '</small>';
+      if (stock > 0) {
+    	  btn.onclick = () => {
+
+    		  if (btn.classList.contains('pd-vbtn-active')) {
+    		    return;
+    		  }
+    	document.querySelectorAll('.pd-vbtn').forEach(b => b.classList.remove('pd-vbtn-active'));
+          btn.classList.add('pd-vbtn-active');
+          varianteSel = v;
+          actualizarPrecioVariante();
+          maxQty = stock;
+          qty = Math.min(qty, maxQty);
+          document.getElementById('qtyVal').textContent = qty;
+          document.getElementById('varSelLabel').textContent = getLabel(v);
+          const note = document.getElementById('qtyNote');
+          if (note) note.textContent = 'Máx. ' + stock + ' disponibles';
+          actualizarUrgencia(stock);
+        };
+      }
+      grid.appendChild(btn);
+    });
+    const first = grid.querySelector('.pd-vbtn:not(.pd-vbtn-out)');
+    if (first) first.click();
+  }
+
+  function actualizarUrgencia(stock) {
+    const text = document.getElementById('urgText');
+    const bar  = document.getElementById('urgBar');
+    if (!text || !bar) return;
+    if (stock <= 2) {
+      text.innerHTML = 'Solo quedan <strong>' + stock + '</strong> unidades — ¡casi agotado!';
+      bar.style.width = '10%';
+    } else if (stock <= 5) {
+      text.innerHTML = 'Quedan <strong>' + stock + '</strong> unidades en esta talla.';
+      bar.style.width = '28%';
+    } else {
+      text.innerHTML = 'Quedan <strong>' + stock + '</strong> unidades disponibles.';
+      bar.style.width = '60%';
+    }
+  }
+  
+  function actualizarPrecioVariante() {
+
+	  const priceEl = document.querySelector('.pd-price-now');
+
+	  if (!priceEl) return;
+
+	  const price = Number(varianteSel?.precio ?? productoPrecio);
+
+	  priceEl.textContent = `$${price.toFixed(2)}`;
+
+	}
+
+  /* ── CARRITO ── */
+async function addToCart() {
+	console.log("click detectado");
+	console.log(window.cartStore);
+	const btns = [
+    document.getElementById('btnCart'),
+    document.getElementById('btnCartMobile')
+  ];
+
+  const label = 'Agregar al carrito';
+
+  btns.forEach(btn => {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Agregando...';
+    }
+  });
+
+  try {
+
+	  const stockActual = varianteSel
+	    ? Number(varianteSel.stock)
+	    : Number(/*[[${producto.stockSimple}]]*/ 0);
+	    
+    // agrega al carrito real del navbar
+window.cartStore.add({
+    id: productoId,
+    productId: productoId,
+    varianteId: varianteSel?.id ?? null,
+    name: productoNombre +
+        (varianteSel ? ` (${getLabel(varianteSel)})` : ''),
+        price: Number(varianteSel?.precio ?? productoPrecio),
+        quantity: qty,
+    originalStock: stockActual
+});
+if (varianteSel) {
+    varianteSel.stock -= qty;
+
+    if (varianteSel.stock < 0) {
+        varianteSel.stock = 0;
+    }
+
+    maxQty = varianteSel.stock;
+
+    renderVariantes();
+
+    actualizarUrgencia(varianteSel.stock);
+
+    const note = document.getElementById('qtyNote');
+
+    if (note) {
+        note.textContent =
+            varianteSel.stock > 0
+                ? `Máx. ${varianteSel.stock} disponibles`
+                : 'Agotado';
+    }
+}
+//abrir carrito automáticamente
+document
+  .getElementById("cartDropdown")
+  ?.classList.add("open");
+
+console.log("Estado carrito:", window.cartStore.getState());
+
+    // opcional backend
+    await fetch('/carrito/agregar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        productoId,
+        cantidad: qty,
+        varianteId: varianteSel?.id ?? null
+      })
+    });
+
+    btns.forEach(btn => {
+      if (btn) {
+        btn.classList.add('added');
+        btn.textContent = '¡Listo!';
+      }
+    });
+
+    setTimeout(() => {
+
+      btns.forEach(btn => {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('added');
+          btn.textContent = label;
+        }
+      });
+
+    }, 1500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    btns.forEach(btn => {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    });
+
+  }
+
+}
+  /* ── WHATSAPP ── */
+  function abrirWa() {
+    const msg = '¡Hola! Tengo una pregunta sobre el producto: ' + productoNombre;
+    window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+  }
+
+  /* ── COUNTDOWN ── */
+  function initCountdown() {
+    const el = document.getElementById('cdTimer');
+    if (!el || !tienePromocion) return;
+    const now = new Date(), end = new Date(now);
+    end.setHours(23, 59, 59, 0);
+    let secs = Math.floor((end - now) / 1000);
+    function tick() {
+      if (secs < 0) secs = 0;
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      el.textContent =
+        String(h).padStart(2,'0') + ':' +
+        String(m).padStart(2,'0') + ':' +
+        String(s).padStart(2,'0');
+      if (secs > 0) secs--;
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  /* ── ACORDEÓN ── */
+  function togAcc(i) {
+    const body  = document.getElementById('accb' + i);
+    const arrow = document.getElementById('accarr' + i);
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.pd-acc-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.pd-acc-arrow').forEach(a => a.style.transform = '');
+    if (!isOpen) {
+      body.classList.add('open');
+      arrow.style.transform = 'rotate(180deg)';
+    }
+  }
+
+  /* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.getElementById('btnCart')
+    ?.addEventListener('click', addToCart);
+
+  document.getElementById('btnCartMobile')
+    ?.addEventListener('click', addToCart);
+
+  document.getElementById('btnWa')
+    ?.addEventListener('click', abrirWa);
+
+  const acc0 = document.getElementById('accarr0');
+
+  if (acc0) {
+    acc0.style.transform = 'rotate(180deg)';
+  }
+
+  renderVariantes();
+  initCountdown();
+
+});
+  /* Acordeón: abrir descripción por defecto */
+  document.getElementById('accarr0').style.transform = 'rotate(180deg)';
+
+
+</script>
+
+</section>
+</body>
+</html>
