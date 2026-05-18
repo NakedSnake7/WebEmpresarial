@@ -12,24 +12,24 @@ public class StoreThemeResolver {
 
     private static final Map<String, String> DOMAIN_THEME = Map.of(
 
-        // =========================
-        // PRODUCCIÓN
-        // =========================
+    	    // =========================
+    	    // PRODUCCIÓN
+    	    // =========================
 
-        "webempresarial.com", "WebEmpresarial",
-        "www.webempresarial.com", "WebEmpresarial",
+    	    "web-empresarial.com", "WebEmpresarial",
+    	    "www.web-empresarial.com", "WebEmpresarial",
 
-        "stride.midominio.com", "stride",
-        "punchbarley.midominio.com", "punchbarley",
+    	    "stride.web-empresarial.com", "stride",
+    	    "punchbarley.web-empresarial.com", "punchbarley",
 
-        // =========================
-        // LOCAL
-        // =========================
+    	    // =========================
+    	    // LOCAL
+    	    // =========================
 
-        "webempresarial.local", "WebEmpresarial",
-        "stride.local", "stride",
-        "punchbarley.local", "punchbarley"
-    );
+    	    "webempresarial.local", "WebEmpresarial",
+    	    "stride.local", "stride",
+    	    "punchbarley.local", "punchbarley"
+    	);
 
     public String getTheme(HttpServletRequest request) {
 
