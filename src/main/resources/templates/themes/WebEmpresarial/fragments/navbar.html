@@ -1,8 +1,5 @@
 <header th:fragment="navbar" id="header">
-<div class="urgency-bar">
-  <div class="urgency-dot"></div>
-  <span>🔥 <strong>Oferta de lanzamiento:</strong> Auditoría + estrategia gratis para los primeros 5 proyectos del mes — <strong>quedan 3 lugares</strong></span>
-</div>
+
   <div class="container nav">
     <a class="logo" href="/">
       <div class="logo-ring"></div>
@@ -36,4 +33,31 @@
     <a href="#testimonios" class="mobile-link">Casos de éxito</a>
     <a href="#contacto" class="mobile-link mobile-cta">Auditoría gratis →</a>
   </nav>
+ 
+  <!-- ═══ ANALYTICS — reemplaza los IDs antes de publicar ═══ -->
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer=window.dataLayer||[];
+    function gtag(){dataLayer.push(arguments)}
+    gtag('js',new Date());
+    gtag('config','G-XXXXXXXXXX');
+  </script>
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','YOUR_PIXEL_ID');
+    fbq('track','PageView');
+  </script>
+  <!-- Microsoft Clarity (gratis, mapas de calor) — reemplaza ID -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window,document,"clarity","script","YOUR_CLARITY_ID");
+  </script>
 </header>

@@ -1,23 +1,23 @@
 // Core
 import './core/particles.js';
 import { initApp } from "./core/app.js";
-import MobileMenu from "./components/mobileMenu.js";
+//import MobileMenu from "./components/mobileMenu.js";
 
 // Auth
-import Register from './auth/register.js';
+//import Register from './auth/register.js';
 
 //UserMenu
-import UserMenu from './menu/UserMenu.js';
+//import UserMenu from './menu/UserMenu.js';
 
 // Cart
-import './cart/cartStore.js';
-import { configurarCarrito } from './components/cart.js';
+//import './cart/cartStore.js';
+//import { configurarCarrito } from './components/cart.js';
 
 // UI
-import './ui/footer-year.js';
-import './ui/modal.js';
-import './ui/maya-loader.js';
-import './ui/sombras.js';
+//import './ui/footer-year.js';
+//import './ui/modal.js';
+//import './ui/maya-loader.js';
+//import './ui/sombras.js';
 
 // Features
 import { configurarBotonWhatsApp } from './whatsapp.js';
@@ -27,34 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initApp();
 
-    configurarCarrito();
+  //  configurarCarrito();
 	
-	Register();
+	//Register();
 	
-	UserMenu();
+	//UserMenu();
 
     configurarBotonWhatsApp();
 
-    esperarNavbar();
+    //esperarNavbar();
 });
 
-
-function esperarNavbar() {
-
-    const interval = setInterval(() => {
-
-        const navbar = document.querySelector("#navbar");
-
-        if (navbar) {
-
-           
-
-            clearInterval(interval);
-
-            MobileMenu();
-
-        }
-
-    }, 100);
-
-}
