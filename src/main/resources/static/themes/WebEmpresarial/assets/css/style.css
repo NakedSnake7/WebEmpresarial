@@ -67,6 +67,8 @@ header{
 /* HERO */
 .hero{padding:120px 0 96px;text-align:center;position:relative;overflow:hidden}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(103,232,249,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 40%,transparent 100%);pointer-events:none}
+.hero-proof{margin-top:18px;display:flex;justify-content:center;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:.84rem;font-weight:400;}
+.hero-proof span{opacity:.9;}
 .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
 .orb-1{width:700px;height:700px;top:-260px;left:-200px;background:radial-gradient(circle,rgba(103,232,249,.13),transparent 65%);animation:drift1 10s ease-in-out infinite alternate}
 .orb-2{width:550px;height:550px;top:-150px;right:-160px;background:radial-gradient(circle,rgba(167,139,250,.11),transparent 65%);animation:drift2 12s ease-in-out infinite alternate}

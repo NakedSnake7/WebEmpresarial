@@ -104,7 +104,8 @@ document.addEventListener('DOMContentLoaded', function () {
     heroForm.addEventListener('submit', async function (e) {
       e.preventDefault();
       const btn = heroForm.querySelector('button');
-      const wa  = heroForm.querySelector('input[name="whatsapp"]').value.trim();
+	  const wa = heroForm.querySelector('input[name="whatsapp"]').value.trim();
+	  const nombre = heroForm.querySelector('input[name="nombre"]').value.trim();
       if (!wa) return;
  
       const originalText = btn.innerText;
@@ -115,8 +116,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const response = await fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ whatsapp: wa, source: 'webempresarial-hero-micro' })
-        });
+		  body: JSON.stringify({
+		    nombre,
+		    whatsapp: wa,
+		    source: 'webempresarial-hero-micro'
+		  })        });
         if (!response.ok) throw new Error('Error');
  
         btn.innerText = '✓ ¡Listo! Te contactamos pronto';
