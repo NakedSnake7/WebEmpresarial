@@ -20,7 +20,7 @@ public class StoreThemeResolver {
     	    "www.web-empresarial.com", "WebEmpresarial",
 
     	    "stride.web-empresarial.com", "stride",
-    	    "punchbarley.web-empresarial.com", "punchbarley",
+    	    "barleypunch.web-empresarial.com", "barleypunch",
 
     	    // =========================
     	    // LOCAL
@@ -28,7 +28,7 @@ public class StoreThemeResolver {
 
     	    "webempresarial.local", "WebEmpresarial",
     	    "stride.local", "stride",
-    	    "punchbarley.local", "punchbarley"
+    	    "barleypunch.local", "barleypunch"
     	);
 
     public String getTheme(HttpServletRequest request) {
@@ -51,7 +51,7 @@ public class StoreThemeResolver {
             host.equals("127.0.0.1")
         ) {
             return DEFAULT_THEME;
-             //  return "punchbarley";
+             //  return "barleypunch";
         }
 
         return DOMAIN_THEME.getOrDefault(

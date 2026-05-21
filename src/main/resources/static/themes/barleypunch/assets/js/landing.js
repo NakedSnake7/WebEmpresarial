@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	function subscribeNewsletter() {
 	  const input = document.querySelector('.newsletter-input');
 	  if (input.value && input.value.includes('@')) {
-	    showToast(`¡Bienvenido al Club <span>Punch Barley</span>! 🍻`, 3500);
+	    showToast(`¡Bienvenido al Club <span>Barley Punch</span>! 🍻`, 3500);
 	    input.value = '';
 	  } else {
 	    input.style.borderColor = '#8b2e0f';

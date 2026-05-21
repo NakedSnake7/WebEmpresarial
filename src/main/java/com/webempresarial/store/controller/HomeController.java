@@ -85,9 +85,9 @@ public class HomeController {
                 break;
 
             // =========================
-            // PUNCHBARLEY
+            // BARLEYPUNCH
             // =========================
-            case "punchbarley":
+            case "barleypunch":
 
                 model.addAttribute("showCart", true);
                 model.addAttribute("showCheckout", true);
@@ -155,7 +155,7 @@ public class HomeController {
 private String getStoreTitle(String theme) {
     return switch (theme) {
         case "stride" -> "Stride | Tienda online";
-        case "punchbarley" -> "Punch Barley | Tienda online";
+        case "barleypunch" -> "Barley Punch | Tienda online";
         default -> "Tienda online";
     };
 }
@@ -163,7 +163,7 @@ private String getStoreTitle(String theme) {
 private String getStoreDescription(String theme) {
     return switch (theme) {
         case "stride" -> "Compra productos de Stride en nuestra tienda online.";
-        case "punchbarley" -> "Compra productos de Punch Barley en nuestra tienda online.";
+        case "barleypunch" -> "Compra productos de Barley Punch en nuestra tienda online.";
         default -> "Compra productos en nuestra tienda online.";
     };
 }
