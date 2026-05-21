@@ -90,13 +90,20 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function showToast(msg, duration = 3000) {
-	  const toast = document.getElementById('toast');
+	  const toast = document.getElementById('cartToast');
 	  const msgEl = document.getElementById('toastMsg');
+
 	  if (!toast || !msgEl) return;
+
 	  msgEl.innerHTML = msg;
+
 	  toast.classList.add('show');
+
 	  clearTimeout(toast._timer);
-	  toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+
+	  toast._timer = setTimeout(() => {
+	    toast.classList.remove('show');
+	  }, duration);
 	}
 
 	function subscribeNewsletter() {

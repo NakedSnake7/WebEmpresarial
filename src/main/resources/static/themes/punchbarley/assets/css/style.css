@@ -1412,26 +1412,48 @@
   }
 
   /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 6rem;
-    right: 2rem;
-    background: var(--dark);
-    border: 1px solid var(--gold);
-    padding: 0.8rem 1.2rem;
-    font-family: 'Oswald', sans-serif;
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    color: var(--cream);
-    z-index: 600;
-    transform: translateX(120%);
-    transition: transform 0.4s ease;
-    max-width: 280px;
-    line-height: 1.4;
-  }
-  .toast.show { transform: translateX(0); }
-  .toast span { color: var(--gold); }
+.cart-toast {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  background: var(--dark);
+  border: 1px solid var(--gold);
+  padding: 0.8rem 1.2rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--cream);
+  z-index: 600;
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.3s ease;
+  max-width: 280px;
+  line-height: 1.4;
+}
 
+.cart-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.cart-toast span {
+  color: var(--gold);
+}
+
+@media (max-width: 767px) {
+  .cart-toast {
+    right: 1rem;
+    left: 1rem;
+    bottom: 5.5rem;
+    font-size: 0.75rem;
+    transform: translateY(120%);
+  }
+
+  .cart-toast.show {
+    transform: translateY(0);
+  }
+}
   .beer-price-block {
     display: flex;
     flex-direction: column;

@@ -53,20 +53,16 @@
     <a href="#proceso">Proceso</a>
     <a href="#packs">Packs</a>
 
-    <a href="#cervezas" class="drawer-cta">
-      Ordenar ahora →
+    <a th:href="@{/login}" class="drawer-auth-link">
+      Iniciar sesión
     </a>
-
-    <button type="button"
+    
+        <button type="button"
             class="drawer-auth-btn"
             data-bs-toggle="modal"
             data-bs-target="#registroModal">
       Crear cuenta
     </button>
-
-    <a th:href="@{/login}" class="drawer-auth-link">
-      Iniciar sesión
-    </a>
 
     <button type="button"
             class="drawer-cart-btn"
