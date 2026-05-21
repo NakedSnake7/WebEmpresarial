@@ -1,60 +1,68 @@
-// Core
-import './core/particles.js';
-import { initApp } from "./core/app.js";
-import MobileMenu from "./components/mobileMenu.js";
-
 // Auth
-import Register from './auth/register.js';
-
-//UserMenu
-import UserMenu from './menu/UserMenu.js';
+import Register from "./auth/register.js";
 
 // Cart
-import './cart/cartStore.js';
-import { configurarCarrito } from './components/cart.js';
-
-// UI
-import './ui/footer-year.js';
-import './ui/modal.js';
-import './ui/maya-loader.js';
-import './ui/sombras.js';
-
-// Features
-import { configurarBotonWhatsApp } from './whatsapp.js';
+import "./cart/cartStore.js";
+import { configurarCarrito } from "./cart/carrito.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM listo");
 
-    initApp();
+  console.log("DOM listo");
 
-    configurarCarrito();
-	
-	Register();
-	
-	UserMenu();
+  configurarCarrito();
 
-    configurarBotonWhatsApp();
+  Register();
 
-    esperarNavbar();
+  configurarMobileMenu();
+
 });
 
+function configurarMobileMenu() {
 
-function esperarNavbar() {
+  const hamburger = document.getElementById("hamburger");
+  const navDrawer = document.getElementById("navDrawer");
 
-    const interval = setInterval(() => {
+  const drawerCartBtn =
+    document.getElementById("drawer-cart-btn");
 
-        const navbar = document.querySelector("#navbar");
+  const cartBtn =
+    document.getElementById("cart-btn");
 
-        if (navbar) {
+  if (!hamburger || !navDrawer) return;
 
-           
+  function closeMenu() {
 
-            clearInterval(interval);
+    hamburger.classList.remove("open");
 
-            MobileMenu();
+    navDrawer.classList.remove("open");
 
-        }
+    document.body.classList.remove("menu-open");
 
-    }, 100);
+  }
+
+  hamburger.addEventListener("click", () => {
+
+    hamburger.classList.toggle("open");
+
+    navDrawer.classList.toggle("open");
+
+    document.body.classList.toggle("menu-open");
+
+  });
+
+  navDrawer.querySelectorAll("a, button")
+    .forEach(item => {
+
+      item.addEventListener("click", closeMenu);
+
+    });
+
+  drawerCartBtn?.addEventListener("click", () => {
+
+    closeMenu();
+
+    cartBtn?.click();
+
+  });
 
 }

@@ -1,73 +1,129 @@
-<!-- ===== CART FRAGMENT ===== -->
 <div th:fragment="cart">
 
-    <aside id="cartDropdown"
-           class="cart-dropdown">
+  <!-- FLOATING CART -->
+  <button class="cart-float"
+          id="cart-float-btn"
+          aria-label="Abrir carrito">
 
-        <!-- HEADER -->
-        <div class="cart-header">
-            <h4>Carrito</h4>
+    🛒
+
+    <div class="cart-counter" id="cartCounter">
+      0
+    </div>
+
+  </button>
+
+  <!-- OVERLAY -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <!-- DRAWER -->
+  <div class="cart-drawer" id="cartDropdown">
+
+    <!-- HEADER -->
+    <div class="cart-drawer-header">
+
+      <span class="cart-drawer-title">
+        Tu Carrito
+      </span>
+
+      <button class="cart-drawer-close"
+              id="cartClose"
+              aria-label="Cerrar carrito">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <!-- ENVIO -->
+    <div class="cart-envio-container"
+         id="envioGratisContainer">
+
+      <div class="cart-envio-msg"
+           id="envioGratisMensaje">
+
+        Agrega más para envío gratis
+
+      </div>
+
+      <div class="cart-envio-track">
+        <div class="cart-envio-fill"
+             id="envioGratisBarra">
         </div>
+      </div>
 
+    </div>
 
-        <!-- PRODUCTOS -->
-        <ul id="cartItems"
-            class="cart-items">
-        </ul>
+    <!-- ITEMS -->
+    <ul class="cart-items-list" id="cartItems">
 
+      <div class="cart-empty-msg"
+           id="cartEmpty">
 
-        <!-- RESUMEN -->
-        <div id="cartResumenDesglose"
-             class="cart-summary">
-        </div>
+        <span class="empty-icon">🍺</span>
+        <span>Tu carrito está vacío</span>
 
+      </div>
 
-        <!-- ENVÍO GRATIS -->
-        <div id="envioGratisContainer"
-             class="shipping-container">
+    </ul>
 
-            <div id="envioGratisMensaje"
-                 class="shipping-message">
-            </div>
+    <!-- CUPON -->
+    <div class="cart-coupon-area">
 
-            <div class="shipping-progress">
+      <div class="cart-coupon-row">
 
-                <div id="envioGratisBarra"
-                     class="shipping-progress-bar"
-                     role="progressbar"
-                     style="width:0%">
-                </div>
+        <input type="text"
+               class="cart-coupon-input"
+               id="couponInput"
+               placeholder="Código de cupón">
 
-            </div>
-        </div>
+        <button class="cart-coupon-btn"
+                id="applyCouponBtn">
 
+          Aplicar
 
-        <!-- CUPÓN -->
-        <div class="coupon-container">
-
-            <input id="couponInput"
-                   type="text"
-                   placeholder="Código de cupón">
-
-            <button id="applyCouponBtn"
-                    type="button">
-                Aplicar
-            </button>
-
-        </div>
-
-        <small id="couponError"
-               class="coupon-error">
-        </small>
-
-
-        <!-- ACTION -->
-        <button id="checkoutButton"
-                type="button"
-                class="checkout-btn">
-            Ir al pago
         </button>
 
-    </aside>
+      </div>
+
+      <div class="cart-coupon-error"
+           id="couponError">
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="cart-footer"
+         id="cartFooter"
+         style="display:none;">
+
+      <div id="cartResumenDesglose"></div>
+
+      <div class="cart-resumen-line total">
+
+        <span>Total</span>
+
+        <strong id="cartTotal">
+          $0.00
+        </strong>
+
+      </div>
+
+      <button class="cart-checkout-btn"
+              id="checkoutButton">
+
+        Ir a pagar →
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="toastMsg"></span>
+  </div>
 
 </div>

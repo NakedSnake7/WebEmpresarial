@@ -1,24 +1,78 @@
 <header th:fragment="navbar" id="header">
 
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">PUNCH BARLEY</a>
-  <ul class="nav-links">
-    <li><a href="#cervezas">Cervezas</a></li>
-    <li><a href="#nosotros">Nosotros</a></li>
-    <li><a href="#proceso">Proceso</a></li>
-    <li><a href="#packs">Packs</a></li>
-  </ul>
-  <a href="#cervezas" class="nav-cta">Ordenar ahora</a>
-</nav>
-<!-- CART FLOAT -->
-<div class="cart-float" onclick="toggleCart()">
-  🛒
-  <div class="cart-count" id="cartCount">0</div>
-</div>
- 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span id="toastMsg">Cerveza agregada al carrito</span>
-</div>
+  <nav>
+    <a th:href="@{/}" class="nav-logo">
+      PUNCH BARLEY
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#cervezas">Cervezas</a></li>
+      <li><a href="#nosotros">Nosotros</a></li>
+      <li><a href="#proceso">Proceso</a></li>
+      <li><a href="#packs">Packs</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="#cervezas" class="nav-cta">
+        Ordenar ahora
+      </a>
+
+      <button type="button"
+              class="nav-auth-btn"
+              data-bs-toggle="modal"
+              data-bs-target="#registroModal">
+        Crear cuenta
+      </button>
+
+      <a th:href="@{/login}" class="nav-auth-link">
+        Iniciar sesión
+      </a>
+
+      <button type="button"
+              class="nav-cart-btn"
+              id="cart-btn"
+              aria-label="Abrir carrito">
+        🛒
+        <span id="cartCounter">0</span>
+      </button>
+    </div>
+
+    <button type="button"
+            class="nav-hamburger"
+            id="hamburger"
+            aria-label="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <div class="nav-drawer" id="navDrawer">
+    <a href="#cervezas">Cervezas</a>
+    <a href="#nosotros">Nosotros</a>
+    <a href="#proceso">Proceso</a>
+    <a href="#packs">Packs</a>
+
+    <a href="#cervezas" class="drawer-cta">
+      Ordenar ahora →
+    </a>
+
+    <button type="button"
+            class="drawer-auth-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#registroModal">
+      Crear cuenta
+    </button>
+
+    <a th:href="@{/login}" class="drawer-auth-link">
+      Iniciar sesión
+    </a>
+
+    <button type="button"
+            class="drawer-cart-btn"
+            id="drawer-cart-btn">
+      Ver carrito 🛒
+    </button>
+  </div>
+
 </header>

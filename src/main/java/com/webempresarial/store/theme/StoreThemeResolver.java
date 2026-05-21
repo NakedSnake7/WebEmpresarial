@@ -50,7 +50,8 @@ public class StoreThemeResolver {
             host.equals("localhost") ||
             host.equals("127.0.0.1")
         ) {
-            return DEFAULT_THEME;
+          //  return DEFAULT_THEME;
+               return "punchbarley";
         }
 
         return DOMAIN_THEME.getOrDefault(
