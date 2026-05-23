@@ -1,6 +1,6 @@
 package com.webempresarial.store.model;
 
-import jakarta.persistence.CascadeType;     
+import jakarta.persistence.CascadeType;      
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;   
 import jakarta.persistence.Index;
@@ -31,6 +31,8 @@ import java.util.List;
 @Table(
 	    name = "orders",
 	    indexes = {
+	        @Index(name = "idx_orders_store", columnList = "store_id"),
+	        @Index(name = "idx_orders_store_date", columnList = "store_id, order_date"),
 	        @Index(name = "idx_orders_email", columnList = "customer_email"),
 	        @Index(name = "idx_orders_guest_token", columnList = "guest_token"),
 	        @Index(name = "idx_orders_email_status", columnList = "customer_email, order_status"),
@@ -38,13 +40,20 @@ import java.util.List;
 	    }
 	)
 public class Order {
+	
+
+	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "store_id", nullable = false)
+	private Store store;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "user_id", nullable = true)
-    private User user;
+    private Cliente cliente;
 
     @NotBlank(message = "El nombre del cliente es obligatorio")
     private String customerName;
@@ -169,8 +178,8 @@ private LocalDateTime paidAt;
     public Order() {}
 
     // Constructor sin 'phone'
-    public Order(User user, Double total, String address, String customerName, String customerEmail) {
-        this.user = user;
+    public Order(Cliente cliente, Double total, String address, String customerName, String customerEmail) {
+        this.cliente = cliente;
         this.total = total;
         this.address = address;
         this.customerName = customerName;
@@ -178,7 +187,7 @@ private LocalDateTime paidAt;
         this.orderDate = LocalDateTime.now();
         this.paymentStatus = PaymentStatus.PENDING;
         this.orderStatus = OrderStatus.CREATED;
-        this.isGuest = (user == null);
+        this.isGuest = (cliente == null);
     }
 
     // Métodos para manejar la relación bidireccional
@@ -225,7 +234,7 @@ private LocalDateTime paidAt;
 
     @Transient
     public boolean isOwnedByUser() {
-        return user != null;
+        return cliente != null;
     }
     
     @PrePersist
@@ -238,35 +247,38 @@ private LocalDateTime paidAt;
         }
 
         // 🔹 Generar token si es guest
-        if (this.guestToken == null && this.user == null) {
+        if (this.guestToken == null && this.cliente == null) {
             this.guestToken = java.util.UUID.randomUUID().toString().replace("-", "");
         }
 
         // 🔹 Validación
-        if (user == null && 
+        if (cliente == null && 
            (customerEmail == null || customerEmail.isBlank() ||
             customerName == null || customerName.isBlank())) {
 
             throw new IllegalStateException("Orden inválida: falta información del cliente");
         }
 
-        if (user != null && isGuest) {
+        if (cliente != null && isGuest) {
             throw new IllegalStateException("Inconsistencia: usuario asignado pero marcado como guest");
+        }
+        if (store == null) {
+            throw new IllegalStateException("Orden inválida: falta tienda");
         }
     }
     
-    public void claim(User user) {
+    public void claim(Cliente cliente) {
         if (this.claimed) {
             throw new IllegalStateException("La orden ya fue reclamada");
         }
         if (!this.isGuest) {
             throw new IllegalStateException("Solo órdenes guest pueden reclamarse");
         }
-        if (!belongsTo(user.getEmail())) {
+        if (!belongsTo(cliente.getEmail())) {
             throw new IllegalStateException("El email no coincide con la orden");
         }
 
-        setUser(user);
+        setUser(cliente);
         this.claimed = true;
     }
     
@@ -303,13 +315,13 @@ private LocalDateTime paidAt;
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+    public Cliente getUser() {
+        return cliente;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-        this.isGuest = (user == null);
+    public void setUser(Cliente cliente) {
+        this.cliente = cliente;
+        this.isGuest = (cliente == null);
     }
 
     public Double getTotal() {
@@ -357,7 +369,7 @@ private LocalDateTime paidAt;
     @Override
     public String toString() {
         return "Order{id=" + id +
-        		", user=" + (user != null ? user.getFullName() : customerName) +
+        		", user=" + (cliente != null ? cliente.getFullName() : customerName) +
                ", total=" + total +
                ", orderStatus=" + orderStatus +
                ", paymentStatus=" + paymentStatus +
@@ -590,6 +602,12 @@ public boolean isStockReduced() {
 public void setStockReduced(boolean stockReduced) {
     this.stockReduced = stockReduced;
 }
+public Store getStore() {
+    return store;
+}
 
+public void setStore(Store store) {
+    this.store = store;
+}
 
 }

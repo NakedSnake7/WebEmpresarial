@@ -30,64 +30,58 @@ public class StripeCheckoutService {
 
     public Session createSession(Order order) throws StripeException {
 
-        // 🔐 Monto seguro (sin errores de redondeo)
         long amountInCents = BigDecimal.valueOf(order.getTotal())
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(0, RoundingMode.HALF_UP)
                 .longValueExact();
 
+        String baseUrl = "https://" + order.getStore().getDominio();
+
         SessionCreateParams params =
-            SessionCreateParams.builder()
-                .setMode(SessionCreateParams.Mode.PAYMENT)
+                SessionCreateParams.builder()
+                        .setMode(SessionCreateParams.Mode.PAYMENT)
 
-                // ✅ URLs
-                .setSuccessUrl(
-                	    "https://weedtlanmx.com/gracias.html?session_id={CHECKOUT_SESSION_ID}&order_id=" + order.getId()
-                	)
-                	.setCancelUrl(
-                	    "https://weedtlanmx.com/checkout-cancel.html?order_id=" + order.getId()
-                	)
-
-
-                // ✅ Email (safe)
-                .setCustomerEmail(
-                        order.getCustomerEmail() != null
-                                ? order.getCustomerEmail()
-                                : null
-                )
-
-                // 🔎 Metadata clave
-                .putMetadata("order_id", order.getId().toString())
-                .putMetadata("payment_method", "STRIPE")
-                .putMetadata("system", "WeedTlanMx")
-                .putMetadata("env", environment)
-
-                // 🧾 Referencia visible en Stripe
-                .setClientReferenceId("ORDER-" + order.getId())
-
-                // 🛒 Item
-                .addLineItem(
-                    SessionCreateParams.LineItem.builder()
-                        .setQuantity(1L)
-                        .setPriceData(
-                            SessionCreateParams.LineItem.PriceData.builder()
-                                .setCurrency("mxn")
-                                .setUnitAmount(amountInCents)
-                                .setProductData(
-                                    SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                        .setName("Orden #" + order.getId() + " – WeedTlanMx")
-                                        .build()
-                                )
-                                .build()
+                        .setSuccessUrl(
+                                baseUrl + "/gracias?session_id={CHECKOUT_SESSION_ID}&order_id=" + order.getId()
                         )
-                        .build()
+                        .setCancelUrl(
+                                baseUrl + "/checkout-cancel?order_id=" + order.getId()
+                        )
+
+                        .setCustomerEmail(order.getCustomerEmail())
+
+                        .putMetadata("order_id", order.getId().toString())
+                        .putMetadata("store_id", order.getStore().getId().toString())
+                        .putMetadata("payment_method", "STRIPE")
+                        .putMetadata("store", order.getStore().getNombre())
+                        .putMetadata("theme", order.getStore().getTheme())
+                        .putMetadata("env", environment)
+
+                        .setClientReferenceId("ORDER-" + order.getId())
+
+                        .addLineItem(
+                                SessionCreateParams.LineItem.builder()
+                                        .setQuantity(1L)
+                                        .setPriceData(
+                                                SessionCreateParams.LineItem.PriceData.builder()
+                                                        .setCurrency("mxn")
+                                                        .setUnitAmount(amountInCents)
+                                                        .setProductData(
+                                                                SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                        .setName("Orden #" + order.getId() + " – " + order.getStore().getNombre())
+                                                                        .build()
+                                                        )
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .build();
+
+        RequestOptions options = RequestOptions.builder()
+                .setIdempotencyKey(
+                        "store_" + order.getStore().getId() + "_order_" + order.getId()
                 )
                 .build();
-
-        // 🔐 Idempotencia total
-        RequestOptions options = RequestOptions.builder()
-            .setIdempotencyKey("order_" + order.getId())
-            .build();
 
         return Session.create(params, options);
     }

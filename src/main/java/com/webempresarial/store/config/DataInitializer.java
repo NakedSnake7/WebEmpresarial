@@ -1,41 +1,57 @@
 package com.webempresarial.store.config;
 
+import com.webempresarial.store.model.AdminRole;
+import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.repository.AdminUserRepository;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.webempresarial.store.model.AuthUser;
-import com.webempresarial.store.repository.AuthUserRepository;
-
 @Configuration
 public class DataInitializer {
 
     @Bean
-    CommandLineRunner initAdmin(AuthUserRepository authUserRepository,
-                                PasswordEncoder passwordEncoder) {
+    CommandLineRunner initAdmin(
+            AdminUserRepository adminUserRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+
         return args -> {
 
             String adminEmail = "admin@admin.com";
 
-            boolean exists = authUserRepository.existsByEmail(adminEmail);
+            boolean exists =
+                    adminUserRepository.existsByEmail(adminEmail);
 
             if (!exists) {
-                AuthUser admin = new AuthUser();
+
+                AdminUser admin = new AdminUser();
+
+                admin.setFullName("WebEmpresarial");
+
                 admin.setEmail(adminEmail);
 
-                // 🔐 IMPORTANTE: encriptar contraseña
-                admin.setPassword(passwordEncoder.encode("Admin123*"));
+                admin.setPassword(
+                        passwordEncoder.encode("Admin123*")
+                );
 
-                admin.setRole(AuthUser.Role.ADMIN);
+                admin.setRole(AdminRole.SUPER_ADMIN);
+
                 admin.setEnabled(true);
-                admin.setProfileCompleted(true);
 
-                authUserRepository.save(admin);
+                adminUserRepository.save(admin);
 
-                System.out.println("🔥 ADMIN creado: " + adminEmail);
+                System.out.println(
+                        "🔥 SUPER ADMIN creado: " + adminEmail
+                );
+
             } else {
-                System.out.println("✅ ADMIN ya existe");
+
+                System.out.println(
+                        "✅ SUPER ADMIN ya existe"
+                );
             }
         };
     }

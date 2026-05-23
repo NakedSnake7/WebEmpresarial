@@ -1,15 +1,6 @@
 package com.webempresarial.store.model;
 
-import jakarta.persistence.Column; 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "auth_users")
@@ -22,85 +13,78 @@ public class AuthUser {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = true) // null para guest antes de reclamar
+    @Column(nullable = true)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;
+    private Role role = Role.CLIENTE;
 
     private boolean enabled = true;
 
-    //  saber si completó perfil
     @Column(name = "profile_completed", nullable = false)
     private boolean profileCompleted = false;
 
-    //  RELACIÓN OPCIONAL
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = true)
-    private User user;
+    @JoinColumn(name = "cliente_id", nullable = true)
+    private Cliente cliente;
 
     public enum Role {
-        ADMIN,
-        USER
+        CLIENTE
     }
 
-
-
-
-    // getters / setters
-    
-    public void setUser(User user) {
-        this.user = user;
+    public Cliente getCliente() {
+        return cliente;
     }
 
-    public User getUser() {
-        return user;
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
-    
+
     public Long getId() {
-		return id;
-	}
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
+    public Role getRole() {
+        return role;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setRole(Role role) {
+        this.role = role;
+    }
+    
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-	public Role getRole() {
-		return role;
-	}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    public boolean isProfileCompleted() {
+        return profileCompleted;
+    }
 
-	public void setRole(Role role) {
-		this.role = role;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-	public boolean isProfileCompleted() {
-	    return profileCompleted;
-	}
-
-	public void setProfileCompleted(boolean profileCompleted) {
-	    this.profileCompleted = profileCompleted;
-	}
+    public void setProfileCompleted(boolean profileCompleted) {
+        this.profileCompleted = profileCompleted;
+    }
 }

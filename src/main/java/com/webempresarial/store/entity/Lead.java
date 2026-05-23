@@ -3,6 +3,7 @@ package com.webempresarial.store.entity;
 import java.time.LocalDateTime;
 
 import com.webempresarial.store.model.LeadStatus;
+import com.webempresarial.store.model.Store;
 
 import jakarta.persistence.*;
 
@@ -13,6 +14,17 @@ public class Lead {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // =========================
+    // STORE
+    // =========================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
+
+    // =========================
+    // DATOS LEAD
+    // =========================
 
     @Column(nullable = false, length = 120)
     private String nombre;
@@ -40,7 +52,7 @@ public class Lead {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private LeadStatus status = LeadStatus.NEW;
@@ -50,10 +62,20 @@ public class Lead {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ========= GETTERS & SETTERS =========
+    // =========================
+    // GETTERS & SETTERS
+    // =========================
 
     public Long getId() {
         return id;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
     }
 
     public String getNombre() {
@@ -123,6 +145,7 @@ public class Lead {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
     public LeadStatus getStatus() {
         return status;
     }

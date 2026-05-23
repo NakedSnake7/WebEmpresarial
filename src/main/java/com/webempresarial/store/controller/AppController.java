@@ -1,78 +1,97 @@
 package com.webempresarial.store.controller;
 
-import jakarta.validation.Valid;    
-
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.Cliente;
+import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.theme.StoreResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.stereotype.Controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.webempresarial.store.model.User;
-import com.webempresarial.store.service.OrderService;
-import com.webempresarial.store.service.UserService;
-@Controller 
+@RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class AppController {
 
     private final UserService userService;
+    private final StoreResolver storeResolver;
 
-    public AppController(UserService userService, OrderService orderService) {
+    public AppController(
+            UserService userService,
+            StoreResolver storeResolver
+    ) {
         this.userService = userService;
-      
+        this.storeResolver = storeResolver;
     }
 
-    // Endpoint para suscribir usuarios
     @PostMapping("/subscribe")
-    public ResponseEntity<?> subscribe(@Valid @RequestBody SubscriptionRequest request, BindingResult result) {
-    
-    	// Validar errores en la solicitud
+    public ResponseEntity<?> subscribe(
+            @Valid @RequestBody SubscriptionRequest request,
+            BindingResult result,
+            HttpServletRequest httpRequest
+    ) {
+        Store store = storeResolver.getCurrentStore(httpRequest);
+
         if (result.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(buildValidationErrorResponse(result));
         }
-        
-        
 
-        // Verificar si el correo ya está registrado
-        if (userService.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT) // Cambiado a 409 CONFLICT
-                    .body(new ResponseMessage("El correo electrónico ya está registrado.", null));
+        if (userService.existsByEmail(request.getEmail(), store)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ResponseMessage(
+                            "El correo electrónico ya está registrado.",
+                            null
+                    ));
         }
 
         try {
-            // Crear y guardar el usuario
-        	User newUser = new User(request.getFullName(), request.getEmail(), null);
-        	
-            userService.saveUser(newUser);
+            Cliente newUser = new Cliente(
+                    request.getFullName(),
+                    request.getEmail(),
+                    null
+            );
+
+            userService.saveUser(newUser, store);
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ResponseMessage("Suscripción exitosa", newUser));
+                    .body(new ResponseMessage(
+                            "Suscripción exitosa",
+                            newUser
+                    ));
+
         } catch (Exception e) {
-            // Registrar la excepción para diagnóstico
-        	
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ResponseMessage("Ocurrió un error interno. Intente nuevamente más tarde.", null));
+                    .body(new ResponseMessage(
+                            "Ocurrió un error interno. Intente nuevamente más tarde.",
+                            null
+                    ));
         }
     }
- 
- 
 
-    // Método para construir mensajes de error de validación
     private ResponseMessage buildValidationErrorResponse(BindingResult result) {
         StringBuilder errorMessage = new StringBuilder();
-        result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append(". "));
-        return new ResponseMessage("Error en la validación", errorMessage.toString().trim());
+
+        result.getAllErrors().forEach(error ->
+                errorMessage
+                        .append(error.getDefaultMessage())
+                        .append(". ")
+        );
+
+        return new ResponseMessage(
+                "Error en la validación",
+                errorMessage.toString().trim()
+        );
     }
 
-    // Clase interna para manejar solicitudes de suscripción
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SubscriptionRequest {
         private String fullName;
         private String email;
-       
 
         public String getFullName() {
             return fullName;
@@ -89,10 +108,8 @@ public class AppController {
         public void setEmail(String email) {
             this.email = email;
         }
-     
     }
 
-    // Clase para las respuestas personalizadas
     public static class ResponseMessage {
         private String message;
         private Object data;
@@ -106,12 +123,12 @@ public class AppController {
             return message;
         }
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
         public Object getData() {
             return data;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
 
         public void setData(Object data) {

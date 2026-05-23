@@ -1,5 +1,8 @@
 package com.webempresarial.store.config;
 
+import com.webempresarial.store.service.AdminUserDetailsService;
+import com.webempresarial.store.service.AuthUserDetailsService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -9,15 +12,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.webempresarial.store.service.AuthUserDetailsService;
-
 @Configuration
 public class SecurityConfig {
 
     private final AuthUserDetailsService authUserDetailsService;
+    private final AdminUserDetailsService adminUserDetailsService;
 
-    public SecurityConfig(AuthUserDetailsService authUserDetailsService) {
+    public SecurityConfig(
+            AuthUserDetailsService authUserDetailsService,
+            AdminUserDetailsService adminUserDetailsService
+    ) {
         this.authUserDetailsService = authUserDetailsService;
+        this.adminUserDetailsService = adminUserDetailsService;
     }
 
     @Bean
@@ -32,18 +38,16 @@ public class SecurityConfig {
     // ====================================
     @Bean
     @Order(1)
-    public SecurityFilterChain adminSecurity(
-            HttpSecurity http
-    ) throws Exception {
+    public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
 
         http
             .securityMatcher("/admin/**")
-
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/login").permitAll()
-                .anyRequest().hasRole("ADMIN")
+                .requestMatchers("/admin/stores/**").hasRole("SUPER_ADMIN")
+                .anyRequest().hasAnyRole("SUPER_ADMIN", "STORE_ADMIN", "STORE_STAFF")
             )
 
             .formLogin(form -> form
@@ -56,11 +60,12 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/admin/login")
-            );
+            )
+
+            .userDetailsService(adminUserDetailsService);
 
         return http.build();
     }
-
 
     // ====================================
     // LOGIN CLIENTE
@@ -76,68 +81,42 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/", "/index", "/inicio", "/privacy",
+                    "/productos/**",
+                    "/products/**",
+                    "/producto-detalle/**",
+                    "/fragmento-menu",
+                    "/fragmento-resenas",
+                    "/login",
+                    "/api/checkout",
+                    "/api/stripe/**",
+                    "/api/user/me",
+                    "/api/leads",
+                    "/api/leads/**",
+                    "/themes/**",
+                    "/assets/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/webjars/**",
+                    "/favicon.ico"
+                ).permitAll()
 
-            	    .requestMatchers(
+                .requestMatchers(
+                    "/cuenta/**",
+                    "/pedidos/**"
+                ).hasRole("CLIENTE")
 
-            	        "/", "/index", "/inicio", "/privacy",
-
-            	        "/productos/**",
-            	        "/products/**",
-            	        "/producto-detalle/**",
-
-            	        "/fragmento-menu",
-            	        "/fragmento-resenas",
-
-            	        "/login",
-
-            	        // API checkout guest
-            	        "/api/checkout",
-            	        "/api/stripe/**",
-
-            	        // API frontend pública
-            	        "/api/user/me",
-            	        "/api/leads",
-            	        "/api/leads/**",
-
-            	        // static
-            	        "/themes/**",
-            	        "/assets/**",
-            	        "/css/**",
-            	        "/js/**",
-            	        "/images/**",
-            	        "/webjars/**",
-            	        "/favicon.ico"
-
-            	    ).permitAll()
-
-            	    .requestMatchers(
-            	        "/cuenta/**",
-            	        "/pedidos/**"
-            	    ).hasRole("USER")
-
-            	    .anyRequest().authenticated()
-            	)
+                .anyRequest().authenticated()
+            )
 
             .formLogin(form -> form
-            	    .loginPage("/login")
-            	    .loginProcessingUrl("/login")
-
-            	    .successHandler((request, response, authentication) -> {
-
-            	        if (authentication.getAuthorities().stream()
-            	                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-
-            	            response.sendRedirect("/admin");
-
-            	        } else {
-
-            	            response.sendRedirect("/inicio");
-
-            	        }
-            	    })
-
-            	    .permitAll()
-            	)
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/inicio", true)
+                .permitAll()
+            )
 
             .logout(logout -> logout
                 .logoutUrl("/logout")

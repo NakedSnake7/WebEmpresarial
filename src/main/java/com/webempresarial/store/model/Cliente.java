@@ -1,12 +1,18 @@
 package com.webempresarial.store.model;
 
-import jakarta.persistence.Column;   
-import jakarta.persistence.Entity;      
+import jakarta.persistence.Column;     
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -14,8 +20,20 @@ import jakarta.validation.constraints.Size;
 import java.util.Objects;
 
 @Entity
-@Table(name = "users") 
-public class User {
+@Table(
+	    name = "clientes",
+	    uniqueConstraints = {
+	        @UniqueConstraint(
+	            name = "uk_clientes_email_store",
+	            columnNames = {"email", "store_id"}
+	        )
+	    }
+	)
+public class Cliente {
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id", nullable = false)
+	private Store store;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +54,7 @@ public class User {
     private String defaultAddress;
 
     // RELACIÓN INVERSA
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "cliente")
     private AuthUser authUser;
     
     
@@ -49,16 +67,27 @@ public class User {
 	}
 
 	// Constructor vacío necesario para JPA
-    public User() {}
+    public Cliente() {}
 
     // Constructor con parámetros
-    public User(String fullName, String email, String phone) {
+    public Cliente(String fullName, String email, String phone) {
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
     }
     
- 
+    @PrePersist
+    @PreUpdate
+    public void normalize() {
+
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
+
+        if (store == null) {
+            throw new IllegalStateException("Usuario sin tienda");
+        }
+    }
 
 
     // Getters y setters
@@ -93,22 +122,44 @@ public class User {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+    
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
 
     @Override
     public String toString() {
-        return "User{id=" + id + ", name='" + fullName + "', email='" + email + "', phone='" + phone + "'}";
-    }
+    	return "Cliente{id=" + id + ", name='" + fullName + "', email='" + email + "', phone='" + phone + "'}";
+    	}
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return email.equals(user.email);
+        if (!(o instanceof Cliente cliente)) return false;
+
+        return Objects.equals(email, cliente.email)
+                && Objects.equals(
+                    store != null ? store.getId() : null,
+                    cliente.store != null ? cliente.store.getId() : null
+                );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email);
+        return Objects.hash(
+                email,
+                store != null ? store.getId() : null
+        );
+    }
+    public AuthUser getAuthUser() {
+        return authUser;
+    }
+
+    public void setAuthUser(AuthUser authUser) {
+        this.authUser = authUser;
     }
 }

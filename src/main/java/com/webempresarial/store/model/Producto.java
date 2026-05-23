@@ -21,6 +21,9 @@ import jakarta.persistence.Version;
 @Table(name = "productos")
 public class Producto {
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id", nullable = false)
+	private Store store;
 	
 	@Version
 	private Long version;
@@ -297,5 +300,12 @@ public class Producto {
 
 		public void setMarca(Marca marca) {
 			this.marca = marca;
+		}
+		public Store getStore() {
+		    return store;
+		}
+
+		public void setStore(Store store) {
+		    this.store = store;
 		}
 }

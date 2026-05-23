@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Nuevo admin de tienda | WebEmpresarial Admin',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <section class="container-fluid">
+
+        <div class="mb-4">
+            <span class="badge text-bg-dark mb-2">
+                Admin de tienda
+            </span>
+
+            <h1 class="fw-bold mb-1">
+                Nuevo admin para <span th:text="${store.nombre}"></span>
+            </h1>
+
+            <p class="text-muted mb-0">
+                Este usuario podrá acceder al panel administrativo de esta tienda.
+            </p>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+
+                <form th:action="@{/admin/stores/{storeId}/admins/guardar(storeId=${store.id})}"
+                      th:object="${adminUser}"
+                      method="post">
+
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Nombre completo
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   th:field="*{fullName}"
+                                   placeholder="Admin STRIDE"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Email
+                            </label>
+
+                            <input type="email"
+                                   class="form-control"
+                                   th:field="*{email}"
+                                   placeholder="admin@tienda.com"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Contraseña temporal
+                            </label>
+
+                            <input type="password"
+                                   class="form-control"
+                                   th:field="*{password}"
+                                   placeholder="Admin123*"
+                                   required>
+
+                            <div class="form-text">
+                                Después puedes permitir que el cliente cambie su contraseña.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Rol
+                            </label>
+
+                            <select class="form-select"
+                                    th:field="*{role}"
+                                    required>
+                                <option th:each="role : ${roles}"
+                                        th:value="${role}"
+                                        th:text="${role}">
+                                </option>
+                            </select>
+
+                            <div class="form-text">
+                                Para dueños usa STORE_ADMIN. Para empleados usa STORE_STAFF.
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       th:field="*{enabled}">
+
+                                <label class="form-check-label fw-semibold">
+                                    Usuario activo
+                                </label>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-success">
+                            Guardar admin
+                        </button>
+
+                        <a th:href="@{/admin/stores/{id}/admins(id=${store.id})}"
+                           class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </section>
+
+</th:block>
+
+</body>
+</html>

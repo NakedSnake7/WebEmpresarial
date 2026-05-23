@@ -1,14 +1,20 @@
 package com.webempresarial.store.repository;
 
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.webempresarial.store.model.User;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-	
-    Optional<User> findByEmail(String email);
+public interface UserRepository extends JpaRepository<Cliente, Long> {
 
-    boolean existsByEmail(String email);
+    Optional<Cliente> findByEmailAndStore(
+            String email,
+            Store store
+    );
+
+    boolean existsByEmailAndStore(
+            String email,
+            Store store
+    );
 }

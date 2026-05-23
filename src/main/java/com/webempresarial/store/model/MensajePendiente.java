@@ -1,43 +1,86 @@
 package com.webempresarial.store.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 @Entity
-@Table(name = "mensajes_pendientes")
+@Table(
+        name = "mensajes_pendientes",
+        indexes = {
+                @Index(
+                        name = "idx_mensaje_store_enviado",
+                        columnList = "store_id,enviado"
+                )
+        }
+)
 public class MensajePendiente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
+
+    @Column(nullable = false)
     private String telefono;
 
-    @Column(length = 1000)
+    @Column(length = 1000, nullable = false)
     private String mensaje;
 
+    @Column(nullable = false)
     private boolean enviado = false;
 
+    @Column(nullable = false)
     private LocalDateTime creadoEn = LocalDateTime.now();
 
-    // Getters y setters
+    // =========================
+    // GETTERS & SETTERS
+    // =========================
 
-    public Long getId() { return id; }
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getMensaje() { return mensaje; }
-    public void setMensaje(String mensaje) { this.mensaje = mensaje; }
+    public Store getStore() {
+        return store;
+    }
 
-    public boolean isEnviado() { return enviado; }
-    public void setEnviado(boolean enviado) { this.enviado = enviado; }
+    public void setStore(Store store) {
+        this.store = store;
+    }
 
-    public LocalDateTime getCreadoEn() { return creadoEn; }
-    public void setCreadoEn(LocalDateTime creadoEn) { this.creadoEn = creadoEn; }
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public boolean isEnviado() {
+        return enviado;
+    }
+
+    public void setEnviado(boolean enviado) {
+        this.enviado = enviado;
+    }
+
+    public LocalDateTime getCreadoEn() {
+        return creadoEn;
+    }
+
+    public void setCreadoEn(LocalDateTime creadoEn) {
+        this.creadoEn = creadoEn;
+    }
 }

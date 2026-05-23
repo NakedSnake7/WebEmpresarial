@@ -29,7 +29,7 @@
  * 
  * @Scheduled(fixedDelay = 60000) public void reenviarMensajes() {
  * List<MensajePendiente> pendientes =
- * mensajePendienteRepository.findTop10ByEnviadoFalseOrderByCreadoEnAsc();
+ * mensajePendienteRepository.findTop10ByEnviadoFalseOrderByCreadoEnAsc(store);
  * 
  * for (MensajePendiente mensaje : pendientes) { try {
  * whatsappService.enviarMensajeWhatsapp(mensaje.getTelefono(),

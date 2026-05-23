@@ -1,94 +1,139 @@
 package com.webempresarial.store.service;
 
+import com.webempresarial.store.exceptions.UserNotFoundException;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.Cliente;
+import com.webempresarial.store.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.webempresarial.store.exceptions.UserNotFoundException;
-import com.webempresarial.store.model.User;
-import com.webempresarial.store.repository.UserRepository;
-
 import java.util.Optional;
-	
+
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final OrderService orderService;
 
-    public UserService(UserRepository userRepository, OrderService orderService) {
+    public UserService(
+            UserRepository userRepository,
+            OrderService orderService
+    ) {
         this.userRepository = userRepository;
         this.orderService = orderService;
     }
 
-    public User findOrCreateUserByEmail(String email, String name, String phone) {
-
+    public Cliente findOrCreateUserByEmail(
+            String email,
+            String name,
+            String phone,
+            Store store
+    ) {
         String normalizedEmail = email.trim().toLowerCase();
 
-        return userRepository.findByEmail(normalizedEmail)
+        return userRepository
+                .findByEmailAndStore(normalizedEmail, store)
                 .orElseGet(() -> {
-                    User user = new User();
-                    user.setEmail(normalizedEmail);
-                    user.setFullName(name);
-                    user.setPhone(phone != null ? phone : "No disponible");
-                    return userRepository.save(user);
+                    Cliente cliente = new Cliente();
+                    cliente.setStore(store);
+                    cliente.setEmail(normalizedEmail);
+                    cliente.setFullName(name);
+                    cliente.setPhone(phone != null ? phone : "No disponible");
+
+                    return userRepository.save(cliente);
                 });
     }
 
     @Transactional
-    public User registerUser(String email, String name, String phone) {
-
+    public Cliente registerUser(
+            String email,
+            String name,
+            String phone,
+            Store store
+    ) {
         String normalizedEmail = email.trim().toLowerCase();
 
-        Optional<User> existingUser = userRepository.findByEmail(normalizedEmail);
+        Optional<Cliente> existingUser =
+                userRepository.findByEmailAndStore(
+                        normalizedEmail,
+                        store
+                );
+
+        Cliente cliente = existingUser.orElseGet(() -> {
+            Cliente nuevo = new Cliente();
+            nuevo.setStore(store);
+            nuevo.setEmail(normalizedEmail);
+            nuevo.setFullName(name);
+            nuevo.setPhone(phone != null ? phone : "No disponible");
+            return userRepository.save(nuevo);
+        });
+
+        orderService.claimGuestOrders(cliente, store);
+
+        return cliente;
+    }
+
+    public boolean existsByEmail(
+            String email,
+            Store store
+    ) {
+        return userRepository.existsByEmailAndStore(
+                email.trim().toLowerCase(),
+                store
+        );
+    }
+
+    @Transactional
+    public Cliente saveUser(
+            Cliente cliente,
+            Store store
+    ) {
+        String normalizedEmail =
+                cliente.getEmail().trim().toLowerCase();
+
+        Optional<Cliente> existingUser =
+                userRepository.findByEmailAndStore(
+                        normalizedEmail,
+                        store
+                );
 
         if (existingUser.isPresent()) {
             return existingUser.get();
         }
 
-        User user = new User();
-        user.setEmail(normalizedEmail);
-        user.setFullName(name);
-        user.setPhone(phone != null ? phone : "No disponible");
+        cliente.setEmail(normalizedEmail);
+        cliente.setStore(store);
 
-        User savedUser = userRepository.save(user);
-
-        // 🔥 clave del negocio
-        orderService.claimGuestOrders(savedUser);
-
-        return savedUser;
+        return userRepository.save(cliente);
     }
 
-
-    // Verifica si el email ya existe en la base de datos
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public Optional<Cliente> findByEmail(
+            String email,
+            Store store
+    ) {
+        return userRepository.findByEmailAndStore(
+                email.trim().toLowerCase(),
+                store
+        );
     }
 
-    // Guardar un usuario (solo nombre y correo)
-    @Transactional  
-    public User saveUser(User user) {
-        // Verificar si el email ya está registrado
-    	 Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
-         if (existingUser.isPresent()) {
-             return existingUser.get(); // Devuelve el usuario existente
-         }
-         // Guardar un nuevo usuario si no existe
-         return userRepository.save(user);
+    public Cliente findUserByEmail(
+            String email,
+            Store store
+    ) {
+        return findByEmail(email, store)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "Usuario no encontrado con el email: " + email
+                        )
+                );
     }
 
-    // Buscar un usuario por su correo electrónico
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public void save(
+            Cliente cliente,
+            Store store
+    ) {
+        cliente.setStore(store);
+        userRepository.save(cliente);
     }
-    
-
-    // Buscar un usuario por correo o lanzar una excepción si no existe
-    public User findUserByEmail(String email) {
-        return findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con el email: " + email));
-    }
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
 }

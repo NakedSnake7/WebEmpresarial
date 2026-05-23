@@ -1,6 +1,8 @@
 package com.webempresarial.store.entity;
 
-import org.hibernate.annotations.DynamicUpdate;   
+import org.hibernate.annotations.DynamicUpdate; 
+
+import com.webempresarial.store.model.Store;
 
 import jakarta.persistence.*;
 
@@ -8,8 +10,13 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "resenas")
 public class ResenaEntity {
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id", nullable = false)
+	private Store store;
 
-    @Id
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -49,4 +56,15 @@ public class ResenaEntity {
 
     public String getPublicId() { return publicId; }
     public void setPublicId(String publicId) { this.publicId = publicId; }
+    public Store getStore() {
+		return store;
+	}
+
+	public void setStore(Store store) {
+		this.store = store;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 }

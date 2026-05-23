@@ -3,11 +3,15 @@ package com.webempresarial.store.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;  
-
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "variante_atributos")
+@Table(
+    name = "variante_atributos",
+    indexes = {
+        @Index(name = "idx_atributo_variante", columnList = "variante_id")
+    }
+)
 public class VarianteAtributo {
 
     @Id
@@ -15,14 +19,16 @@ public class VarianteAtributo {
     private Long id;
 
     // Ej: "talla", "color", "ram", "almacenamiento"
+    @Column(nullable = false, length = 80)
     private String nombre;
 
     // Ej: "42", "rojo", "16GB", "512GB"
+    @Column(nullable = false, length = 120)
     private String valor;
 
-    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variante_id")
+    @JoinColumn(name = "variante_id", nullable = false)
+    @JsonBackReference
     private ProductoVariante variante;
     
     

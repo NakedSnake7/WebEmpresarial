@@ -1,11 +1,11 @@
 package com.webempresarial.store.scheduler;
 
-import org.springframework.scheduling.annotation.Scheduled; 
-import org.springframework.stereotype.Component;
-
 import com.webempresarial.store.model.Order;
-import com.webempresarial.store.repository.OrderRepository;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.service.OrderService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -13,29 +13,56 @@ import java.util.List;
 public class OrderExpirationScheduler {
 
     private final OrderService orderService;
-    private final OrderRepository orderRepository;
+    private final StoreRepository storeRepository;
 
     public OrderExpirationScheduler(
             OrderService orderService,
-            OrderRepository orderRepository
+            StoreRepository storeRepository
     ) {
         this.orderService = orderService;
-        this.orderRepository = orderRepository;
+        this.storeRepository = storeRepository;
     }
 
-    // ⏰ Cada 30 minutos exactos
+    // ⏰ Cada 30 minutos
     @Scheduled(cron = "0 */30 * * * *")
     public void verificarOrdenesPendientes() {
 
-        System.out.println("🔎 OrderExpirationScheduler: buscando órdenes pendientes...");
+        System.out.println(
+                "🔎 OrderExpirationScheduler: buscando órdenes pendientes..."
+        );
 
-        List<Order> ordenes = orderRepository.findPendingOrdersWithItems();
+        List<Store> stores = storeRepository.findAll();
 
-        for (Order order : ordenes) {
-            // 🔥 TODA la lógica (BD + correo) vive en el service
-            orderService.expirarOrdenTransferencia(order);
+        for (Store store : stores) {
+
+            List<Order> ordenes =
+                    orderService.findPendingOrders(store);
+
+            for (Order order : ordenes) {
+
+                try {
+
+                    orderService.expirarOrdenTransferencia(
+                            order,
+                            store
+                    );
+
+                } catch (Exception e) {
+
+                    System.err.println(
+                            "❌ Error expirando orden "
+                                    + order.getId()
+                                    + " store="
+                                    + store.getNombre()
+                    );
+
+                    e.printStackTrace();
+                }
+            }
         }
 
-        System.out.println("✔️ OrderExpirationScheduler finalizado.");
+        System.out.println(
+                "✔️ OrderExpirationScheduler finalizado."
+        );
     }
 }

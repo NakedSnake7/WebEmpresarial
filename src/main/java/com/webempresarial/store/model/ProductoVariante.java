@@ -1,7 +1,7 @@
 
 package com.webempresarial.store.model;
 
-import java.math.BigDecimal;  
+import java.math.BigDecimal;   
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Map;

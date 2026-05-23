@@ -19,10 +19,12 @@ import com.webempresarial.store.mapper.ProductoMapper;
 import com.webempresarial.store.model.ImagenProducto;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.ProductoVariante;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.VarianteAtributo;
 import com.webempresarial.store.repository.ImagenProductoRepository;
 import com.webempresarial.store.repository.ProductoRepository;
 import com.webempresarial.store.repository.ProductoVarianteRepository;
+import com.webempresarial.store.theme.StoreResolver;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -58,7 +60,8 @@ public class ProductoService {
             CloudinaryService cloudinaryService,
             CategoriaService categoriaService,
             MarcaService marcaService,
-            ProductoVarianteRepository productoVarianteRepository
+            ProductoVarianteRepository productoVarianteRepository,
+            StoreResolver storeResolver
     ) {
         this.productoRepository = productoRepository;
         this.imagenProductoRepository = imagenProductoRepository;
@@ -71,30 +74,50 @@ public class ProductoService {
     
     
     
-    public List<Producto> obtenerProductosVisiblesConTodo() {
-        return productoRepository.findProductosVisiblesConTodo();
+    public List<Producto> obtenerProductosVisiblesConTodo(
+            Store store
+    ) {
+
+        return productoRepository
+                .findProductosVisiblesConTodo(store);
     }
 
-    public List<String> obtenerCategorias() {
-        return productoRepository.obtenerNombresCategoriasVisibles();
+    public List<String> obtenerCategorias(Store store) {
+
+        return productoRepository
+                .obtenerNombresCategoriasVisibles(store);
     }
 
     @Transactional
-    public Producto obtenerProducto(Long id) {
-        return productoRepository.findByIdConTodo(id)
-                .orElseThrow(() -> new ProductoNotFoundException(id));
+    public Producto obtenerProducto(
+            Long id,
+            Store store
+    ) {
+
+        return productoRepository
+                .findByIdConTodo(id, store)
+                .orElseThrow(() ->
+                        new ProductoNotFoundException(id)
+                );
     }
 
-    public Optional<Producto> buscarPorNombre(String nombre) {
-        return productoRepository.findByProductName(nombre);
+    public Optional<Producto> buscarPorNombre(
+            String nombre,
+            Store store
+    ) {
+
+        return productoRepository
+                .findByProductNameAndStore(nombre, store);
     }
 
     
     @Transactional(readOnly = true)
-    public List<ProductoCardDTO> obtenerProductosCompletos() {
+    public List<ProductoCardDTO> obtenerProductosCompletos(
+            Store store
+    ) {
 
         return productoRepository
-                .findProductosVisiblesConTodo()
+                .findProductosVisiblesConTodo(store)
                 .stream()
                 .map(ProductoMapper::toCard)
                 .toList();
@@ -108,39 +131,75 @@ public class ProductoService {
     }
 
     @Transactional
-    public void eliminarProducto(Long id) {
+    public void eliminarProducto(
+            Long id,
+            Store store
+    ) {
 
-        Producto producto = productoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("No existe"));
+        Producto producto = productoRepository
+                .findByIdConTodo(id, store)
+                .orElseThrow(() ->
+                        new RuntimeException("No existe")
+                );
 
         producto.getImagenes().forEach(img -> {
+
             try {
-                cloudinaryService.eliminarImagen(img.getPublicId());
+
+                cloudinaryService.eliminarImagen(
+                        img.getPublicId()
+                );
+
             } catch (Exception e) {
-                log.warn("Error eliminando imagen {}", img.getPublicId());
+
+                log.warn(
+                        "Error eliminando imagen {}",
+                        img.getPublicId()
+                );
             }
         });
 
-        productoRepository.deleteById(id);
-        productoRepository.flush();
+        productoRepository.delete(producto);
     }
     // ============================================================
     // TOGGLES
     // ============================================================
 
     @Transactional
-    public boolean toggleVisibility(Long id) {
-        Producto producto = obtenerProducto(id);
-        producto.setVisibleEnMenu(!producto.isVisibleEnMenu());
+    public boolean toggleVisibility(
+            Long id,
+            Store store
+    ) {
+
+        Producto producto =
+                obtenerProducto(id, store);
+
+        producto.setVisibleEnMenu(
+                !producto.isVisibleEnMenu()
+        );
+
         productoRepository.save(producto);
+
         return producto.isVisibleEnMenu();
     }
 
     @Transactional
-    public boolean togglePromocion(Long id) {
-        Producto producto = obtenerProducto(id);
-        producto.setTienePromocion(!Boolean.TRUE.equals(producto.getTienePromocion()));
+    public boolean togglePromocion(
+            Long id,
+            Store store
+    ) {
+
+        Producto producto =
+                obtenerProducto(id, store);
+
+        producto.setTienePromocion(
+                !Boolean.TRUE.equals(
+                        producto.getTienePromocion()
+                )
+        );
+
         productoRepository.save(producto);
+
         return producto.getTienePromocion();
     }
 
@@ -154,11 +213,11 @@ public class ProductoService {
          Producto datos,
          List<MultipartFile> nuevasImagenes,
          List<Long> eliminarImagenes,
-         List<ProductoVarianteDTO> variantesDTO
+         List<ProductoVarianteDTO> variantesDTO,
+         Store store
  ) {
 
-     Producto producto = obtenerProducto(productoId);
-
+	 Producto producto = obtenerProducto(productoId, store);
      // =====================================================
      // 1. DATOS BASE
      // =====================================================
@@ -457,14 +516,28 @@ public class ProductoService {
 	        producto.getVariantes().addAll(nuevasLista);
 	    }
 	}
-    @Transactional
-    public void actualizarStockVariante(Long varianteId, Integer stock) {
+ 
+ @Transactional
+ public void actualizarStockVariante(
+         Long varianteId,
+         Integer stock,
+         Store store
+ ) {
 
-        ProductoVariante variante = productoVarianteRepository.findById(varianteId)
-            .orElseThrow(() -> new RuntimeException("Variante no existe"));
+     ProductoVariante variante =
+             productoVarianteRepository
+                     .findByIdAndStore(
+                             varianteId,
+                             store
+                     )
+                     .orElseThrow(() ->
+                             new RuntimeException(
+                                     "Variante no existe"
+                             )
+                     );
 
-        variante.setStock(stock);
-    }
+     variante.setStock(stock);
+ }
     // ============================================================
     // MÉTODOS INTERNOS
     // ============================================================
@@ -529,11 +602,16 @@ public class ProductoService {
     }
     
     @Transactional(readOnly = true)
-    public ProductoDetailDTO obtenerDetalleProducto(Long id) {
+    public ProductoDetailDTO obtenerDetalleProducto(
+            Long id,
+            Store store
+    ) {
 
         Producto producto = productoRepository
-                .findByIdConTodo(id)
-                .orElseThrow(() -> new RuntimeException("No encontrado"));
+                .findByIdConTodo(id, store)
+                .orElseThrow(() ->
+                        new RuntimeException("Producto no encontrado")
+                );
 
         return ProductoMapper.toDetail(producto);
     }
@@ -541,12 +619,21 @@ public class ProductoService {
     @Transactional
     public void subirImagenesProducto(
             Long productoId,
-            List<MultipartFile> imagenes
+            List<MultipartFile> imagenes,
+            Store store
     ) {
-        Producto producto = obtenerProducto(productoId);
 
-        List<String> publicIds = new ArrayList<>();
-        subirImagenesInterno(producto, imagenes, publicIds);
+        Producto producto =
+                obtenerProducto(productoId, store);
+
+        List<String> publicIds =
+                new ArrayList<>();
+
+        subirImagenesInterno(
+                producto,
+                imagenes,
+                publicIds
+        );
     }
 
     // ============================================================
@@ -554,22 +641,28 @@ public class ProductoService {
     // ============================================================
 
     @Transactional
-    public void eliminarImagenInmediatoSeguro(Long productoId, Long idImagen) {
+    public void eliminarImagenInmediatoSeguro(
+            Long productoId,
+            Long idImagen,
+            Store store
+    ) {
 
-        ImagenProducto img = imagenProductoRepository.findById(idImagen)
+        Producto producto = productoRepository
+                .findByIdConTodo(productoId, store)
+                .orElseThrow(() -> new ProductoNotFoundException(productoId));
+
+        ImagenProducto img = imagenProductoRepository
+                .findById(idImagen)
                 .orElseThrow(() -> new ProductoNotFoundException(idImagen));
 
-        // 🔒 VALIDAR OWNERSHIP
-        if (!img.getProducto().getId().equals(productoId)) {
+        if (!img.getProducto().getId().equals(producto.getId())) {
             throw new IllegalArgumentException(
                     "La imagen no pertenece al producto indicado"
             );
         }
 
-        // Eliminar de Cloudinary
         cloudinaryService.eliminarImagen(img.getPublicId());
 
-        // Eliminar de BD
         imagenProductoRepository.delete(img);
     }
 
@@ -618,10 +711,14 @@ public class ProductoService {
     }
    
     @Transactional(readOnly = true)
-    public List<CategoriaGrupoCardDTO> obtenerProductosAgrupadosPorCategoria() {
+    public List<CategoriaGrupoCardDTO>
+    obtenerProductosAgrupadosPorCategoria(
+            Store store
+    ) {
 
         List<Producto> productos =
-                productoRepository.findProductosVisiblesConTodo();
+                productoRepository
+                        .findProductosVisiblesConTodo(store);
 
         return productos.stream()
                 .collect(Collectors.groupingBy(
@@ -646,37 +743,72 @@ public class ProductoService {
     }
 
     @Transactional
-    public void toggleVisibilidadPorCategoria(Long categoriaId, boolean visible) {
+    public void toggleVisibilidadPorCategoria(
+            Long categoriaId,
+            boolean visible,
+            Store store
+    ) {
 
-        productoRepository.updateVisibilidadPorCategoria(categoriaId, visible);
+        productoRepository
+                .updateVisibilidadPorCategoria(
+                        categoriaId,
+                        visible,
+                        store
+                );
     }
     
     @Transactional
-    public void actualizarPrecio(Long id, BigDecimal precio) {
+    public void actualizarPrecio(
+            Long id,
+            BigDecimal precio,
+            Store store
+    ) {
 
-        if (precio == null || precio.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Precio inválido");
+        if (precio == null ||
+                precio.compareTo(BigDecimal.ZERO) < 0) {
+
+            throw new IllegalArgumentException(
+                    "Precio inválido"
+            );
         }
 
-        Producto producto = productoRepository.findByIdConTodo(id) //  FIX
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        Producto producto =
+                productoRepository
+                        .findByIdConTodo(id, store)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Producto no encontrado"
+                                )
+                        );
 
-        if (producto.getVariantes() != null && !producto.getVariantes().isEmpty()) {
-            throw new IllegalStateException("Producto con variantes no usa precio base");
+        if (producto.getVariantes() != null &&
+                !producto.getVariantes().isEmpty()) {
+
+            throw new IllegalStateException(
+                    "Producto con variantes no usa precio base"
+            );
         }
 
-        producto.setPrice(precio.setScale(2, RoundingMode.HALF_UP));
+        producto.setPrice(
+                precio.setScale(
+                        2,
+                        RoundingMode.HALF_UP
+                )
+        );
     }
     @Transactional
     public void ajustarPrecioCategoria(
             Long categoriaId,
             BigDecimal valor,
-            String modo
+            String modo,
+            Store store
     ) {
 
         List<Producto> productos =
-                productoRepository.findByCategoriaId(categoriaId);
-
+        		productoRepository.findByCategoriaIdAndStore(
+        		        categoriaId,
+        		        store
+        		);
         if (productos.isEmpty()) {
             throw new RuntimeException("No hay productos en la categoría");
         }
@@ -714,11 +846,15 @@ public class ProductoService {
     
     @Transactional
     public Producto crearProducto(
-    		ProductoAdminDTO dto,
-            List<MultipartFile> imagenes) {
+            ProductoAdminDTO dto,
+            List<MultipartFile> imagenes,
+            Store store
+    )
+    {
 
-        Producto producto = new Producto();
+    	Producto producto = new Producto();
 
+    	producto.setStore(store);
         // =====================================
         // DATOS BASE
         // =====================================
@@ -739,14 +875,15 @@ public class ProductoService {
         // =====================================
         if(dto.getCategoriaId()!=null){
             producto.setCategoria(
-                categoriaService.obtenerPorId(dto.getCategoriaId())
+            		categoriaService.obtenerPorId(dto.getCategoriaId(), store)
             );
         }else if(dto.getNuevaCategoria()!=null &&
                  !dto.getNuevaCategoria().isBlank()){
 
             producto.setCategoria(
                 categoriaService.obtenerOCrearCategoria(
-                    dto.getNuevaCategoria().trim()
+                    dto.getNuevaCategoria().trim(),
+                    store
                 )
             );
         }
@@ -757,7 +894,7 @@ public class ProductoService {
         if(dto.getMarcaId() != null){
 
             producto.setMarca(
-                marcaService.obtenerPorId(dto.getMarcaId())
+                marcaService.obtenerPorId(dto.getMarcaId(),store)
             );
 
         }else if(dto.getMarcaNombre() != null &&
@@ -765,7 +902,7 @@ public class ProductoService {
 
             producto.setMarca(
                 marcaService.obtenerOCrear(
-                    dto.getMarcaNombre().trim()
+                    dto.getMarcaNombre().trim(), store
                 )
             );
         }
@@ -863,7 +1000,8 @@ public class ProductoService {
 
             subirImagenesProducto(
                 saved.getId(),
-                imagenes
+                imagenes,
+                store
             );
         }
 
@@ -871,72 +1009,89 @@ public class ProductoService {
     }
     
     @Transactional(readOnly = true)
-    public List<ProductoCardDTO> obtenerProductosIndexOptimizado() {
+    public List<ProductoCardDTO> obtenerProductosIndexOptimizado(Store store) {
 
-        return productoRepository.findProductosIndexOptimizado();
+        return productoRepository
+                .findProductosIndexOptimizado(store);
     }
     @Transactional(readOnly = true)
-    public ProductoAdminDTO obtenerProductoAdmin(Long id) {
+    public ProductoAdminDTO obtenerProductoAdmin(
+            Long id,
+            Store store
+    ) {
 
-        Producto producto = productoRepository
-                .findByIdConTodo(id)
-                .orElseThrow(() -> new RuntimeException("No encontrado"));
+        Producto producto =
+                productoRepository
+                        .findByIdConTodo(id, store)
+                        .orElseThrow(() ->
+                                new RuntimeException("No encontrado")
+                        );
 
         return ProductoMapper.toAdmin(producto);
     }
+    
+    
     @Transactional(readOnly = true)
-    public List<ProductoAdminListDTO> obtenerProductosAdminOptimizado() {
+    public List<ProductoAdminListDTO> obtenerProductosAdminOptimizado(
+            Store store
+    ) {
 
-        // 1. carga ligera
         List<Producto> productosBase =
-                productoRepository.findProductosAdminBase();
+                productoRepository.findProductosAdminBase(store);
 
         List<Long> ids = productosBase.stream()
                 .map(Producto::getId)
                 .toList();
 
-        // 2. carga variantes separadas (sin duplicación SQL)
         List<Producto> productosConVariantes =
-                productoRepository.findProductosConVariantes(ids);
+                productoRepository.findProductosConVariantes(ids, store);
 
-        // 3. merge en memoria (MUY importante)
         Map<Long, Producto> map = productosBase.stream()
-                .collect(Collectors.toMap(Producto::getId, p -> p));
+                .collect(Collectors.toMap(
+                        Producto::getId,
+                        p -> p
+                ));
 
         for (Producto p : productosConVariantes) {
+
             Producto base = map.get(p.getId());
-            base.setVariantes(p.getVariantes());
+
+            if (base != null) {
+                base.setVariantes(p.getVariantes());
+            }
         }
 
-        // 4. mapper final
         return productosBase.stream()
                 .map(ProductoAdminListMapper::toDTO)
                 .toList();
     }
     
     @Transactional(readOnly = true)
-    public List<CategoriaGrupoAdminDTO> obtenerProductosAdminAgrupados() {
+    public List<CategoriaGrupoAdminDTO>
+    obtenerProductosAdminAgrupados(
+            Store store
+    ) {
 
         List<ProductoAdminListDTO> productos =
-                obtenerProductosAdminOptimizado();
+                obtenerProductosAdminOptimizado(store);
 
         return productos.stream()
-            .collect(Collectors.groupingBy(
-                p -> new AbstractMap.SimpleEntry<>(
-                    p.getCategoriaId(),
-                    p.getCategoriaNombre()
-                ),
-                LinkedHashMap::new,
-                Collectors.toList()
-            ))
-            .entrySet()
-            .stream()
-            .map(e -> new CategoriaGrupoAdminDTO(
-                e.getKey().getKey(),
-                e.getKey().getValue(),
-                e.getValue()
-            ))
-            .toList();
+                .collect(Collectors.groupingBy(
+                        p -> new AbstractMap.SimpleEntry<>(
+                                p.getCategoriaId(),
+                                p.getCategoriaNombre()
+                        ),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ))
+                .entrySet()
+                .stream()
+                .map(e -> new CategoriaGrupoAdminDTO(
+                        e.getKey().getKey(),
+                        e.getKey().getValue(),
+                        e.getValue()
+                ))
+                .toList();
     }
     
   

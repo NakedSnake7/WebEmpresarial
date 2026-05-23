@@ -1,13 +1,13 @@
 package com.webempresarial.store.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.webempresarial.store.dto.auth.RegisterRequestDTO;
 import com.webempresarial.store.model.AuthUser;
-import com.webempresarial.store.model.User;
 import com.webempresarial.store.model.AuthUser.Role;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.Cliente;
 import com.webempresarial.store.repository.AuthUserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class RegistrationService {
@@ -26,29 +26,25 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void register(RegisterRequestDTO dto) {
+    public void register(RegisterRequestDTO dto, Store store) {
 
         String email = dto.getEmail().trim().toLowerCase();
 
-        // 1️⃣ ¿Ya existe login?
         if (authUserRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("El usuario ya está registrado");
         }
 
-        // 2️⃣ Crear / reutilizar cliente
-        User user = userService.findOrCreateUserByEmail(
+        Cliente cliente = userService.registerUser(
                 email,
                 dto.getFullName().trim(),
-                dto.getPhone()
+                dto.getPhone(),
+                store
         );
 
-        userService.saveUser(user);
-
-        // 3️⃣ Crear AuthUser
         AuthUser authUser = new AuthUser();
         authUser.setEmail(email);
         authUser.setPassword(passwordEncoder.encode(dto.getPassword()));
-        authUser.setRole(Role.USER);
+        authUser.setRole(Role.CLIENTE);
         authUser.setEnabled(true);
 
         authUserRepository.save(authUser);

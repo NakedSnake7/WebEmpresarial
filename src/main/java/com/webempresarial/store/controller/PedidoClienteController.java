@@ -1,37 +1,43 @@
 package com.webempresarial.store.controller;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal; 
+import com.webempresarial.store.model.Order;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.OrderService;
+import com.webempresarial.store.theme.StoreResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.webempresarial.store.model.Order;
-import com.webempresarial.store.service.OrderService;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/pedidos")
 public class PedidoClienteController {
 
     private final OrderService orderService;
+    private final StoreResolver storeResolver;
 
-    public PedidoClienteController(OrderService orderService) {
+    public PedidoClienteController(
+            OrderService orderService,
+            StoreResolver storeResolver
+    ) {
         this.orderService = orderService;
+        this.storeResolver = storeResolver;
     }
 
     @GetMapping("/{id}")
     public String verPedidoCliente(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails,
-            Model model
+            Model model,
+            HttpServletRequest request
     ) {
+        Store store = storeResolver.getCurrentStore(request);
 
-        Order order = orderService.getOrderByIdWithUserAndItems(id);
+        Order order = orderService.getOrderByIdWithUserAndItems(id, store);
 
-        // 🔐 Validación de seguridad
-        if (!order.getCustomerEmail().equals(userDetails.getUsername())) {
+        if (!order.getCustomerEmail().equalsIgnoreCase(userDetails.getUsername())) {
             return "error/403";
         }
 

@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import org.slf4j.Logger;
+import org.slf4j.Logger; 
 import org.slf4j.LoggerFactory;
 
 import org.springframework.transaction.annotation.Propagation;
@@ -15,7 +15,8 @@ import com.webempresarial.store.model.OrderStatus;
 import com.webempresarial.store.model.PaymentStatus;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.ProductoVariante;
-import com.webempresarial.store.model.User;
+import com.webempresarial.store.model.Cliente;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.OrderRepository;
 import com.webempresarial.store.repository.ProductoRepository;
 import com.webempresarial.store.repository.ProductoVarianteRepository;
@@ -55,106 +56,65 @@ public class OrderService {
     	    this.notificationService = notificationService;
     	}
 
-    public Optional<Order> findByStripeSessionId(String stripeSessionId) {
-        return orderRepository.findByStripeSessionId(stripeSessionId);
-    }
-    
-
-    public Order getById(Long id) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
+    public Optional<Order> findByStripeSessionId(String stripeSessionId, Store store) {
+        return orderRepository.findByStripeSessionIdAndStore(stripeSessionId, store);
     }
 
     public List<Order> findOrdersFiltered(
             OrderStatus status,
             PaymentStatus payment,
             LocalDateTime from,
-            LocalDateTime to
+            LocalDateTime to,
+            Store store
     ) {
-    	return orderRepository.findFilteredWithUser(status, payment, from, to);
-    }
-    public List<Order> findOrdersForExport(
-            OrderStatus status,
-            PaymentStatus payment,
-            LocalDateTime from,
-            LocalDateTime to) {
-
-        return orderRepository.findFilteredWithUser(
-            status, payment, from, to
-        );
+        return orderRepository.findFilteredWithCliente(status, payment, from, to, store);
     }
 
-    public Producto buscarProducto(Long productId) {
-        return productoRepository.findById(productId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Producto no encontrado: " + productId
-                        )
-                );
+    public Producto buscarProducto(Long productId, Store store) {
+        return productoRepository.findByIdConTodo(productId, store)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productId));
     }
-    // ============================
-    // OBTENER ORDEN
-    // ============================
-    public Order getOrderByIdWithUser(Long id) {
-        return orderRepository.findByIdWithUser(id)
+
+    public Order getOrderByIdWithUserAndItems(Long id, Store store) {
+        return orderRepository.findByIdWithClienteAndItemsAndStore(id, store)
                 .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada con ID: " + id));
     }
 
-    public Order getOrderByIdWithUserAndItems(Long id) {
-        return orderRepository.findByIdWithUserAndItems(id)
-                .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada con ID: " + id));
+    public List<Order> findAllOrders(Store store) {
+        return orderRepository.findAllWithCliente(store);
     }
-    public List<Order> getOrdenesPagadas(LocalDateTime from, LocalDateTime to) {
-        return orderRepository.findFilteredWithUser(
-                null,
-                PaymentStatus.PAID,
-                from,
-                to
-        );
+    
+
+    public Order getById(Long id, Store store) {
+        return orderRepository.findByIdAndStore(id, store)
+                .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
     }
 
-    public List<Order> findAllOrders() {
-        return orderRepository.findAllWithUser();
-    }
-    public List<Order> filterOrders(
-            LocalDate from,
-            LocalDate to,
-            OrderStatus status,
-            PaymentStatus payment) {
+ 
 
-        LocalDateTime fromDate = (from != null)
-                ? from.atStartOfDay()
-                : null;
 
-        LocalDateTime toDate = (to != null)
-                ? to.atTime(23, 59, 59)
-                : null;
-
-        return orderRepository.findFilteredWithUser(
-                status,
-                payment,
-                fromDate,
-                toDate
-        );
-    }
+   
+ 
     
     /* =====================================================
     reclamar ordenes 
 ===================================================== */
     @Transactional
-    public void claimGuestOrders(User user) {
+    public void claimGuestOrders(Cliente cliente, Store store) {
 
-        String email = user.getEmail().trim().toLowerCase();
+        String email = cliente.getEmail().trim().toLowerCase();
 
-        List<Order> orders = orderRepository
-                .findByCustomerEmailIgnoreCaseAndUserIsNull(email);
+        List<Order> orders =
+                orderRepository.findByCustomerEmailIgnoreCaseAndClienteIsNullAndStore(
+                        email,
+                        store
+                );
 
         List<Order> toUpdate = new ArrayList<>();
 
         for (Order order : orders) {
-
             if (order.canBeClaimed()) {
-                order.claim(user);
+                order.claim(cliente);
                 toUpdate.add(order);
             }
         }
@@ -162,14 +122,13 @@ public class OrderService {
         if (!toUpdate.isEmpty()) {
             orderRepository.saveAll(toUpdate);
         }
-
-        System.out.println("Órdenes reclamadas: " + toUpdate.size());
     }
 /* =====================================================
     CREACIÓN DE ORDEN
  ===================================================== */
     @Transactional
-    public Order crearOrden(Order order) {
+    public Order crearOrden(Order order, Store store) {
+        order.setStore(store);
         return orderRepository.save(order);
     }
     
@@ -179,17 +138,17 @@ guardar orden por transferencia
 ===================================================== */
  
     @Transactional
-    public Order saveOrderTransferencia(Order order) {
+    public Order saveOrderTransferencia(Order order, Store store) {
+
+        order.setStore(store);
 
         Order saved = orderRepository.saveAndFlush(order);
 
-        stockService.descontarStock(saved);
+        stockService.descontarStock(saved, store);
 
         Order fullOrder = orderRepository
-                .findByIdFull(saved.getId())
-                .orElseThrow(() ->
-                        new RuntimeException("Orden no encontrada")
-                );
+                .findByIdFullAndStore(saved.getId(), store)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
         notificationService.sendTransferInstructions(fullOrder);
 
@@ -199,48 +158,48 @@ guardar orden por transferencia
     WEBHOOK STRIPE – PASO 1 (CRÍTICO)
     👉 ESTE NUNCA DEBE FALLAR
  ===================================================== */
- @Transactional(propagation = Propagation.REQUIRES_NEW)
- public void marcarOrdenComoPagada(Long orderId, String paymentIntentId) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void marcarOrdenComoPagada(
+            Long orderId,
+            String paymentIntentId,
+            Store store
+    ) {
 
-     Order order = getById(orderId);
+        Order order = getById(orderId, store);
 
-     if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-         throw new IllegalStateException("No puedes pagar una orden cancelada");
-     }
+        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("No puedes pagar una orden cancelada");
+        }
 
-     order.markAsPaid(paymentIntentId);
-     orderRepository.save(order);
- }
-
+        order.markAsPaid(paymentIntentId);
+        orderRepository.save(order);
+    }
  /* =====================================================
     POST-PAGO – PASO 2 (PUEDE FALLAR)
     👉 STOCK / LOGÍSTICA
  ===================================================== */
 
  @Transactional
- public void procesarPostPago(Long orderId) {
+ public void procesarPostPago(Long orderId, Store store) {
 
-     Order order = getByIdWithUserAndItems(orderId);
-     
+     Order order = getOrderByIdWithUserAndItems(orderId, store);
+
      if (!order.isPaid()) {
-    	    throw new IllegalStateException("No puedes procesar una orden no pagada");
-    	}
+         throw new IllegalStateException("No puedes procesar una orden no pagada");
+     }
 
-     // 🔐 Idempotencia
      if (order.isStockReduced()) {
-    	    if (order.getOrderStatus() != OrderStatus.PROCESSED) {
-    	        order.markAsProcessed();
-    	        orderRepository.save(order);
-    	    }
-    	    return;
-    	}
+         if (order.getOrderStatus() != OrderStatus.PROCESSED) {
+             order.markAsProcessed();
+             orderRepository.save(order);
+         }
+         return;
+     }
 
      try {
-    	 stockService.descontarStock(order);
+         stockService.descontarStock(order, store);
 
-    	 
-    	 order.markAsProcessed();
-
+         order.markAsProcessed();
          orderRepository.save(order);
 
      } catch (Exception e) {
@@ -248,16 +207,30 @@ guardar orden por transferencia
          order.markAsPendingStock();
          orderRepository.save(order);
 
-        
-
-         log.error("Stock falló en orden {}", orderId, e);    }
+         log.error("Stock falló en orden {}", orderId, e);
+     }
  }
  
+ public List<Order> findOrdersForExport(
+	        OrderStatus status,
+	        PaymentStatus payment,
+	        LocalDateTime from,
+	        LocalDateTime to,
+	        Store store
+	) {
+	    return orderRepository.findFilteredWithCliente(
+	            status,
+	            payment,
+	            from,
+	            to,
+	            store
+	    );
+	}
  
  @Transactional
- public void confirmarPagoTransferencia(Long orderId) {
+ public void confirmarPagoTransferencia(Long orderId, Store store) {
 
-     Order order = getByIdWithUserAndItems(orderId);
+     Order order = getOrderByIdWithUserAndItems(orderId, store);
 
      if (order.isPaid() && order.getOrderStatus() == OrderStatus.PROCESSED) {
          return;
@@ -274,9 +247,9 @@ guardar orden por transferencia
     // ACTUALIZAR ESTADO + STOCK
     // ============================
  @Transactional
- public Order updateOrderStatus(Long orderId, String newStatus) {
+ public Order updateOrderStatus(Long orderId, String newStatus, Store store) {
 
-     Order order = getByIdWithUserAndItems(orderId);
+     Order order = getOrderByIdWithUserAndItems(orderId, store);
 
      OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
 
@@ -287,33 +260,42 @@ guardar orden por transferencia
     // ============================
     // ACTUALIZAR INFO DE ENVÍO
     // ============================
-    @Transactional
-    public Order updateShippingInfo(Long orderId, String tracking, String carrier) {
+ @Transactional
+ public Order updateShippingInfo(
+         Long orderId,
+         String tracking,
+         String carrier,
+         Store store
+ ) {
 
-        Order order = getById(orderId);
+     Order order = getById(orderId, store);
 
-        order.markAsShipped(tracking, carrier);
+     order.markAsShipped(tracking, carrier);
 
-        Order saved = orderRepository.save(order);
+     Order saved = orderRepository.save(order);
 
-        notificationService.sendShipping(saved);
+     notificationService.sendShipping(saved);
 
-        return saved;
-    } 
+     return saved;
+ }
     // ============================
     // ELIMINAR ORDEN
     // ============================
-    public void deleteOrder(Long id) {
-        if (!orderRepository.existsById(id)) {
-            throw new OrderNotFoundException("Orden no encontrada con ID: " + id);
-        }
-        orderRepository.deleteById(id);
-    }
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
-    }
-    public Order save(Order order) {
+ @Transactional
+ public void deleteOrder(Long id, Store store) {
+
+     Order order = getById(id, store);
+
+     orderRepository.delete(order);
+ }
+ 
+ public Order getOrderById(Long id, Store store) {
+	    return getById(id, store);
+	}
+ 
+ 
+    public Order save(Order order, Store store) {
+        order.setStore(store);
         return orderRepository.save(order);
     }
     @Retryable(
@@ -322,27 +304,26 @@ guardar orden por transferencia
     	    backoff = @Backoff(delay = 200)
     	)    
     @Transactional
-    public void validarStockOrden(OrderRequestDTO request) {
-        stockService.validarStock(request.getItems());
+    public void validarStockOrden(OrderRequestDTO request, Store store) {
+        stockService.validarStock(request.getItems(), store);
     }
 
-    public void validarStockCheckout(CheckoutRequestDTO request) {
-        stockService.validarStock(request.getCart());
+    public void validarStockCheckout(CheckoutRequestDTO request, Store store) {
+        stockService.validarStock(request.getCart(), store);
     }
 /* =====================================================
     EXPIRAR ÓRDENES (TRANSFERENCIAS)
  ===================================================== */
     @Transactional
-    public boolean expirarOrdenTransferencia(Order order) {
+    public boolean expirarOrdenTransferencia(Order order, Store store) {
 
         if (!order.canExpire()) return false;
 
         if (order.isStockReduced()) {
-            stockService.restaurarStock(order);
+            stockService.restaurarStock(order, store);
         }
 
         order.markAsExpired();
-
         orderRepository.save(order);
 
         notificationService.sendExpired(order, order.getOrderDate().plusHours(24));
@@ -352,45 +333,60 @@ guardar orden por transferencia
 
     public List<ProductoVentaDTO> getPaidProductSalesByDate(
             LocalDate from,
-            LocalDate to
+            LocalDate to,
+            Store store
     ) {
-        LocalDateTime fromDT = (from != null)
-                ? from.atStartOfDay()
-                : null;
+        LocalDateTime fromDT = from != null ? from.atStartOfDay() : null;
+        LocalDateTime toDT = to != null ? to.atTime(23, 59, 59) : null;
 
-        LocalDateTime toDT = (to != null)
-                ? to.atTime(23, 59, 59)
-                : null;
+        return orderRepository.getPaidProductSalesByDate(fromDT, toDT, store);
+    }
 
-        return orderRepository.getPaidProductSalesByDate(fromDT, toDT);
-    }
-    public Order getByIdWithUserAndItems(Long orderId) {
-        return orderRepository.findByIdWithUserAndItems(orderId)
-                .orElseThrow(() -> new IllegalStateException("Orden no encontrada"));
-    }
  // ============================
  // PEDIDOS POR USUARIO (FRONT)
  // ============================
-    public List<Order> findByCustomerEmail(String email) {
-        return orderRepository
-            .findByCustomerEmailOrderByOrderDateDesc(
-                email.trim().toLowerCase()
-            );
+    public List<Order> findByCustomerEmail(String email, Store store) {
+        return orderRepository.findByCustomerEmailAndStoreOrderByOrderDateDesc(
+                email.trim().toLowerCase(),
+                store
+        );
     }
  
- public String obtenerUltimaDireccion(User user) {
-	    return orderRepository
-	        .findTopByUserOrderByOrderDateDesc(user)
-	        .map(Order::getAddress)
-	        .orElse(null);
-	}
+    public String obtenerUltimaDireccion(Cliente cliente, Store store) {
+        return orderRepository
+                .findTopByClienteAndStoreOrderByOrderDateDesc(cliente, store)
+                .map(Order::getAddress)
+                .orElse(null);
+    }
  @Transactional
- public ProductoVariante obtenerVarianteConLock(Long id) {
+ public ProductoVariante obtenerVarianteConLock(Long id, Store store) {
      return productoVarianteRepository
-             .findByIdForUpdate(id)
-             .orElseThrow(() ->
-                 new RuntimeException("Variante no encontrada")
-             );
+             .findByIdForUpdate(id, store)
+             .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
  }
+ public List<Order> filterOrders(
+	        LocalDate from,
+	        LocalDate to,
+	        OrderStatus status,
+	        PaymentStatus payment,
+	        Store store
+	) {
 
+	    LocalDateTime fromDate =
+	            from != null ? from.atStartOfDay() : null;
+
+	    LocalDateTime toDate =
+	            to != null ? to.atTime(23, 59, 59) : null;
+
+	    return orderRepository.findFilteredWithCliente(
+	            status,
+	            payment,
+	            fromDate,
+	            toDate,
+	            store
+	    );
+	}
+ public List<Order> findPendingOrders(Store store) {
+	    return orderRepository.findPendingOrdersWithItems(store);
+	}
 }

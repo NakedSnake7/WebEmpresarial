@@ -1,13 +1,20 @@
 package com.webempresarial.store.model;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
 
 import jakarta.persistence.*;  
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "order_items")
+@Table(
+    name = "order_items",
+    indexes = {
+        @Index(name = "idx_order_item_order", columnList = "order_id"),
+        @Index(name = "idx_order_item_producto", columnList = "producto_id"),
+        @Index(name = "idx_order_item_variante", columnList = "variante_id")
+    }
+)
 public class OrderItem {
 
     @Id

@@ -3,7 +3,12 @@ package com.webempresarial.store.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "imagenes_productos")
+@Table(
+    name = "imagenes_productos",
+    indexes = {
+        @Index(name = "idx_imagen_producto", columnList = "producto_id")
+    }
+)
 public class ImagenProducto {
 
     @Id

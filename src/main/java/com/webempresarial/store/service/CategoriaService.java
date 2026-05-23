@@ -1,57 +1,74 @@
 package com.webempresarial.store.service;
 
-import java.util.List; 
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.webempresarial.store.model.Categoria;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
 
-import com.webempresarial.store.model.Categoria;
-import com.webempresarial.store.repository.CategoriaRepository;
+import java.util.List;
 
 @Service
 public class CategoriaService {
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public List<Categoria> obtenerTodas() {
-        List<Categoria> categorias = categoriaRepository.findAll();
-        System.out.println("🔎 Categorías obtenidas: " + categorias);
-        return categorias; // ✅ devuelve la misma lista que imprimes
+    public CategoriaService(
+            CategoriaRepository categoriaRepository
+    ) {
+        this.categoriaRepository = categoriaRepository;
     }
 
-
-    public Categoria obtenerPorId(Long id) {
-        return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+    public List<Categoria> obtenerTodas(Store store) {
+        return categoriaRepository.findByStoreOrderByNombreAsc(store);
     }
 
-    public Categoria guardar(Categoria categoria) {
+    public Categoria obtenerPorId(Long id, Store store) {
+        return categoriaRepository.findByIdAndStore(id, store)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Categoría no encontrada con ID: " + id
+                        )
+                );
+    }
+
+    public Categoria guardar(
+            Categoria categoria,
+            Store store
+    ) {
+        categoria.setStore(store);
         return categoriaRepository.save(categoria);
     }
 
-    public void eliminar(Long id) {
-        if (categoriaRepository.existsById(id)) {
-            categoriaRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("No se puede eliminar, categoría no encontrada con ID: " + id);
-        }
+    public void eliminar(Long id, Store store) {
+        Categoria categoria = obtenerPorId(id, store);
+        categoriaRepository.delete(categoria);
     }
-  
-    public Categoria obtenerOCrearCategoria(String nombre) {
+
+    public Categoria obtenerOCrearCategoria(
+            String nombre,
+            Store store
+    ) {
 
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new RuntimeException("La categoría no puede ser nula o vacía");
+            throw new RuntimeException(
+                    "La categoría no puede ser nula o vacía"
+            );
         }
 
-        return categoriaRepository.findByNombreIgnoreCase(nombre.trim())
+        String nombreLimpio = nombre.trim();
+
+        return categoriaRepository
+                .findByNombreIgnoreCaseAndStore(
+                        nombreLimpio,
+                        store
+                )
                 .orElseGet(() -> {
+
                     Categoria nueva = new Categoria();
-                    nueva.setNombre(nombre.trim());
-                    System.out.println("🆕 Creando nueva categoría: " + nombre);
+                    nueva.setNombre(nombreLimpio);
+                    nueva.setStore(store);
+
                     return categoriaRepository.save(nueva);
                 });
     }
-
-
 }

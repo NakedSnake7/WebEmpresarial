@@ -1,5 +1,12 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.dto.checkout.CheckoutRequestDTO;
+import com.webempresarial.store.model.*;
+import com.webempresarial.store.model.Order.PaymentMethod;
+import com.webempresarial.store.service.OrderService;
+import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.theme.StoreResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,15 +17,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import com.webempresarial.store.dto.checkout.CheckoutRequestDTO;
-import com.webempresarial.store.model.*;
-import com.webempresarial.store.model.Order.PaymentMethod;
-import com.webempresarial.store.service.OrderService;
-import com.webempresarial.store.service.UserService;
-
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api")
@@ -32,30 +33,31 @@ public class CheckoutController {
 
     private final OrderService orderService;
     private final UserService userService;
-    
+    private final StoreResolver storeResolver;
+
     public CheckoutController(
             OrderService orderService,
-            UserService userService
-            ) {
+            UserService userService,
+            StoreResolver storeResolver
+    ) {
         this.orderService = orderService;
         this.userService = userService;
-        }
+        this.storeResolver = storeResolver;
+    }
 
     @PostMapping("/checkout")
-    @CrossOrigin(origins = {
-            "http://localhost:8080",
-            "https://weedtlanmx.com"
-    })
     public ResponseEntity<?> processCheckout(
-            @Valid @RequestBody CheckoutRequestDTO checkoutRequest
+            @Valid @RequestBody CheckoutRequestDTO checkoutRequest,
+            HttpServletRequest request
     ) {
 
-        try {
-            // 1️⃣ Validar stock (lock)
-            orderService.validarStockCheckout(checkoutRequest);
+        Store store = storeResolver.getCurrentStore(request);
 
-            // 2️⃣ Validar dirección
+        try {
+            orderService.validarStockCheckout(checkoutRequest, store);
+
             String direccion = checkoutRequest.getCustomer().getAddress();
+
             if (direccion == null || direccion.trim().length() < 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
@@ -63,40 +65,42 @@ public class CheckoutController {
                 ));
             }
 
-            // 3️⃣ Usuario
-            User user = userService.findOrCreateUserByEmail(
+            Cliente cliente = userService.findOrCreateUserByEmail(
                     checkoutRequest.getCustomer().getEmail(),
                     checkoutRequest.getCustomer().getFullName(),
-                    checkoutRequest.getCustomer().getPhone()
+                    checkoutRequest.getCustomer().getPhone(),
+                    store
             );
 
-            // 🔥 SINCRONIZAR DIRECCIÓN
-            String direccionCheckout = checkoutRequest.getCustomer().getAddress();
+            String direccionCheckout =
+                    checkoutRequest.getCustomer().getAddress();
 
-            if (direccionCheckout != null && direccionCheckout.trim().length() >= 5) {
-                // Solo actualiza si es nueva o diferente
-                if (user.getDefaultAddress() == null ||
-                    !user.getDefaultAddress().equalsIgnoreCase(direccionCheckout.trim())) {
+            if (direccionCheckout != null &&
+                    direccionCheckout.trim().length() >= 5) {
 
-                    user.setDefaultAddress(direccionCheckout.trim());
+                if (cliente.getDefaultAddress() == null ||
+                        !cliente.getDefaultAddress()
+                                .equalsIgnoreCase(direccionCheckout.trim())) {
+
+                    cliente.setDefaultAddress(
+                            direccionCheckout.trim()
+                    );
                 }
             }
 
-            userService.saveUser(user);
+            userService.saveUser(cliente, store);
 
-
-            // 4️⃣ Totales
             double subtotal = checkoutRequest.getCart().stream()
                     .mapToDouble(i -> i.getPrice() * i.getQuantity())
                     .sum();
 
-            double envio = subtotal >= LIMITE_ENVIO_GRATIS
-                    ? 0.0
-                    : COSTO_ENVIO;
+            double envio =
+                    subtotal >= LIMITE_ENVIO_GRATIS
+                            ? 0.0
+                            : COSTO_ENVIO;
 
             double totalFinal = subtotal + envio;
 
-            // 5️⃣ Método de pago
             PaymentMethod metodoPago =
                     "STRIPE".equalsIgnoreCase(
                             checkoutRequest.getPaymentMethod()
@@ -104,47 +108,44 @@ public class CheckoutController {
                             ? PaymentMethod.STRIPE
                             : PaymentMethod.TRANSFER;
 
-            // 6️⃣ Crear orden
-            String emailNormalizado = checkoutRequest.getCustomer()
-                    .getEmail()
-                    .trim()
-                    .toLowerCase();
+            String emailNormalizado =
+                    checkoutRequest.getCustomer()
+                            .getEmail()
+                            .trim()
+                            .toLowerCase();
 
             Order order = new Order(
-                user,
-                totalFinal,
-                direccion,
-                checkoutRequest.getCustomer().getFullName(),
-                emailNormalizado
+                    cliente,
+                    totalFinal,
+                    direccion,
+                    checkoutRequest.getCustomer().getFullName(),
+                    emailNormalizado
             );
 
-
-            
+            order.setStore(store);
             order.setPaymentMethod(metodoPago);
             order.setPaymentStatus(PaymentStatus.PENDING);
 
-            // 7️⃣ Items
             checkoutRequest.getCart().forEach(cartItem -> {
 
                 Producto producto;
                 ProductoVariante variante = null;
 
-                // Si existe variante
                 if (cartItem.getVarianteId() != null) {
 
                     variante = orderService.obtenerVarianteConLock(
-                            cartItem.getVarianteId()
+                            cartItem.getVarianteId(),
+                            store
                     );
 
                     producto = variante.getProducto();
 
-                
-
                 } else {
 
-                    // Producto simple (sin variante)
-                    producto = orderService.buscarProducto(cartItem.getProductId());
-
+                    producto = orderService.buscarProducto(
+                            cartItem.getProductId(),
+                            store
+                    );
                 }
 
                 OrderItem item = new OrderItem(
@@ -154,7 +155,6 @@ public class CheckoutController {
                         order
                 );
 
-                // 🔥 Guardar nombre histórico para correos
                 item.setProductName(cartItem.getName());
 
                 if (variante != null) {
@@ -162,20 +162,22 @@ public class CheckoutController {
                 }
 
                 order.addItem(item);
-
             });
 
-         // 8️⃣ Guardar orden (según método de pago)
             if (metodoPago == PaymentMethod.TRANSFER) {
-                orderService.saveOrderTransferencia(order);
-            } else {
-                orderService.crearOrden(order);
-            }
 
-            // 🔥 IMPORTANTE:
-            // El correo de transferencia
-            // se envía DESDE OrderService
-            // usando transferInstructionsSent
+                orderService.saveOrderTransferencia(
+                        order,
+                        store
+                );
+
+            } else {
+
+                orderService.crearOrden(
+                        order,
+                        store
+                );
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "success", true,
@@ -184,7 +186,9 @@ public class CheckoutController {
             ));
 
         } catch (Exception e) {
+
             logger.error("Error en checkout", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "success", false,
@@ -197,37 +201,46 @@ public class CheckoutController {
     public ResponseEntity<?> handleValidationExceptions(
             MethodArgumentNotValidException ex
     ) {
+
         Map<String, String> errors = new HashMap<>();
+
         ex.getBindingResult().getFieldErrors()
                 .forEach(error ->
                         errors.put(
                                 error.getField(),
                                 error.getDefaultMessage()
-                        ));
+                        )
+                );
 
         return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
                 "errors", errors
         ));
     }
+
     @GetMapping("/user/me")
     public ResponseEntity<?> getCurrentUser(
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest request
     ) {
+
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = userService.findByEmail(userDetails.getUsername())
-                .orElseThrow();
+        Store store = storeResolver.getCurrentStore(request);
+
+        Cliente cliente =
+                userService.findByEmail(
+                        userDetails.getUsername(),
+                        store
+                ).orElseThrow();
 
         return ResponseEntity.ok(Map.of(
-                "email", user.getEmail(),
-                "fullName", user.getFullName(),
-                "phone", user.getPhone(),
-                "address", user.getDefaultAddress()
+                "email", cliente.getEmail(),
+                "fullName", cliente.getFullName(),
+                "phone", cliente.getPhone(),
+                "address", cliente.getDefaultAddress()
         ));
     }
-
 }
-

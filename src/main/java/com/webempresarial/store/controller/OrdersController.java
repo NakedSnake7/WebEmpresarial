@@ -1,15 +1,17 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.model.Order;
+import com.webempresarial.store.model.OrderStatus;
+import com.webempresarial.store.model.PaymentStatus;
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.OrderService;
+import com.webempresarial.store.theme.StoreResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.webempresarial.store.model.Order;
-import com.webempresarial.store.model.OrderStatus;
-import com.webempresarial.store.model.PaymentStatus;
-import com.webempresarial.store.service.OrderService;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -22,37 +24,44 @@ import java.util.Map;
 public class OrdersController {
 
     private final OrderService orderService;
-    
-    
-    public OrdersController(OrderService orderService) {
+    private final StoreResolver storeResolver;
+
+    public OrdersController(
+            OrderService orderService,
+            StoreResolver storeResolver
+    ) {
         this.orderService = orderService;
-		
+        this.storeResolver = storeResolver;
     }
 
-
-    // ================================
-    // LISTAR ÓRDENES
-    // ================================
     @GetMapping
     public String listarOrders(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate from,
-
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate to,
-
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) PaymentStatus payment,
             @RequestParam(required = false) String search,
-            Model model) {
+            Model model,
+            HttpServletRequest request
+    ) {
 
-        List<Order> orders = orderService.filterOrders(from, to, status, payment);
+        Store store = storeResolver.getCurrentStore(request);
 
-        // 🔍 Búsqueda por nombre (opcional, en memoria)
+        List<Order> orders = orderService.filterOrders(
+                from,
+                to,
+                status,
+                payment,
+                store
+        );
+
         if (search != null && !search.isBlank()) {
             String text = search.toLowerCase();
+
             orders = orders.stream()
                     .filter(o ->
                             o.getCustomerName() != null &&
@@ -61,7 +70,6 @@ public class OrdersController {
                     .toList();
         }
 
-        // ✅ ORDENAR POR FECHA (más recientes primero)
         orders = orders.stream()
                 .sorted(Comparator.comparing(Order::getOrderDate).reversed())
                 .toList();
@@ -73,29 +81,36 @@ public class OrdersController {
         return "admin/orders";
     }
 
-
-
-    // ================================
-    // DETALLES
-    // ================================
     @GetMapping("/{id}")
-    public String verDetalles(@PathVariable Long id, Model model) {
-        Order order = orderService.getOrderByIdWithUserAndItems(id);
+    public String verDetalles(
+            @PathVariable Long id,
+            Model model,
+            HttpServletRequest request
+    ) {
+
+        Store store = storeResolver.getCurrentStore(request);
+
+        Order order = orderService.getOrderByIdWithUserAndItems(
+                id,
+                store
+        );
+
         model.addAttribute("order", order);
+
         return "admin/order-details";
     }
 
-
- // ================================
- // CONFIRMAR PAGO (TRANSFERENCIA)
- // ================================
     @PostMapping("/{id}/confirm-payment")
     public String confirmarPagoTransferencia(
             @PathVariable Long id,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
+    ) {
+
+        Store store = storeResolver.getCurrentStore(request);
 
         try {
-            orderService.confirmarPagoTransferencia(id);
+            orderService.confirmarPagoTransferencia(id, store);
 
             redirectAttributes.addFlashAttribute(
                     "success",
@@ -103,6 +118,7 @@ public class OrdersController {
             );
 
         } catch (IllegalStateException e) {
+
             redirectAttributes.addFlashAttribute(
                     "error",
                     e.getMessage()
@@ -112,74 +128,94 @@ public class OrdersController {
         return "redirect:/orders/" + id;
     }
 
-
-
-    // ================================
-    // ACTUALIZAR ENVÍO
-    // ================================
     @PostMapping("/update-shipping")
     public String updateShipping(
             @RequestParam Long orderId,
             @RequestParam String courier,
             @RequestParam String trackingNumber,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
+    ) {
+
+        Store store = storeResolver.getCurrentStore(request);
 
         try {
-            orderService.updateShippingInfo(orderId, trackingNumber, courier);
-            redirectAttributes.addFlashAttribute("success", "Envío actualizado");
+            orderService.updateShippingInfo(
+                    orderId,
+                    trackingNumber,
+                    courier,
+                    store
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Envío actualizado"
+            );
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar envío");
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Error al actualizar envío"
+            );
         }
 
         return "redirect:/orders/" + orderId;
     }
 
-    // ================================
-    // ELIMINAR ORDEN
-    // ================================
     @GetMapping("/{id}/delete")
     public String eliminarOrden(
             @PathVariable Long id,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
+    ) {
 
-        Order order = orderService.getOrderById(id);
+        Store store = storeResolver.getCurrentStore(request);
+
+        Order order = orderService.getById(id, store);
 
         if (order.getPaymentStatus() == PaymentStatus.PAID ||
-            order.getOrderStatus() == OrderStatus.CANCELLED) {
+                order.getOrderStatus() == OrderStatus.CANCELLED) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
                     "No se puede eliminar esta orden"
             );
+
             return "redirect:/orders";
         }
 
-        orderService.deleteOrder(id);
-        redirectAttributes.addFlashAttribute("success", "Orden eliminada");
+        orderService.deleteOrder(id, store);
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Orden eliminada"
+        );
 
         return "redirect:/orders";
     }
-    
+
     @PostMapping("/{id}/status-ajax")
     @ResponseBody
     public Map<String, String> updateOrderStatusAjax(
             @PathVariable Long id,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody Map<String, String> payload,
+            HttpServletRequest request
+    ) {
 
-        OrderStatus newStatus = OrderStatus.valueOf(payload.get("status"));
+        Store store = storeResolver.getCurrentStore(request);
 
-        Order order = orderService.getById(id);
-
-        order.setOrderStatus(newStatus);
-        orderService.save(order);
+        Order order = orderService.updateOrderStatus(
+                id,
+                payload.get("status"),
+                store
+        );
 
         Map<String, String> response = new HashMap<>();
+
         response.put("label", order.getOrderStatusLabel());
         response.put("badge", order.getOrderStatusBadge());
 
         return response;
     }
-
-
-    
 }
