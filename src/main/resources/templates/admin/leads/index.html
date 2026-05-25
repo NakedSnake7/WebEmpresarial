@@ -2,7 +2,7 @@
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{admin/layout/main :: layout(
-        'Leads | WebEmpresarial Admin',
+        'Leads | WebEmpresarial',
         ~{::content}
 )}">
 
@@ -10,14 +10,14 @@
 
 <th:block th:fragment="content">
 
-<section>
+<section class="container-fluid">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
+
             <span class="badge text-bg-success mb-2">
-                CRM
+                CRM Legacy
             </span>
 
             <h1 class="fw-bold mb-1">
@@ -25,51 +25,49 @@
             </h1>
 
             <p class="text-muted mb-0">
-                Gestión de solicitudes capturadas desde WebEmpresarial™
+                Vista administrativa rápida de leads.
             </p>
+
         </div>
 
-        <div>
+        <div class="d-flex gap-2">
+
+            <a href="/crm/pipeline"
+               class="btn btn-dark">
+
+                Abrir CRM Pipeline
+
+            </a>
+
             <span class="badge rounded-pill text-bg-dark fs-6"
                   th:text="${#lists.size(leads) + ' leads'}">
             </span>
+
         </div>
 
     </div>
 
-    <!-- TABLE CARD -->
     <div class="card border-0 shadow-sm">
 
         <div class="table-responsive">
 
             <table class="table align-middle mb-0">
 
-                <!-- HEAD -->
                 <thead class="table-light">
 
                 <tr>
-                    <th>ID</th>
                     <th>Lead</th>
                     <th>Servicio</th>
-                    <th>Presupuesto</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
+                    <th>Status</th>
+                    <th>WhatsApp</th>
                 </tr>
 
                 </thead>
 
-                <!-- BODY -->
                 <tbody>
 
                 <tr th:each="lead : ${leads}">
 
-                    <!-- ID -->
-                    <td>
-                        <strong th:text="${lead.id}"></strong>
-                    </td>
-
-                    <!-- LEAD INFO -->
                     <td>
 
                         <div class="fw-semibold"
@@ -80,97 +78,33 @@
                              th:text="${lead.empresa}">
                         </div>
 
-                        <div class="small">
-
-                            <a class="text-decoration-none"
-                               target="_blank"
-                               th:href="@{'https://wa.me/52' + ${lead.whatsapp}}">
-
-                                <span th:text="${lead.whatsapp}"></span>
-
-                            </a>
-
-                        </div>
-
-                        <div class="small text-muted"
-                             th:text="${lead.instagram}">
-                        </div>
-
                     </td>
 
-                    <!-- SERVICIO -->
                     <td>
 
-                        <span class="badge rounded-pill text-bg-dark"
+                        <span class="badge text-bg-dark"
                               th:text="${lead.servicio}">
                         </span>
 
                     </td>
 
-                    <!-- PRESUPUESTO -->
                     <td>
 
-                        <span class="fw-semibold"
-                              th:text="${lead.presupuesto}">
+                        <span class="badge text-bg-primary"
+                              th:text="${lead.status}">
                         </span>
 
                     </td>
 
-                    <!-- STATUS -->
                     <td>
 
-                        <form method="post"
-                              class="d-flex gap-2 align-items-center"
-                              th:action="@{'/admin/leads/' + ${lead.id} + '/status'}">
+                        <a class="btn btn-success btn-sm"
+                           target="_blank"
+                           th:href="@{'https://wa.me/52' + ${lead.whatsapp}}">
 
-                            <select name="status"
-                                    class="form-select form-select-sm">
+                            WhatsApp
 
-                                <option th:each="status : ${statuses}"
-                                        th:value="${status}"
-                                        th:text="${status}"
-                                        th:selected="${status == lead.status}">
-                                </option>
-
-                            </select>
-
-                            <button type="submit"
-                                    class="btn btn-primary btn-sm">
-
-                                Guardar
-
-                            </button>
-
-                        </form>
-
-                    </td>
-
-                    <!-- FECHA -->
-                    <td>
-
-                        <div class="small text-muted"
-                             th:text="${#temporals.format(
-                                lead.createdAt,
-                                'dd/MM/yyyy HH:mm'
-                             )}">
-                        </div>
-
-                    </td>
-
-                    <!-- ACTIONS -->
-                    <td>
-
-                        <div class="d-flex gap-2">
-
-                            <a class="btn btn-success btn-sm"
-                               target="_blank"
-                               th:href="@{'https://wa.me/52' + ${lead.whatsapp}}">
-
-                                WhatsApp
-
-                            </a>
-
-                        </div>
+                        </a>
 
                     </td>
 

@@ -4,243 +4,84 @@
       th:fragment="layout(title, content)">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} ?: 'Admin'">Admin</title>
 
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${title} ?: 'Admin'">
+        Admin
+    </title>
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
-          
-          <style>
-.admin-sidebar {
-    width: 270px;
-    min-height: 100vh;
-    background: #0f172a;
-    color: #e5e7eb;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    transition: width .25s ease;
-}
 
-.admin-sidebar.collapsed {
-    width: 86px;
-}
+    <!-- ADMIN -->
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin.css}">
 
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 28px;
-}
+    <!-- CRM -->
+    <th:block th:if="${crmPage}">
 
-.brand-logo {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #22c55e, #06b6d4);
-    color: #04111f;
-    display: grid;
-    place-items: center;
-    font-weight: 900;
-    flex-shrink: 0;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-core.css}">
 
-.sidebar-brand small {
-    display: block;
-    color: #94a3b8;
-    font-size: .78rem;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-components.css}">
 
-.sidebar-toggle {
-    margin-left: auto;
-    border: 0;
-    background: rgba(255,255,255,.08);
-    color: #e5e7eb;
-    border-radius: 10px;
-    width: 34px;
-    height: 34px;
-    cursor: pointer;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-dashboard.css}">
 
-.sidebar-nav {
-    display: grid;
-    gap: 6px;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-pipeline.css}">
 
-.sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #cbd5e1;
-    text-decoration: none;
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all .2s ease;
-    white-space: nowrap;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-drawer.css}">
 
-.sidebar-link:hover {
-    background: rgba(255,255,255,.08);
-    color: #fff;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-tasks.css}">
 
-.sidebar-icon {
-    width: 24px;
-    text-align: center;
-    flex-shrink: 0;
-}
+        <link rel="stylesheet"
+              th:href="@{/assets/css/crm/crm-responsive.css}">
 
-.sidebar-section {
-    margin: 18px 12px 6px;
-    color: #64748b;
-    font-size: .72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-}
+    </th:block>
 
-.sidebar-footer {
-    margin-top: auto;
-    display: grid;
-    gap: 6px;
-}
-
-.logout {
-    color: #fca5a5;
-}
-
-.admin-sidebar.collapsed .sidebar-text {
-    display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-brand {
-    justify-content: center;
-}
-
-.admin-sidebar.collapsed .sidebar-toggle {
-    margin-left: 0;
-}
-
-.admin-sidebar.collapsed .sidebar-link {
-    justify-content: center;
-    padding: 12px;
-}
-</style>
-          <style>
-    body {
-        background: #f5f7fb;
-    }
-
-    .dashboard-card {
-        transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .dashboard-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 14px 32px rgba(15, 23, 42, .12) !important;
-    }
-    
-    
-.admin-sidebar {
-    width: 270px;
-    min-height: 100vh;
-    background: #0f172a;
-    color: #e5e7eb;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 28px;
-}
-
-.brand-logo {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #22c55e, #06b6d4);
-    color: #04111f;
-    display: grid;
-    place-items: center;
-    font-weight: 900;
-}
-
-.sidebar-brand small {
-    display: block;
-    color: #94a3b8;
-    font-size: .78rem;
-}
-
-.sidebar-nav {
-    display: grid;
-    gap: 6px;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #cbd5e1;
-    text-decoration: none;
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all .2s ease;
-}
-
-.sidebar-link:hover {
-    background: rgba(255,255,255,.08);
-    color: #fff;
-}
-
-.sidebar-section {
-    margin: 18px 12px 6px;
-    color: #64748b;
-    font-size: .72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-}
-
-.sidebar-footer {
-    margin-top: auto;
-    display: grid;
-    gap: 6px;
-}
-
-.logout {
-    color: #fca5a5;
-}
-
-</style>
 </head>
 
-<body class="bg-light">
+<body th:class="${crmPage} ? 'crm-body' : 'bg-light'">
 
 <div class="d-flex min-vh-100">
 
-    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+    <!-- SIDEBAR -->
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}">
+    </aside>
 
-    <div class="flex-grow-1">
+    <!-- CONTENT -->
+    <div class="flex-grow-1 admin-main-content">
 
-        <header th:replace="~{admin/fragments/topbar :: topbar}"></header>
+        <!-- TOPBAR -->
+        <header th:replace="~{admin/fragments/topbar :: topbar}">
+        </header>
 
-        <main class="p-4" th:replace="${content}"></main>
+        <!-- PAGE -->
+        <main class="p-4"
+              th:replace="${content}">
+        </main>
 
     </div>
 
 </div>
 
+<!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
+
+<!-- Sidebar -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
     const sidebar = document.getElementById('adminSidebar');
     const toggle = document.getElementById('sidebarToggle');
 
@@ -253,13 +94,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     toggle.addEventListener('click', function () {
+
         sidebar.classList.toggle('collapsed');
+
         localStorage.setItem(
             'adminSidebarCollapsed',
             sidebar.classList.contains('collapsed')
         );
+
     });
+
 });
 </script>
+
+<!-- CRM APP -->
+<script type="module"
+        th:src="@{/assets/js/crm/crm-app.js}"
+        th:if="${crmPage}">
+</script>
+
 </body>
 </html>

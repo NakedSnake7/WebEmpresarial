@@ -1,11 +1,28 @@
-package com.webempresarial.store.service;
+ package com.webempresarial.store.service;
 
-import com.webempresarial.store.dto.LeadRequestDTO;
+ import java.util.List; 
+ import java.util.ArrayList;
+
+ import com.webempresarial.store.dto.lead.CreateNoteDTO;
+import com.webempresarial.store.dto.lead.LeadActivityDTO;
+import com.webempresarial.store.dto.lead.LeadCardDTO;
+ import com.webempresarial.store.dto.lead.LeadDetailDTO;
+import com.webempresarial.store.dto.lead.SalesTaskDTO;
+import com.webempresarial.store.dto.LeadRequestDTO; 
 import com.webempresarial.store.entity.Lead;
 import com.webempresarial.store.events.LeadCreatedEvent;
+import com.webempresarial.store.model.ActivityType;
+import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.LeadStatus;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.repository.LeadActivityRepository;
 import com.webempresarial.store.repository.LeadRepository;
+import com.webempresarial.store.repository.SalesTaskRepository;
+
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +31,22 @@ public class LeadService {
 
     private final LeadRepository leadRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final LeadActivityService activityService;
+    private final LeadActivityRepository leadActivityRepository;
+    private final SalesTaskRepository salesTaskRepository;
 
     public LeadService(
             LeadRepository leadRepository,
-            ApplicationEventPublisher eventPublisher
+            ApplicationEventPublisher eventPublisher,
+            LeadActivityService activityService,
+            LeadActivityRepository leadActivityRepository,
+            SalesTaskRepository salesTaskRepository
     ) {
         this.leadRepository = leadRepository;
         this.eventPublisher = eventPublisher;
+        this.activityService = activityService;
+        this.leadActivityRepository = leadActivityRepository;
+        this.salesTaskRepository = salesTaskRepository;
     }
 
     @Transactional
@@ -41,7 +67,14 @@ public class LeadService {
         lead.setSource(trimOrDefault(dto.getSource(), "index"));
 
         Lead savedLead = leadRepository.save(lead);
-
+        
+        activityService.log(
+                savedLead,
+                ActivityType.LEAD_CREATED,
+                "Lead creado",
+                "Lead capturado desde " + savedLead.getSource()
+        );
+        
         eventPublisher.publishEvent(
                 new LeadCreatedEvent(savedLead)
         );
@@ -62,5 +95,110 @@ public class LeadService {
         return value == null || value.isBlank()
                 ? defaultValue
                 : value.trim();
+    }
+    
+    @Transactional
+    public void updateStatus(Long leadId, LeadStatus newStatus, AdminUser user) {
+
+        Lead lead = leadRepository.findById(leadId)
+            .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+
+        LeadStatus oldStatus = lead.getStatus();
+
+        lead.setStatus(newStatus);
+        lead.setUpdatedAt(LocalDateTime.now());
+
+        leadRepository.save(lead);
+
+        activityService.log(
+            lead,
+            ActivityType.STATUS_CHANGED,
+            "Estado actualizado",
+            oldStatus + " → " + newStatus
+        );
+    }
+    public List<LeadCardDTO> getLeadsForCurrentStore() {
+
+        return leadRepository.findAll()
+                .stream()
+                .map(lead -> new LeadCardDTO(
+                        lead.getId(),
+                        lead.getNombre(),
+                        lead.getEmpresa(),
+                        null,
+                        lead.getWhatsapp(),
+                        lead.getStatus().name(),
+                        lead.getTemperature().name(),
+                        lead.getPriority().name(),
+                        lead.getScore(),
+                        lead.getProjectedValue(),
+                        lead.getSource(),
+                        null,
+                        lead.getCreatedAt(),
+                        lead.getNextFollowUpAt()
+                ))
+                .toList();
+    }
+
+    public LeadDetailDTO getDetail(Long id) {
+
+        Lead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+
+        List<LeadActivityDTO> activities = leadActivityRepository
+                .findByLeadIdOrderByCreatedAtDesc(id)
+                .stream()
+                .map(activity -> new LeadActivityDTO(
+                        activity.getId(),
+                        activity.getType().name(),
+                        activity.getTitle(),
+                        activity.getDescription(),
+                        activity.getCreatedAt()
+                ))
+                .toList();
+
+        List<SalesTaskDTO> tasks = salesTaskRepository
+                .findByLeadIdOrderByDueAtAsc(id)
+                .stream()
+                .map(task -> new SalesTaskDTO(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getDescription(),
+                        task.getStatus().name(),
+                        task.getPriority().name(),
+                        task.getDueAt()
+                ))
+                .toList();
+
+        return new LeadDetailDTO(
+                lead.getId(),
+                lead.getNombre(),
+                lead.getEmpresa(),
+                null,
+                lead.getWhatsapp(),
+                lead.getStatus().name(),
+                lead.getTemperature().name(),
+                lead.getPriority().name(),
+                lead.getScore(),
+                null,
+                lead.getProjectedValue(),
+                activities,
+                tasks,
+                new ArrayList<>()
+        );
+    }
+
+    @Transactional
+    public void addNote(Long leadId, CreateNoteDTO dto) {
+
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+
+        activityService.log(
+                lead,
+                ActivityType.NOTE_ADDED,
+                "Nota agregada",
+                dto.note()
+        );
     }
 }

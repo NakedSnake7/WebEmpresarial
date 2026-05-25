@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<article th:fragment="card(lead)"
+         class="crm-lead-card"
+         th:data-lead-id="${lead.id}">
+
+    <div class="lead-card-top">
+        <span class="lead-service" th:text="${lead.servicio}">Commerce™</span>
+        <span class="lead-score" th:text="${lead.score}">80</span>
+    </div>
+
+    <h3 th:text="${lead.nombre}">Nombre lead</h3>
+
+    <p th:text="${lead.empresa} ?: 'Sin empresa registrada'">
+        Empresa
+    </p>
+
+    <div class="lead-badges">
+        <span th:class="'badge badge-' + ${#strings.toLowerCase(lead.temperature)}"
+              th:text="${lead.temperature}">
+            HOT
+        </span>
+
+        <span class="badge badge-source"
+              th:text="${lead.source}">
+            Facebook
+        </span>
+    </div>
+
+    <div class="lead-card-footer">
+        <span th:text="${lead.presupuesto}">$15k - $30k</span>
+        <a th:href="@{/crm/leads/{id}(id=${lead.id})}">Ver</a>
+    </div>
+
+</article>
+
+</body>
+</html>

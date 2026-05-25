@@ -1,0 +1,208 @@
+body {
+    background: #f5f7fb;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.admin-main-content {
+    min-width: 0;
+    background: #f5f7fb;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.admin-sidebar {
+    width: 270px;
+    min-width: 270px;
+    min-height: 100vh;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition:
+        width .25s ease,
+        min-width .25s ease;
+}
+
+.admin-sidebar.collapsed {
+    width: 86px;
+    min-width: 86px;
+}
+
+/* =========================
+   BRAND
+========================= */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #06b6d4);
+    color: #04111f;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.sidebar-brand strong {
+    display: block;
+    font-size: .95rem;
+}
+
+.sidebar-brand small {
+    display: block;
+    color: #94a3b8;
+    font-size: .78rem;
+}
+
+/* =========================
+   TOGGLE
+========================= */
+
+.sidebar-toggle {
+    margin-left: auto;
+    border: 0;
+    background: rgba(255,255,255,.08);
+    color: #e5e7eb;
+    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255,255,255,.16);
+}
+
+/* =========================
+   NAV
+========================= */
+
+.sidebar-nav {
+    display: grid;
+    gap: 6px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
+    white-space: nowrap;
+}
+
+.sidebar-link:hover {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.sidebar-icon {
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* =========================
+   ACTIVE
+========================= */
+
+.sidebar-link.active,
+.sidebar-link[aria-current="page"] {
+    background: linear-gradient(
+        135deg,
+        rgba(103,232,249,.18),
+        rgba(167,139,250,.18)
+    );
+
+    color: #fff;
+
+    border: 1px solid rgba(103,232,249,.28);
+}
+
+/* =========================
+   SECTION
+========================= */
+
+.sidebar-section {
+    margin: 18px 12px 6px;
+    color: #64748b;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.sidebar-footer {
+    margin-top: auto;
+    display: grid;
+    gap: 6px;
+}
+
+.logout {
+    color: #fca5a5;
+}
+
+/* =========================
+   COLLAPSED
+========================= */
+
+.admin-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.admin-sidebar.collapsed .sidebar-brand {
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle {
+    margin-left: 0;
+}
+
+.admin-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-card {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 14px 32px rgba(15,23,42,.12) !important;
+}

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.webempresarial.store.entity.Lead;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.OrderStatus;
 import com.webempresarial.store.model.PaymentStatus;
@@ -120,4 +121,9 @@ public class NotificationService {
             System.err.println("⚠️ Error correo expiración. Orden=" + order.getId());
         }
     }
+    
+    public void notifyNewLead(Lead lead) {
+        System.out.println("Nuevo lead recibido: " + lead.getNombre());
+    }
+    
 }

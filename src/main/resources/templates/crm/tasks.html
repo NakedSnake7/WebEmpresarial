@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Tareas Comerciales | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="crm-page">
+
+    <div class="crm-header">
+        <div>
+            <span class="crm-kicker">Sales Tasks</span>
+            <h1>Tareas comerciales</h1>
+            <p>
+                Gestiona seguimientos, propuestas, llamadas y recordatorios pendientes.
+            </p>
+        </div>
+
+        <div class="crm-header-actions">
+            <a href="/crm/dashboard" class="crm-btn">Dashboard</a>
+            <a href="/crm/pipeline" class="crm-btn crm-btn-primary">Pipeline</a>
+        </div>
+    </div>
+
+    <div class="crm-toolbar">
+        <input id="crmTaskSearch" class="crm-search" type="search"
+               placeholder="Buscar tarea, lead o descripción...">
+
+        <select id="crmTaskStatusFilter" class="crm-filter">
+            <option value="">Todos</option>
+            <option value="PENDING">Pendientes</option>
+            <option value="IN_PROGRESS">En proceso</option>
+            <option value="COMPLETED">Completadas</option>
+            <option value="OVERDUE">Vencidas</option>
+        </select>
+    </div>
+
+    <div class="crm-tasks-board" id="crmTasksBoard">
+
+        <div class="crm-task-column" data-status="PENDING">
+            <div class="crm-column-header">
+                <span>Pendientes</span>
+                <strong>0</strong>
+            </div>
+            <div class="crm-task-column-body"></div>
+        </div>
+
+        <div class="crm-task-column" data-status="IN_PROGRESS">
+            <div class="crm-column-header">
+                <span>En proceso</span>
+                <strong>0</strong>
+            </div>
+            <div class="crm-task-column-body"></div>
+        </div>
+
+        <div class="crm-task-column" data-status="COMPLETED">
+            <div class="crm-column-header">
+                <span>Completadas</span>
+                <strong>0</strong>
+            </div>
+            <div class="crm-task-column-body"></div>
+        </div>
+
+        <div class="crm-task-column" data-status="OVERDUE">
+            <div class="crm-column-header">
+                <span>Vencidas</span>
+                <strong>0</strong>
+            </div>
+            <div class="crm-task-column-body"></div>
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>

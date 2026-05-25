@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="sidebar" class="crm-sidebar">
+
+    <div class="crm-brand">
+        <div class="crm-logo">WE</div>
+        <div>
+            <strong>WebEmpresarial™</strong>
+            <span>Sales CRM</span>
+        </div>
+    </div>
+
+    <nav class="crm-nav">
+        <a th:href="@{/crm/dashboard}">Dashboard</a>
+        <a th:href="@{/crm/pipeline}">Pipeline</a>
+        <a th:href="@{/crm/tasks}">Tareas</a>
+        <a th:href="@{/crm/reports}">Reportes</a>
+    </nav>
+
+</aside>
+
+</body>
+</html>

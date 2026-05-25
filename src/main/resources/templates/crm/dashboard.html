@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'CRM Dashboard | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="crm-page" data-crm-view="dashboard">
+
+    <div class="crm-header">
+        <div>
+            <span class="crm-kicker">WebEmpresarial™ CRM</span>
+            <h1>Centro comercial</h1>
+            <p>
+                Leads, seguimiento, pipeline, tareas y oportunidades comerciales.
+            </p>
+        </div>
+
+        <div class="crm-header-actions">
+            <a href="/crm/pipeline" class="crm-btn crm-btn-primary">
+                Ver pipeline
+            </a>
+            <a href="/crm/tasks" class="crm-btn">
+                Tareas
+            </a>
+        </div>
+    </div>
+
+    <div class="crm-metrics-grid">
+
+        <div class="crm-metric-card">
+            <span>Leads nuevos</span>
+            <strong>0</strong>
+            <small>Hoy</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Leads HOT</span>
+            <strong>0</strong>
+            <small>Alta intención</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Propuestas</span>
+            <strong>0</strong>
+            <small>Enviadas</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Pipeline value</span>
+            <strong>$0</strong>
+            <small>Valor estimado</small>
+        </div>
+
+    </div>
+
+    <div class="crm-grid-2 mt-4">
+
+        <div class="crm-panel">
+            <div class="crm-panel-header">
+                <h3>Actividad reciente</h3>
+                <a href="/crm/pipeline">Ver todo</a>
+            </div>
+
+            <div class="crm-empty">
+                Aún no hay actividad comercial registrada.
+            </div>
+        </div>
+
+        <div class="crm-panel">
+            <div class="crm-panel-header">
+                <h3>Próximas tareas</h3>
+                <a href="/crm/tasks">Ver tareas</a>
+            </div>
+
+            <div class="crm-empty">
+                No tienes tareas pendientes.
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>

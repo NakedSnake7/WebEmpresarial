@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<section th:fragment="column(status, title, leads)"
+         class="crm-kanban-column"
+         th:data-status="${status}">
+
+    <header class="column-header">
+        <h2 th:text="${title}">NEW</h2>
+        <span th:text="${#lists.size(leads)}">0</span>
+    </header>
+
+    <div class="crm-column-body">
+        <div th:each="lead : ${leads}">
+            <div th:replace="~{crm/fragments/lead-card :: card(${lead})}"></div>
+        </div>
+    </div>
+
+</section>
+
+</body>
+</html>

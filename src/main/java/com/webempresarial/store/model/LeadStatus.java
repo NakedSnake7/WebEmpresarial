@@ -4,7 +4,10 @@ public enum LeadStatus {
     NEW,
     CONTACTED,
     QUALIFIED,
-    PROPOSAL,
-    WON,
+    CALL_BOOKED,
+    PROPOSAL_SENT,
+    FOLLOW_UP,
+    NEGOTIATION,
+    CLOSED,
     LOST
 }

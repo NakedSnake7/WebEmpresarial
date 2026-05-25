@@ -1,0 +1,315 @@
+.crm-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.crm-search,
+.crm-filter {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    color: #f8fafc;
+    border-radius: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition:
+        border-color .22s ease,
+        background .22s ease,
+        box-shadow .22s ease;
+    backdrop-filter: blur(10px);
+}
+
+.crm-search:focus,
+.crm-filter:focus {
+    border-color: rgba(103,232,249,.38);
+    box-shadow: 0 0 0 4px rgba(103,232,249,.08);
+}
+
+.crm-search {
+    width: min(520px, 100%);
+}
+
+.crm-filter {
+    min-width: 160px;
+}
+
+.crm-search::placeholder {
+    color: #64748b;
+}
+
+.crm-filter option {
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.crm-kanban {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(290px, 1fr);
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 18px;
+    align-items: start;
+}
+
+.crm-kanban::-webkit-scrollbar {
+    height: 10px;
+}
+
+.crm-kanban::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.12);
+    border-radius: 999px;
+}
+
+.crm-kanban-column {
+    min-height: 680px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.05),
+            rgba(255,255,255,.03)
+        );
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 24px;
+    padding: 14px;
+    backdrop-filter: blur(18px);
+    transition:
+        border-color .22s ease,
+        transform .22s ease;
+}
+
+.crm-kanban-column:hover {
+    border-color: rgba(103,232,249,.16);
+}
+
+.crm-column-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    color: #f8fafc;
+    background: transparent;
+    backdrop-filter: blur(10px);
+}
+
+.crm-column-header span {
+    font-weight: 900;
+    font-size: .95rem;
+    letter-spacing: -.02em;
+}
+
+.crm-column-header strong {
+    min-width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    color: #94a3b8;
+    font-size: .76rem;
+    font-weight: 900;
+}
+
+.crm-column-body {
+    display: grid;
+    gap: 12px;
+    min-height: 560px;
+    align-content: start;
+}
+
+.crm-lead-card {
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.07),
+            rgba(255,255,255,.045)
+        );
+    border: 1px solid rgba(255,255,255,.10);
+    cursor: grab;
+    transition:
+        transform .22s ease,
+        border-color .22s ease,
+        box-shadow .22s ease,
+        background .22s ease;
+    backdrop-filter: blur(10px);
+}
+
+.crm-lead-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(103,232,249,.12),
+            transparent 34%
+        );
+    pointer-events: none;
+}
+
+.crm-lead-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(103,232,249,.42);
+    box-shadow: 0 18px 45px rgba(0,0,0,.32);
+}
+
+.crm-lead-card.dragging {
+    opacity: .5;
+    transform: rotate(2deg);
+    cursor: grabbing;
+}
+
+.crm-lead-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.crm-lead-name {
+    font-weight: 950;
+    color: #f8fafc;
+    font-size: .95rem;
+    letter-spacing: -.02em;
+}
+
+.crm-lead-business {
+    color: #94a3b8;
+    font-size: .82rem;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.crm-lead-meta {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: .78rem;
+}
+
+.crm-lead-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crm-lead-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.crm-score {
+    color: #67e8f9;
+    font-weight: 950;
+    font-size: .82rem;
+    letter-spacing: .01em;
+}
+
+.crm-card-action {
+    border: 0;
+    background: rgba(103,232,249,.12);
+    color: #67e8f9;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: .74rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition:
+        background .22s ease,
+        transform .22s ease;
+}
+
+.crm-card-action:hover {
+    background: rgba(103,232,249,.22);
+    transform: translateY(-1px);
+}
+
+.crm-kanban-column.drag-target {
+    border-color: rgba(103,232,249,.45);
+    box-shadow: inset 0 0 0 1px rgba(103,232,249,.18);
+}
+
+.crm-pipeline-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.crm-pipeline-stat {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    min-width: 140px;
+}
+
+.crm-pipeline-stat span {
+    display: block;
+    margin-bottom: 6px;
+    color: #64748b;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 800;
+}
+
+.crm-pipeline-stat strong {
+    display: block;
+    color: #f8fafc;
+    font-size: 1.2rem;
+    font-weight: 950;
+    letter-spacing: -.03em;
+}
+
+.crm-kanban-column[data-status="NEW"] {
+    border-top: 2px solid rgba(103,232,249,.42);
+}
+
+.crm-kanban-column[data-status="CONTACTED"] {
+    border-top: 2px solid rgba(59,130,246,.42);
+}
+
+.crm-kanban-column[data-status="QUALIFIED"] {
+    border-top: 2px solid rgba(250,204,21,.42);
+}
+
+.crm-kanban-column[data-status="CALL_BOOKED"] {
+    border-top: 2px solid rgba(167,139,250,.42);
+}
+
+.crm-kanban-column[data-status="PROPOSAL_SENT"] {
+    border-top: 2px solid rgba(244,114,182,.42);
+}
+
+.crm-kanban-column[data-status="FOLLOW_UP"] {
+    border-top: 2px solid rgba(45,212,191,.42);
+}
+
+.crm-kanban-column[data-status="NEGOTIATION"] {
+    border-top: 2px solid rgba(251,146,60,.42);
+}
+
+.crm-kanban-column[data-status="CLOSED"] {
+    border-top: 2px solid rgba(34,197,94,.42);
+}
+
+.crm-kanban-column[data-status="LOST"] {
+    border-top: 2px solid rgba(248,113,113,.42);
+}
