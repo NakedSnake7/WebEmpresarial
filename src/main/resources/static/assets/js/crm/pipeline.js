@@ -138,6 +138,12 @@ function initDragAndDrop() {
 			}
 
 			updateCounters();
+			
+			showToast(
+			    "success",
+			    "Estado actualizado",
+			    `Lead movido a ${newStatus}.`
+			);
 
 			if (currentLeadId && String(currentLeadId) === String(leadId)) {
 			    await openLeadDrawer(leadId);
@@ -155,8 +161,12 @@ async function updateLeadStatus(leadId, status) {
     });
 
     if (!response.ok) {
-        alert("No se pudo actualizar el estado del lead.");
-        return false;
+		showToast(
+		    "error",
+		    "No se pudo actualizar",
+		    "El estado del lead no se guardó correctamente."
+		);
+		        return false;
     }
 
     return true;
@@ -250,8 +260,12 @@ async function openLeadDrawer(leadId) {
     const response = await fetch(`${API_URL}/${leadId}`);
 
     if (!response.ok) {
-        alert("No se pudo cargar el detalle del lead.");
-        return;
+		showToast(
+		    "error",
+		    "No se pudo cargar",
+		    "No fue posible obtener el detalle del lead."
+		);
+		        return;
     }
 
     const lead = await response.json();
@@ -316,24 +330,43 @@ async function saveNote() {
     });
 
     if (!response.ok) {
-        alert("No se pudo guardar la nota.");
-        return;
+		showToast(
+		    "error",
+		    "Nota no guardada",
+		    "Intenta nuevamente en unos segundos."
+		);        return;
     }
 
-    input.value = "";
-    await openLeadDrawer(currentLeadId);
+	input.value = "";
+
+	showToast(
+	    "success",
+	    "Nota guardada",
+	    "La actividad fue agregada al timeline."
+	);
+
+	await openLeadDrawer(currentLeadId);
 }
 
 async function createTask() {
     if (!currentLeadId) return;
 
-    const title = document.getElementById("crmTaskTitle").value.trim();
-    const description = document.getElementById("crmTaskDescription").value.trim();
-    const priority = document.getElementById("crmTaskPriority").value;
-    const dueAt = document.getElementById("crmTaskDueAt").value;
+    const titleInput = document.getElementById("crmTaskTitle");
+    const descriptionInput = document.getElementById("crmTaskDescription");
+    const priorityInput = document.getElementById("crmTaskPriority");
+    const dueAtInput = document.getElementById("crmTaskDueAt");
+
+    const title = titleInput.value.trim();
+    const description = descriptionInput.value.trim();
+    const priority = priorityInput.value;
+    const dueAt = dueAtInput.value;
 
     if (!title) {
-        alert("Agrega un título para la tarea.");
+        showToast(
+            "info",
+            "Falta el título",
+            "Agrega un título para crear la tarea."
+        );
         return;
     }
 
@@ -351,13 +384,23 @@ async function createTask() {
     });
 
     if (!response.ok) {
-        alert("No se pudo crear la tarea.");
+        showToast(
+            "error",
+            "Tarea no creada",
+            "No fue posible guardar la tarea."
+        );
         return;
     }
 
-    document.getElementById("crmTaskTitle").value = "";
-    document.getElementById("crmTaskDescription").value = "";
-    document.getElementById("crmTaskDueAt").value = "";
+    titleInput.value = "";
+    descriptionInput.value = "";
+    dueAtInput.value = "";
+
+    showToast(
+        "success",
+        "Tarea creada",
+        "El seguimiento quedó registrado."
+    );
 
     await openLeadDrawer(currentLeadId);
 }
@@ -418,4 +461,26 @@ function renderTasks(tasks) {
         </article>
     `).join("");
 }
+function showToast(type = "info", title = "Listo", message = "") {
+    const container = document.getElementById("crmToastContainer");
 
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `crm-toast ${type}`;
+
+    toast.innerHTML = `
+        <strong>${escapeHtml(title)}</strong>
+        <span>${escapeHtml(message)}</span>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add("hide");
+
+        setTimeout(() => {
+            toast.remove();
+        }, 240);
+    }, 3200);
+}
