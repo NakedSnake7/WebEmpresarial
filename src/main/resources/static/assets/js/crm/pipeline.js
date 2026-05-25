@@ -84,19 +84,33 @@ function initDragAndDrop() {
 
         card.addEventListener("dragend", () => {
             card.classList.remove("dragging");
+
+            document.querySelectorAll(".crm-kanban-column").forEach(column => {
+                column.classList.remove("drag-target");
+            });
         });
     });
 
     columns.forEach(column => {
+
+        if (column.dataset.dndReady === "true") return;
+        column.dataset.dndReady = "true";
+
         column.addEventListener("dragover", event => {
             event.preventDefault();
 
             const dragging = document.querySelector(".dragging");
             const body = column.querySelector(".crm-column-body");
 
+            column.classList.add("drag-target");
+
             if (dragging && body) {
                 body.appendChild(dragging);
             }
+        });
+
+        column.addEventListener("dragleave", () => {
+            column.classList.remove("drag-target");
         });
 
         column.addEventListener("drop", async () => {
@@ -107,19 +121,30 @@ function initDragAndDrop() {
             const leadId = dragging.dataset.leadId;
             const newStatus = column.dataset.status;
 
-            await updateLeadStatus(leadId, newStatus);
+            column.classList.remove("drag-target");
 
-            const lead = allLeads.find(item => String(item.id) === String(leadId));
+            const success = await updateLeadStatus(leadId, newStatus);
 
-            if (lead) {
-                lead.status = newStatus;
+            if (!success) {
+                allLeads = await fetchLeads();
+                renderPipeline(allLeads);
+                return;
             }
 
-            updateCounters();
+			const lead = allLeads.find(item => String(item.id) === String(leadId));
+
+			if (lead) {
+			    lead.status = newStatus;
+			}
+
+			updateCounters();
+
+			if (currentLeadId && String(currentLeadId) === String(leadId)) {
+			    await openLeadDrawer(leadId);
+			}
         });
     });
 }
-
 async function updateLeadStatus(leadId, status) {
     const response = await fetch(`${API_URL}/${leadId}/status`, {
         method: "PATCH",
@@ -131,7 +156,10 @@ async function updateLeadStatus(leadId, status) {
 
     if (!response.ok) {
         alert("No se pudo actualizar el estado del lead.");
+        return false;
     }
+
+    return true;
 }
 
 function initFilters() {
@@ -211,6 +239,10 @@ function initDrawer() {
     saveNoteBtn?.addEventListener("click", saveNote);
     createTaskBtn?.addEventListener("click", createTask);
 }
+function openDrawerUI() {
+    document.getElementById("crmLeadDrawer")?.classList.add("open");
+    document.getElementById("crmDrawerBackdrop")?.classList.add("open");
+}
 
 async function openLeadDrawer(leadId) {
     currentLeadId = leadId;
@@ -224,10 +256,8 @@ async function openLeadDrawer(leadId) {
 
     const lead = await response.json();
 
-    fillDrawer(lead);
-
-    document.getElementById("crmLeadDrawer")?.classList.add("open");
-    document.getElementById("crmDrawerBackdrop")?.classList.add("open");
+	fillDrawer(lead);
+	openDrawerUI();
 }
 
 function closeDrawer() {

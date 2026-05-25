@@ -101,20 +101,40 @@ public class LeadService {
     public void updateStatus(Long leadId, LeadStatus newStatus, AdminUser user) {
 
         Lead lead = leadRepository.findById(leadId)
-            .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
 
         LeadStatus oldStatus = lead.getStatus();
+
+        if (oldStatus == newStatus) {
+            return;
+        }
 
         lead.setStatus(newStatus);
         lead.setUpdatedAt(LocalDateTime.now());
 
+        if (newStatus == LeadStatus.CONTACTED) {
+            lead.setLastContactAt(LocalDateTime.now());
+        }
+
+        if (newStatus == LeadStatus.FOLLOW_UP) {
+            lead.setNextFollowUpAt(LocalDateTime.now().plusHours(24));
+        }
+
+        if (newStatus == LeadStatus.CLOSED) {
+            lead.setClosedAt(LocalDateTime.now());
+        }
+
+        if (newStatus == LeadStatus.LOST) {
+            lead.setLostAt(LocalDateTime.now());
+        }
+
         leadRepository.save(lead);
 
         activityService.log(
-            lead,
-            ActivityType.STATUS_CHANGED,
-            "Estado actualizado",
-            oldStatus + " → " + newStatus
+                lead,
+                ActivityType.STATUS_CHANGED,
+                "Estado actualizado",
+                oldStatus + " → " + newStatus
         );
     }
     public List<LeadCardDTO> getLeadsForCurrentStore() {
