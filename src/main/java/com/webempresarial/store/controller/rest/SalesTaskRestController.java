@@ -9,21 +9,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webempresarial.store.dto.lead.SalesTaskDTO;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.SalesTaskService;
+import com.webempresarial.store.service.StoreContextService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/crm/tasks")
 public class SalesTaskRestController {
 
     private final SalesTaskService salesTaskService;
+    private final StoreContextService storeContextService;
 
-    public SalesTaskRestController(SalesTaskService salesTaskService) {
+    public SalesTaskRestController(
+            SalesTaskService salesTaskService,
+            StoreContextService storeContextService
+    ) {
         this.salesTaskService = salesTaskService;
+        this.storeContextService = storeContextService;
     }
 
     @GetMapping
-    public List<SalesTaskDTO> getTasks() {
-        return salesTaskService.getAllTasks();
+    public List<SalesTaskDTO> getTasks(HttpServletRequest request) {
+        Store store = storeContextService.getCurrentStore(request);
+        return salesTaskService.getAllTasks(store.getId());
     }
     
     @PatchMapping("/{id}/complete")

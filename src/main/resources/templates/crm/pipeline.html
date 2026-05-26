@@ -28,12 +28,10 @@
     </div>
 
     <div class="crm-toolbar">
-        <input 
-            id="crmSearchInput"
-            class="crm-search"
-            type="search"
-            placeholder="Buscar lead, empresa, WhatsApp o servicio..."
-        >
+        <input id="crmSearchInput"
+               class="crm-search"
+               type="search"
+               placeholder="Buscar lead, empresa, WhatsApp o servicio...">
 
         <select id="crmTemperatureFilter" class="crm-filter">
             <option value="">Todos</option>
@@ -41,14 +39,16 @@
             <option value="WARM">WARM</option>
             <option value="COLD">COLD</option>
         </select>
-        
     </div>
 
     <div class="crm-kanban" id="crmKanban">
 
         <div class="crm-kanban-column" data-status="NEW">
             <div class="crm-column-header">
-                <span>Nuevo</span>
+                <div>
+                    <span>Nuevo</span>
+                    <small class="crm-column-value" data-value-status="NEW">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -56,7 +56,10 @@
 
         <div class="crm-kanban-column" data-status="CONTACTED">
             <div class="crm-column-header">
-                <span>Contactado</span>
+                <div>
+                    <span>Contactado</span>
+                    <small class="crm-column-value" data-value-status="CONTACTED">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -64,7 +67,10 @@
 
         <div class="crm-kanban-column" data-status="QUALIFIED">
             <div class="crm-column-header">
-                <span>Calificado</span>
+                <div>
+                    <span>Calificado</span>
+                    <small class="crm-column-value" data-value-status="QUALIFIED">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -72,7 +78,10 @@
 
         <div class="crm-kanban-column" data-status="CALL_BOOKED">
             <div class="crm-column-header">
-                <span>Llamada</span>
+                <div>
+                    <span>Llamada</span>
+                    <small class="crm-column-value" data-value-status="CALL_BOOKED">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -80,7 +89,10 @@
 
         <div class="crm-kanban-column" data-status="PROPOSAL_SENT">
             <div class="crm-column-header">
-                <span>Propuesta</span>
+                <div>
+                    <span>Propuesta</span>
+                    <small class="crm-column-value" data-value-status="PROPOSAL_SENT">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -88,7 +100,10 @@
 
         <div class="crm-kanban-column" data-status="FOLLOW_UP">
             <div class="crm-column-header">
-                <span>Seguimiento</span>
+                <div>
+                    <span>Seguimiento</span>
+                    <small class="crm-column-value" data-value-status="FOLLOW_UP">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -96,7 +111,10 @@
 
         <div class="crm-kanban-column" data-status="NEGOTIATION">
             <div class="crm-column-header">
-                <span>Negociación</span>
+                <div>
+                    <span>Negociación</span>
+                    <small class="crm-column-value" data-value-status="NEGOTIATION">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -104,7 +122,10 @@
 
         <div class="crm-kanban-column" data-status="CLOSED">
             <div class="crm-column-header">
-                <span>Cerrado</span>
+                <div>
+                    <span>Cerrado</span>
+                    <small class="crm-column-value" data-value-status="CLOSED">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
@@ -112,116 +133,135 @@
 
         <div class="crm-kanban-column" data-status="LOST">
             <div class="crm-column-header">
-                <span>Perdido</span>
+                <div>
+                    <span>Perdido</span>
+                    <small class="crm-column-value" data-value-status="LOST">$0</small>
+                </div>
                 <strong>0</strong>
             </div>
             <div class="crm-column-body"></div>
         </div>
 
     </div>
-    
+
     <div class="crm-drawer-backdrop" id="crmDrawerBackdrop"></div>
 
-<aside class="crm-drawer" id="crmLeadDrawer">
-    <div class="crm-drawer-header">
-        <div>
-            <span class="crm-kicker">Lead detail</span>
-            <h2 id="drawerLeadName">Lead</h2>
-            <p id="drawerLeadBusiness">Empresa</p>
+    <aside class="crm-drawer" id="crmLeadDrawer">
+
+        <div class="crm-drawer-header">
+            <div>
+                <span class="crm-kicker">Lead detail</span>
+                <h2 id="drawerLeadName">Lead</h2>
+                <p id="drawerLeadBusiness">Empresa</p>
+            </div>
+
+            <button class="crm-drawer-close"
+                    id="crmDrawerClose"
+                    type="button">
+                ✕
+            </button>
         </div>
 
-        <button class="crm-drawer-close" id="crmDrawerClose" type="button">
-            ✕
-        </button>
-    </div>
+        <div class="crm-drawer-section">
+            <h3>Información</h3>
 
-    <div class="crm-drawer-section">
-        <h3>Información</h3>
+            <div class="crm-info-grid">
+                <div>
+                    <span>WhatsApp</span>
+                    <strong id="drawerLeadPhone">—</strong>
+                </div>
 
-        <div class="crm-info-grid">
-            <div>
-                <span>WhatsApp</span>
-                <strong id="drawerLeadPhone">—</strong>
-            </div>
+                <div>
+                    <span>Estado</span>
+                    <strong id="drawerLeadStatus">—</strong>
+                </div>
 
-            <div>
-                <span>Estado</span>
-                <strong id="drawerLeadStatus">—</strong>
-            </div>
+                <div>
+                    <span>Temperatura</span>
+                    <strong id="drawerLeadTemperature">—</strong>
+                </div>
 
-            <div>
-                <span>Temperatura</span>
-                <strong id="drawerLeadTemperature">—</strong>
-            </div>
+                <div>
+                    <span>Score</span>
+                    <strong id="drawerLeadScore">—</strong>
+                </div>
 
-            <div>
-                <span>Score</span>
-                <strong id="drawerLeadScore">—</strong>
-            </div>
+                <div>
+                    <span>Origen</span>
+                    <strong id="drawerLeadSource">—</strong>
+                </div>
 
-            <div>
-                <span>Origen</span>
-                <strong id="drawerLeadSource">—</strong>
-            </div>
-
-            <div>
-                <span>Valor proyectado</span>
-                <strong id="drawerLeadValue">—</strong>
+                <div>
+                    <span>Valor proyectado</span>
+                    <strong id="drawerLeadValue">—</strong>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="crm-drawer-section">
-        <h3>Agregar nota</h3>
+        <div class="crm-drawer-section">
+            <h3>Agregar nota</h3>
 
-        <textarea 
-            id="crmNoteInput"
-            class="crm-textarea"
-            placeholder="Escribe una nota interna sobre este lead..."
-        ></textarea>
+            <textarea id="crmNoteInput"
+                      class="crm-textarea"
+                      placeholder="Escribe una nota interna sobre este lead..."></textarea>
 
-        <button class="crm-btn crm-btn-primary w-100 mt-2" id="crmSaveNoteBtn" type="button">
-            Guardar nota
-        </button>
-    </div>
-
-    <div class="crm-drawer-section">
-        <h3>Crear tarea</h3>
-
-        <input id="crmTaskTitle" class="crm-input" placeholder="Ej: Enviar propuesta">
-        <textarea id="crmTaskDescription" class="crm-textarea" placeholder="Descripción de la tarea"></textarea>
-
-        <select id="crmTaskPriority" class="crm-input">
-            <option value="LOW">Baja</option>
-            <option value="MEDIUM" selected>Media</option>
-            <option value="HIGH">Alta</option>
-            <option value="URGENT">Urgente</option>
-        </select>
-
-        <input id="crmTaskDueAt" class="crm-input" type="datetime-local">
-
-        <button class="crm-btn crm-btn-primary w-100 mt-2" id="crmCreateTaskBtn" type="button">
-            Crear tarea
-        </button>
-    </div>
-    
-    <div class="crm-drawer-section">
-    <h3>Tareas del lead</h3>
-
-    <div class="crm-task-list" id="crmLeadTasks">
-        <div class="crm-empty">Sin tareas registradas.</div>
-    </div>
-</div>
-
-    <div class="crm-drawer-section">
-        <h3>Timeline</h3>
-        <div class="crm-timeline" id="crmTimeline">
-            <div class="crm-empty">Sin actividad todavía.</div>
+            <button class="crm-btn crm-btn-primary w-100 mt-2"
+                    id="crmSaveNoteBtn"
+                    type="button">
+                Guardar nota
+            </button>
         </div>
-    </div>
-</aside>
 
-<div class="crm-toast-container" id="crmToastContainer"></div>
+        <div class="crm-drawer-section">
+            <h3>Crear tarea</h3>
+
+            <input id="crmTaskTitle"
+                   class="crm-input"
+                   placeholder="Ej: Enviar propuesta">
+
+            <textarea id="crmTaskDescription"
+                      class="crm-textarea"
+                      placeholder="Descripción de la tarea"></textarea>
+
+            <select id="crmTaskPriority"
+                    class="crm-input">
+                <option value="LOW">Baja</option>
+                <option value="MEDIUM" selected>Media</option>
+                <option value="HIGH">Alta</option>
+                <option value="URGENT">Urgente</option>
+            </select>
+
+            <input id="crmTaskDueAt"
+                   class="crm-input"
+                   type="datetime-local">
+
+            <button class="crm-btn crm-btn-primary w-100 mt-2"
+                    id="crmCreateTaskBtn"
+                    type="button">
+                Crear tarea
+            </button>
+        </div>
+
+        <div class="crm-drawer-section">
+            <h3>Tareas del lead</h3>
+
+            <div class="crm-task-list" id="crmLeadTasks">
+                <div class="crm-empty">Sin tareas registradas.</div>
+            </div>
+        </div>
+
+        <div class="crm-drawer-section">
+            <h3>Timeline</h3>
+
+            <div class="crm-timeline" id="crmTimeline">
+                <div class="crm-empty">Sin actividad todavía.</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <div class="crm-toast-container" id="crmToastContainer"></div>
+
 </section>
 
 </th:block>

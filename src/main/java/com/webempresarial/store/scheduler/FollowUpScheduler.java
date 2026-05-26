@@ -7,20 +7,25 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.webempresarial.store.entity.Lead;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.LeadRepository;
+import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.service.AutomationService;
 
 @Component
 public class FollowUpScheduler {
 
     private final LeadRepository leadRepository;
+    private final StoreRepository storeRepository;
     private final AutomationService automationService;
 
     public FollowUpScheduler(
             LeadRepository leadRepository,
+            StoreRepository storeRepository,
             AutomationService automationService
     ) {
         this.leadRepository = leadRepository;
+        this.storeRepository = storeRepository;
         this.automationService = automationService;
     }
 
@@ -29,8 +34,16 @@ public class FollowUpScheduler {
 
         LocalDateTime now = LocalDateTime.now();
 
-        List<Lead> leads = leadRepository.findLeadsNeedingFollowUp(now);
+        List<Store> stores = storeRepository.findAll();
 
-        leads.forEach(automationService::onLeadNotResponding24h);
+        for (Store store : stores) {
+
+            List<Lead> leads = leadRepository.findLeadsNeedingFollowUp(
+                    store.getId(),
+                    now
+            );
+
+            leads.forEach(automationService::onLeadNotResponding24h);
+        }
     }
 }

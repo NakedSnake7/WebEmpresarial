@@ -5,6 +5,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.Store;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,9 @@ import com.webempresarial.store.dto.lead.LeadDetailDTO;
 import com.webempresarial.store.dto.lead.UpdateLeadStatusDTO;
 import com.webempresarial.store.service.LeadService;
 import com.webempresarial.store.service.SalesTaskService;
+import com.webempresarial.store.service.StoreContextService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/crm/leads")
@@ -22,23 +27,31 @@ public class LeadRestController {
 
     private final LeadService leadService;
     private final SalesTaskService taskService;
+    private final StoreContextService storeContextService;
 
     public LeadRestController(
             LeadService leadService,
-            SalesTaskService taskService
+            SalesTaskService taskService,
+            StoreContextService storeContextService
     ) {
         this.leadService = leadService;
         this.taskService = taskService;
+        this.storeContextService = storeContextService;
     }
 
     @GetMapping
-    public List<LeadCardDTO> getLeads() {
-        return leadService.getLeadsForCurrentStore();
+    public List<LeadCardDTO> getLeads(HttpServletRequest request) {
+        Store store = storeContextService.getCurrentStore(request);
+        return leadService.getLeadsForStore(store.getId());
     }
 
     @GetMapping("/{id}")
-    public LeadDetailDTO getLead(@PathVariable Long id) {
-        return leadService.getDetail(id);
+    public LeadDetailDTO getLead(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        Store store = storeContextService.getCurrentStore(request);
+        return leadService.getDetail(id, store.getId());
     }
 
     @PatchMapping("/{id}/status")

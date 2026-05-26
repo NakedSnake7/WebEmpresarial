@@ -33,8 +33,16 @@
     </div>
  
 <form class="hero-micro-form" id="heroMicroForm">
-  <input type="text" name="nombre" placeholder="Tu nombre" required/>
-  <input type="tel" name="whatsapp" placeholder="Tu WhatsApp" required/>
+  <input type="text" name="nombre" placeholder="Tu nombre" required>
+  <input type="tel" name="whatsapp" placeholder="Tu WhatsApp" required>
+
+  <input type="hidden" name="empresa" value="Sin empresa">
+  <input type="hidden" name="instagram" value="">
+  <input type="hidden" name="servicio" value="auditoria">
+  <input type="hidden" name="presupuesto" value="por-definir">
+  <input type="hidden" name="objetivo" value="Solicitó auditoría gratuita desde hero">
+  <input type="hidden" name="source" value="hero_micro_form">
+
   <button type="submit">Solicitar auditoría →</button>
 </form>
     <p class="hero-micro-note">🔒 Solo usamos tu número para enviarte la propuesta. Sin spam.</p>
@@ -619,28 +627,39 @@
         </div>
       </div>
       <div class="card reveal reveal-d2">
-        <form id="leadForm">
-          <input name="nombre"    placeholder="Nombre completo" required/>
-          <input name="empresa"   placeholder="Empresa o negocio" required/>
-          <input name="whatsapp"  placeholder="WhatsApp (con clave de país)" required/>
-          <input name="instagram" placeholder="Instagram o sitio web actual"/>
-          <select name="servicio" required>
-            <option value="">¿Qué servicio te interesa?</option>
-            <option value="commerce">Commerce — Ecommerce</option>
-            <option value="business">Business — Página web</option>
-            <option value="systems">Systems — Sistema a medida</option>
-            <option value="no-se">No sé todavía, necesito orientación</option>
-          </select>
-          <select name="presupuesto" required>
-            <option value="">Presupuesto estimado (MXN)</option>
-            <option value="menos-10k">Menos de $10,000</option>
-            <option value="10k-25k">$10,000 – $25,000</option>
-            <option value="25k-50k">$25,000 – $50,000</option>
-            <option value="50k-plus">Más de $50,000</option>
-          </select>
-          <textarea name="objetivo" placeholder="¿Qué objetivo quieres lograr? Ej. vender online, captar clientes, automatizar inventario…"></textarea>
-          <button class="btn btn-cyan" type="submit" style="width:100%;padding:15px">Enviar solicitud — es gratis →</button>
-        </form>
+<form id="leadForm">
+
+  <input type="hidden" name="source" value="landing_main_form">
+
+  <input name="nombre" placeholder="Nombre completo" required>
+  <input name="empresa" placeholder="Empresa o negocio" required>
+  <input name="whatsapp" placeholder="WhatsApp (con clave de país)" required>
+  <input name="instagram" placeholder="Instagram o sitio web actual">
+
+  <select name="servicio" required>
+    <option value="">¿Qué servicio te interesa?</option>
+    <option value="commerce">Commerce — Ecommerce</option>
+    <option value="business">Business — Página web</option>
+    <option value="systems">Systems — Sistema a medida</option>
+    <option value="no-se">No sé todavía, necesito orientación</option>
+  </select>
+
+  <select name="presupuesto" required>
+    <option value="">Presupuesto estimado (MXN)</option>
+    <option value="menos-10k">Menos de $10,000</option>
+    <option value="10k-25k">$10,000 – $25,000</option>
+    <option value="25k-50k">$25,000 – $50,000</option>
+    <option value="50k-plus">Más de $50,000</option>
+  </select>
+
+  <textarea name="objetivo"
+            placeholder="¿Qué objetivo quieres lograr? Ej. vender online, captar clientes, automatizar inventario…"></textarea>
+
+  <button class="btn btn-cyan" type="submit" style="width:100%;padding:15px">
+    Enviar solicitud — es gratis →
+  </button>
+
+</form>
         <p id="formMsg" style="margin-top:13px;color:var(--green);display:none;font-size:.91rem">✓ Solicitud enviada. Te contactaremos por WhatsApp en menos de 24 h.</p>
       </div>
     </div>

@@ -75,8 +75,8 @@ public class SalesTaskService {
 
         salesTaskRepository.save(task);
     }
-    public List<SalesTaskDTO> getAllTasks() {
-        return salesTaskRepository.findAll()
+    public List<SalesTaskDTO> getAllTasks(Long storeId) {
+        return salesTaskRepository.findByLeadStoreIdOrderByDueAtAsc(storeId)
                 .stream()
                 .map(task -> new SalesTaskDTO(
                         task.getId(),

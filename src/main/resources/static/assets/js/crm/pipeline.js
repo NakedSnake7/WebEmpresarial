@@ -1,4 +1,5 @@
 const API_URL = "/api/crm/leads";
+const STATS_URL = "/api/crm/pipeline/stats";
 
 let allLeads = [];
 let currentLeadId = null;
@@ -6,8 +7,9 @@ let currentLeadId = null;
 export async function initPipeline() {
     allLeads = await fetchLeads();
     renderPipeline(allLeads);
+    await refreshPipelineStats();
     initFilters();
-	initDrawer();
+    initDrawer();
 }
 
 async function fetchLeads() {
@@ -138,7 +140,9 @@ function initDragAndDrop() {
 			}
 
 			updateCounters();
-			
+
+			await refreshPipelineStats();
+
 			showToast(
 			    "success",
 			    "Estado actualizado",
@@ -484,3 +488,50 @@ function showToast(type = "info", title = "Listo", message = "") {
         }, 240);
     }, 3200);
 }
+
+async function refreshPipelineStats() {
+    const stats = await fetchPipelineStats();
+    updatePipelineStats(stats);
+}
+
+async function fetchPipelineStats() {
+    const response = await fetch(STATS_URL);
+
+    if (!response.ok) {
+        console.error("No se pudieron cargar las métricas del pipeline");
+        return [];
+    }
+
+    return await response.json();
+}
+
+function updatePipelineStats(stats) {
+    const normalized = new Map();
+
+    stats.forEach(item => {
+        normalized.set(item.status, {
+            count: item.count || 0,
+            value: item.value || 0
+        });
+    });
+
+    document.querySelectorAll(".crm-kanban-column").forEach(column => {
+        const status = column.dataset.status;
+        const data = normalized.get(status) || {
+            count: 0,
+            value: 0
+        };
+
+        const counter = column.querySelector(".crm-column-header strong");
+        const value = column.querySelector(`[data-value-status="${status}"]`);
+
+        if (counter) {
+            counter.textContent = data.count;
+        }
+
+        if (value) {
+            value.textContent = formatMoney(data.value);
+        }
+    });
+}
+

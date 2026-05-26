@@ -137,9 +137,26 @@ public class LeadService {
                 oldStatus + " → " + newStatus
         );
     }
-    public List<LeadCardDTO> getLeadsForCurrentStore() {
 
-        return leadRepository.findAll()
+
+
+
+    @Transactional
+    public void addNote(Long leadId, CreateNoteDTO dto) {
+
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+
+        activityService.log(
+                lead,
+                ActivityType.NOTE_ADDED,
+                "Nota agregada",
+                dto.note()
+        );
+    }
+    public List<LeadCardDTO> getLeadsForStore(Long storeId) {
+
+        return leadRepository.findByStoreIdOrderByCreatedAtDesc(storeId)
                 .stream()
                 .map(lead -> new LeadCardDTO(
                         lead.getId(),
@@ -159,11 +176,10 @@ public class LeadService {
                 ))
                 .toList();
     }
+    public LeadDetailDTO getDetail(Long id, Long storeId) {
 
-    public LeadDetailDTO getDetail(Long id) {
-
-        Lead lead = leadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+        Lead lead = leadRepository.findByIdAndStoreId(id, storeId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado para esta tienda"));
 
         List<LeadActivityDTO> activities = leadActivityRepository
                 .findByLeadIdOrderByCreatedAtDesc(id)
@@ -205,20 +221,6 @@ public class LeadService {
                 activities,
                 tasks,
                 new ArrayList<>()
-        );
-    }
-
-    @Transactional
-    public void addNote(Long leadId, CreateNoteDTO dto) {
-
-        Lead lead = leadRepository.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
-
-        activityService.log(
-                lead,
-                ActivityType.NOTE_ADDED,
-                "Nota agregada",
-                dto.note()
         );
     }
 }
