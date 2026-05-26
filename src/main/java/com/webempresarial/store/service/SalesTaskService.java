@@ -52,11 +52,12 @@ public class SalesTaskService {
     @Transactional
     public void createManualTask(
             Long leadId,
+            Long storeId,
             CreateTaskDTO dto
     ) {
 
-        Lead lead = leadRepository.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+        Lead lead = leadRepository.findByIdAndStoreId(leadId, storeId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado para esta tienda"));
 
         SalesTask task = new SalesTask();
 
@@ -64,13 +65,8 @@ public class SalesTaskService {
         task.setTitle(dto.title());
         task.setDescription(dto.description());
         task.setDueAt(dto.dueAt());
-
-        task.setPriority(
-                LeadPriority.valueOf(dto.priority())
-        );
-
+        task.setPriority(LeadPriority.valueOf(dto.priority()));
         task.setStatus(TaskStatus.PENDING);
-
         task.setCreatedAt(LocalDateTime.now());
 
         salesTaskRepository.save(task);
@@ -89,10 +85,13 @@ public class SalesTaskService {
                 .toList();
     }
     @Transactional
-    public void completeTask(Long taskId) {
+    public void completeTask(
+            Long taskId,
+            Long storeId
+    ) {
 
-        SalesTask task = salesTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+        SalesTask task = salesTaskRepository.findByIdAndLeadStoreId(taskId, storeId)
+                .orElseThrow(() -> new RuntimeException("Tarea no encontrada para esta tienda"));
 
         task.setStatus(TaskStatus.COMPLETED);
         task.setCompletedAt(LocalDateTime.now());
