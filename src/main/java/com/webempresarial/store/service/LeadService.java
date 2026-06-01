@@ -98,10 +98,15 @@ public class LeadService {
     }
     
     @Transactional
-    public void updateStatus(Long leadId, LeadStatus newStatus, AdminUser user) {
+    public void updateStatus(
+            Long leadId,
+            Long storeId,
+            LeadStatus newStatus,
+            AdminUser user
+    ) {
 
-        Lead lead = leadRepository.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+        Lead lead = leadRepository.findByIdAndStoreId(leadId, storeId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado para esta tienda"));
 
         LeadStatus oldStatus = lead.getStatus();
 
@@ -142,10 +147,14 @@ public class LeadService {
 
 
     @Transactional
-    public void addNote(Long leadId, CreateNoteDTO dto) {
+    public void addNote(
+            Long leadId,
+            Long storeId,
+            CreateNoteDTO dto
+    ) {
 
-        Lead lead = leadRepository.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+        Lead lead = leadRepository.findByIdAndStoreId(leadId, storeId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado para esta tienda"));
 
         activityService.log(
                 lead,
@@ -154,6 +163,7 @@ public class LeadService {
                 dto.note()
         );
     }
+    
     public List<LeadCardDTO> getLeadsForStore(Long storeId) {
 
         return leadRepository.findByStoreIdOrderByCreatedAtDesc(storeId)

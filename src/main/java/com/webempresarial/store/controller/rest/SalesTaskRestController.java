@@ -37,8 +37,12 @@ public class SalesTaskRestController {
     }
     
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<Void> completeTask(@PathVariable Long id) {
-        salesTaskService.completeTask(id);
+    public ResponseEntity<Void> completeTask(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        Store store = storeContextService.getCurrentStore(request);
+        salesTaskService.completeTask(id, store.getId());
         return ResponseEntity.ok().build();
     }
 }

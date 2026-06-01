@@ -57,19 +57,34 @@ public class LeadRestController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
-            @RequestBody UpdateLeadStatusDTO dto
+            @RequestBody UpdateLeadStatusDTO dto,
+            HttpServletRequest request
     ) {
-        leadService.updateStatus(id, dto.status(), getCurrentUser());
+        Store store = storeContextService.getCurrentStore(request);
+
+        leadService.updateStatus(
+                id,
+                store.getId(),
+                dto.status(),
+                getCurrentUser()
+        );
+
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/notes")
     public ResponseEntity<Void> addNote(
             @PathVariable Long id,
-            @RequestBody CreateNoteDTO dto
+            @RequestBody CreateNoteDTO dto,
+            HttpServletRequest request
     ) {
+        Store store = storeContextService.getCurrentStore(request);
 
-        leadService.addNote(id, dto);
+        leadService.addNote(
+                id,
+                store.getId(),
+                dto
+        );
 
         return ResponseEntity.ok().build();
     }
@@ -77,10 +92,16 @@ public class LeadRestController {
     @PostMapping("/{id}/tasks")
     public ResponseEntity<Void> createTask(
             @PathVariable Long id,
-            @RequestBody CreateTaskDTO dto
+            @RequestBody CreateTaskDTO dto,
+            HttpServletRequest request
     ) {
+        Store store = storeContextService.getCurrentStore(request);
 
-        taskService.createManualTask(id, dto);
+        taskService.createManualTask(
+                id,
+                store.getId(),
+                dto
+        );
 
         return ResponseEntity.ok().build();
     }
