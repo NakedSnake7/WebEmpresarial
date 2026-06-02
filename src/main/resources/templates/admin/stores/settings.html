@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/main :: layout(
+        'Configuración de tienda | Admin',
+        ~{::content}
+)}">
+
+<body>
+
+	<th:block th:fragment="content">
+
+		<section class="container-fluid">
+
+			<div class="mb-4">
+				<span class="badge text-bg-dark mb-2">Configuración</span>
+
+				<h1 class="fw-bold mb-1">Configuración de tienda</h1>
+
+				<p class="text-muted mb-0">Personaliza branding, datos
+					comerciales, propuestas y pagos de esta tienda.</p>
+			</div>
+
+			<div th:if="${param.success}" class="alert alert-success">
+				Configuración guardada correctamente.</div>
+
+			<div class="row g-4">
+
+				<div class="col-lg-8">
+
+					<div class="card border-0 shadow-sm">
+						<div class="card-body p-4">
+
+							<form th:action="@{/admin/store/settings}" th:object="${store}"
+								method="post">
+
+								<div class="row g-4">
+
+									<div class="col-12">
+										<h5 class="fw-bold mb-0">Branding</h5>
+										<p class="text-muted small mb-0">Datos visuales usados en
+											propuestas, emails y documentos.</p>
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Nombre
+											comercial </label> <input class="form-control" th:field="*{nombre}"
+											readonly>
+										<div class="form-text">Este dato se cambia desde
+											administración global.</div>
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Dominio </label> <input
+											class="form-control" th:field="*{dominio}" readonly>
+									</div>
+
+									<div class="col-12">
+										<label class="form-label fw-semibold"> URL del logo </label> <input
+											type="text" class="form-control" th:field="*{logoUrl}"
+											placeholder="https://cdn.midominio.com/logo.png">
+									</div>
+
+									<div class="col-12">
+										<hr>
+										<h5 class="fw-bold mb-0">Información comercial</h5>
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Nombre de
+											contacto </label> <input type="text" class="form-control"
+											th:field="*{contactName}"
+											placeholder="Nombre del responsable">
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Correo
+											comercial </label> <input type="email" class="form-control"
+											th:field="*{companyEmail}" placeholder="ventas@empresa.com">
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Teléfono </label> <input
+											type="text" class="form-control" th:field="*{companyPhone}"
+											placeholder="+52 222 123 4567">
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Sitio web </label> <input
+											type="text" class="form-control" th:field="*{companyWebsite}"
+											placeholder="https://empresa.com">
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label fw-semibold"> Moneda </label> <select
+											class="form-select" th:field="*{currency}">
+											<option value="MXN">MXN</option>
+											<option value="USD">USD</option>
+											<option value="EUR">EUR</option>
+										</select>
+									</div>
+
+									<div class="col-12">
+										<label class="form-label fw-semibold"> Dirección
+											comercial </label>
+										<textarea class="form-control" rows="3"
+											th:field="*{companyAddress}"
+											placeholder="Dirección comercial o fiscal"></textarea>
+									</div>
+
+									<div class="col-12">
+										<hr>
+										<h5 class="fw-bold mb-0">Propuestas PDF</h5>
+									</div>
+
+									<div class="col-12">
+										<label class="form-label fw-semibold"> Footer de
+											propuestas </label>
+										<textarea class="form-control" rows="6"
+											th:field="*{proposalFooter}"
+											placeholder="50% anticipo&#10;50% contra entrega&#10;Vigencia de propuesta: 15 días"></textarea>
+
+										<div class="form-text">Este texto aparecerá en los PDFs
+											generados desde el CRM.</div>
+									</div>
+
+								</div>
+
+								<hr class="my-4">
+
+								<button class="btn btn-success" type="submit">Guardar
+									configuración</button>
+
+							</form>
+
+						</div>
+					</div>
+
+				</div>
+
+				<div class="col-lg-4">
+
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-body p-4">
+
+							<span class="badge text-bg-primary mb-2"> Stripe Connect </span>
+
+							<h5 class="fw-bold mb-2">Pagos de la tienda</h5>
+
+							<p class="text-muted">Conecta la cuenta Stripe de esta tienda
+								para recibir pagos directamente.</p>
+
+							<div th:if="${store.stripeConnected}">
+								<span class="badge text-bg-success mb-2"> Stripe
+									conectado </span>
+
+								<div class="small text-muted mb-3"
+									th:text="${store.stripeConnectedAccountId}"></div>
+
+								<button type="button" class="btn btn-outline-success w-100"
+									disabled>Cuenta conectada</button>
+							</div>
+
+							<div th:unless="${store.stripeConnected}">
+								<span class="badge text-bg-warning mb-3"> Pendiente de
+									conexión </span>
+
+								<button type="button" class="btn btn-dark w-100"
+									id="stripeConnectBtn">Conectar Stripe →</button>
+							</div>
+
+						</div>
+					</div>
+
+					<div class="card border-0 shadow-sm">
+						<div class="card-body p-4">
+
+							<h5 class="fw-bold">Vista previa</h5>
+
+							<p class="text-muted small">Así se usarán tus datos en
+								propuestas y documentos.</p>
+
+							<div class="border rounded p-3 bg-light">
+								<strong th:text="${store.nombre}">Tienda</strong>
+								<div class="small text-muted"
+									th:text="${store.companyEmail ?: 'correo@empresa.com'}">
+								</div>
+								<div class="small text-muted"
+									th:text="${store.companyPhone ?: '+52 000 000 0000'}"></div>
+								<div class="small text-muted"
+									th:text="${store.companyWebsite ?: 'empresa.com'}"></div>
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+		</section>
+
+		<script>
+document.getElementById("stripeConnectBtn")?.addEventListener("click", async () => {
+    const response = await fetch("/api/admin/stripe/connect/onboarding", {
+        method: "POST"
+    });
+
+    if (!response.ok) {
+        alert("No se pudo iniciar Stripe Connect.");
+        return;
+    }
+
+    const data = await response.json();
+    window.location.href = data.onboardingUrl;
+});
+</script>
+
+	</th:block>
+
+</body>
+</html>
