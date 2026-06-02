@@ -1,7 +1,7 @@
 package com.webempresarial.store.dto;
 
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank; 
 import jakarta.validation.constraints.Size;
 
 public class LeadRequestDTO {
@@ -20,10 +20,10 @@ public class LeadRequestDTO {
     @Size(max = 150)
     private String instagram;
 
-    @NotBlank
+    @Size(max = 120)
     private String servicio;
 
-    @NotBlank
+    @Size(max = 120)
     private String presupuesto;
 
     @Size(max = 2000)

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'SaaS Dashboard | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-success mb-2">
+            WebEmpresarial SaaS
+        </span>
+
+        <h1 class="fw-bold mb-1">
+            Dashboard SaaS
+        </h1>
+
+        <p class="text-muted mb-0">
+            Métricas globales de tiendas, planes, leads, propuestas e ingresos estimados.
+        </p>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Tiendas totales</div>
+                    <div class="display-6 fw-bold" id="saasTotalStores">0</div>
+                    <span class="small text-muted">Todas las tiendas</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Tiendas activas</div>
+                    <div class="display-6 fw-bold" id="saasActiveStores">0</div>
+                    <span class="small text-muted">Operando actualmente</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">MRR estimado</div>
+                    <div class="display-6 fw-bold" id="saasMRR">$0</div>
+                    <span class="small text-muted">Ingreso mensual recurrente</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">ARR estimado</div>
+                    <div class="display-6 fw-bold" id="saasARR">$0</div>
+                    <span class="small text-muted">Ingreso anual recurrente</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Planes</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Basic</span>
+                        <strong id="saasBasicStores">0</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Pro</span>
+                        <strong id="saasProStores">0</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span>Premium</span>
+                        <strong id="saasPremiumStores">0</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Leads totales</div>
+                    <div class="display-6 fw-bold" id="saasTotalLeads">0</div>
+                    <span class="small text-muted">Capturados en toda la plataforma</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Propuestas totales</div>
+                    <div class="display-6 fw-bold" id="saasTotalProposals">0</div>
+                    <span class="small text-muted">Generadas desde el CRM</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3">
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Pipeline global</div>
+                    <div class="display-6 fw-bold" id="saasPipelineValue">$0</div>
+                    <span class="small text-muted">Valor total estimado de oportunidades</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Revenue forecast global</div>
+                    <div class="display-6 fw-bold" id="saasRevenueForecast">$0</div>
+                    <span class="small text-muted">Forecast ponderado por propuestas</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<script type="module" th:src="@{/assets/js/admin/saas-dashboard.js}"></script>
+
+</th:block>
+
+</body>

@@ -61,8 +61,8 @@ public class LeadService {
         lead.setWhatsapp(dto.getWhatsapp().trim());
         lead.setEmpresa(trimOrNull(dto.getEmpresa()));
         lead.setInstagram(trimOrNull(dto.getInstagram()));
-        lead.setServicio(dto.getServicio().trim());
-        lead.setPresupuesto(dto.getPresupuesto().trim());
+        lead.setServicio(dto.getServicio() == null || dto.getServicio().isBlank()? "Sin definir": dto.getServicio().trim());
+        lead.setPresupuesto(dto.getPresupuesto() == null || dto.getPresupuesto().isBlank()? "Sin definir": dto.getPresupuesto().trim());
         lead.setObjetivo(trimOrNull(dto.getObjetivo()));
         lead.setSource(trimOrDefault(dto.getSource(), "index"));
 

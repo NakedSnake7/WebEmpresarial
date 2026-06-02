@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (dist < closest.dist) closest = { dist, msg: s.msg };
       });
  
-      const waUrl = `https://wa.me/5210000000000?text=${encodeURIComponent(closest.msg)}`;
+      const waUrl = `https://wa.me/522221521686?text=${encodeURIComponent(closest.msg)}`;
  
       if (!tooltipVisible) {
         if (waTooltip) waTooltip.classList.add('show');
@@ -307,5 +307,48 @@ document.addEventListener('DOMContentLoaded', function () {
       if (e.key === 'Enter' || e.key === ' ') waBubble.click();
     });
   }
+  
+  document.querySelectorAll(".saas-plan-btn").forEach(button => {
+      button.addEventListener("click", () => {
+          const plan = button.dataset.plan;
+
+          document.getElementById("saasPlan").value = plan;
+          document.getElementById("saas-checkout").scrollIntoView({
+              behavior: "smooth"
+          });
+      });
+  });
+
+  const saasForm = document.getElementById("saasCheckoutForm");
+
+  if (saasForm) {
+      saasForm.addEventListener("submit", async event => {
+          event.preventDefault();
+
+          const data = Object.fromEntries(new FormData(saasForm).entries());
+
+          const msg = document.getElementById("saasCheckoutMsg");
+          if (msg) msg.style.display = "block";
+
+          const response = await fetch("/api/billing/checkout", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify(data)
+          });
+
+          if (!response.ok) {
+              alert("No se pudo iniciar el checkout.");
+              if (msg) msg.style.display = "none";
+              return;
+          }
+
+          const result = await response.json();
+
+          window.location.href = result.checkoutUrl;
+      });
+  }
+  
  
 });

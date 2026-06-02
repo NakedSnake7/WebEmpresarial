@@ -597,11 +597,109 @@
       <p>Agenda tu diagnóstico sin costo y te diremos exactamente qué necesitas para vender, automatizar y escalar.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative">
         <a class="btn btn-white btn-lg" href="#contacto">Quiero mi diagnóstico gratis →</a>
-        <a class="btn btn-ghost btn-lg" target="_blank" href="https://wa.me/5210000000000?text=Hola%20quiero%20una%20auditoria%20de%20WebEmpresarial">💬 Hablar por WhatsApp</a>
+        <a class="btn btn-ghost btn-lg" target="_blank" href="https://wa.me/522221521686?text=Hola%20quiero%20una%20auditoria%20de%20WebEmpresarial">💬 Hablar por WhatsApp</a>
       </div>
     </div>
   </div>
 </section>
+ 
+ 
+ <section id="saas">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">SaaS</div>
+      <div class="divider-line"></div>
+      <h2>Lanza tu tienda online con WebEmpresarial SaaS</h2>
+      <p>Elige un plan, paga y empieza con tu propia tienda configurada automáticamente.</p>
+    </div>
+
+    <div class="g3">
+
+      <div class="card reveal reveal-d1">
+        <h3>Basic</h3>
+        <div class="price-tag">
+          <span class="price-cur">$</span><span class="price">499</span>
+        </div>
+        <div class="monthly">MXN/mes</div>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Landing / tienda básica</li>
+          <li><span class="chk">✓</span>CRM básico</li>
+          <li><span class="chk">✓</span>Leads y dashboard</li>
+        </ul>
+        <button class="btn btn-ghost saas-plan-btn"
+                data-plan="BASIC"
+                style="margin-top:22px;width:100%;">
+          Empezar Basic →
+        </button>
+      </div>
+
+      <div class="card hl reveal reveal-d2">
+        <div class="popular-badge">Más popular</div>
+        <h3>Pro</h3>
+        <div class="price-tag">
+          <span class="price-cur">$</span><span class="price">999</span>
+        </div>
+        <div class="monthly">MXN/mes</div>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>CRM completo</li>
+          <li><span class="chk">✓</span>Pipeline comercial</li>
+          <li><span class="chk">✓</span>Propuestas PDF</li>
+        </ul>
+        <button class="btn btn-cyan saas-plan-btn"
+                data-plan="PRO"
+                style="margin-top:22px;width:100%;">
+          Empezar Pro →
+        </button>
+      </div>
+
+      <div class="card reveal reveal-d3">
+        <h3>Premium</h3>
+        <div class="price-tag">
+          <span class="price-cur">$</span><span class="price">1,999</span>
+        </div>
+        <div class="monthly">MXN/mes</div>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Automatizaciones</li>
+          <li><span class="chk">✓</span>White label</li>
+          <li><span class="chk">✓</span>Soporte prioritario</li>
+        </ul>
+        <button class="btn btn-ghost saas-plan-btn"
+                data-plan="PREMIUM"
+                style="margin-top:22px;width:100%;">
+          Empezar Premium →
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="saas-checkout">
+  <div class="container" style="max-width:720px">
+    <div class="card reveal">
+      <div class="eyebrow">Crear cuenta SaaS</div>
+      <h2>Configura tu tienda</h2>
+
+      <form id="saasCheckoutForm">
+        <input type="hidden" name="plan" id="saasPlan" value="PRO">
+
+        <input name="companyName" placeholder="Nombre de tu empresa" required>
+        <input name="domain" placeholder="Subdominio deseado. Ej: barleypunch" required>
+        <input name="ownerName" placeholder="Tu nombre" required>
+        <input name="email" type="email" placeholder="Correo de acceso" required>
+
+        <button class="btn btn-cyan" type="submit" style="width:100%;padding:15px">
+          Continuar al pago →
+        </button>
+      </form>
+
+      <p id="saasCheckoutMsg" style="margin-top:13px;color:var(--green);display:none;font-size:.91rem">
+        Redirigiendo a Stripe...
+      </p>
+    </div>
+  </div>
+</section>
+ 
  
 <!-- CONTACT -->
 <section id="contacto">

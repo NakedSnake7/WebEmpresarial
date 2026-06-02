@@ -14,4 +14,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     boolean existsByDominio(String dominio);
 
     boolean existsByTheme(String theme);
+    
+    long countByActivaTrue();
+
+    long countByPlan(com.webempresarial.store.model.StorePlan plan);
+    
+    Optional<Store> findByDominio(String dominio);
+    
 }

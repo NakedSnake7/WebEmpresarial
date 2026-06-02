@@ -31,33 +31,57 @@
         </div>
     </div>
 
-    <div class="crm-metrics-grid">
+<div class="crm-metrics-grid">
 
-        <div class="crm-metric-card">
-            <span>Leads nuevos</span>
-            <strong>0</strong>
-            <small>Hoy</small>
-        </div>
-
-        <div class="crm-metric-card">
-            <span>Leads HOT</span>
-            <strong>0</strong>
-            <small>Alta intención</small>
-        </div>
-
-        <div class="crm-metric-card">
-            <span>Propuestas</span>
-            <strong>0</strong>
-            <small>Enviadas</small>
-        </div>
-
-        <div class="crm-metric-card">
-            <span>Pipeline value</span>
-            <strong>$0</strong>
-            <small>Valor estimado</small>
-        </div>
-
+    <div class="crm-metric-card">
+        <span>Leads hoy</span>
+        <strong id="dashLeadsToday">0</strong>
+        <small>Capturados hoy</small>
     </div>
+
+    <div class="crm-metric-card">
+        <span>Leads semana</span>
+        <strong id="dashLeadsWeek">0</strong>
+        <small>Esta semana</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Leads HOT</span>
+        <strong id="dashHotLeads">0</strong>
+        <small>Alta intención</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Pipeline value</span>
+        <strong id="dashPipelineValue">$0</strong>
+        <small>Valor estimado</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Tareas pendientes</span>
+        <strong id="dashPendingTasks">0</strong>
+        <small>Por atender</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Tareas vencidas</span>
+        <strong id="dashOverdueTasks">0</strong>
+        <small>Requieren atención</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Propuestas</span>
+        <strong id="dashSentProposals">0</strong>
+        <small>Enviadas</small>
+    </div>
+
+    <div class="crm-metric-card">
+        <span>Tasa de cierre</span>
+        <strong id="dashCloseRate">0%</strong>
+        <small>Conversión total</small>
+    </div>
+
+</div>
 
     <div class="crm-grid-2 mt-4">
 
@@ -67,9 +91,11 @@
                 <a href="/crm/pipeline">Ver todo</a>
             </div>
 
-            <div class="crm-empty">
-                Aún no hay actividad comercial registrada.
-            </div>
+<div id="crmRecentActivity">
+    <div class="crm-empty">
+        Cargando actividad...
+    </div>
+</div>
         </div>
 
         <div class="crm-panel">
@@ -78,9 +104,11 @@
                 <a href="/crm/tasks">Ver tareas</a>
             </div>
 
-            <div class="crm-empty">
-                No tienes tareas pendientes.
-            </div>
+<div id="crmUpcomingTasks">
+    <div class="crm-empty">
+        Cargando tareas...
+    </div>
+</div>
         </div>
 
     </div>

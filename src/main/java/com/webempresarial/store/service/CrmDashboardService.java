@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -12,19 +12,28 @@ import org.springframework.stereotype.Service;
 import com.webempresarial.store.dto.lead.CrmDashboardDTO;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.SalesTaskRepository;
+import com.webempresarial.store.dto.lead.CrmActivityFeedDTO;
+import com.webempresarial.store.dto.lead.CrmUpcomingTaskDTO;
+import com.webempresarial.store.entity.LeadActivity;
+import com.webempresarial.store.entity.SalesTask;
+import com.webempresarial.store.model.TaskStatus;
+import com.webempresarial.store.repository.LeadActivityRepository;
 
 @Service
 public class CrmDashboardService {
 
     private final LeadRepository leadRepository;
     private final SalesTaskRepository salesTaskRepository;
+    private final LeadActivityRepository leadActivityRepository;
 
     public CrmDashboardService(
             LeadRepository leadRepository,
-            SalesTaskRepository salesTaskRepository
+            SalesTaskRepository salesTaskRepository,
+            LeadActivityRepository leadActivityRepository
     ) {
         this.leadRepository = leadRepository;
         this.salesTaskRepository = salesTaskRepository;
+        this.leadActivityRepository = leadActivityRepository;
     }
 
     public CrmDashboardDTO getDashboard(Long storeId) {
@@ -140,4 +149,39 @@ public class CrmDashboardService {
                 ? "Sin origen"
                 : String.valueOf(source);
     }
+    public List<CrmActivityFeedDTO> getRecentActivity(Long storeId) {
+
+        return leadActivityRepository
+                .findTop8ByLeadStoreIdOrderByCreatedAtDesc(storeId)
+                .stream()
+                .map(activity -> new CrmActivityFeedDTO(
+                        activity.getId(),
+                        activity.getType().name(),
+                        activity.getTitle(),
+                        activity.getDescription(),
+                        activity.getLead().getNombre(),
+                        activity.getCreatedAt()
+                ))
+                .toList();
+    }
+    
+    public List<CrmUpcomingTaskDTO> getUpcomingTasks(Long storeId) {
+
+        return salesTaskRepository
+                .findTop8ByLeadStoreIdAndStatusNotOrderByDueAtAsc(
+                        storeId,
+                        TaskStatus.COMPLETED
+                )
+                .stream()
+                .map(task -> new CrmUpcomingTaskDTO(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getDescription(),
+                        task.getPriority().name(),
+                        task.getLead().getNombre(),
+                        task.getDueAt()
+                ))
+                .toList();
+    }
+    
 }

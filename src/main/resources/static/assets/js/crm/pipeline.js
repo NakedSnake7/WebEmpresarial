@@ -1,5 +1,6 @@
 const API_URL = "/api/crm/leads";
 const STATS_URL = "/api/crm/pipeline/stats";
+const PROPOSALS_API = "/api/crm";
 
 let allLeads = [];
 let currentLeadId = null;
@@ -229,13 +230,19 @@ function escapeHtml(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
-
+let drawerInitialized = false;
 function initDrawer() {
+	if (drawerInitialized) {
+	    return;
+	}
+
+	drawerInitialized = true;
     const drawer = document.getElementById("crmLeadDrawer");
     const backdrop = document.getElementById("crmDrawerBackdrop");
     const closeBtn = document.getElementById("crmDrawerClose");
     const saveNoteBtn = document.getElementById("crmSaveNoteBtn");
     const createTaskBtn = document.getElementById("crmCreateTaskBtn");
+	const createProposalBtn = document.getElementById("crmCreateProposalBtn");
 
     document.addEventListener("click", async event => {
         const button = event.target.closest(".crm-card-action");
@@ -246,13 +253,47 @@ function initDrawer() {
 
         await openLeadDrawer(leadId);
     });
+	
+	document.addEventListener("click", async event => {
+	    const button = event.target.closest("[data-proposal-action]");
+
+	    if (!button) return;
+
+	    const proposalId = button.dataset.proposalId;
+	    const action = button.dataset.proposalAction;
+
+	    await updateProposalStatus(proposalId, action);
+	});
 
     closeBtn?.addEventListener("click", closeDrawer);
     backdrop?.addEventListener("click", closeDrawer);
 
     saveNoteBtn?.addEventListener("click", saveNote);
     createTaskBtn?.addEventListener("click", createTask);
+	createProposalBtn?.addEventListener("click", createProposal);
 }
+
+async function updateProposalStatus(proposalId, action) {
+    const response = await fetch(`${PROPOSALS_API}/proposals/${proposalId}/${action}`, {
+        method: "PATCH"
+    });
+
+    if (!response.ok) {
+        showToast("error", "No se pudo actualizar", "La propuesta no cambió de estado.");
+        return;
+    }
+
+    showToast("success", "Propuesta actualizada", `Acción aplicada: ${action}.`);
+
+    if (currentLeadId) {
+        await openLeadDrawer(currentLeadId);
+    }
+
+    allLeads = await fetchLeads();
+    renderPipeline(allLeads);
+    await refreshPipelineStats();
+}
+
 function openDrawerUI() {
     document.getElementById("crmLeadDrawer")?.classList.add("open");
     document.getElementById("crmDrawerBackdrop")?.classList.add("open");
@@ -296,6 +337,8 @@ function fillDrawer(lead) {
     
 	renderTasks(lead.tasks || []);
     renderTimeline(lead.activities || []);
+	
+	loadProposals(lead.id);
 }
 
 function renderTimeline(activities) {
@@ -350,6 +393,132 @@ async function saveNote() {
 	);
 
 	await openLeadDrawer(currentLeadId);
+}
+
+async function loadProposals(leadId) {
+    const response = await fetch(`${PROPOSALS_API}/leads/${leadId}/proposals`);
+
+    if (!response.ok) {
+        renderProposals([]);
+        return;
+    }
+
+    const proposals = await response.json();
+
+    renderProposals(proposals);
+}
+
+function renderProposals(proposals) {
+    const container = document.getElementById("crmLeadProposals");
+
+    if (!container) return;
+
+    if (!proposals.length) {
+        container.innerHTML = `
+            <div class="crm-empty">Sin propuestas registradas.</div>
+        `;
+        return;
+    }
+
+    container.innerHTML = proposals.map(proposal => `
+        <article class="crm-proposal-card">
+            <div class="crm-proposal-top">
+                <div>
+                    <strong>${escapeHtml(proposal.title)}</strong>
+                    <small>${escapeHtml(proposal.description || "Sin descripción")}</small>
+                </div>
+
+                <span class="crm-status ${escapeHtml(proposal.status)}">
+                    ${escapeHtml(proposal.status)}
+                </span>
+            </div>
+
+            <div class="crm-proposal-meta">
+                <span>${formatMoney(proposal.amount)}</span>
+                <span>${proposal.closeProbability ?? 50}% cierre</span>
+            </div>
+
+            <div class="crm-proposal-actions">
+                <button type="button"
+                        class="crm-task-btn crm-task-btn-secondary"
+                        data-proposal-action="send"
+                        data-proposal-id="${proposal.id}">
+                    Enviar
+                </button>
+
+                <button type="button"
+                        class="crm-task-btn crm-task-btn-primary"
+                        data-proposal-action="accept"
+                        data-proposal-id="${proposal.id}">
+                    Aceptar
+                </button>
+
+                <button type="button"
+                        class="crm-task-btn crm-task-btn-secondary"
+                        data-proposal-action="reject"
+                        data-proposal-id="${proposal.id}">
+                    Rechazar
+                </button>
+				<a class="crm-task-btn crm-task-btn-secondary"
+				   href="${PROPOSALS_API}/proposals/${proposal.id}/pdf"
+				   target="_blank">
+				    PDF
+				</a>
+            </div>
+        </article>
+    `).join("");
+}
+
+async function createProposal() {
+    if (!currentLeadId) return;
+
+    const titleInput = document.getElementById("crmProposalTitle");
+    const descriptionInput = document.getElementById("crmProposalDescription");
+    const amountInput = document.getElementById("crmProposalAmount");
+    const probabilityInput = document.getElementById("crmProposalProbability");
+
+    const title = titleInput.value.trim();
+    const description = descriptionInput.value.trim();
+    const amount = Number(amountInput.value);
+    const closeProbability = Number(probabilityInput.value || 50);
+
+    if (!title) {
+        showToast("info", "Falta el título", "Agrega un título para la propuesta.");
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        showToast("info", "Falta el monto", "Agrega un monto válido para la propuesta.");
+        return;
+    }
+
+    const response = await fetch(`${PROPOSALS_API}/leads/${currentLeadId}/proposals`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            title,
+            description,
+            amount,
+            closeProbability
+        })
+    });
+
+    if (!response.ok) {
+        showToast("error", "No se pudo crear", "La propuesta no fue guardada.");
+        return;
+    }
+
+    titleInput.value = "";
+    descriptionInput.value = "";
+    amountInput.value = "";
+    probabilityInput.value = "50";
+
+    showToast("success", "Propuesta creada", "La propuesta fue agregada al lead.");
+
+    await openLeadDrawer(currentLeadId);
+    await refreshPipelineStats();
 }
 
 async function createTask() {

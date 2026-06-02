@@ -40,6 +40,7 @@
                     <a href="/admin/productos" class="small">Gestionar productos →</a>
                 </div>
             </div>
+            
         </div>
 
         <div class="col-md-3">
@@ -51,6 +52,41 @@
                 </div>
             </div>
         </div>
+                    <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100 dashboard-card">
+        <div class="card-body">
+            <div class="fs-2 mb-2">💳</div>
+
+            <h5 class="fw-bold">Stripe Connect</h5>
+
+            <p class="text-muted mb-3">
+                Conecta la cuenta Stripe de esta tienda para recibir pagos directamente.
+            </p>
+
+            <div th:if="${store != null and store.stripeConnected}">
+                <span class="badge text-bg-success mb-2">
+                    Stripe conectado
+                </span>
+
+                <div class="small text-muted"
+                     th:text="${store.stripeConnectedAccountId}">
+                </div>
+            </div>
+
+            <div th:if="${store == null or !store.stripeConnected}">
+                <span class="badge text-bg-warning mb-2">
+                    Pendiente de conexión
+                </span>
+
+                <button type="button"
+                        class="btn btn-dark btn-sm w-100 mt-2"
+                        id="stripeConnectBtn">
+                    Conectar Stripe →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
         
 <div class="col-md-4">
     <a th:href="@{/admin/stores}" class="text-decoration-none">
@@ -92,6 +128,8 @@
                 </div>
             </a>
         </div>
+        
+        
 
         <div class="col-md-4">
             <a href="/admin/productos" class="text-decoration-none">
@@ -164,6 +202,22 @@
         </div>
 
     </div>
+    
+    <script>
+document.getElementById("stripeConnectBtn")?.addEventListener("click", async () => {
+    const response = await fetch("/api/admin/stripe/connect/onboarding", {
+        method: "POST"
+    });
+
+    if (!response.ok) {
+        alert("No se pudo iniciar Stripe Connect.");
+        return;
+    }
+
+    const data = await response.json();
+    window.location.href = data.onboardingUrl;
+});
+</script>
 
 </section>
 

@@ -10,136 +10,214 @@
 
 <th:block th:fragment="content">
 
-    <section class="container-fluid">
+<section class="container-fluid">
 
-        <div class="mb-4">
-            <span class="badge text-bg-success mb-2">Multi tienda</span>
+    <div class="mb-4">
+        <span class="badge text-bg-success mb-2">Multi tienda SaaS</span>
 
-            <h1 class="fw-bold mb-1"
-                th:text="${store.id == null ? 'Crear tienda' : 'Editar tienda'}">
-            </h1>
+        <h1 class="fw-bold mb-1"
+            th:text="${store.id == null ? 'Crear tienda' : 'Editar tienda'}">
+        </h1>
 
-            <p class="text-muted mb-0">
-                Configura themes, dominios y activación de tiendas.
-            </p>
-        </div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-
-                <form th:action="@{/admin/stores/guardar}"
-                      th:object="${store}"
-                      method="post">
-
-                    <input type="hidden" th:field="*{id}">
-
-                    <div class="row g-4">
-
-                        <!-- Nombre -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Nombre de la tienda
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   th:field="*{nombre}"
-                                   placeholder="STRIDE"
-                                   required>
-                        </div>
-
-                        <!-- Theme -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Theme
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   th:field="*{theme}"
-                                   placeholder="stride"
-                                   required>
-
-                            <div class="form-text">
-                                Debe coincidir con:
-                                <code>templates/themes/stride/</code>
-                            </div>
-                        </div>
-
-                        <!-- Dominio -->
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">
-                                Dominio
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   th:field="*{dominio}"
-                                   placeholder="stride.web-empresarial.com"
-                                   required>
-
-                            <div class="form-text">
-                                También puedes usar dominios personalizados.
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-    <label class="form-label fw-semibold">
-        Plan
-    </label>
-
-    <select class="form-select"
-            th:field="*{plan}"
-            required>
-        <option value="BASIC">Basic</option>
-        <option value="PRO">Pro</option>
-        <option value="PREMIUM">Premium</option>
-    </select>
-
-    <div class="form-text">
-        El plan define qué módulos tendrá disponibles la tienda.
+        <p class="text-muted mb-0">
+            Configura identidad, dominio, branding, contacto comercial y propuestas de cada tienda.
+        </p>
     </div>
-</div>
 
-                        <!-- Estado -->
-                        <div class="col-12">
-                            <div class="form-check form-switch">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
 
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       th:field="*{activa}">
+            <form th:action="@{/admin/stores/guardar}"
+                  th:object="${store}"
+                  method="post">
 
-                                <label class="form-check-label fw-semibold">
-                                    Tienda activa
-                                </label>
+                <input type="hidden" th:field="*{id}">
 
-                            </div>
+                <div class="row g-4">
+
+                    <div class="col-12">
+                        <h5 class="fw-bold mb-0">Información básica</h5>
+                        <p class="text-muted small mb-0">
+                            Datos técnicos principales para resolver dominio, theme y plan.
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Nombre de la tienda</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{nombre}"
+                               placeholder="STRIDE"
+                               required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Theme</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{theme}"
+                               placeholder="stride"
+                               required>
+                        <div class="form-text">
+                            Debe coincidir con <code>templates/themes/stride/</code>
                         </div>
-
                     </div>
 
-                    <hr class="my-4">
-
-                    <div class="d-flex gap-2">
-
-                        <button type="submit"
-                                class="btn btn-success">
-                            Guardar tienda
-                        </button>
-
-                        <a th:href="@{/admin/stores}"
-                           class="btn btn-outline-secondary">
-                            Cancelar
-                        </a>
-
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Dominio</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{dominio}"
+                               placeholder="stride.web-empresarial.com"
+                               required>
+                        <div class="form-text">
+                            También puedes usar dominios personalizados.
+                        </div>
                     </div>
 
-                </form>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Plan</label>
+                        <select class="form-select"
+                                th:field="*{plan}"
+                                required>
+                            <option value="BASIC">Basic</option>
+                            <option value="PRO">Pro</option>
+                            <option value="PREMIUM">Premium</option>
+                        </select>
+                        <div class="form-text">
+                            El plan define qué módulos tendrá disponibles la tienda.
+                        </div>
+                    </div>
 
-            </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   th:field="*{activa}">
+                            <label class="form-check-label fw-semibold">
+                                Tienda activa
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr>
+                        <h5 class="fw-bold mb-0">Branding</h5>
+                        <p class="text-muted small mb-0">
+                            Información visual usada en PDFs, propuestas y futuras comunicaciones.
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">URL del logo</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{logoUrl}"
+                               placeholder="https://cdn.midominio.com/logo.png">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Sitio web</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{companyWebsite}"
+                               placeholder="https://empresa.com">
+                    </div>
+
+                    <div class="col-12">
+                        <hr>
+                        <h5 class="fw-bold mb-0">Información comercial</h5>
+                        <p class="text-muted small mb-0">
+                            Datos que aparecerán en propuestas, seguimiento comercial y documentos.
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Nombre de contacto</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{contactName}"
+                               placeholder="Juan Pérez">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Correo comercial</label>
+                        <input type="email"
+                               class="form-control"
+                               th:field="*{companyEmail}"
+                               placeholder="ventas@empresa.com">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Teléfono comercial</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{companyPhone}"
+                               placeholder="+52 222 123 4567">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Moneda</label>
+                        <select class="form-select"
+                                th:field="*{currency}">
+                            <option value="MXN">MXN</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Dirección comercial</label>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  th:field="*{companyAddress}"
+                                  placeholder="Dirección fiscal o comercial de la empresa"></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <hr>
+                        <h5 class="fw-bold mb-0">Propuestas comerciales</h5>
+                        <p class="text-muted small mb-0">
+                            Personalización de los PDFs generados desde el CRM.
+                        </p>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Footer de propuestas</label>
+                        <textarea class="form-control"
+                                  rows="6"
+                                  th:field="*{proposalFooter}"
+                                  placeholder="50% anticipo&#10;50% contra entrega&#10;Vigencia de propuesta: 15 días"></textarea>
+
+                        <div class="form-text">
+                            Este texto aparecerá automáticamente en los PDFs generados por el CRM.
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Guardar tienda
+                    </button>
+
+                    <a th:href="@{/admin/stores}"
+                       class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
         </div>
+    </div>
 
-    </section>
+</section>
 
 </th:block>
 

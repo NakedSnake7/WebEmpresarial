@@ -27,17 +27,20 @@ public class LeadActivity {
     private Lead lead;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private ActivityType type;
 
+    @Column(nullable = false, length = 160)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     @ManyToOne
     private AdminUser createdBy;
-
-    private LocalDateTime createdAt;
 
 	public Long getId() {
 		return id;

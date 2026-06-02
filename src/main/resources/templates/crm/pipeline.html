@@ -249,6 +249,45 @@
                 <div class="crm-empty">Sin tareas registradas.</div>
             </div>
         </div>
+        
+        <div class="crm-drawer-section">
+    <h3>Propuestas</h3>
+
+    <div class="crm-proposal-form">
+        <input id="crmProposalTitle"
+               class="crm-input"
+               placeholder="Ej: Tienda online Commerce Pro">
+
+        <textarea id="crmProposalDescription"
+                  class="crm-textarea"
+                  placeholder="Descripción breve de la propuesta"></textarea>
+
+        <input id="crmProposalAmount"
+               class="crm-input"
+               type="number"
+               min="0"
+               step="100"
+               placeholder="Monto estimado MXN">
+
+        <input id="crmProposalProbability"
+               class="crm-input"
+               type="number"
+               min="0"
+               max="100"
+               value="50"
+               placeholder="Probabilidad de cierre %">
+
+        <button class="crm-btn crm-btn-primary w-100 mt-2"
+                id="crmCreateProposalBtn"
+                type="button">
+            Crear propuesta
+        </button>
+    </div>
+
+    <div class="crm-proposal-list" id="crmLeadProposals">
+        <div class="crm-empty">Sin propuestas registradas.</div>
+    </div>
+</div>
 
         <div class="crm-drawer-section">
             <h3>Timeline</h3>

@@ -1,6 +1,6 @@
 package com.webempresarial.store.dto.checkout;
 
-import java.util.List;
+import java.util.List; 
 
 import com.webempresarial.store.dto.CustomerDTO;
 

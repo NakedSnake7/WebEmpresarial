@@ -44,4 +44,9 @@ public interface SalesTaskRepository extends JpaRepository<SalesTask, Long> {
     """)
     long countOverdueTasks(Long storeId, LocalDateTime now);
     Optional<SalesTask> findByIdAndLeadStoreId(Long taskId, Long storeId);
+    
+    List<SalesTask> findTop8ByLeadStoreIdAndStatusNotOrderByDueAtAsc(
+            Long storeId,
+            TaskStatus status
+    );
 }

@@ -153,5 +153,24 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
 
         		
         		Optional<Lead> findByIdAndStoreId(Long id, Long storeId);
+        		
+        		
+        		@Query("""
+        			    SELECT COUNT(l)
+        			    FROM Lead l
+        			""")
+        			long countAllPlatformLeads();
+
+        			@Query("""
+        			    SELECT COALESCE(SUM(l.projectedValue), 0)
+        			    FROM Lead l
+        			    WHERE l.status NOT IN (
+        			        com.webempresarial.store.model.LeadStatus.CLOSED,
+        			        com.webempresarial.store.model.LeadStatus.LOST
+        			    )
+        			""")
+        			BigDecimal getGlobalPipelineValue();
+        		
+        		
         
 }

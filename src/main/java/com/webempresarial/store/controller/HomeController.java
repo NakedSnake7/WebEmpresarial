@@ -204,7 +204,14 @@ public class HomeController {
     }
 
     @GetMapping("/admin/dashboard")
-    public String adminDashboard() {
+    public String adminDashboard(
+            Model model,
+            HttpServletRequest request
+    ) {
+        Store store = storeResolver.getCurrentStore(request);
+
+        model.addAttribute("store", store);
+
         return "admin/dashboard";
     }
 

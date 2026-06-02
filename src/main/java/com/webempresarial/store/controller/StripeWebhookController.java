@@ -1,6 +1,6 @@
 package com.webempresarial.store.controller;
 
-import org.springframework.beans.factory.annotation.Value;    
+import org.springframework.beans.factory.annotation.Value;     
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,11 +34,11 @@ public class StripeWebhookController {
         Event event;
 
         try {
-            event = Webhook.constructEvent(
-                    new String(payload),
-                    sigHeader,
-                    endpointSecret
-            );
+        	event = Webhook.constructEvent(
+        	        new String(payload, java.nio.charset.StandardCharsets.UTF_8),
+        	        sigHeader,
+        	        endpointSecret
+        	);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid signature");
         }

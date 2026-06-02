@@ -5,15 +5,7 @@ import java.time.LocalDateTime;
 
 import com.webempresarial.store.model.ProposalStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "proposals")
@@ -23,103 +15,128 @@ public class Proposal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // Lead dueño de la propuesta
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lead_id", nullable = false)
     private Lead lead;
 
+    @Column(nullable = false, length = 160)
     private String title;
 
-    private BigDecimal amount;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    private Integer closeProbability;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal amount = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private Integer closeProbability = 50;
 
     @Enumerated(EnumType.STRING)
-    private ProposalStatus status;
+    @Column(nullable = false, length = 30)
+    private ProposalStatus status = ProposalStatus.DRAFT;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     private LocalDateTime sentAt;
+    private LocalDateTime viewedAt;
     private LocalDateTime acceptedAt;
     private LocalDateTime rejectedAt;
 
-    @Column(columnDefinition = "TEXT")
-    private String notes;
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public Lead getLead() {
+        return lead;
+    }
 
-	public Lead getLead() {
-		return lead;
-	}
+    public void setLead(Lead lead) {
+        this.lead = lead;
+    }
 
-	public void setLead(Lead lead) {
-		this.lead = lead;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public BigDecimal getAmount() {
-		return amount;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setAmount(BigDecimal amount) {
-		this.amount = amount;
-	}
+    public BigDecimal getAmount() {
+        return amount;
+    }
 
-	public Integer getCloseProbability() {
-		return closeProbability;
-	}
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
 
-	public void setCloseProbability(Integer closeProbability) {
-		this.closeProbability = closeProbability;
-	}
+    public Integer getCloseProbability() {
+        return closeProbability;
+    }
 
-	public ProposalStatus getStatus() {
-		return status;
-	}
+    public void setCloseProbability(Integer closeProbability) {
+        this.closeProbability = closeProbability;
+    }
 
-	public void setStatus(ProposalStatus status) {
-		this.status = status;
-	}
+    public ProposalStatus getStatus() {
+        return status;
+    }
 
-	public LocalDateTime getSentAt() {
-		return sentAt;
-	}
+    public void setStatus(ProposalStatus status) {
+        this.status = status;
+    }
 
-	public void setSentAt(LocalDateTime sentAt) {
-		this.sentAt = sentAt;
-	}
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-	public LocalDateTime getAcceptedAt() {
-		return acceptedAt;
-	}
+    public LocalDateTime getSentAt() {
+        return sentAt;
+    }
 
-	public void setAcceptedAt(LocalDateTime acceptedAt) {
-		this.acceptedAt = acceptedAt;
-	}
+    public void setSentAt(LocalDateTime sentAt) {
+        this.sentAt = sentAt;
+    }
 
-	public LocalDateTime getRejectedAt() {
-		return rejectedAt;
-	}
+    public LocalDateTime getViewedAt() {
+        return viewedAt;
+    }
 
-	public void setRejectedAt(LocalDateTime rejectedAt) {
-		this.rejectedAt = rejectedAt;
-	}
+    public void setViewedAt(LocalDateTime viewedAt) {
+        this.viewedAt = viewedAt;
+    }
 
-	public String getNotes() {
-		return notes;
-	}
+    public LocalDateTime getAcceptedAt() {
+        return acceptedAt;
+    }
 
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-    
+    public void setAcceptedAt(LocalDateTime acceptedAt) {
+        this.acceptedAt = acceptedAt;
+    }
+
+    public LocalDateTime getRejectedAt() {
+        return rejectedAt;
+    }
+
+    public void setRejectedAt(LocalDateTime rejectedAt) {
+        this.rejectedAt = rejectedAt;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
