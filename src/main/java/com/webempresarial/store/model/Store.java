@@ -1,6 +1,6 @@
 package com.webempresarial.store.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 
 import com.webempresarial.store.entity.Subscription;
 
@@ -73,7 +73,7 @@ public class Store {
     private String proposalFooter;
     
     
-    @OneToOne(mappedBy = "store")
+    @OneToOne(mappedBy = "store", fetch = FetchType.LAZY)
     private Subscription subscription;
     
 

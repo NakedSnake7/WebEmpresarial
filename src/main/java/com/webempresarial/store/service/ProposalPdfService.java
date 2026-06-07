@@ -34,7 +34,7 @@ public class ProposalPdfService {
     public byte[] generateProposalPdf(Long proposalId, Long storeId) {
 
         Proposal proposal = proposalRepository
-                .findByIdAndLeadStoreId(proposalId, storeId)
+                .findFullProposal(proposalId, storeId)
                 .orElseThrow(() -> new RuntimeException(
                         "Propuesta no encontrada para esta tienda"
                 ));

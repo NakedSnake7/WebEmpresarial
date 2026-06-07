@@ -324,3 +324,43 @@
 .crm-kanban-column[data-status="LOST"] {
     border-top: 2px solid rgba(248,113,113,.42);
 }
+.crm-upgrade-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:99999;
+}
+
+.crm-upgrade-modal{
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border-radius:22px;
+    padding:32px;
+    box-shadow:0 20px 80px rgba(0,0,0,.25);
+}
+
+.crm-upgrade-icon{
+    font-size:40px;
+    margin-bottom:16px;
+}
+
+.crm-upgrade-modal h3{
+    margin-bottom:12px;
+}
+
+.crm-upgrade-modal p{
+    color:#64748b;
+    margin-bottom:24px;
+}
+
+.crm-upgrade-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+}
+
+

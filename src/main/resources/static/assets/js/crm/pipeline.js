@@ -230,6 +230,20 @@ function escapeHtml(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+async function parseErrorResponse(response) {
+    const contentType = response.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+        return await response.json();
+    }
+
+	return {
+	    message: "Tu plan actual no incluye esta función.",
+	    upgradeUrl: "/#saas"
+	};
+}
+
 let drawerInitialized = false;
 function initDrawer() {
 	if (drawerInitialized) {
@@ -398,10 +412,27 @@ async function saveNote() {
 async function loadProposals(leadId) {
     const response = await fetch(`${PROPOSALS_API}/leads/${leadId}/proposals`);
 
-    if (!response.ok) {
-        renderProposals([]);
-        return;
-    }
+	if (!response.ok) {
+
+	    if (response.status === 403) {
+
+const error = await parseErrorResponse(response);
+
+	        showToast(
+	            "error",
+	            "Actualiza tu plan",
+	            error.message
+	        );
+
+	        renderProposals([]);
+
+	        return;
+	    }
+
+	    renderProposals([]);
+
+	    return;
+	}
 
     const proposals = await response.json();
 
@@ -505,10 +536,34 @@ async function createProposal() {
         })
     });
 
-    if (!response.ok) {
-        showToast("error", "No se pudo crear", "La propuesta no fue guardada.");
-        return;
-    }
+	if (!response.ok) {
+
+	    if (response.status === 403) {
+
+const error = await parseErrorResponse(response);
+
+	        showToast(
+	            "error",
+	            "Actualiza tu plan",
+	            error.message ||
+	            "Tu plan actual no incluye propuestas comerciales."
+	        );
+
+	        showUpgradePlanModal(
+           error.upgradeUrl || "/#saas"
+	        );
+
+	        return;
+	    }
+
+	    showToast(
+	        "error",
+	        "No se pudo crear",
+	        "La propuesta no fue guardada."
+	    );
+
+	    return;
+	}
 
     titleInput.value = "";
     descriptionInput.value = "";
@@ -704,3 +759,64 @@ function updatePipelineStats(stats) {
     });
 }
 
+function showUpgradePlanModal(upgradeUrl) {
+
+    const existing =
+        document.getElementById("upgradePlanModal");
+
+    if (existing) {
+        existing.remove();
+    }
+
+    const modal = document.createElement("div");
+
+    modal.id = "upgradePlanModal";
+
+    modal.innerHTML = `
+        <div class="crm-upgrade-backdrop">
+
+            <div class="crm-upgrade-modal">
+
+                <div class="crm-upgrade-icon">
+                    🚀
+                </div>
+
+                <h3>
+                    Función disponible en planes superiores
+                </h3>
+
+                <p>
+                    Las propuestas comerciales están disponibles
+                    para los planes PRO y PREMIUM.
+                </p>
+
+                <div class="crm-upgrade-actions">
+
+                    <button
+                        id="closeUpgradeModal"
+                        class="crm-btn">
+                        Después
+                    </button>
+
+                    <a
+                        href="${upgradeUrl}"
+                        class="crm-btn crm-btn-primary">
+
+                        Ver planes →
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document
+        .getElementById("closeUpgradeModal")
+        ?.addEventListener("click", () => {
+            modal.remove();
+        });
+}

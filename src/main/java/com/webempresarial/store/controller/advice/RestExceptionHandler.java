@@ -1,8 +1,10 @@
 package com.webempresarial.store.controller.advice;
 
-import org.slf4j.Logger;
+import org.slf4j.Logger; 
 import org.slf4j.LoggerFactory;
 
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,11 +12,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.webempresarial.store.exception.ImageUploadException;
+import com.webempresarial.store.exceptions.FeatureNotAllowedException;
 import com.webempresarial.store.service.ProductoService;
 
 import java.io.IOException;
 import java.util.Map;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class RestExceptionHandler {
 
@@ -105,6 +109,25 @@ public class RestExceptionHandler {
                         "error", ex.getMessage()
                 ));
     }
+    
+ // =====================================
+ // FEATURE NO PERMITIDA POR PLAN
+ // =====================================
+ @ExceptionHandler(FeatureNotAllowedException.class)
+ public ResponseEntity<?> handleFeatureNotAllowed(
+         FeatureNotAllowedException ex) {
+
+     log.warn("Feature no permitida por plan: {}", ex.getMessage());
+
+     return ResponseEntity.status(HttpStatus.FORBIDDEN)
+             .body(Map.of(
+                     "success", false,
+                     "error", "FEATURE_NOT_ALLOWED",
+                     "message", ex.getMessage(),
+                     "upgradeUrl", "/#saas"
+             ));
+ }
+    
 
     // =====================================
     // FALLBACK GLOBAL

@@ -58,4 +58,20 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
         )
     """)
     BigDecimal getGlobalRevenueForecast();
+    
+    
+    @Query("""
+    	    SELECT p
+    	    FROM Proposal p
+    	    JOIN FETCH p.lead l
+    	    JOIN FETCH l.store
+    	    WHERE p.id = :proposalId
+    	    AND l.store.id = :storeId
+    	""")
+    	Optional<Proposal> findFullProposal(
+    	        Long proposalId,
+    	        Long storeId
+    	);
+    
+    
 }

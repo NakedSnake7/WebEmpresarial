@@ -2,6 +2,9 @@ package com.webempresarial.store.controller.advice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +15,7 @@ import com.webempresarial.store.service.ProductoService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+@Order(Ordered.LOWEST_PRECEDENCE)
 @ControllerAdvice
 public class MvcExceptionHandler {
 
@@ -92,7 +96,8 @@ public class MvcExceptionHandler {
      String path = request.getRequestURI();
 
      // Ignorar requests automáticos
-     if (path.startsWith("/.well-known/")) {
+     if (path.startsWith("/.well-known/")
+             || path.equals("/favicon.ico")) {
          return; // ⛔ NO log, NO error, NO vista
      }
 
@@ -100,6 +105,6 @@ public class MvcExceptionHandler {
      log.warn("Recurso estático no encontrado: {}", path);
  }
 
- 
+
 
 }

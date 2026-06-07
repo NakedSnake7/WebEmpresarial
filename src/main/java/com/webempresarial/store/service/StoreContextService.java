@@ -1,17 +1,16 @@
 package com.webempresarial.store.service;
 
 import com.webempresarial.store.model.Store;
-import com.webempresarial.store.repository.StoreRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StoreContextService {
 
-    private final StoreRepository storeRepository;
+    private final StoreLookupService storeLookupService;
 
-    public StoreContextService(StoreRepository storeRepository) {
-        this.storeRepository = storeRepository;
+    public StoreContextService(StoreLookupService storeLookupService) {
+        this.storeLookupService = storeLookupService;
     }
 
     public Store getCurrentStore(HttpServletRequest request) {
@@ -26,16 +25,12 @@ public class StoreContextService {
             throw new RuntimeException("No se pudo detectar el dominio actual");
         }
 
-        final String host = normalizeHost(rawHost);
+        String host = normalizeHost(rawHost);
 
-        return storeRepository.findByDominioAndActivaTrue(host)
-                .orElseThrow(() -> new RuntimeException(
-                        "Tienda no encontrada para dominio: " + host
-                ));
+        return storeLookupService.getStoreByDomain(host);
     }
 
     private String normalizeHost(String host) {
-
         return host
                 .trim()
                 .toLowerCase()

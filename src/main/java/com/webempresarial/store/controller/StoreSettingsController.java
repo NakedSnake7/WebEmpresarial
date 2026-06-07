@@ -4,6 +4,8 @@ import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.repository.StoreRepository;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
@@ -35,12 +37,16 @@ public class StoreSettingsController {
         return "admin/stores/settings";
     }
 
+    @CacheEvict(value = "storesByDomain", allEntries = true)
     @PostMapping
     public String saveSettings(
             @ModelAttribute Store form,
             HttpServletRequest request
     ) {
-        Store store = storeContextService.getCurrentStore(request);
+        Store currentStore = storeContextService.getCurrentStore(request);
+
+        Store store = storeRepository.findById(currentStore.getId())
+                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
 
         store.setLogoUrl(form.getLogoUrl());
         store.setCompanyEmail(form.getCompanyEmail());
