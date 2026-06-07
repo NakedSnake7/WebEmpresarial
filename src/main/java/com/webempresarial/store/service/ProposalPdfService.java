@@ -2,6 +2,7 @@ package com.webempresarial.store.service;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -9,8 +10,10 @@ import java.util.Locale;
 import org.springframework.stereotype.Service;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
@@ -51,7 +54,6 @@ public class ProposalPdfService {
             );
 
             PdfWriter.getInstance(document, output);
-
             document.open();
 
             Font titleFont = FontFactory.getFont(
@@ -62,7 +64,7 @@ public class ProposalPdfService {
 
             Font subtitleFont = FontFactory.getFont(
                     FontFactory.HELVETICA,
-                    11,
+                    10,
                     new Color(100, 116, 139)
             );
 
@@ -84,18 +86,23 @@ public class ProposalPdfService {
                     new Color(15, 23, 42)
             );
 
+            addLogo(document, store);
+
             Paragraph brand = new Paragraph(
                     safe(store.getNombre()),
                     titleFont
             );
-            brand.setSpacingAfter(6);
+            brand.setSpacingAfter(4);
             document.add(brand);
 
+            addStoreCommercialInfo(document, store, subtitleFont);
+
             Paragraph subtitle = new Paragraph(
-                    "Propuesta comercial generada desde " + safe(store.getDominio()),
-                    subtitleFont
+                    "Propuesta comercial",
+                    headingFont
             );
-            subtitle.setSpacingAfter(26);
+            subtitle.setSpacingBefore(18);
+            subtitle.setSpacingAfter(18);
             document.add(subtitle);
 
             document.add(new Paragraph("Datos del cliente", headingFont));
@@ -106,10 +113,10 @@ public class ProposalPdfService {
 
             addSpace(document, bodyFont);
 
-            document.add(new Paragraph("Propuesta", headingFont));
+            document.add(new Paragraph("Detalle de la propuesta", headingFont));
             document.add(new Paragraph(safe(proposal.getTitle()), strongFont));
 
-            if (proposal.getDescription() != null && !proposal.getDescription().isBlank()) {
+            if (hasText(proposal.getDescription())) {
                 Paragraph description = new Paragraph(
                         proposal.getDescription(),
                         bodyFont
@@ -120,7 +127,7 @@ public class ProposalPdfService {
             }
 
             document.add(new Paragraph(
-                    "Monto: " + formatMoney(proposal.getAmount()),
+                    "Monto: " + formatMoney(proposal.getAmount(), store),
                     strongFont
             ));
 
@@ -145,10 +152,22 @@ public class ProposalPdfService {
             addSpace(document, bodyFont);
 
             document.add(new Paragraph("Condiciones generales", headingFont));
-            document.add(new Paragraph("• La propuesta puede ajustarse según alcance final.", bodyFont));
-            document.add(new Paragraph("• Los tiempos de entrega dependen de la entrega de información por parte del cliente.", bodyFont));
-            document.add(new Paragraph("• El inicio del proyecto requiere anticipo acordado entre ambas partes.", bodyFont));
-            document.add(new Paragraph("• Cambios fuera del alcance inicial pueden cotizarse por separado.", bodyFont));
+
+            if (hasText(store.getProposalFooter())) {
+                Paragraph footerConditions = new Paragraph(
+                        store.getProposalFooter(),
+                        bodyFont
+                );
+                footerConditions.setSpacingBefore(6);
+                document.add(footerConditions);
+            } else {
+                document.add(new Paragraph(
+                        "La propuesta puede ajustarse según el alcance final. " +
+                                "Los tiempos de entrega dependen de la entrega de información por parte del cliente. " +
+                                "Cambios fuera del alcance inicial pueden cotizarse por separado.",
+                        bodyFont
+                ));
+            }
 
             addSpace(document, bodyFont);
 
@@ -159,9 +178,10 @@ public class ProposalPdfService {
             addSpace(document, bodyFont);
 
             Paragraph footer = new Paragraph(
-                    safe(store.getNombre()) + " · " + safe(store.getDominio()),
+                    buildFooter(store),
                     subtitleFont
             );
+            footer.setAlignment(Element.ALIGN_CENTER);
             footer.setSpacingBefore(18);
             document.add(footer);
 
@@ -177,8 +197,72 @@ public class ProposalPdfService {
         }
     }
 
+    private void addLogo(Document document, Store store) {
+        if (!hasText(store.getLogoUrl())) {
+            return;
+        }
+
+        try {
+            Image logo = Image.getInstance(new URL(store.getLogoUrl()));
+            logo.scaleToFit(110, 70);
+            logo.setAlignment(Element.ALIGN_LEFT);
+            logo.setSpacingAfter(10);
+
+            document.add(logo);
+        } catch (Exception ignored) {
+            // Si el logo falla, el PDF se sigue generando.
+        }
+    }
+
+    private void addStoreCommercialInfo(
+            Document document,
+            Store store,
+            Font font
+    ) throws Exception {
+
+        if (hasText(store.getCompanyEmail())) {
+            document.add(new Paragraph(store.getCompanyEmail(), font));
+        }
+
+        if (hasText(store.getCompanyPhone())) {
+            document.add(new Paragraph(store.getCompanyPhone(), font));
+        }
+
+        if (hasText(store.getCompanyWebsite())) {
+            document.add(new Paragraph(store.getCompanyWebsite(), font));
+        }
+
+        if (hasText(store.getCompanyAddress())) {
+            document.add(new Paragraph(store.getCompanyAddress(), font));
+        }
+    }
+
+    private String buildFooter(Store store) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(safe(store.getNombre()));
+
+        if (hasText(store.getDominio())) {
+            builder.append(" · ").append(store.getDominio());
+        }
+
+        if (hasText(store.getCompanyEmail())) {
+            builder.append(" · ").append(store.getCompanyEmail());
+        }
+
+        if (hasText(store.getCompanyPhone())) {
+            builder.append(" · ").append(store.getCompanyPhone());
+        }
+
+        return builder.toString();
+    }
+
     private void addSpace(Document document, Font font) throws Exception {
         document.add(new Paragraph(" ", font));
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private String safe(String value) {
@@ -193,15 +277,28 @@ public class ProposalPdfService {
                 : String.valueOf(value);
     }
 
-    private String formatMoney(java.math.BigDecimal value) {
+    private String formatMoney(
+            java.math.BigDecimal value,
+            Store store
+    ) {
         if (value == null) {
-            return "$0.00 MXN";
+            value = java.math.BigDecimal.ZERO;
         }
 
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(
-                new Locale("es", "MX")
-        );
+        String currency = store.getCurrency();
 
-        return formatter.format(value);
+        if (currency == null || currency.isBlank()) {
+            currency = "MXN";
+        }
+
+        Locale locale = switch (currency.toUpperCase()) {
+            case "USD" -> Locale.US;
+            case "EUR" -> Locale.GERMANY;
+            default -> new Locale("es", "MX");
+        };
+
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(locale);
+
+        return formatter.format(value) + " " + currency.toUpperCase();
     }
 }

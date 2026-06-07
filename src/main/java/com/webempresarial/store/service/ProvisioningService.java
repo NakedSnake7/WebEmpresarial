@@ -108,7 +108,7 @@ public class ProvisioningService {
         admin.setEnabled(true);
         admin.setStore(store);
 
-        // Ajusta esto según tu enum real:
+                
         admin.setRole(AdminRole.STORE_ADMIN);
         
         
