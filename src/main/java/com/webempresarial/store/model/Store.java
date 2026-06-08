@@ -1,6 +1,6 @@
 package com.webempresarial.store.model;
 
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
 
 import com.webempresarial.store.entity.Subscription;
 
@@ -22,14 +22,29 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Identidad técnica
+    // =====================================================
+    // IDENTIDAD
+    // =====================================================
+
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false)
-    private String theme;
+    /**
+     * Theme físico actual.
+     *
+     * Ejemplos:
+     * stride
+     * barleypunch
+     * WebEmpresarial
+     * commerce-modern
+     * commerce-luxury
+     */
+    @Enumerated(EnumType.STRING)
+    private ThemeType themeType;
 
-    @Column(nullable = false, unique = true)
+	private String theme;
+
+    @Column(nullable = false)
     private String dominio;
 
     @Column(nullable = false)
@@ -38,7 +53,11 @@ public class Store {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StorePlan plan = StorePlan.BASIC;
-    
+
+    // =====================================================
+    // STRIPE CONNECT
+    // =====================================================
+
     @Column(length = 100)
     private String stripeConnectedAccountId;
 
@@ -47,9 +66,37 @@ public class Store {
 
     private LocalDateTime stripeConnectedAt;
 
-    // Branding / SaaS
+    // =====================================================
+    // BRANDING WHITE LABEL
+    // =====================================================
+
     @Column(length = 300)
     private String logoUrl;
+
+    @Column(length = 300)
+    private String faviconUrl;
+
+    @Column(length = 20)
+    private String primaryColor = "#111827";
+
+    @Column(length = 20)
+    private String secondaryColor = "#6B7280";
+
+    @Column(length = 20)
+    private String accentColor = "#2563EB";
+
+    @Column(length = 80)
+    private String fontFamily = "Inter";
+
+    @Column(length = 300)
+    private String heroImageUrl;
+
+    @Column(length = 120)
+    private String slogan;
+
+    // =====================================================
+    // DATOS COMERCIALES
+    // =====================================================
 
     @Column(length = 150)
     private String companyEmail;
@@ -71,11 +118,17 @@ public class Store {
 
     @Column(columnDefinition = "TEXT")
     private String proposalFooter;
-    
-    
+
+    // =====================================================
+    // SUSCRIPCIÓN
+    // =====================================================
+
     @OneToOne(mappedBy = "store", fetch = FetchType.LAZY)
     private Subscription subscription;
-    
+
+    // =====================================================
+    // GETTERS & SETTERS
+    // =====================================================
 
     public Long getId() {
         return id;
@@ -125,12 +178,92 @@ public class Store {
         this.plan = plan;
     }
 
+    public String getStripeConnectedAccountId() {
+        return stripeConnectedAccountId;
+    }
+
+    public void setStripeConnectedAccountId(String stripeConnectedAccountId) {
+        this.stripeConnectedAccountId = stripeConnectedAccountId;
+    }
+
+    public boolean isStripeConnected() {
+        return stripeConnected;
+    }
+
+    public void setStripeConnected(boolean stripeConnected) {
+        this.stripeConnected = stripeConnected;
+    }
+
+    public LocalDateTime getStripeConnectedAt() {
+        return stripeConnectedAt;
+    }
+
+    public void setStripeConnectedAt(LocalDateTime stripeConnectedAt) {
+        this.stripeConnectedAt = stripeConnectedAt;
+    }
+
     public String getLogoUrl() {
         return logoUrl;
     }
 
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
+    }
+
+    public String getFaviconUrl() {
+        return faviconUrl;
+    }
+
+    public void setFaviconUrl(String faviconUrl) {
+        this.faviconUrl = faviconUrl;
+    }
+
+    public String getPrimaryColor() {
+        return primaryColor;
+    }
+
+    public void setPrimaryColor(String primaryColor) {
+        this.primaryColor = primaryColor;
+    }
+
+    public String getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    public void setSecondaryColor(String secondaryColor) {
+        this.secondaryColor = secondaryColor;
+    }
+
+    public String getAccentColor() {
+        return accentColor;
+    }
+
+    public void setAccentColor(String accentColor) {
+        this.accentColor = accentColor;
+    }
+
+    public String getFontFamily() {
+        return fontFamily;
+    }
+
+    public void setFontFamily(String fontFamily) {
+        this.fontFamily = fontFamily;
+    }
+
+    public String getHeroImageUrl() {
+        return heroImageUrl;
+    }
+
+    public void setHeroImageUrl(String heroImageUrl) {
+        this.heroImageUrl = heroImageUrl;
+    }
+
+    public String getSlogan() {
+        return slogan;
+    }
+
+    public void setSlogan(String slogan) {
+        this.slogan = slogan;
     }
 
     public String getCompanyEmail() {
@@ -188,6 +321,7 @@ public class Store {
     public void setProposalFooter(String proposalFooter) {
         this.proposalFooter = proposalFooter;
     }
+
     public Subscription getSubscription() {
         return subscription;
     }
@@ -195,28 +329,12 @@ public class Store {
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
     }
-    
-    public String getStripeConnectedAccountId() {
-        return stripeConnectedAccountId;
-    }
+    public ThemeType getThemeType() {
+		return themeType;
+	}
 
-    public void setStripeConnectedAccountId(String stripeConnectedAccountId) {
-        this.stripeConnectedAccountId = stripeConnectedAccountId;
-    }
+	public void setThemeType(ThemeType themeType) {
+		this.themeType = themeType;
+	}
 
-    public boolean isStripeConnected() {
-        return stripeConnected;
-    }
-
-    public void setStripeConnected(boolean stripeConnected) {
-        this.stripeConnected = stripeConnected;
-    }
-
-    public LocalDateTime getStripeConnectedAt() {
-        return stripeConnectedAt;
-    }
-
-    public void setStripeConnectedAt(LocalDateTime stripeConnectedAt) {
-        this.stripeConnectedAt = stripeConnectedAt;
-    }
 }

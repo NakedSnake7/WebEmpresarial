@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import com.cloudinary.Cloudinary;
+import com.cloudinary.Cloudinary; 
 import com.cloudinary.utils.ObjectUtils;
 import com.webempresarial.store.dto.CloudinaryUploadResult;
 
@@ -104,7 +104,67 @@ public class CloudinaryService {
             }
         }
     }
+ // =========================================
+ // SUBIR LOGO DE TIENDA / BRANDING
+ // =========================================
+ public CloudinaryUploadResult subirLogoTienda(
+         MultipartFile file,
+         Long storeId
+ ) throws IOException {
 
+     if (file == null || file.isEmpty()) {
+         throw new IllegalArgumentException("Archivo vacío");
+     }
+
+     String nombreOriginal = file.getOriginalFilename();
+
+     if (nombreOriginal == null) {
+         throw new IllegalArgumentException("Archivo inválido");
+     }
+
+     String nombre = nombreOriginal.toLowerCase();
+
+     boolean extensionValida =
+             nombre.endsWith(".jpg") ||
+             nombre.endsWith(".jpeg") ||
+             nombre.endsWith(".png") ||
+             nombre.endsWith(".webp");
+
+     if (!extensionValida) {
+         throw new IllegalArgumentException(
+                 "Formato no permitido. Solo JPG, JPEG, PNG y WEBP."
+         );
+     }
+
+     File tempFile = File.createTempFile("store-logo-", ".tmp");
+     file.transferTo(tempFile);
+
+     try {
+         Map<?, ?> result = cloudinary.uploader().upload(
+                 tempFile,
+                 ObjectUtils.asMap(
+                         "folder", "webempresarial/stores/" + storeId + "/branding",
+                         "resource_type", "image",
+                         "quality", "auto:good",
+                         "format", "webp",
+                         "width", 600,
+                         "height", 300,
+                         "crop", "limit",
+                         "overwrite", true
+                 )
+         );
+
+         return new CloudinaryUploadResult(
+                 result.get("secure_url").toString(),
+                 result.get("public_id").toString()
+         );
+
+     } finally {
+         if (tempFile.exists()) {
+             tempFile.delete();
+         }
+     }
+ }
     // =========================================
     // ELIMINAR IMAGEN
     // =========================================

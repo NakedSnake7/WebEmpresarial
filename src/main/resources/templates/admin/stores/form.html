@@ -51,17 +51,23 @@
                                required>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Theme</label>
-                        <input type="text"
-                               class="form-control"
-                               th:field="*{theme}"
-                               placeholder="stride"
-                               required>
-                        <div class="form-text">
-                            Debe coincidir con <code>templates/themes/stride/</code>
-                        </div>
-                    </div>
+<div class="col-md-6"
+     id="customThemeContainer">
+
+    <label class="form-label fw-semibold">
+        Theme personalizado
+    </label>
+
+    <input type="text"
+           class="form-control"
+           th:field="*{theme}"
+           placeholder="stride">
+
+    <div class="form-text">
+        Debe coincidir con templates/themes/nombre-theme
+    </div>
+
+</div>
 
                     <div class="col-12">
                         <label class="form-label fw-semibold">Dominio</label>
@@ -88,6 +94,29 @@
                             El plan define qué módulos tendrá disponibles la tienda.
                         </div>
                     </div>
+                    
+                    <div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Tipo de Theme
+    </label>
+
+    <select class="form-select"
+            th:field="*{themeType}"
+            id="themeType">
+
+<option value="BASIC">SaaS Basic</option>
+<option value="PRO">SaaS Pro</option>
+<option value="PREMIUM">SaaS Premium</option>
+<option value="CUSTOM">Agencia / Custom</option>
+
+    </select>
+
+    <div class="form-text">
+        Define qué familia de diseño utilizará la tienda.
+    </div>
+
+</div>
 
                     <div class="col-md-6 d-flex align-items-end">
                         <div class="form-check form-switch mb-2">
@@ -220,6 +249,41 @@
 </section>
 
 </th:block>
+<script>
 
+function toggleThemeField() {
+
+    const themeType =
+        document.getElementById("themeType");
+
+    const customContainer =
+        document.getElementById("customThemeContainer");
+
+    if (!themeType || !customContainer) {
+        return;
+    }
+
+    customContainer.style.display =
+        themeType.value === "CUSTOM"
+            ? "block"
+            : "none";
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        toggleThemeField();
+
+        document
+            .getElementById("themeType")
+            ?.addEventListener(
+                "change",
+                toggleThemeField
+            );
+    }
+);
+
+</script>
 </body>
 </html>

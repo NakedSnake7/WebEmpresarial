@@ -8,17 +8,24 @@
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
-          <meta name="description"
-      th:content="${description} ?: 'WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales'">
 
-    <title th:text="${title} ?: 'WebEmpresarial'">
+    <meta name="description"
+          th:content="${description} ?: 'WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales'">
+
+    <title th:text="${title} ?: ${store != null ? store.nombre : 'WebEmpresarial'}">
         WebEmpresarial
     </title>
-<link rel="icon"
-      type="image/x-icon"
-      th:href="@{|/themes/${theme}/favicon.ico|}">
-      
 
+    <!-- Favicon dinámico por tienda -->
+    <link rel="icon"
+          th:if="${store != null and store.faviconUrl != null and !store.faviconUrl.isBlank()}"
+          th:href="${store.faviconUrl}">
+
+    <!-- Favicon fallback del theme -->
+    <link rel="icon"
+          type="image/x-icon"
+          th:if="${store == null or store.faviconUrl == null or store.faviconUrl.isBlank()}"
+          th:href="@{|/themes/${theme}/favicon.ico|}">
 
     <!-- Fonts -->
     <link rel="preconnect"
@@ -28,15 +35,23 @@
           href="https://fonts.gstatic.com"
           crossorigin>
 
+    <!-- Branding White Label -->
+    <style th:inline="css">
+        :root {
+            --store-primary: [[${store != null && store.primaryColor != null ? store.primaryColor : '#111827'}]];
+            --store-secondary: [[${store != null && store.secondaryColor != null ? store.secondaryColor : '#6B7280'}]];
+            --store-accent: [[${store != null && store.accentColor != null ? store.accentColor : '#2563EB'}]];
+            --store-font: [[${store != null && store.fontFamily != null ? store.fontFamily : 'Inter'}]];
+        }
 
-          
-        
-   
+        body {
+            font-family: var(--store-font), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+    </style>
 
-    <!-- CSS dinámico -->
+    <!-- CSS del theme -->
     <link rel="stylesheet"
           th:href="@{|/themes/${theme}/assets/css/style.css|}">
-
 </head>
 
 <body>
@@ -63,18 +78,14 @@
 
 <footer th:replace="~{themes/__${theme}__/fragments/footer :: footer}"></footer>
 
-    <script>
-        document.documentElement.classList.add('js-enabled');
-    </script>
+<script>
+    document.documentElement.classList.add('js-enabled');
+</script>
 
-    <!-- Bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
 <div th:if="${showScripts}"
      th:replace="~{themes/__${theme}__/fragments/scripts :: scripts}">
 </div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

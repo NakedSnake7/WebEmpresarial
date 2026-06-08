@@ -54,11 +54,123 @@
 											class="form-control" th:field="*{dominio}" readonly>
 									</div>
 
-									<div class="col-12">
-										<label class="form-label fw-semibold"> URL del logo </label> <input
-											type="text" class="form-control" th:field="*{logoUrl}"
-											placeholder="https://cdn.midominio.com/logo.png">
-									</div>
+<div class="col-12">
+
+    <label class="form-label fw-semibold">
+        Logo actual
+    </label>
+
+    <div th:if="${store.logoUrl != null and !store.logoUrl.isBlank()}">
+
+        <div class="border rounded p-3 bg-light text-center mb-3">
+
+            <img th:src="${store.logoUrl}"
+                 alt="Logo de tienda"
+                 style="max-height:90px;
+                        max-width:240px;
+                        object-fit:contain;">
+
+        </div>
+
+        <form th:action="@{/admin/store/settings/logo/delete}"
+              method="post">
+
+            <button type="submit"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('¿Eliminar el logo actual?');">
+
+                <i class="bi bi-trash"></i>
+                Eliminar logo
+
+            </button>
+
+        </form>
+
+    </div>
+    
+    <div th:if="${param.logoDeleted}"
+     class="alert alert-success">
+
+    Logo eliminado correctamente.
+
+</div>
+
+    <div class="alert alert-warning"
+         th:if="${store.logoUrl == null or store.logoUrl.isBlank()}">
+
+        Esta tienda aún no tiene logo cargado.
+
+    </div>
+
+
+
+</div>
+
+<div class="col-12">
+    <hr>
+    <h5 class="fw-bold mb-0">Identidad visual White Label</h5>
+    <p class="text-muted small mb-0">
+        Personaliza colores, tipografía, favicon e imagen principal de la tienda.
+    </p>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Favicon URL</label>
+    <input type="text"
+           class="form-control"
+           th:field="*{faviconUrl}"
+           placeholder="https://.../favicon.png">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Imagen principal / Hero</label>
+    <input type="text"
+           class="form-control"
+           th:field="*{heroImageUrl}"
+           placeholder="https://.../hero.jpg">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Color primario</label>
+    <input type="color"
+           class="form-control form-control-color"
+           th:field="*{primaryColor}">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Color secundario</label>
+    <input type="color"
+           class="form-control form-control-color"
+           th:field="*{secondaryColor}">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Color accent</label>
+    <input type="color"
+           class="form-control form-control-color"
+           th:field="*{accentColor}">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Tipografía</label>
+    <select class="form-select" th:field="*{fontFamily}">
+        <option value="Inter">Inter</option>
+        <option value="DM Sans">DM Sans</option>
+        <option value="Montserrat">Montserrat</option>
+        <option value="Poppins">Poppins</option>
+        <option value="Roboto">Roboto</option>
+        <option value="Syne">Syne</option>
+        <option value="Bebas Neue">Bebas Neue</option>
+    </select>
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">Slogan</label>
+    <input type="text"
+           class="form-control"
+           th:field="*{slogan}"
+           placeholder="Ej. Tecnología para vender más">
+</div>
 
 									<div class="col-12">
 										<hr>
@@ -138,6 +250,58 @@
 				</div>
 
 				<div class="col-lg-4">
+				
+				<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <span class="badge text-bg-dark mb-2">
+            Branding
+        </span>
+
+        <h5 class="fw-bold mb-2">
+            Logo de la tienda
+        </h5>
+
+        <p class="text-muted">
+            Sube el logo que se usará en propuestas PDF, emails y documentos.
+        </p>
+
+        <div th:if="${param.logoSuccess}" class="alert alert-success">
+            Logo actualizado correctamente.
+        </div>
+
+        <div th:if="${param.logoError}" class="alert alert-danger">
+            No se pudo subir el logo. Verifica el archivo.
+        </div>
+
+        <div class="border rounded p-3 bg-light text-center mb-3"
+             th:if="${store.logoUrl != null and !store.logoUrl.isBlank()}">
+
+            <img th:src="${store.logoUrl}"
+                 alt="Logo"
+                 style="max-height:90px;max-width:240px;object-fit:contain;">
+        </div>
+
+        <form th:action="@{/admin/store/settings/logo}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <input type="file"
+                   class="form-control mb-3"
+                   name="logoFile"
+                   accept="image/png,image/jpeg,image/webp"
+                   required>
+
+            <button type="submit"
+                    class="btn btn-dark w-100">
+                Subir logo
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
 
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-body p-4">
@@ -179,16 +343,44 @@
 							<p class="text-muted small">Así se usarán tus datos en
 								propuestas y documentos.</p>
 
-							<div class="border rounded p-3 bg-light">
-								<strong th:text="${store.nombre}">Tienda</strong>
-								<div class="small text-muted"
-									th:text="${store.companyEmail ?: 'correo@empresa.com'}">
-								</div>
-								<div class="small text-muted"
-									th:text="${store.companyPhone ?: '+52 000 000 0000'}"></div>
-								<div class="small text-muted"
-									th:text="${store.companyWebsite ?: 'empresa.com'}"></div>
-							</div>
+<div class="border rounded p-3 bg-light">
+
+    <div class="mb-3"
+         th:if="${store.logoUrl != null and !store.logoUrl.isBlank()}">
+        <img th:src="${store.logoUrl}"
+             alt="Logo"
+             style="max-height:60px;max-width:180px;object-fit:contain;">
+    </div>
+
+    <strong th:text="${store.nombre}">Tienda</strong>
+
+    <div class="small text-muted mb-2"
+         th:text="${store.slogan ?: 'Slogan de la tienda'}">
+    </div>
+
+    <div class="d-flex gap-2 my-3">
+        <span class="rounded-circle d-inline-block"
+              th:style="'width:24px;height:24px;background:' + ${store.primaryColor}">
+        </span>
+
+        <span class="rounded-circle d-inline-block"
+              th:style="'width:24px;height:24px;background:' + ${store.secondaryColor}">
+        </span>
+
+        <span class="rounded-circle d-inline-block"
+              th:style="'width:24px;height:24px;background:' + ${store.accentColor}">
+        </span>
+    </div>
+
+    <div class="small text-muted"
+         th:text="${store.companyEmail ?: 'correo@empresa.com'}"></div>
+
+    <div class="small text-muted"
+         th:text="${store.companyPhone ?: '+52 000 000 0000'}"></div>
+
+    <div class="small text-muted"
+         th:text="${store.companyWebsite ?: 'empresa.com'}"></div>
+</div>
 
 						</div>
 					</div>

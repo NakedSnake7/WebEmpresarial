@@ -1,5 +1,8 @@
 package com.webempresarial.store.theme;
 
+import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.ThemeType;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +21,30 @@ public class StoreThemeResolver {
 
         try {
 
-            return storeResolver
-                    .getCurrentStore(request)
-                    .getTheme();
+            Store store = storeResolver.getCurrentStore(request);
+
+            if (store == null || store.getThemeType() == null) {
+                return DEFAULT_THEME;
+            }
+
+            ThemeType themeType = store.getThemeType();
+
+            return switch (themeType) {
+
+                case BASIC -> "basic";
+
+                case PRO -> "pro";
+
+                case PREMIUM -> "premium";
+
+                case CUSTOM -> {
+                    if (store.getTheme() != null && !store.getTheme().isBlank()) {
+                        yield store.getTheme();
+                    }
+
+                    yield DEFAULT_THEME;
+                }
+            };
 
         } catch (Exception e) {
 
