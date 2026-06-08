@@ -1,17 +1,17 @@
 package com.webempresarial.store.theme;
 
 import com.webempresarial.store.model.Store;
-import com.webempresarial.store.repository.StoreRepository;
+import com.webempresarial.store.service.StoreLookupService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StoreResolver {
 
-    private final StoreRepository storeRepository;
+    private final StoreLookupService storeLookupService;
 
-    public StoreResolver(StoreRepository storeRepository) {
-        this.storeRepository = storeRepository;
+    public StoreResolver(StoreLookupService storeLookupService) {
+        this.storeLookupService = storeLookupService;
     }
 
     public Store getCurrentStore(HttpServletRequest request) {
@@ -26,15 +26,22 @@ public class StoreResolver {
             throw new RuntimeException("No se pudo resolver el dominio actual");
         }
 
-        final String host = rawHost.toLowerCase().split(":")[0];
+        String host = normalizeHost(rawHost);
 
-        return storeRepository.findByDominioAndActivaTrue(host)
-                .orElseThrow(() -> new RuntimeException(
-                        "Tienda no encontrada para dominio: " + host
-                ));
+        return storeLookupService.getStoreByDomain(host);
     }
 
     public String getCurrentTheme(HttpServletRequest request) {
         return getCurrentStore(request).getTheme();
+    }
+
+    private String normalizeHost(String host) {
+        return host
+                .trim()
+                .toLowerCase()
+                .replace("https://", "")
+                .replace("http://", "")
+                .split(":")[0]
+                .replace("/", "");
     }
 }

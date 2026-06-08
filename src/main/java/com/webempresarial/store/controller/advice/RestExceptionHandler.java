@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.webempresarial.store.exception.ImageUploadException;
 import com.webempresarial.store.exceptions.FeatureNotAllowedException;
@@ -142,5 +143,9 @@ public class RestExceptionHandler {
                         "success", false,
                         "error", "Error interno del servidor"
                 ));
+    }
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<?> handleNoResource(NoResourceFoundException ex) {
+        return ResponseEntity.notFound().build();
     }
 }
