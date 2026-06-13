@@ -5,6 +5,7 @@ import com.webempresarial.store.repository.StoreRepository;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,17 +13,43 @@ import java.util.List;
 public class StoreAdminService {
 
     private final StoreRepository storeRepository;
+    private final StoreProvisioningService storeProvisioningService;
 
-    public StoreAdminService(StoreRepository storeRepository) {
+    public StoreAdminService(
+            StoreRepository storeRepository,
+            StoreProvisioningService storeProvisioningService
+    ) {
         this.storeRepository = storeRepository;
+        this.storeProvisioningService = storeProvisioningService;
     }
 
     public List<Store> listarTiendas() {
-        return storeRepository.findAll();
+        return storeRepository.findAllWithSubscription();
+    }
+
+    @Transactional
+    @CacheEvict(value = "storesByDomain", allEntries = true)
+    public Store guardar(Store store, String subscriptionType) {
+
+        boolean isNewStore = store.getId() == null;
+
+        normalizeStore(store);
+
+        Store savedStore = storeRepository.save(store);
+
+        if (isNewStore) {
+            storeProvisioningService.provision(savedStore, subscriptionType);
+        }
+
+        return savedStore;
     }
 
     @CacheEvict(value = "storesByDomain", allEntries = true)
     public Store guardar(Store store) {
+        return guardar(store, "INTERNAL");
+    }
+
+    private void normalizeStore(Store store) {
 
         store.setDominio(
                 store.getDominio()
@@ -33,10 +60,12 @@ public class StoreAdminService {
                         .replace("/", "")
         );
 
-        store.setTheme(store.getTheme().trim());
-
-        return storeRepository.save(store);
+        if (store.getTheme() != null) {
+            store.setTheme(store.getTheme().trim());
+        }
     }
+
+
 
     public Store buscarPorId(Long id) {
         return storeRepository.findById(id)

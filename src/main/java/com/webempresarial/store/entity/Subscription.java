@@ -1,5 +1,6 @@
 package com.webempresarial.store.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.webempresarial.store.model.Store;
@@ -54,8 +55,17 @@ public class Subscription {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    
+    @Column(precision = 12, scale = 2)
+    private BigDecimal monthlyAmount;
 
-    @PrePersist
+    @Column(length = 3)
+    private String currency = "MXN";
+
+    @Column(nullable = false)
+    private boolean billingExempt = false;
+
+	@PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -177,6 +187,28 @@ public class Subscription {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+    public BigDecimal getMonthlyAmount() {
+		return monthlyAmount;
+	}
 
+	public void setMonthlyAmount(BigDecimal monthlyAmount) {
+		this.monthlyAmount = monthlyAmount;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+	
+	public boolean isBillingExempt() {
+	    return billingExempt;
+	}
+
+	public void setBillingExempt(boolean billingExempt) {
+	    this.billingExempt = billingExempt;
+	}
     // getters/setters
 }

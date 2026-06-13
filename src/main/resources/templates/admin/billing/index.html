@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Billing | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">Billing</span>
+
+        <h1 class="fw-bold mb-1">
+            Plan y facturación
+        </h1>
+
+        <p class="text-muted mb-0">
+            Administra el plan actual, suscripción y opciones de actualización.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-2">Plan actual</h5>
+
+            <div class="display-6 fw-bold"
+                 th:text="${store.plan}">
+                BASIC
+            </div>
+
+            <p class="text-muted mb-0"
+               th:if="${subscription != null}">
+                Estado:
+                <strong th:text="${subscription.status}">
+                    ACTIVE
+                </strong>
+            </p>
+
+            <p class="text-muted mb-0"
+               th:if="${subscription == null}">
+                Esta tienda aún no tiene suscripción registrada.
+            </p>
+            
+            <form th:if="${subscription != null 
+              and subscription.stripeCustomerId != null
+              and !subscription.stripeCustomerId.isBlank()}"
+      method="post"
+      th:action="@{/admin/billing/portal}"
+      class="mt-3">
+
+    <button type="submit"
+            class="btn btn-outline-dark">
+        Gestionar suscripción en Stripe
+    </button>
+
+</form>
+
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold">Basic</h4>
+                    <p class="text-muted">Para tiendas simples.</p>
+
+                    <h2>$299 <small class="fs-6">MXN/mes</small></h2>
+
+                    <ul class="text-muted">
+                        <li>Ecommerce</li>
+                        <li>Productos</li>
+                        <li>Pedidos</li>
+                        <li>Checkout</li>
+                    </ul>
+
+                    <button class="btn btn-outline-dark w-100"
+                            disabled
+                            th:if="${store.plan.name() == 'BASIC'}">
+                        Plan actual
+                    </button>
+
+                    <form th:if="${store.plan.name() != 'BASIC'}"
+                          method="post"
+                          th:action="@{/admin/billing/checkout}">
+                        <input type="hidden" name="plan" value="BASIC">
+                        <button class="btn btn-dark w-100" type="submit">
+                            Cambiar a Basic
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 border-primary">
+                <div class="card-body p-4">
+
+                    <span class="badge text-bg-primary mb-2">Recomendado</span>
+
+                    <h4 class="fw-bold">Pro</h4>
+                    <p class="text-muted">Para vender y gestionar leads.</p>
+
+                    <h2>$699 <small class="fs-6">MXN/mes</small></h2>
+
+                    <ul class="text-muted">
+                        <li>Todo Basic</li>
+                        <li>CRM</li>
+                        <li>Pipeline</li>
+                        <li>Propuestas</li>
+                        <li>Analytics</li>
+                    </ul>
+
+                    <button class="btn btn-outline-primary w-100"
+                            disabled
+                            th:if="${store.plan.name() == 'PRO'}">
+                        Plan actual
+                    </button>
+
+                    <form th:if="${store.plan.name() != 'PRO'}"
+                          method="post"
+                          th:action="@{/admin/billing/checkout}">
+                        <input type="hidden" name="plan" value="PRO">
+                        <button class="btn btn-primary w-100" type="submit">
+                            Actualizar a Pro
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold">Premium</h4>
+                    <p class="text-muted">Automatización y white label avanzado.</p>
+
+                    <h2>$1,499 <small class="fs-6">MXN/mes</small></h2>
+
+                    <ul class="text-muted">
+                        <li>Todo Pro</li>
+                        <li>Automatizaciones</li>
+                        <li>Email Marketing</li>
+                        <li>WhatsApp Automation</li>
+                        <li>API Access</li>
+                        <li>White Label Full</li>
+                    </ul>
+
+                    <button class="btn btn-outline-dark w-100"
+                            disabled
+                            th:if="${store.plan.name() == 'PREMIUM'}">
+                        Plan actual
+                    </button>
+
+                    <form th:if="${store.plan.name() != 'PREMIUM'}"
+                          method="post"
+                          th:action="@{/admin/billing/checkout}">
+                        <input type="hidden" name="plan" value="PREMIUM">
+                        <button class="btn btn-dark w-100" type="submit">
+                            Actualizar a Premium
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>

@@ -32,7 +32,13 @@ public class StoreResolver {
     }
 
     public String getCurrentTheme(HttpServletRequest request) {
-        return getCurrentStore(request).getTheme();
+        Store store = getCurrentStore(request);
+
+        if (store.getTheme() != null && !store.getTheme().isBlank()) {
+            return store.getTheme();
+        }
+
+        return "WebEmpresarial";
     }
 
     private String normalizeHost(String host) {

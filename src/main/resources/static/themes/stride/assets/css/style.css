@@ -64,6 +64,12 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   opacity: 1;
 }
 
+.nav-logo-img {
+    max-height: 42px;
+    max-width: 160px;
+    object-fit: contain;
+    display: block;
+}
 #cartDropdown {
     position: fixed;
     top: 80px;

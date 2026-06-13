@@ -29,8 +29,11 @@ public class StoreAdminController {
     }
 
     @PostMapping("/guardar")
-    public String guardar(@ModelAttribute Store store) {
-        storeAdminService.guardar(store);
+    public String guardar(
+            @ModelAttribute Store store,
+            @RequestParam(defaultValue = "INTERNAL") String subscriptionType
+    ) {
+        storeAdminService.guardar(store, subscriptionType);
         return "redirect:/admin/stores";
     }
 

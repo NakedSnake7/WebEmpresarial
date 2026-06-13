@@ -7,7 +7,9 @@
 
         <div class="sidebar-text">
             <strong>WebEmpresarial</strong>
-            <small>Commerce Admin</small>
+            <small th:text="${store != null ? store.plan : 'Commerce Admin'}">
+                Commerce Admin
+            </small>
         </div>
 
         <button type="button"
@@ -25,31 +27,54 @@
             <span class="sidebar-text">Dashboard</span>
         </a>
 
-        <div class="sidebar-section sidebar-text">
+        <div class="sidebar-section sidebar-text"
+             th:if="${features.canUseCRM(store)}">
             CRM Comercial
         </div>
+        <a href="/admin/upgrade?feature=CRM"
+   class="sidebar-link text-warning"
+   th:unless="${features.canUseCRM(store)}">
+    <span class="sidebar-icon">🔒</span>
+    <span class="sidebar-text">CRM Pro</span>
+</a>
 
-        <a href="/crm/dashboard" class="sidebar-link">
+        <a href="/crm/dashboard"
+           class="sidebar-link"
+           th:if="${features.canUseCRM(store)}">
             <span class="sidebar-icon">📊</span>
             <span class="sidebar-text">CRM Dashboard</span>
         </a>
 
-        <a href="/crm/pipeline" class="sidebar-link">
+        <a href="/crm/pipeline"
+           class="sidebar-link"
+           th:if="${features.canUsePipeline(store)}">
             <span class="sidebar-icon">🎯</span>
             <span class="sidebar-text">Pipeline</span>
         </a>
+<a href="/admin/upgrade?feature=PIPELINE"
+   class="sidebar-link text-warning"
+   th:if="${features.canUseCRM(store) and !features.canUsePipeline(store)}">
+    <span class="sidebar-icon">🔒</span>
+    <span class="sidebar-text">Pipeline Pro</span>
+</a>
 
-        <a href="/crm/tasks" class="sidebar-link">
+        <a href="/crm/tasks"
+           class="sidebar-link"
+           th:if="${features.canUseCRM(store)}">
             <span class="sidebar-icon">✅</span>
             <span class="sidebar-text">Tareas</span>
         </a>
 
-        <a href="/crm/reports" class="sidebar-link">
-            <span class="sidebar-icon">📈</span>
-            <span class="sidebar-text">Reportes</span>
-        </a>
+<a href="/crm/reports"
+   class="sidebar-link"
+   th:if="${features.canUseAnalytics(store)}">
+    <span class="sidebar-icon">📈</span>
+    <span class="sidebar-text">Reportes</span>
+</a>
 
-        <a href="/admin/leads" class="sidebar-link">
+        <a href="/admin/leads"
+           class="sidebar-link"
+           th:if="${features.canUseCRM(store)}">
             <span class="sidebar-icon">🗂️</span>
             <span class="sidebar-text">Leads tabla</span>
         </a>
@@ -57,6 +82,11 @@
         <div class="sidebar-section sidebar-text">
             Ecommerce
         </div>
+
+<a href="/admin/billing" class="sidebar-link">
+    <span class="sidebar-icon">💼</span>
+    <span class="sidebar-text">Billing</span>
+</a>
 
         <a href="/admin/productos" class="sidebar-link">
             <span class="sidebar-icon">📦</span>
@@ -87,14 +117,39 @@
             Sistema
         </div>
 
-        <a href="/admin/stores" class="sidebar-link">
-            <span class="sidebar-icon">🏬</span>
+<a href="/admin/stores"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+               <span class="sidebar-icon">🏬</span>
             <span class="sidebar-text">Tiendas</span>
         </a>
+        
+        <a href="/admin/saas"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🚀</span>
+    <span class="sidebar-text">SaaS Dashboard</span>
+</a>
 
-        <a href="/admin/automations" class="sidebar-link">
+<a href="/admin/subscriptions"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">💳</span>
+    <span class="sidebar-text">Suscripciones</span>
+</a>
+
+        <a href="/admin/automations"
+           class="sidebar-link"
+           th:if="${features.canUseAutomations(store)}">
             <span class="sidebar-icon">⚡</span>
             <span class="sidebar-text">Automatizaciones</span>
+        </a>
+
+        <a href="/admin/upgrade?feature=AUTOMATIONS"
+           class="sidebar-link text-warning"
+           th:unless="${features.canUseAutomations(store)}">
+            <span class="sidebar-icon">🔒</span>
+            <span class="sidebar-text">Automatizaciones Premium</span>
         </a>
 
     </nav>
@@ -105,10 +160,11 @@
             <span class="sidebar-icon">🌐</span>
             <span class="sidebar-text">Ver sitio</span>
         </a>
+
         <a href="/admin/store/settings" class="sidebar-link">
-    <span class="sidebar-icon">⚙️</span>
-    <span class="sidebar-text">Configuración</span>
-</a>
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-text">Configuración</span>
+        </a>
 
         <a href="/admin/logout" class="sidebar-link logout">
             <span class="sidebar-icon">🚪</span>

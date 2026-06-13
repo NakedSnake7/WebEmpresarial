@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{themes/premium/layout :: layout(
+          ${store != null ? store.nombre : 'Tienda Premium'},
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section id="hero" class="premium-hero">
+
+    <div class="premium-hero-media">
+        <img th:if="${settings != null and settings.heroImageUrl != null and !settings.heroImageUrl.isBlank()}"
+             th:src="${settings.heroImageUrl}"
+             th:alt="${store != null ? store.nombre : 'Tienda Premium'}">
+
+        <div th:unless="${settings != null and settings.heroImageUrl != null and !settings.heroImageUrl.isBlank()}"
+             class="premium-hero-fallback">
+            <span th:text="${store != null ? store.nombre : 'PREMIUM'}">
+                PREMIUM
+            </span>
+        </div>
+    </div>
+
+    <div class="premium-hero-overlay"></div>
+
+    <div class="container premium-hero-content">
+
+        <div class="premium-logo-wrap"
+             th:if="${settings != null and settings.logoUrl != null and !settings.logoUrl.isBlank()}">
+            <img th:src="${settings.logoUrl}"
+                 th:alt="${store != null ? store.nombre : 'Logo'}"
+                 class="premium-logo">
+        </div>
+
+<span class="premium-kicker"
+      th:text="${settings != null and settings.heroEyebrow != null and !settings.heroEyebrow.isBlank()
+          ? settings.heroEyebrow
+          : 'Premium Collection'}">
+    Premium Collection
+</span>
+
+<h1 th:utext="${settings != null and settings.heroTitle != null and !settings.heroTitle.isBlank()
+    ? settings.heroTitle
+    : ((store != null ? store.nombre : 'Tu marca') + '<br>creada para destacar')}">
+    Tu marca<br>creada para destacar
+</h1>
+
+<p th:text="${settings != null and settings.heroSubtitle != null and !settings.heroSubtitle.isBlank()
+    ? settings.heroSubtitle
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Productos seleccionados para ofrecer calidad, diseño y una experiencia superior.')}">
+</p>
+
+        <div class="premium-actions">
+<a th:href="${settings != null and settings.heroButtonUrl != null and !settings.heroButtonUrl.isBlank()
+        ? settings.heroButtonUrl
+        : '#productos'}"
+   class="premium-btn premium-btn-primary"
+   th:text="${settings != null and settings.heroButtonText != null and !settings.heroButtonText.isBlank()
+        ? settings.heroButtonText
+        : 'Explorar colección'}">
+    Explorar colección
+</a>
+
+            <a href="#historia" class="premium-btn premium-btn-secondary">
+                Nuestra esencia
+            </a>
+
+            <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+th:href="@{'https://wa.me/'
+    + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}
+    + '?text='
+    + ${settings.whatsappMessage != null and !settings.whatsappMessage.isBlank()
+        ? settings.whatsappMessage
+        : 'Hola, quiero más información'}}"
+	               target="_blank"
+               class="premium-btn premium-btn-ghost">
+                WhatsApp
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="premium-trust">
+    <div class="container premium-trust-grid">
+        <div>
+            <span>01</span>
+            <strong>Compra segura</strong>
+            <small>Flujo preparado para ecommerce real.</small>
+        </div>
+
+        <div>
+            <span>02</span>
+            <strong>Atención personalizada</strong>
+            <small>Acompañamiento antes y después de comprar.</small>
+        </div>
+
+        <div>
+            <span>03</span>
+            <strong>Experiencia premium</strong>
+            <small>Diseño, confianza y valor percibido.</small>
+        </div>
+
+        <div>
+            <span>04</span>
+            <strong>Envíos disponibles</strong>
+            <small>Gestión comercial clara y directa.</small>
+        </div>
+    </div>
+</section>
+
+<section id="historia" class="premium-story">
+    <div class="container premium-story-grid">
+
+        <div>
+            <span class="premium-kicker">Nuestra filosofía</span>
+
+<h2 th:utext="${settings != null and settings.aboutTitle != null and !settings.aboutTitle.isBlank()
+    ? settings.aboutTitle
+    : 'Más que productos.<br>Creamos experiencias.'}">
+    Más que productos.<br>Creamos experiencias.
+</h2>
+        </div>
+
+        <div>
+<p th:text="${settings != null and settings.aboutText != null and !settings.aboutText.isBlank()
+    ? settings.aboutText
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Cada producto ha sido seleccionado para representar calidad, diseño y atención al detalle.')}">
+</p>
+
+            <a href="#productos" class="premium-inline-link">
+                Ver colección →
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<section id="categorias" class="premium-section premium-collections">
+    <div class="container">
+
+        <div class="premium-section-header">
+            <span class="premium-kicker">Colecciones</span>
+            <h2>Explora por categoría</h2>
+            <p>Una forma elegante de descubrir lo que la marca tiene para ti.</p>
+        </div>
+
+        <div class="premium-collection-grid"
+             th:if="${categorias != null and !categorias.isEmpty()}">
+
+            <a th:each="categoria, iter : ${categorias}"
+               href="#productos"
+               class="premium-collection-card">
+
+                <span th:text="${iter.index + 1 < 10 ? '0' + (iter.index + 1) : iter.index + 1}">
+                    01
+                </span>
+
+                <h3 th:text="${categoria.nombre}">
+                    Categoría
+                </h3>
+
+                <small>Explorar colección</small>
+
+            </a>
+
+        </div>
+
+        <div class="premium-empty"
+             th:if="${categorias == null or categorias.isEmpty()}">
+            Aún no hay colecciones disponibles.
+        </div>
+
+    </div>
+</section>
+
+<section id="destacado" class="premium-featured"
+         th:if="${productos != null and !productos.isEmpty()}">
+
+    <div class="container">
+
+        <div class="premium-featured-card"
+             th:with="featured=${productos[0]}">
+
+            <div class="premium-featured-image">
+                <img th:src="${featured.imageUrl}"
+                     th:alt="${featured.productName}">
+            </div>
+
+            <div class="premium-featured-content">
+                <span class="premium-kicker">Producto protagonista</span>
+
+                <h2 th:text="${featured.productName}">
+                    Producto destacado
+                </h2>
+
+                <p th:text="${featured.description ?: 'Una pieza seleccionada para representar la esencia de la marca.'}">
+                    Una pieza seleccionada para representar la esencia de la marca.
+                </p>
+
+                <strong th:text="${#numbers.formatCurrency(featured.precioConDescuento)}">
+                    $0.00
+                </strong>
+
+                <button type="button"
+                        class="premium-btn premium-btn-primary premium-add-cart"
+                        th:disabled="${!featured.tieneStock()}"
+                        th:attr="
+                            data-id=${featured.id},
+                            data-nombre=${featured.productName},
+                            data-precio=${featured.precioConDescuento},
+                            data-imagen=${featured.imageUrl}">
+                    Agregar al carrito
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section id="productos" class="premium-section premium-products">
+    <div class="container">
+
+        <div class="premium-section-header">
+            <span class="premium-kicker">Selección premium</span>
+            <h2>Productos destacados</h2>
+            <p>Una experiencia de compra diseñada para transmitir confianza y deseo.</p>
+        </div>
+
+        <div class="premium-product-grid"
+             th:if="${productos != null and !productos.isEmpty()}">
+
+            <article class="premium-product-card"
+                     th:each="producto : ${productos}">
+
+                <div class="premium-product-image">
+                    <img th:src="${producto.imageUrl}"
+                         th:alt="${producto.productName}">
+
+                    <span class="premium-product-badge"
+                          th:if="${producto.tienePromocion}">
+                        Oferta especial
+                    </span>
+                </div>
+
+                <div class="premium-product-body">
+                    <span class="premium-product-label">
+                        Featured Product
+                    </span>
+
+                    <h3 th:text="${producto.productName}">
+                        Producto
+                    </h3>
+
+                    <p th:text="${producto.description ?: 'Producto disponible en tienda.'}">
+                        Producto disponible en tienda.
+                    </p>
+
+                    <div class="premium-product-meta">
+                        <strong th:text="${#numbers.formatCurrency(producto.precioConDescuento)}">
+                            $0.00
+                        </strong>
+
+                        <small th:if="${producto.tieneStock()}">
+                            Disponible
+                        </small>
+
+                        <small th:unless="${producto.tieneStock()}">
+                            Agotado
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="premium-btn premium-btn-primary premium-add-cart"
+                            th:disabled="${!producto.tieneStock()}"
+                            th:attr="
+                                data-id=${producto.id},
+                                data-nombre=${producto.productName},
+                                data-precio=${producto.precioConDescuento},
+                                data-imagen=${producto.imageUrl}">
+                        Comprar ahora
+                    </button>
+                </div>
+
+            </article>
+
+        </div>
+
+        <div class="premium-empty"
+             th:if="${productos == null or productos.isEmpty()}">
+            Aún no hay productos publicados.
+        </div>
+
+    </div>
+</section>
+
+<section id="experiencia" class="premium-values">
+    <div class="container">
+
+        <div class="premium-section-header">
+            <span class="premium-kicker">Experiencia</span>
+            <h2>Diseñado para clientes exigentes</h2>
+        </div>
+
+        <div class="premium-values-grid">
+
+            <div class="premium-value-card">
+                <span>01</span>
+                <h3>Curaduría</h3>
+                <p>Productos organizados con intención para facilitar una compra clara.</p>
+            </div>
+
+            <div class="premium-value-card">
+                <span>02</span>
+                <h3>Calidad</h3>
+                <p>Una presentación cuidada que eleva el valor percibido de la marca.</p>
+            </div>
+
+            <div class="premium-value-card">
+                <span>03</span>
+                <h3>Confianza</h3>
+                <p>Información, contacto y experiencia pensadas para vender mejor.</p>
+            </div>
+
+            <div class="premium-value-card">
+                <span>04</span>
+                <h3>Atención</h3>
+                <p>Canales directos para acompañar al cliente antes y después de comprar.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section id="reviews" class="premium-section premium-testimonials">
+    <div class="container">
+
+        <div class="premium-section-header">
+            <span class="premium-kicker">Testimonios</span>
+            <h2>Clientes que confían</h2>
+        </div>
+
+        <div class="premium-testimonial-grid"
+             th:if="${reviews != null and !reviews.isEmpty()}">
+
+            <article class="premium-testimonial-card"
+                     th:each="review : ${reviews}">
+
+                <blockquote th:text="${review.comentario}">
+                    Excelente experiencia.
+                </blockquote>
+
+                <strong th:text="${review.nombre}">
+                    Cliente
+                </strong>
+
+            </article>
+
+        </div>
+
+        <div class="premium-empty"
+             th:if="${reviews == null or reviews.isEmpty()}">
+            Aún no hay reseñas publicadas.
+        </div>
+
+    </div>
+</section>
+
+<section id="contacto" class="premium-contact">
+    <div class="container premium-contact-grid">
+
+        <div>
+            <span class="premium-kicker">Contacto</span>
+
+            <h2 th:text="${store != null ? store.nombre : 'Tu tienda'}">
+                Tu tienda
+            </h2>
+
+<p th:text="${settings != null and settings.footerText != null and !settings.footerText.isBlank()
+    ? settings.footerText
+    : 'Estamos listos para ayudarte a elegir mejor.'}">
+    Estamos listos para ayudarte a elegir mejor.
+</p>
+        </div>
+
+        <div class="premium-contact-card">
+
+            <div th:if="${settings != null and settings.companyEmail != null and !settings.companyEmail.isBlank()}">
+                <span>Email</span>
+                <strong th:text="${settings.companyEmail}">
+                    correo@empresa.com
+                </strong>
+            </div>
+
+            <div th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}">
+                <span>Teléfono</span>
+                <strong th:text="${settings.companyPhone}">
+                    +52 000 000 0000
+                </strong>
+            </div>
+
+            <div th:if="${settings != null and settings.companyWebsite != null and !settings.companyWebsite.isBlank()}">
+                <span>Sitio web</span>
+                <strong th:text="${settings.companyWebsite}">
+                    empresa.com
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="premium-final-cta">
+    <div class="container">
+
+        <span class="premium-kicker">Colección completa</span>
+
+<p th:text="${settings != null and settings.ctaText != null and !settings.ctaText.isBlank()
+    ? settings.ctaText
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Calidad, diseño y atención en una tienda preparada para vender más.')}">
+</p>
+
+        <p th:text="${settings != null and settings.slogan != null and !settings.slogan.isBlank()
+            ? settings.slogan
+            : 'Calidad, diseño y atención en una tienda preparada para vender más.'}">
+            Calidad, diseño y atención en una tienda preparada para vender más.
+        </p>
+
+        <div class="premium-actions">
+            <a href="#productos" class="premium-btn premium-btn-primary">
+                Ver colección
+            </a>
+
+            <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+               th:href="@{'https://wa.me/' + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}}"
+               target="_blank"
+               class="premium-btn premium-btn-secondary">
+                Hablar por WhatsApp
+            </a>
+        </div>
+
+    </div>
+</section>
+
+</th:block>
+
+</body>
+</html>

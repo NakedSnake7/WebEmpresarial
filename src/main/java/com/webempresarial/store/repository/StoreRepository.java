@@ -1,8 +1,12 @@
 package com.webempresarial.store.repository;
 
 import com.webempresarial.store.model.Store;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.webempresarial.store.model.StorePlan;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
@@ -16,9 +20,22 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     boolean existsByTheme(String theme);
     
     long countByActivaTrue();
-
-    long countByPlan(com.webempresarial.store.model.StorePlan plan);
     
     Optional<Store> findByDominio(String dominio);
+    
+
+    long countByActivaFalse();
+
+    long countByPlan(StorePlan plan);
+
+    long countByStripeConnectedTrue();
+    
+    @Query("""
+    	    SELECT s
+    	    FROM Store s
+    	    LEFT JOIN FETCH s.subscription
+    	    ORDER BY s.id DESC
+    	""")
+    	List<Store> findAllWithSubscription();
     
 }

@@ -33,21 +33,34 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // ====================================
-    // LOGIN ADMIN
-    // ====================================
     @Bean
     @Order(1)
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
 
         http
-            .securityMatcher("/admin/**")
+            .securityMatcher("/admin/**", "/api/admin/**")
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/login").permitAll()
-                .requestMatchers("/admin/stores/**").hasRole("SUPER_ADMIN")
-                .anyRequest().hasAnyRole("SUPER_ADMIN", "STORE_ADMIN", "STORE_STAFF")
+
+                .requestMatchers(
+                    "/admin/stores/**",
+                    "/admin/subscriptions/**",
+                    "/admin/billing/**",
+                    "/admin/saas/**"
+                ).hasRole("SUPER_ADMIN")
+
+                .requestMatchers(
+                    "/admin/store/settings/**",
+                    "/api/admin/stripe/connect/**"
+                ).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
+
+                .anyRequest().hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
             )
 
             .formLogin(form -> form
@@ -67,9 +80,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ====================================
-    // LOGIN CLIENTE
-    // ====================================
     @Bean
     @Order(2)
     public SecurityFilterChain storeSecurity(

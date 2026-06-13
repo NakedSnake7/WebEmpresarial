@@ -4,12 +4,20 @@
          xmlns:th="http://www.thymeleaf.org"
          xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-    <div class="container nav-inner">
+<!-- LOGO -->
+<a th:href="@{/}" class="nav-logo">
 
-        <!-- LOGO -->
-        <a th:href="@{/}" class="nav-logo">
-            STR<span>I</span>DE
-        </a>
+    <img th:if="${settings != null and settings.logoUrl != null and !settings.logoUrl.isBlank()}"
+         th:src="${settings.logoUrl}"
+         th:alt="${store != null ? store.nombre : 'Logo'}"
+         class="nav-logo-img">
+
+    <span th:if="${settings == null or settings.logoUrl == null or settings.logoUrl.isBlank()}"
+          th:utext="${store != null ? store.nombre : 'STR&lt;span&gt;I&lt;/span&gt;DE'}">
+        STR<span>I</span>DE
+    </span>
+
+</a>
 
 
         <!-- LINKS -->

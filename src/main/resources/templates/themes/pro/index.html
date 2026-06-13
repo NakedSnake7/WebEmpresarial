@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{themes/pro/layout :: layout(
+          ${store != null ? store.nombre : 'Tienda Pro'},
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section id="hero" class="pro-hero">
+    <div class="container pro-hero-grid">
+
+        <div class="pro-hero-copy">
+
+            <div class="pro-logo-wrap"
+                 th:if="${settings != null and settings.logoUrl != null and !settings.logoUrl.isBlank()}">
+                <img th:src="${settings.logoUrl}"
+                     th:alt="${store != null ? store.nombre : 'Logo'}"
+                     class="pro-logo">
+            </div>
+
+<span class="pro-kicker"
+      th:text="${settings != null and settings.heroEyebrow != null and !settings.heroEyebrow.isBlank()
+          ? settings.heroEyebrow
+          : 'Tienda online profesional'}">
+    Tienda online profesional
+</span>
+
+<h1 th:utext="${settings != null and settings.heroTitle != null and !settings.heroTitle.isBlank()
+    ? settings.heroTitle
+    : ((store != null ? store.nombre : 'Tu marca') + '<br>lista para vender más')}">
+    Tu marca<br>lista para vender más
+</h1>
+
+
+<p th:text="${settings != null and settings.heroSubtitle != null and !settings.heroSubtitle.isBlank()
+    ? settings.heroSubtitle
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Una experiencia de compra moderna, confiable y diseñada para convertir visitas en clientes.')}">
+</p>
+
+            <div class="pro-hero-actions">
+<a th:href="${settings != null and settings.heroButtonUrl != null and !settings.heroButtonUrl.isBlank()
+        ? settings.heroButtonUrl
+        : '#productos'}"
+   class="pro-btn pro-btn-primary"
+   th:text="${settings != null and settings.heroButtonText != null and !settings.heroButtonText.isBlank()
+        ? settings.heroButtonText
+        : 'Comprar ahora'}">
+    Comprar ahora
+</a>
+
+                <a href="#categorias" class="pro-btn pro-btn-outline">
+                    Ver catálogo
+                </a>
+
+                <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+th:href="@{'https://wa.me/'
+    + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}
+    + '?text='
+    + ${settings.whatsappMessage != null and !settings.whatsappMessage.isBlank()
+        ? settings.whatsappMessage
+        : 'Hola, quiero más información'}}"
+                   target="_blank"
+                   class="pro-btn pro-btn-whatsapp">
+                    WhatsApp
+                </a>
+            </div>
+
+        </div>
+
+        <div class="pro-hero-visual">
+            <img th:if="${settings != null and settings.heroImageUrl != null and !settings.heroImageUrl.isBlank()}"
+                 th:src="${settings.heroImageUrl}"
+                 th:alt="${store != null ? store.nombre : 'Hero'}">
+
+            <div th:unless="${settings != null and settings.heroImageUrl != null and !settings.heroImageUrl.isBlank()}"
+                 class="pro-hero-placeholder">
+                <span th:text="${store != null ? store.nombre : 'PRO'}">
+                    PRO
+                </span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="pro-trust">
+    <div class="container pro-trust-grid">
+        <div>🔒 Pago seguro</div>
+        <div>🚚 Envíos disponibles</div>
+        <div>💬 Atención personalizada</div>
+        <div>⚡ Compra rápida</div>
+    </div>
+</section>
+
+<section id="categorias" class="pro-section">
+    <div class="container">
+
+        <div class="pro-section-header">
+            <span>Categorías destacadas</span>
+            <h2>Encuentra lo que necesitas</h2>
+            <p>Explora el catálogo por familias de productos.</p>
+        </div>
+
+        <div class="pro-category-grid"
+             th:if="${categorias != null and !categorias.isEmpty()}">
+
+            <a th:each="categoria : ${categorias}"
+               href="#productos"
+               class="pro-category-card">
+
+                <span th:text="${categoria.nombre}">
+                    Categoría
+                </span>
+
+                <small>Ver productos →</small>
+
+            </a>
+
+        </div>
+
+        <div class="pro-empty"
+             th:if="${categorias == null or categorias.isEmpty()}">
+            Aún no hay categorías disponibles.
+        </div>
+
+    </div>
+</section>
+
+<section id="productos" class="pro-section pro-products">
+    <div class="container">
+
+        <div class="pro-section-header">
+            <span>Productos destacados</span>
+            <h2>Catálogo seleccionado</h2>
+            <p>Productos organizados para una compra rápida y confiable.</p>
+        </div>
+
+        <div class="pro-product-grid"
+             th:if="${productos != null and !productos.isEmpty()}">
+
+            <article class="pro-product-card"
+                     th:each="producto : ${productos}">
+
+                <div class="pro-product-image">
+                    <img th:src="${producto.imageUrl}"
+                         th:alt="${producto.productName}">
+
+                    <span class="pro-product-badge"
+                          th:if="${producto.tienePromocion}">
+                        Oferta
+                    </span>
+                </div>
+
+                <div class="pro-product-body">
+                    <h3 th:text="${producto.productName}">Producto</h3>
+
+                    <p th:text="${producto.description ?: 'Producto disponible para compra inmediata.'}">
+                        Producto disponible para compra inmediata.
+                    </p>
+
+                    <div class="pro-product-meta">
+                        <strong th:text="${#numbers.formatCurrency(producto.precioConDescuento)}">
+                            $0.00
+                        </strong>
+
+                        <span th:if="${producto.tieneStock()}"
+                              class="pro-stock ok">
+                            Disponible
+                        </span>
+
+                        <span th:unless="${producto.tieneStock()}"
+                              class="pro-stock out">
+                            Agotado
+                        </span>
+                    </div>
+
+                    <button type="button"
+                            class="pro-btn pro-btn-primary pro-add-cart"
+                            th:disabled="${!producto.tieneStock()}"
+                            th:attr="
+                                data-id=${producto.id},
+                                data-nombre=${producto.productName},
+                                data-precio=${producto.precioConDescuento},
+                                data-imagen=${producto.imageUrl}">
+                        Agregar al carrito
+                    </button>
+                </div>
+
+            </article>
+
+        </div>
+
+        <div class="pro-empty"
+             th:if="${productos == null or productos.isEmpty()}">
+            Aún no hay productos publicados.
+        </div>
+
+    </div>
+</section>
+
+<section id="historia" class="pro-story">
+    <div class="container pro-story-grid">
+
+        <div>
+<span class="pro-kicker">Nuestra marca</span>
+
+<h2 th:text="${settings != null and settings.aboutTitle != null and !settings.aboutTitle.isBlank()
+    ? settings.aboutTitle
+    : (store != null ? store.nombre : 'Una tienda profesional')}">
+    Una tienda profesional
+</h2>
+        </div>
+
+<p th:text="${settings != null and settings.aboutText != null and !settings.aboutText.isBlank()
+    ? settings.aboutText
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Creamos una experiencia de compra clara, confiable y enfocada en ayudarte a encontrar productos de valor.')}">
+</p>
+
+    </div>
+</section>
+
+<section class="pro-section pro-benefits">
+    <div class="container pro-benefit-grid">
+
+        <div class="pro-benefit-card">
+            <span>⭐</span>
+            <h3>Productos seleccionados</h3>
+            <p>Un catálogo organizado para facilitar la decisión de compra.</p>
+        </div>
+
+        <div class="pro-benefit-card">
+            <span>🔒</span>
+            <h3>Compra segura</h3>
+            <p>Flujo de compra simple, directo y preparado para ecommerce real.</p>
+        </div>
+
+        <div class="pro-benefit-card">
+            <span>💬</span>
+            <h3>Atención directa</h3>
+            <p>Comunicación cercana para resolver dudas antes de comprar.</p>
+        </div>
+
+        <div class="pro-benefit-card">
+            <span>📦</span>
+            <h3>Experiencia profesional</h3>
+            <p>Diseño moderno para transmitir confianza desde el primer contacto.</p>
+        </div>
+
+    </div>
+</section>
+
+<section class="pro-mid-cta">
+    <div class="container">
+<h2 th:text="${settings != null and settings.ctaTitle != null and !settings.ctaTitle.isBlank()
+    ? settings.ctaTitle
+    : 'Encuentra tu próximo producto favorito'}">
+    Encuentra tu próximo producto favorito
+</h2>
+
+<p th:text="${settings != null and settings.ctaText != null and !settings.ctaText.isBlank()
+    ? settings.ctaText
+    : 'Explora el catálogo y compra de forma rápida y segura.'}">
+    Explora el catálogo y compra de forma rápida y segura.
+</p>
+
+        <div class="pro-hero-actions">
+            <a href="#productos" class="pro-btn pro-btn-primary">
+                Ver productos
+            </a>
+
+            <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+               th:href="@{'https://wa.me/' + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}}"
+               target="_blank"
+               class="pro-btn pro-btn-outline">
+                Contactar
+            </a>
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="pro-section">
+    <div class="container">
+
+        <div class="pro-section-header">
+            <span>Prueba social</span>
+            <h2>Opiniones de clientes</h2>
+        </div>
+
+        <div class="pro-review-grid"
+             th:if="${reviews != null and !reviews.isEmpty()}">
+
+            <article class="pro-review-card"
+                     th:each="review : ${reviews}">
+                <p th:text="${review.comentario}">
+                    Excelente experiencia.
+                </p>
+
+                <strong th:text="${review.nombre}">
+                    Cliente
+                </strong>
+            </article>
+
+        </div>
+
+        <div class="pro-empty"
+             th:if="${reviews == null or reviews.isEmpty()}">
+            Aún no hay reseñas publicadas.
+        </div>
+
+    </div>
+</section>
+
+<section id="contacto" class="pro-contact">
+    <div class="container pro-contact-grid">
+
+        <div>
+            <span class="pro-kicker">Contacto</span>
+            <h2 th:text="${store != null ? store.nombre : 'Tu tienda'}">
+                Tu tienda
+            </h2>
+<p th:text="${settings != null and settings.footerText != null and !settings.footerText.isBlank()
+    ? settings.footerText
+    : 'Estamos listos para atenderte.'}">
+    Estamos listos para atenderte.
+</p>
+        </div>
+
+        <div class="pro-contact-card">
+            <div th:if="${settings != null and settings.companyEmail != null}"
+                 th:text="${settings.companyEmail}">
+                correo@empresa.com
+            </div>
+
+            <div th:if="${settings != null and settings.companyPhone != null}"
+                 th:text="${settings.companyPhone}">
+                +52 000 000 0000
+            </div>
+
+            <div th:if="${settings != null and settings.companyWebsite != null}"
+                 th:text="${settings.companyWebsite}">
+                empresa.com
+            </div>
+        </div>
+
+    </div>
+</section>
+
+</th:block>
+
+</body>
+</html>

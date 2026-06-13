@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{themes/basic/layout :: layout(
+          ${store != null ? store.nombre : 'Tienda'},
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section id="hero" class="basic-hero">
+
+    <div class="basic-hero-bg"
+         th:if="${settings != null and settings.heroImageUrl != null and !settings.heroImageUrl.isBlank()}">
+        <img th:src="${settings.heroImageUrl}"
+             th:alt="${store != null ? store.nombre : 'Tienda'}">
+    </div>
+
+    <div class="basic-hero-overlay"></div>
+
+    <div class="container basic-hero-content">
+
+        <div class="basic-logo-wrap"
+             th:if="${settings != null and settings.logoUrl != null and !settings.logoUrl.isBlank()}">
+            <img th:src="${settings.logoUrl}"
+                 th:alt="${store != null ? store.nombre : 'Logo'}"
+                 class="basic-logo">
+        </div>
+
+<span class="basic-kicker"
+      th:text="${settings != null and settings.heroEyebrow != null and !settings.heroEyebrow.isBlank()
+          ? settings.heroEyebrow
+          : 'Tienda online'}">
+    Tienda online
+</span>
+
+<h1 th:text="${settings != null and settings.heroTitle != null and !settings.heroTitle.isBlank()
+    ? settings.heroTitle
+    : (store != null ? store.nombre : 'Tu tienda online')}">
+    Tu tienda online
+</h1>
+
+<p th:text="${settings != null and settings.heroSubtitle != null and !settings.heroSubtitle.isBlank()
+    ? settings.heroSubtitle
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Compra fácil, rápido y seguro desde cualquier lugar.')}">
+    Compra fácil, rápido y seguro desde cualquier lugar.
+</p>
+
+        <div class="basic-hero-actions">
+<a th:href="${settings != null and settings.heroButtonUrl != null and !settings.heroButtonUrl.isBlank()
+        ? settings.heroButtonUrl
+        : '#productos'}"
+   class="basic-btn basic-btn-primary"
+   th:text="${settings != null and settings.heroButtonText != null and !settings.heroButtonText.isBlank()
+        ? settings.heroButtonText
+        : 'Ver productos'}">
+    Ver productos
+</a>
+
+            <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+th:href="@{'https://wa.me/' 
+    + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}
+    + '?text='
+    + ${settings.whatsappMessage != null and !settings.whatsappMessage.isBlank()
+        ? settings.whatsappMessage
+        : 'Hola, quiero más información'}}"
+                       target="_blank"
+               class="basic-btn basic-btn-outline">
+                WhatsApp
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="basic-trust">
+    <div class="container basic-trust-grid">
+        <div>🚚 Envíos disponibles</div>
+        <div>🔒 Pago seguro</div>
+        <div>💬 Atención personalizada</div>
+    </div>
+</section>
+
+<section id="about" class="basic-section"
+         th:if="${settings != null and (
+             (settings.aboutTitle != null and !settings.aboutTitle.isBlank()) or
+             (settings.aboutText != null and !settings.aboutText.isBlank())
+         )}">
+    <div class="container">
+
+        <div class="basic-section-header">
+            <span>Sobre nosotros</span>
+
+            <h2 th:text="${settings.aboutTitle != null and !settings.aboutTitle.isBlank()
+                ? settings.aboutTitle
+                : (store != null ? store.nombre : 'Nuestra tienda')}">
+                Nuestra tienda
+            </h2>
+
+            <p th:text="${settings.aboutText != null and !settings.aboutText.isBlank()
+                ? settings.aboutText
+                : 'Somos una tienda enfocada en ofrecer productos seleccionados y atención cercana.'}">
+                Somos una tienda enfocada en ofrecer productos seleccionados y atención cercana.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+
+<section id="categorias" class="basic-section">
+    <div class="container">
+
+        <div class="basic-section-header">
+            <span>Categorías</span>
+            <h2>Explora por categoría</h2>
+        </div>
+
+        <div class="basic-category-grid"
+             th:if="${categorias != null and !categorias.isEmpty()}">
+
+            <a th:each="categoria : ${categorias}"
+               th:href="@{|/#productos|}"
+               class="basic-category-card">
+
+                <span th:text="${categoria.nombre}">
+                    Categoría
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="basic-empty"
+             th:if="${categorias == null or categorias.isEmpty()}">
+            Aún no hay categorías disponibles.
+        </div>
+
+    </div>
+</section>
+
+<section id="productos" class="basic-section basic-products">
+    <div class="container">
+
+        <div class="basic-section-header">
+            <span>Catálogo</span>
+            <h2>Productos destacados</h2>
+        </div>
+
+        <div class="basic-product-grid"
+             th:if="${productos != null and !productos.isEmpty()}">
+
+            <article class="basic-product-card"
+                     th:each="producto : ${productos}">
+
+                <div class="basic-product-image">
+                    <img th:src="${producto.imageUrl}"
+                         th:alt="${producto.productName}">
+                </div>
+
+                <div class="basic-product-body">
+
+                    <h3 th:text="${producto.productName}">
+                        Producto
+                    </h3>
+
+                    <p th:text="${producto.description ?: 'Producto disponible en tienda.'}">
+                        Producto disponible en tienda.
+                    </p>
+
+                    <div class="basic-product-footer">
+
+                        <strong th:text="${#numbers.formatCurrency(producto.precioConDescuento)}">
+                            $0.00
+                        </strong>
+
+                        <span th:if="${producto.tieneStock()}"
+                              class="basic-stock ok">
+                            Disponible
+                        </span>
+
+                        <span th:unless="${producto.tieneStock()}"
+                              class="basic-stock out">
+                            Agotado
+                        </span>
+
+                    </div>
+
+                    <button type="button"
+                            class="basic-btn basic-btn-primary basic-add-cart"
+                            th:disabled="${!producto.tieneStock()}"
+                            th:attr="
+                                data-id=${producto.id},
+                                data-nombre=${producto.productName},
+                                data-precio=${producto.precioConDescuento},
+                                data-imagen=${producto.imageUrl}">
+                        Agregar al carrito
+                    </button>
+
+                </div>
+
+            </article>
+
+        </div>
+
+        <div class="basic-empty"
+             th:if="${productos == null or productos.isEmpty()}">
+            Aún no hay productos publicados.
+        </div>
+
+    </div>
+</section>
+
+<section class="basic-section basic-benefits">
+    <div class="container basic-benefit-grid">
+
+        <div class="basic-benefit-card">
+            <span>🛒</span>
+            <h3>Compra fácil</h3>
+            <p>Explora productos, agrega al carrito y realiza tu pedido en minutos.</p>
+        </div>
+
+        <div class="basic-benefit-card">
+            <span>💬</span>
+            <h3>Atención directa</h3>
+            <p>Comunícate con la tienda para resolver dudas antes de comprar.</p>
+        </div>
+
+        <div class="basic-benefit-card">
+            <span>⭐</span>
+            <h3>Productos seleccionados</h3>
+            <p>Catálogo organizado para que encuentres lo que necesitas rápidamente.</p>
+        </div>
+
+    </div>
+</section>
+
+<section id="reviews" class="basic-section">
+    <div class="container">
+
+        <div class="basic-section-header">
+            <span>Opiniones</span>
+            <h2>Lo que dicen nuestros clientes</h2>
+        </div>
+
+        <div class="basic-review-grid"
+             th:if="${reviews != null and !reviews.isEmpty()}">
+
+            <article class="basic-review-card"
+                     th:each="review : ${reviews}">
+
+                <p th:text="${review.comentario}">
+                    Excelente servicio.
+                </p>
+
+                <strong th:text="${review.nombre}">
+                    Cliente
+                </strong>
+
+            </article>
+
+        </div>
+
+        <div class="basic-empty"
+             th:if="${reviews == null or reviews.isEmpty()}">
+            Aún no hay reseñas publicadas.
+        </div>
+
+    </div>
+</section>
+
+<section id="contacto" class="basic-cta">
+    <div class="container">
+
+<h2 th:text="${settings != null and settings.ctaTitle != null and !settings.ctaTitle.isBlank()
+    ? settings.ctaTitle
+    : (store != null ? store.nombre : 'Tu tienda')}">
+                Tu tienda
+        </h2>
+
+<p th:text="${settings != null and settings.ctaText != null and !settings.ctaText.isBlank()
+    ? settings.ctaText
+    : (settings != null and settings.slogan != null and !settings.slogan.isBlank()
+        ? settings.slogan
+        : 'Estamos listos para atenderte.')}">
+</p>
+
+        <div class="basic-hero-actions">
+            <a href="#productos" class="basic-btn basic-btn-primary">
+                Explorar productos
+            </a>
+
+            <a th:if="${settings != null and settings.companyPhone != null and !settings.companyPhone.isBlank()}"
+               th:href="@{'https://wa.me/' + ${#strings.replace(#strings.replace(#strings.replace(settings.companyPhone, ' ', ''), '+', ''), '-', '')}}"
+               target="_blank"
+               class="basic-btn basic-btn-outline">
+                Contactar
+            </a>
+        </div>
+
+    </div>
+</section>
+
+</th:block>
+
+</body>
+</html>

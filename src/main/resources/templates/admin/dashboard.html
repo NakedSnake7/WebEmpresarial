@@ -52,7 +52,10 @@
                 </div>
             </div>
         </div>
-                    <div class="col-md-4">
+        
+        
+                    <div class="col-md-4"
+     th:if="${features.canUseCustomDomain(store)}">
     <div class="card border-0 shadow-sm h-100 dashboard-card">
         <div class="card-body">
             <div class="fs-2 mb-2">💳</div>
@@ -88,7 +91,8 @@
     </div>
 </div>
         
-<div class="col-md-4">
+<div class="col-md-4"
+     th:if="${isSuperAdmin}">
     <a th:href="@{/admin/stores}" class="text-decoration-none">
         <div class="card border-0 shadow-sm h-100 dashboard-card">
             <div class="card-body">
@@ -101,33 +105,51 @@
         </div>
     </a>
 </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Automatizaciones</div>
-                    <div class="display-6 fw-bold">3</div>
-                    <span class="small text-muted">WhatsApp · Email · CRM</span>
-                </div>
-            </div>
+
+<div class="col-md-3"
+     th:if="${features.canUseAutomations(store)}">
+    <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+            <div class="text-muted small">Automatizaciones</div>
+            <div class="display-6 fw-bold">3</div>
+            <span class="small text-muted">WhatsApp · Email · CRM</span>
         </div>
+    </div>
+</div>
+
+<div class="col-md-3"
+     th:unless="${features.canUseAutomations(store)}">
+    <div class="card border-0 shadow-sm h-100 border-warning">
+        <div class="card-body">
+            <div class="text-muted small">Automatizaciones</div>
+            <div class="fw-bold">Bloqueado</div>
+            <span class="small text-muted">Disponible en Premium</span>
+            <a href="/admin/upgrade?feature=AUTOMATIONS"
+               class="btn btn-sm btn-warning mt-2">
+                Mejorar plan
+            </a>
+        </div>
+    </div>
+</div>
 
     </div>
 
     <div class="row g-3">
 
-        <div class="col-md-4">
-            <a href="/admin/leads" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
-                    <div class="card-body">
-                        <div class="fs-2 mb-2">🎯</div>
-                        <h5 class="fw-bold">Leads & CRM</h5>
-                        <p class="text-muted mb-0">
-                            Captura solicitudes, cambia estados y da seguimiento comercial.
-                        </p>
-                    </div>
-                </div>
-            </a>
+<div class="col-md-4"
+     th:if="${features.canUseCRM(store)}">
+    <a href="/admin/leads" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100 dashboard-card">
+            <div class="card-body">
+                <div class="fs-2 mb-2">🎯</div>
+                <h5 class="fw-bold">Leads & CRM</h5>
+                <p class="text-muted mb-0">
+                    Captura solicitudes, cambia estados y da seguimiento comercial.
+                </p>
+            </div>
         </div>
+    </a>
+</div>
         
         
 

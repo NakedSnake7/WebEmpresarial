@@ -1,10 +1,12 @@
 package com.webempresarial.store.controller;
 
 import com.webempresarial.store.dto.CloudinaryUploadResult;
+import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CloudinaryService;
 import com.webempresarial.store.service.StoreContextService;
-import com.webempresarial.store.repository.StoreRepository;
+import com.webempresarial.store.service.StoreSettingsService;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,16 +20,16 @@ import org.springframework.ui.Model;
 public class StoreSettingsController {
 
     private final StoreContextService storeContextService;
-    private final StoreRepository storeRepository;
+    private final StoreSettingsService storeSettingsService;
     private final CloudinaryService cloudinaryService;
 
     public StoreSettingsController(
             StoreContextService storeContextService,
-            StoreRepository storeRepository,
+            StoreSettingsService storeSettingsService,
             CloudinaryService cloudinaryService
     ) {
         this.storeContextService = storeContextService;
-        this.storeRepository = storeRepository;
+        this.storeSettingsService = storeSettingsService;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -37,8 +39,10 @@ public class StoreSettingsController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+        StoreSettings settings = storeSettingsService.getOrCreate(store);
 
         model.addAttribute("store", store);
+        model.addAttribute("settings", settings);
 
         return "admin/stores/settings";
     }
@@ -46,35 +50,34 @@ public class StoreSettingsController {
     @CacheEvict(value = "storesByDomain", allEntries = true)
     @PostMapping
     public String saveSettings(
-            @ModelAttribute Store form,
+            @ModelAttribute StoreSettings form,
             HttpServletRequest request
     ) {
-        Store currentStore = storeContextService.getCurrentStore(request);
+        Store store = storeContextService.getCurrentStore(request);
 
-        Store store = storeRepository.findById(currentStore.getId())
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+        StoreSettings settings = storeSettingsService.getOrCreate(store);
 
-        store.setLogoUrl(form.getLogoUrl());
-        store.setCompanyEmail(form.getCompanyEmail());
-        store.setCompanyPhone(form.getCompanyPhone());
-        store.setCompanyAddress(form.getCompanyAddress());
-        store.setCompanyWebsite(form.getCompanyWebsite());
-        store.setContactName(form.getContactName());
-        store.setCurrency(form.getCurrency());
-        store.setProposalFooter(form.getProposalFooter());
-        store.setFaviconUrl(form.getFaviconUrl());
-        store.setPrimaryColor(form.getPrimaryColor());
-        store.setSecondaryColor(form.getSecondaryColor());
-        store.setAccentColor(form.getAccentColor());
-        store.setFontFamily(form.getFontFamily());
-        store.setHeroImageUrl(form.getHeroImageUrl());
-        store.setSlogan(form.getSlogan());
+        settings.setCompanyEmail(form.getCompanyEmail());
+        settings.setCompanyPhone(form.getCompanyPhone());
+        settings.setCompanyAddress(form.getCompanyAddress());
+        settings.setCompanyWebsite(form.getCompanyWebsite());
+        settings.setContactName(form.getContactName());
+        settings.setCurrency(form.getCurrency());
+        settings.setProposalFooter(form.getProposalFooter());
 
-        storeRepository.save(store);
+        settings.setFaviconUrl(form.getFaviconUrl());
+        settings.setPrimaryColor(form.getPrimaryColor());
+        settings.setSecondaryColor(form.getSecondaryColor());
+        settings.setAccentColor(form.getAccentColor());
+        settings.setFontFamily(form.getFontFamily());
+        settings.setHeroImageUrl(form.getHeroImageUrl());
+        settings.setSlogan(form.getSlogan());
+
+        storeSettingsService.save(settings);
 
         return "redirect:/admin/store/settings?success";
     }
-    
+
     @CacheEvict(value = "storesByDomain", allEntries = true)
     @PostMapping("/logo")
     public String uploadLogo(
@@ -86,17 +89,15 @@ public class StoreSettingsController {
         }
 
         try {
-            Store currentStore = storeContextService.getCurrentStore(request);
+            Store store = storeContextService.getCurrentStore(request);
+            StoreSettings settings = storeSettingsService.getOrCreate(store);
 
-            Store store = storeRepository.findById(currentStore.getId())
-                    .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
-
-            if (store.getLogoUrl() != null &&
-                    !store.getLogoUrl().isBlank()) {
+            if (settings.getLogoUrl() != null &&
+                    !settings.getLogoUrl().isBlank()) {
 
                 String publicId =
                         cloudinaryService.extraerPublicIdDesdeUrl(
-                                store.getLogoUrl()
+                                settings.getLogoUrl()
                         );
 
                 if (publicId != null) {
@@ -110,9 +111,9 @@ public class StoreSettingsController {
                             store.getId()
                     );
 
-            store.setLogoUrl(result.getSecureUrl());
+            settings.setLogoUrl(result.getSecureUrl());
 
-            storeRepository.save(store);
+            storeSettingsService.save(settings);
 
             return "redirect:/admin/store/settings?logoSuccess";
 
@@ -121,31 +122,31 @@ public class StoreSettingsController {
             return "redirect:/admin/store/settings?logoError";
         }
     }
-    
+
     @CacheEvict(value = "storesByDomain", allEntries = true)
     @PostMapping("/logo/delete")
     public String deleteLogo(HttpServletRequest request) {
 
         try {
-            Store currentStore = storeContextService.getCurrentStore(request);
+            Store store = storeContextService.getCurrentStore(request);
+            StoreSettings settings = storeSettingsService.getOrCreate(store);
 
-            Store store = storeRepository.findById(currentStore.getId())
-                    .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+            if (settings.getLogoUrl() != null &&
+                    !settings.getLogoUrl().isBlank()) {
 
-            if (store.getLogoUrl() != null && !store.getLogoUrl().isBlank()) {
-
-                String publicId = cloudinaryService.extraerPublicIdDesdeUrl(
-                        store.getLogoUrl()
-                );
+                String publicId =
+                        cloudinaryService.extraerPublicIdDesdeUrl(
+                                settings.getLogoUrl()
+                        );
 
                 if (publicId != null) {
                     cloudinaryService.eliminarImagen(publicId);
                 }
             }
 
-            store.setLogoUrl(null);
+            settings.setLogoUrl(null);
 
-            storeRepository.save(store);
+            storeSettingsService.save(settings);
 
             return "redirect:/admin/store/settings?logoDeleted";
 
@@ -154,5 +155,4 @@ public class StoreSettingsController {
             return "redirect:/admin/store/settings?logoError";
         }
     }
-    
 }
