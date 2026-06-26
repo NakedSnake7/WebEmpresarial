@@ -1,7 +1,8 @@
 package com.webempresarial.store.repository;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,5 +46,15 @@ public interface SubscriptionRepository
             LocalDateTime now
     );
     
+    long countByStatusAndCreatedAtBetween(
+            SubscriptionStatus status,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+    long countByStatusInAndCreatedAtBefore(
+            Collection<SubscriptionStatus> statuses,
+            LocalDateTime date
+    );
     
 }
