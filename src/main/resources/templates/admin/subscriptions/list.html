@@ -20,7 +20,7 @@
         <p class="text-muted mb-0">
             Administra las suscripciones activas, trials, cancelaciones y planes de cada tienda.
         </p>
-    </div>
+    </div>			
 
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
@@ -128,6 +128,13 @@
                         <td style="min-width: 320px;">
 
                             <div class="d-flex flex-wrap gap-2">
+                            
+<a th:href="@{|https://${subscription.store.dominio}|}"
+   target="_blank"
+   class="btn btn-sm btn-outline-primary"
+   th:if="${subscription.store.dominio != null}">
+    🌐 Ver tienda
+</a>
 
                                 <form th:action="@{|/admin/subscriptions/${subscription.id}/activate|}"
                                       method="post"

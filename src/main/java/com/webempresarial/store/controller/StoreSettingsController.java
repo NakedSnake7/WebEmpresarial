@@ -72,6 +72,14 @@ public class StoreSettingsController {
         settings.setFontFamily(form.getFontFamily());
         settings.setHeroImageUrl(form.getHeroImageUrl());
         settings.setSlogan(form.getSlogan());
+        
+        settings.setCustomCss(form.getCustomCss());
+        settings.setCustomJs(form.getCustomJs());
+        
+        settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
+        settings.setMetaPixelId(form.getMetaPixelId());
+        settings.setTiktokPixelId(form.getTiktokPixelId());
+        settings.setHotjarId(form.getHotjarId());
 
         storeSettingsService.save(settings);
 

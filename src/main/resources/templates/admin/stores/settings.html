@@ -172,6 +172,140 @@
            placeholder="Ej. Tecnología para vender más">
 </div>
 
+
+<div class="col-12">
+    <hr>
+
+    <h5 class="fw-bold mb-0">
+        White Label Avanzado
+    </h5>
+
+    <p class="text-muted small">
+        Personalización avanzada disponible para planes Premium.
+    </p>
+</div>
+
+<div class="col-12">
+    <hr>
+
+    <h5 class="fw-bold mb-0">
+        Tracking y Analítica
+    </h5>
+
+    <p class="text-muted small">
+        Integra Google Analytics, Meta Pixel, TikTok Pixel y Hotjar.
+    </p>
+</div>
+
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Google Analytics ID
+    </label>
+
+    <input type="text"
+           class="form-control"
+           th:field="*{googleAnalyticsId}"
+           placeholder="G-XXXXXXXXXX">
+
+</div>
+
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Meta Pixel ID
+    </label>
+
+    <input type="text"
+           class="form-control"
+           th:field="*{metaPixelId}"
+           placeholder="123456789012345">
+
+</div>
+
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        TikTok Pixel ID
+    </label>
+
+    <input type="text"
+           class="form-control"
+           th:field="*{tiktokPixelId}"
+           placeholder="CXXXXXXXX">
+
+</div>
+
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Hotjar ID
+    </label>
+
+    <input type="text"
+           class="form-control"
+           th:field="*{hotjarId}"
+           placeholder="1234567">
+
+</div>
+
+
+<div class="col-12"
+     th:if="${features.canUseWhiteLabel(store)}">
+
+    <label class="form-label fw-semibold">
+        CSS personalizado
+    </label>
+
+    <textarea
+            class="form-control font-monospace"
+            rows="10"
+            th:field="*{customCss}"
+            placeholder="body { background:#000; }">
+    </textarea>
+
+</div>
+
+<div class="col-12"
+     th:if="${features.canUseWhiteLabel(store)}">
+
+    <label class="form-label fw-semibold">
+        JavaScript personalizado
+    </label>
+
+    <textarea
+            class="form-control font-monospace"
+            rows="10"
+            th:field="*{customJs}"
+            placeholder="console.log('Mi tienda');">
+    </textarea>
+
+</div>
+
+<div class="col-12"
+     th:unless="${features.canUseWhiteLabel(store)}">
+
+    <div class="alert alert-warning">
+
+        <strong>White Label Full</strong>
+
+        <p class="mb-2">
+            El CSS y JavaScript personalizados están disponibles únicamente en Premium.
+        </p>
+
+        <a href="/admin/billing"
+           class="btn btn-sm btn-dark">
+
+            Actualizar a Premium
+
+        </a>
+
+    </div>
+
+</div>
+
+
+
 									<div class="col-12">
 										<hr>
 										<h5 class="fw-bold mb-0">Información comercial</h5>

@@ -7,7 +7,14 @@
 )}">
 
 <body>
+<div th:if="${param.expired}"
+     class="alert alert-danger">
 
+    Tu suscripción ha expirado.
+
+    Renueva tu plan para recuperar acceso completo.
+
+</div>
 <th:block th:fragment="content">
 
 <section class="container-fluid">

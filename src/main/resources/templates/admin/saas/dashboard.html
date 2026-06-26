@@ -26,16 +26,18 @@
         </p>
     </div>
 
+    <!-- FILA 1 -->
     <div class="row g-3 mb-4">
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">Tiendas totales</div>
-<div class="display-6 fw-bold"
-     th:text="${metrics.totalStores}">
-    0
-</div>                    <span class="small text-muted">Todas las tiendas</span>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.totalStores}">
+                        0
+                    </div>
+                    <span class="small text-muted">Todas las tiendas</span>
                 </div>
             </div>
         </div>
@@ -44,10 +46,11 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">Tiendas activas</div>
-<div class="display-6 fw-bold"
-     th:text="${metrics.activeStores}">
-    0
-</div>                    <span class="small text-muted">Operando actualmente</span>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.activeStores}">
+                        0
+                    </div>
+                    <span class="small text-muted">Operando actualmente</span>
                 </div>
             </div>
         </div>
@@ -56,11 +59,11 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">MRR estimado</div>
-<div class="display-6 fw-bold"
-     th:text="${#numbers.formatCurrency(metrics.monthlyRecurringRevenue)}">
-    $0
-</div>    
-                <span class="small text-muted">Ingreso mensual recurrente</span>
+                    <div class="display-6 fw-bold"
+                         th:text="${#numbers.formatCurrency(metrics.monthlyRecurringRevenue)}">
+                        $0
+                    </div>
+                    <span class="small text-muted">Ingreso mensual recurrente</span>
                 </div>
             </div>
         </div>
@@ -69,10 +72,10 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">ARR estimado</div>
-<div class="display-6 fw-bold"
-     th:text="${#numbers.formatCurrency(metrics.annualRecurringRevenue)}">
-    $0
-</div>
+                    <div class="display-6 fw-bold"
+                         th:text="${#numbers.formatCurrency(metrics.annualRecurringRevenue)}">
+                        $0
+                    </div>
                     <span class="small text-muted">Ingreso anual recurrente</span>
                 </div>
             </div>
@@ -80,6 +83,66 @@
 
     </div>
 
+    <!-- FILA 2 -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Suscripciones activas</div>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.activeSubscriptions}">
+                        0
+                    </div>
+                    <span class="small text-muted">Clientes pagando o activos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Stripe conectadas</div>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.stripeConnectedStores}">
+                        0
+                    </div>
+                    <span class="small text-muted">Tiendas con pagos conectados</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-warning">
+                <div class="card-body">
+                    <div class="text-muted small">Tiendas inactivas</div>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.inactiveStores}">
+                        0
+                    </div>
+                    <span class="small text-muted">Requieren revisión</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Ticket promedio</div>
+                    <div class="display-6 fw-bold"
+                         th:text="${metrics.activeSubscriptions > 0
+                            ? #numbers.formatCurrency(metrics.monthlyRecurringRevenue.divide(T(java.math.BigDecimal).valueOf(metrics.activeSubscriptions)))
+                            : '$0.00'}">
+                        $0
+                    </div>
+                    <span class="small text-muted">MRR / suscripciones activas</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FILA 3 -->
     <div class="row g-3 mb-4">
 
         <div class="col-md-4">
@@ -110,9 +173,9 @@
                 <div class="card-body">
                     <div class="text-muted small">Leads totales</div>
                     <div class="display-6 fw-bold"
-     th:text="${metrics.totalLeads}">
-    0
-</div>
+                         th:text="${metrics.totalLeads}">
+                        0
+                    </div>
                     <span class="small text-muted">Capturados en toda la plataforma</span>
                 </div>
             </div>
@@ -123,9 +186,9 @@
                 <div class="card-body">
                     <div class="text-muted small">Propuestas totales</div>
                     <div class="display-6 fw-bold"
-     th:text="${metrics.totalProposals}">
-    0
-</div>
+                         th:text="${metrics.totalProposals}">
+                        0
+                    </div>
                     <span class="small text-muted">Generadas desde el CRM</span>
                 </div>
             </div>
@@ -133,6 +196,7 @@
 
     </div>
 
+    <!-- FILA 4 -->
     <div class="row g-3">
 
         <div class="col-md-6">
@@ -140,9 +204,9 @@
                 <div class="card-body">
                     <div class="text-muted small">Pipeline global</div>
                     <div class="display-6 fw-bold"
-     th:text="${#numbers.formatCurrency(metrics.pipelineValue)}">
-    $0
-</div>
+                         th:text="${#numbers.formatCurrency(metrics.pipelineValue)}">
+                        $0
+                    </div>
                     <span class="small text-muted">Valor total estimado de oportunidades</span>
                 </div>
             </div>
@@ -153,20 +217,122 @@
                 <div class="card-body">
                     <div class="text-muted small">Revenue forecast global</div>
                     <div class="display-6 fw-bold"
-     th:text="${#numbers.formatCurrency(metrics.revenueForecast)}">
-    $0
-</div>
+                         th:text="${#numbers.formatCurrency(metrics.revenueForecast)}">
+                        $0
+                    </div>
                     <span class="small text-muted">Forecast ponderado por propuestas</span>
                 </div>
             </div>
         </div>
 
     </div>
+    
+    <!-- FILA 5: USO DE FUNCIONALIDADES -->
+<div class="row g-3 mt-4">
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+
+                <h5 class="fw-bold mb-3">
+                    Uso de funcionalidades últimos 30 días
+                </h5>
+
+                <div th:if="${featureUsage == null or featureUsage.isEmpty()}"
+                     class="alert alert-warning mb-0">
+                    Aún no hay eventos de uso registrados.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${featureUsage != null and !featureUsage.isEmpty()}">
+
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>Función</th>
+                            <th class="text-end">Usos</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="usage : ${featureUsage}">
+                            <td>
+                                <span class="badge text-bg-dark"
+                                      th:text="${usage.feature}">
+                                    CRM
+                                </span>
+                            </td>
+
+                            <td class="text-end fw-bold"
+                                th:text="${usage.total}">
+                                0
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+
+                <h5 class="fw-bold mb-3">
+                    Tiendas más activas últimos 30 días
+                </h5>
+
+                <div th:if="${topStores == null or topStores.isEmpty()}"
+                     class="alert alert-warning mb-0">
+                    Aún no hay tiendas con actividad registrada.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${topStores != null and !topStores.isEmpty()}">
+
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>Tienda</th>
+                            <th>Dominio</th>
+                            <th class="text-end">Eventos</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="storeUsage : ${topStores}">
+                            <td class="fw-semibold"
+                                th:text="${storeUsage.storeName}">
+                                STRIDE
+                            </td>
+
+                            <td class="small text-muted"
+                                th:text="${storeUsage.domain}">
+                                stride.local
+                            </td>
+
+                            <td class="text-end fw-bold"
+                                th:text="${storeUsage.total}">
+                                0
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
 
 </section>
-
- <script type="module" th:src="@{/assets/js/admin/saas-dashboard.js}"></script>  
 
 </th:block>
 
 </body>
+</html>

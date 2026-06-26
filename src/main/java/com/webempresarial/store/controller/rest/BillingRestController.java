@@ -13,11 +13,11 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/billing")
-public class BillingController {
+public class BillingRestController {
 
     private final StripeCheckoutService stripeCheckoutService;
 
-    public BillingController(StripeCheckoutService stripeCheckoutService) {
+    public BillingRestController(StripeCheckoutService stripeCheckoutService) {
         this.stripeCheckoutService = stripeCheckoutService;
     }
 

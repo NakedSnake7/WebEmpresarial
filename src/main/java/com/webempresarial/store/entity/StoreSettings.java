@@ -102,9 +102,73 @@ public class StoreSettings {
     @Column(columnDefinition = "TEXT")
     private String proposalFooter;
     
+    @Column(columnDefinition = "TEXT")
+    private String customCss;
 
+    @Column(columnDefinition = "TEXT")
+    private String customJs;
+    
+    @Column(length = 100)
+    private String googleAnalyticsId;
 
-    public Long getId() {
+    @Column(length = 100)
+    private String metaPixelId;
+
+    @Column(length = 100)
+    private String tiktokPixelId;
+
+    @Column(length = 100)
+    private String hotjarId;
+
+    public String getGoogleAnalyticsId() {
+		return googleAnalyticsId;
+	}
+
+	public void setGoogleAnalyticsId(String googleAnalyticsId) {
+		this.googleAnalyticsId = googleAnalyticsId;
+	}
+
+	public String getMetaPixelId() {
+		return metaPixelId;
+	}
+
+	public void setMetaPixelId(String metaPixelId) {
+		this.metaPixelId = metaPixelId;
+	}
+
+	public String getTiktokPixelId() {
+		return tiktokPixelId;
+	}
+
+	public void setTiktokPixelId(String tiktokPixelId) {
+		this.tiktokPixelId = tiktokPixelId;
+	}
+
+	public String getHotjarId() {
+		return hotjarId;
+	}
+
+	public void setHotjarId(String hotjarId) {
+		this.hotjarId = hotjarId;
+	}
+
+	public String getCustomCss() {
+		return customCss;
+	}
+
+	public void setCustomCss(String customCss) {
+		this.customCss = customCss;
+	}
+
+	public String getCustomJs() {
+		return customJs;
+	}
+
+	public void setCustomJs(String customJs) {
+		this.customJs = customJs;
+	}
+
+	public Long getId() {
         return id;
     }
 

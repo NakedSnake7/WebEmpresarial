@@ -41,6 +41,9 @@ public class StoreSettingsService {
                     settings.setCompanyAddress(store.getCompanyAddress());
                     settings.setCompanyWebsite(store.getCompanyWebsite());
                     settings.setContactName(store.getContactName());
+                    
+                    settings.setCustomCss("");
+                    settings.setCustomJs("");
 
                     settings.setCurrency(store.getCurrency());
                     settings.setProposalFooter(store.getProposalFooter());

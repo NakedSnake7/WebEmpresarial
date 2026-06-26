@@ -45,16 +45,16 @@ public class SecurityConfig {
                 .requestMatchers("/admin/login").permitAll()
 
                 .requestMatchers(
-                    "/admin/stores/**",
-                    "/admin/subscriptions/**",
-                    "/admin/billing/**",
-                    "/admin/saas/**"
-                ).hasRole("SUPER_ADMIN")
+                	    "/admin/stores/**",
+                	    "/admin/subscriptions/**",
+                	    "/admin/saas/**"
+                	).hasRole("SUPER_ADMIN")
 
-                .requestMatchers(
-                    "/admin/store/settings/**",
-                    "/api/admin/stripe/connect/**"
-                ).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
+                	.requestMatchers(
+                	    "/admin/billing/**",
+                	    "/admin/store/settings/**",
+                	    "/api/admin/stripe/connect/**"
+                	).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
 
                 .anyRequest().hasAnyRole(
                     "SUPER_ADMIN",

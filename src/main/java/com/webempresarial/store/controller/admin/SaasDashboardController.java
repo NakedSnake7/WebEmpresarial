@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.webempresarial.store.service.FeatureUsageMetricsService;
 import com.webempresarial.store.service.SaasMetricsService;
 
 @Controller
@@ -12,11 +13,14 @@ import com.webempresarial.store.service.SaasMetricsService;
 public class SaasDashboardController {
 
     private final SaasMetricsService saasMetricsService;
+    private final FeatureUsageMetricsService featureUsageMetricsService;
 
     public SaasDashboardController(
-            SaasMetricsService saasMetricsService
+            SaasMetricsService saasMetricsService,
+            FeatureUsageMetricsService featureUsageMetricsService
     ) {
         this.saasMetricsService = saasMetricsService;
+        this.featureUsageMetricsService = featureUsageMetricsService;
     }
 
     @GetMapping
@@ -25,6 +29,16 @@ public class SaasDashboardController {
         model.addAttribute(
                 "metrics",
                 saasMetricsService.getMetrics()
+        );
+
+        model.addAttribute(
+                "featureUsage",
+                featureUsageMetricsService.getUsageLast30Days()
+        );
+
+        model.addAttribute(
+                "topStores",
+                featureUsageMetricsService.getTopStoresLast30Days()
         );
 
         return "admin/saas/dashboard";
