@@ -154,4 +154,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("id") Long id,
             @Param("store") Store store
     );
+    
+    long countByStoreId(Long storeId);
+    
 }

@@ -171,6 +171,6 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
         			""")
         			BigDecimal getGlobalPipelineValue();
         		
-        		
+    
         
 }

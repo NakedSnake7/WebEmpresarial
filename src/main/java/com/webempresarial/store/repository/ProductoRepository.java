@@ -248,4 +248,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
             @Param("ids") List<Long> ids,
             @Param("store") Store store
     );
+    
+    long countByStoreId(Long storeId);
+
+    long countByStoreIdAndVisibleEnMenuTrue(Long storeId);
 }

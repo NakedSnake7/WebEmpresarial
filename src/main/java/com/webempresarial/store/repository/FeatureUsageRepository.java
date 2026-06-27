@@ -43,4 +43,8 @@ public interface FeatureUsageRepository extends JpaRepository<FeatureUsage, Long
             LocalDateTime start,
             LocalDateTime end
     );
+    long countByStoreAndCreatedAtAfter(
+            Store store,
+            LocalDateTime createdAt
+    );
 }
