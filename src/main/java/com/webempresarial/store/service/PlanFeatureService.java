@@ -2,12 +2,19 @@ package com.webempresarial.store.service;
 
 import org.springframework.stereotype.Service;
 
+import com.webempresarial.store.feature.FeatureRegistry;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 
 @Service
 public class PlanFeatureService {
+
+    private final FeatureRegistry featureRegistry;
+
+    public PlanFeatureService(FeatureRegistry featureRegistry) {
+        this.featureRegistry = featureRegistry;
+    }
 
     public boolean hasFeature(Store store, Feature feature) {
 
@@ -19,32 +26,35 @@ public class PlanFeatureService {
             return false;
         }
 
-        return switch (feature) {
+        if (!featureRegistry.isRegistered(feature)) {
+            return false;
+        }
 
-        case PRODUCTS,
-             CATEGORIES,
-             INVENTORY,
-             ORDERS,
-             CHECKOUT,
-             REVIEWS -> true;
+        StorePlan currentPlan = store.getPlan();
+        StorePlan requiredPlan = featureRegistry
+                .get(feature)
+                .getMinimumPlan();
 
-        case CRM,
-             LEADS,
-             TASKS,
-             COUPONS,
-             PIPELINE,
-             PROPOSALS,
-             CUSTOM_DOMAIN,
-             STRIPE_CONNECT,
-             ANALYTICS -> isProOrPremium(store);
+        return hasPlanAccess(currentPlan, requiredPlan);
+    }
 
-        case EMAIL_MARKETING,
-             WHATSAPP_AUTOMATION,
-             AUTOMATIONS,
-             MULTI_USER,
-             API_ACCESS,
-             WHITE_LABEL_FULL -> isPremium(store);
-    };
+    private boolean hasPlanAccess(
+            StorePlan currentPlan,
+            StorePlan requiredPlan
+    ) {
+        if (currentPlan == null || requiredPlan == null) {
+            return false;
+        }
+
+        return planRank(currentPlan) >= planRank(requiredPlan);
+    }
+
+    private int planRank(StorePlan plan) {
+        return switch (plan) {
+            case BASIC -> 1;
+            case PRO -> 2;
+            case PREMIUM -> 3;
+        };
     }
 
     public boolean canUseCRM(Store store) {
@@ -71,15 +81,6 @@ public class PlanFeatureService {
         return hasFeature(store, Feature.CUSTOM_DOMAIN);
     }
 
-    private boolean isProOrPremium(Store store) {
-        return store.getPlan() == StorePlan.PRO
-                || store.getPlan() == StorePlan.PREMIUM;
-    }
-
-    private boolean isPremium(Store store) {
-        return store.getPlan() == StorePlan.PREMIUM;
-    }
-    
     public boolean canUseAnalytics(Store store) {
         return hasFeature(store, Feature.ANALYTICS);
     }
@@ -95,7 +96,12 @@ public class PlanFeatureService {
     public boolean canUseMultiUser(Store store) {
         return hasFeature(store, Feature.MULTI_USER);
     }
-    
-    
-    
+
+    public boolean canUseApiAccess(Store store) {
+        return hasFeature(store, Feature.API_ACCESS);
+    }
+
+    public boolean canUseWhatsappAutomation(Store store) {
+        return hasFeature(store, Feature.WHATSAPP_AUTOMATION);
+    }
 }
