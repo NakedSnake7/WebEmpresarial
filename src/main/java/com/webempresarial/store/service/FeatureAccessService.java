@@ -2,27 +2,25 @@ package com.webempresarial.store.service;
 
 import com.webempresarial.store.exceptions.FeatureLockedException;
 import com.webempresarial.store.feature.FeatureDefinition;
-import com.webempresarial.store.feature.FeatureRegistry;
+import com.webempresarial.store.feature.FeatureCatalogService;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class FeatureAccessService {
 
-    private final PlanFeatureService planFeatureService;
-    private final FeatureRegistry featureRegistry;
+    private final FeatureCatalogService featureCatalogService;
 
     public FeatureAccessService(
-            PlanFeatureService planFeatureService,
-            FeatureRegistry featureRegistry
+            FeatureCatalogService featureCatalogService
     ) {
-        this.planFeatureService = planFeatureService;
-        this.featureRegistry = featureRegistry;
+        this.featureCatalogService = featureCatalogService;
     }
 
     public boolean canUse(Store store, Feature feature) {
-        return planFeatureService.hasFeature(store, feature);
+        return featureCatalogService.hasFeature(store, feature);
     }
 
     public void requireFeature(Store store, Feature feature) {
@@ -32,6 +30,6 @@ public class FeatureAccessService {
     }
 
     public FeatureDefinition getDefinition(Feature feature) {
-        return featureRegistry.get(feature);
+        return featureCatalogService.getDefinition(feature);
     }
 }

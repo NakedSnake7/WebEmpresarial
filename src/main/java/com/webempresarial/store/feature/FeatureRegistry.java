@@ -1,6 +1,7 @@
 package com.webempresarial.store.feature;
 
 import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 
 import org.springframework.stereotype.Component;
@@ -18,7 +19,6 @@ public class FeatureRegistry {
             new EnumMap<>(Feature.class);
 
     public void register(FeatureDefinition definition) {
-
         if (definition == null || definition.getFeature() == null) {
             throw new IllegalArgumentException("FeatureDefinition inválida");
         }
@@ -30,12 +30,26 @@ public class FeatureRegistry {
         FeatureDefinition definition = registry.get(feature);
 
         if (definition == null) {
-            throw new IllegalArgumentException(
-                    "Feature no registrada: " + feature
-            );
+            throw new IllegalArgumentException("Feature no registrada: " + feature);
         }
 
         return definition;
+    }
+
+    public boolean hasFeature(Store store, Feature feature) {
+        if (store == null || feature == null || !store.isActiva()) {
+            return false;
+        }
+
+        if (!isRegistered(feature)) {
+            return false;
+        }
+
+        return get(feature).isAvailableFor(store.getPlan());
+    }
+
+    public boolean isLocked(Store store, Feature feature) {
+        return !hasFeature(store, feature);
     }
 
     public Collection<FeatureDefinition> getAll() {
@@ -43,52 +57,86 @@ public class FeatureRegistry {
     }
 
     public List<FeatureDefinition> getAllOrdered() {
-        return registry.values()
-                .stream()
-                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
-                .toList();
+        return ordered(registry.values().stream().toList());
     }
 
-    public List<FeatureDefinition> getByCategory(FeatureCategory category) {
-        return registry.values()
-                .stream()
-                .filter(f -> f.getCategory() == category)
-                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
-                .toList();
-    }
+    public List<FeatureDefinition> available(Store store) {
+        if (store == null || !store.isActiva()) {
+            return List.of();
+        }
 
-    public List<FeatureDefinition> getByMinimumPlan(StorePlan plan) {
-        return registry.values()
-                .stream()
-                .filter(f -> f.getMinimumPlan() == plan)
-                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
-                .toList();
-    }
-
-    public List<FeatureDefinition> getAvailableForPlan(StorePlan plan) {
         return registry.values()
                 .stream()
                 .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.isAvailableFor(plan))
+                .filter(f -> f.isAvailableFor(store.getPlan()))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
 
-    public List<FeatureDefinition> getLockedForPlan(StorePlan plan) {
+    public List<FeatureDefinition> locked(Store store) {
+        if (store == null || !store.isActiva()) {
+            return List.of();
+        }
+
         return registry.values()
                 .stream()
                 .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.requiresUpgradeFrom(plan))
+                .filter(f -> f.requiresUpgradeFrom(store.getPlan()))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
 
-    public List<FeatureDefinition> getSidebarFeatures(StorePlan plan) {
-        return registry.values()
+    public List<FeatureDefinition> sidebar(Store store) {
+        return available(store)
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
                 .filter(FeatureDefinition::isShowInSidebar)
-                .filter(f -> f.isAvailableFor(plan))
+                .toList();
+    }
+
+    public List<FeatureDefinition> dashboard(Store store) {
+        return available(store)
+                .stream()
+                .filter(FeatureDefinition::isShowInDashboard)
+                .toList();
+    }
+
+    public List<FeatureDefinition> upgrades(Store store) {
+        return locked(store)
+                .stream()
+                .filter(FeatureDefinition::isShowUpgradeCard)
+                .toList();
+    }
+
+    public List<FeatureDefinition> billing(Store store) {
+        return available(store)
+                .stream()
+                .filter(FeatureDefinition::isShowInBilling)
+                .toList();
+    }
+
+    public List<FeatureDefinition> trackable(Store store) {
+        return available(store)
+                .stream()
+                .filter(FeatureDefinition::isTrackUsage)
+                .toList();
+    }
+
+    public List<FeatureDefinition> health(Store store) {
+        return available(store)
+                .stream()
+                .filter(f -> f.getHealthWeight() > 0)
+                .toList();
+    }
+
+    public List<FeatureDefinition> byCategory(FeatureCategory category) {
+        if (category == null) {
+            return List.of();
+        }
+
+        return registry.values()
+                .stream()
+                .filter(FeatureDefinition::isEnabled)
+                .filter(f -> f.getCategory() == category)
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
@@ -99,5 +147,54 @@ public class FeatureRegistry {
 
     public boolean isPremium(Feature feature) {
         return get(feature).isPremium();
+    }
+
+    // Compatibilidad temporal
+    public List<FeatureDefinition> getByCategory(FeatureCategory category) {
+        return byCategory(category);
+    }
+
+    public List<FeatureDefinition> getByMinimumPlan(StorePlan plan) {
+        return registry.values()
+                .stream()
+                .filter(FeatureDefinition::isEnabled)
+                .filter(f -> f.getMinimumPlan() == plan)
+                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
+                .toList();
+    }
+
+    public List<FeatureDefinition> getAvailableForPlan(StorePlan plan) {
+        if (plan == null) return List.of();
+
+        return registry.values()
+                .stream()
+                .filter(FeatureDefinition::isEnabled)
+                .filter(f -> f.isAvailableFor(plan))
+                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
+                .toList();
+    }
+
+    public List<FeatureDefinition> getLockedForPlan(StorePlan plan) {
+        if (plan == null) return List.of();
+
+        return registry.values()
+                .stream()
+                .filter(FeatureDefinition::isEnabled)
+                .filter(f -> f.requiresUpgradeFrom(plan))
+                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
+                .toList();
+    }
+
+    public List<FeatureDefinition> getSidebarFeatures(StorePlan plan) {
+        return getAvailableForPlan(plan)
+                .stream()
+                .filter(FeatureDefinition::isShowInSidebar)
+                .toList();
+    }
+
+    private List<FeatureDefinition> ordered(List<FeatureDefinition> features) {
+        return features.stream()
+                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
+                .toList();
     }
 }

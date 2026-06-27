@@ -19,344 +19,445 @@ public class FeatureRegistryConfiguration {
     @PostConstruct
     public void registerFeatures() {
 
-        register(
-                Feature.PRODUCTS,
-                "Productos",
-                "Administra el catálogo de productos.",
-                FeatureCategory.ECOMMERCE,
-                StorePlan.BASIC,
-                "📦",
-                "primary",
-                "/admin/productos",
-                6,
-                false
-        );
-
-        register(
-                Feature.CATEGORIES,
-                "Categorías",
-                "Organiza productos por categorías.",
-                FeatureCategory.ECOMMERCE,
-                StorePlan.BASIC,
-                "🏷️",
-                "primary",
-                "/admin/categorias",
-                3,
-                false
-        );
-
-        register(
-                Feature.INVENTORY,
-                "Inventario",
-                "Controla stock y disponibilidad.",
-                FeatureCategory.ECOMMERCE,
-                StorePlan.BASIC,
-                "📊",
-                "primary",
-                "/admin/productos",
-                5,
-                false
-        );
-
-        register(
-                Feature.ORDERS,
-                "Pedidos",
-                "Gestiona pedidos de clientes.",
-                FeatureCategory.ECOMMERCE,
-                StorePlan.BASIC,
-                "🧾",
-                "success",
-                "/orders",
-                6,
-                false
-        );
-
-        register(
-                Feature.CHECKOUT,
-                "Checkout",
-                "Permite pagos y finalización de compra.",
-                FeatureCategory.ECOMMERCE,
-                StorePlan.BASIC,
-                "🛒",
-                "success",
-                "/checkout",
-                5,
-                false
-        );
-
-        register(
-                Feature.REVIEWS,
-                "Reseñas",
-                "Muestra opiniones de clientes.",
-                FeatureCategory.MARKETING,
-                StorePlan.BASIC,
-                "⭐",
-                "warning",
-                "/resenas/nueva",
-                4,
-                false
-        );
-
-        register(
-                Feature.CRM,
-                "CRM",
-                "Gestiona leads y oportunidades comerciales.",
-                FeatureCategory.CRM,
-                StorePlan.PRO,
-                "📊",
-                "primary",
-                "/crm/dashboard",
-                8,
-                true
-        );
-
-        register(
-                Feature.LEADS,
-                "Leads",
-                "Captura y administra prospectos.",
-                FeatureCategory.CRM,
-                StorePlan.PRO,
-                "🗂️",
-                "primary",
-                "/admin/leads",
-                6,
-                true
-        );
-
-        register(
-                Feature.TASKS,
-                "Tareas",
-                "Gestiona seguimiento comercial.",
-                FeatureCategory.CRM,
-                StorePlan.PRO,
-                "✅",
-                "primary",
-                "/crm/tasks",
-                4,
-                true
-        );
-
-        register(
-                Feature.PIPELINE,
-                "Pipeline",
-                "Visualiza oportunidades por etapa.",
-                FeatureCategory.CRM,
-                StorePlan.PRO,
-                "🎯",
-                "primary",
-                "/crm/pipeline",
-                6,
-                true
-        );
-
-        register(
-                Feature.PROPOSALS,
-                "Propuestas",
-                "Genera propuestas comerciales.",
-                FeatureCategory.CRM,
-                StorePlan.PRO,
-                "📄",
-                "primary",
-                "/crm/proposals",
-                6,
-                true
-        );
-
-        register(
-                Feature.COUPONS,
-                "Cupones",
-                "Crea descuentos y promociones.",
-                FeatureCategory.MARKETING,
-                StorePlan.PRO,
-                "🏷️",
-                "warning",
-                "/admin/coupons",
-                3,
-                true
-        );
-
-        register(
-                Feature.STRIPE_CONNECT,
-                "Stripe Connect",
-                "Permite que la tienda reciba pagos propios.",
-                FeatureCategory.BILLING,
-                StorePlan.PRO,
-                "💳",
-                "success",
-                "/admin/store/settings",
-                8,
-                true
-        );
-
-        register(
-                Feature.ANALYTICS,
-                "Analytics",
-                "Consulta reportes y métricas avanzadas.",
-                FeatureCategory.PLATFORM,
-                StorePlan.PRO,
-                "📈",
-                "info",
-                "/crm/reports",
-                5,
-                true
-        );
-
-        register(
-                Feature.CUSTOM_DOMAIN,
-                "Dominio personalizado",
-                "Conecta un dominio propio.",
-                FeatureCategory.PLATFORM,
-                StorePlan.PRO,
-                "🌐",
-                "info",
-                "/admin/domains",
-                8,
-                true
-        );
-
-        register(
-                Feature.EMAIL_MARKETING,
-                "Email Marketing",
-                "Envía campañas y seguimientos por correo.",
-                FeatureCategory.MARKETING,
-                StorePlan.PREMIUM,
-                "✉️",
-                "warning",
-                "/admin/email-marketing",
-                5,
-                true
-        );
-
-        register(
-                Feature.WHATSAPP_AUTOMATION,
-                "WhatsApp Automation",
-                "Automatiza mensajes por WhatsApp.",
-                FeatureCategory.AUTOMATION,
-                StorePlan.PREMIUM,
-                "💬",
-                "success",
-                "/admin/whatsapp",
-                5,
-                true
-        );
-
-        register(
-                Feature.AUTOMATIONS,
-                "Automatizaciones",
-                "Crea flujos automáticos para ventas y seguimiento.",
-                FeatureCategory.AUTOMATION,
-                StorePlan.PREMIUM,
-                "⚡",
-                "warning",
-                "/admin/automations",
-                8,
-                true
-        );
-
-        register(
-                Feature.MULTI_USER,
-                "Multiusuario",
-                "Permite múltiples usuarios por tienda.",
-                FeatureCategory.PLATFORM,
-                StorePlan.PREMIUM,
-                "👥",
-                "info",
-                "/admin/users",
-                4,
-                true
-        );
-
-        register(
-                Feature.API_ACCESS,
-                "API Access",
-                "Acceso API para integraciones externas.",
-                FeatureCategory.PLATFORM,
-                StorePlan.PREMIUM,
-                "🔌",
-                "dark",
-                "/admin/api",
-                4,
-                true
-        );
-
-        register(
-                Feature.WHITE_LABEL_FULL,
-                "White Label Full",
-                "Personalización avanzada con CSS, JS y tracking.",
-                FeatureCategory.PLATFORM,
-                StorePlan.PREMIUM,
-                "🎨",
-                "dark",
-                "/admin/store/settings",
-                8,
-                true
-        );
-    }
-
-    private void register(
-            Feature feature,
-            String displayName,
-            String description,
-            FeatureCategory category,
-            StorePlan minimumPlan,
-            String icon,
-            String color,
-            String url,
-            int healthWeight,
-            boolean premium
-    ) {
         registry.register(
-                FeatureDefinition.builder(feature)
-                        .displayName(displayName)
-                        .description(description)
-                        .category(category)
-                        .minimumPlan(minimumPlan)
-                        .icon(icon)
-                        .color(color)
-                        .url(url)
-                        .healthWeight(healthWeight)
-                        .premium(premium)
-                        .order(resolveOrder(feature))
-                        .showInSidebar(resolveShowInSidebar(feature))
+                FeatureDefinition.builder(Feature.PRODUCTS)
+                        .displayName("Productos")
+                        .description("Administra el catálogo de productos.")
+                        .category(FeatureCategory.ECOMMERCE)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("📦")
+                        .color("primary")
+                        .url("/admin/productos")
+                        .healthWeight(6)
+                        .premium(false)
+                        .order(10)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
                         .enabled(true)
                         .build()
         );
-    }
-    private int resolveOrder(Feature feature) {
-        return switch (feature) {
-            case PRODUCTS -> 10;
-            case CATEGORIES -> 20;
-            case INVENTORY -> 30;
-            case ORDERS -> 40;
-            case CHECKOUT -> 50;
-            case REVIEWS -> 60;
 
-            case CRM -> 100;
-            case LEADS -> 110;
-            case PIPELINE -> 120;
-            case TASKS -> 130;
-            case PROPOSALS -> 140;
-            case ANALYTICS -> 150;
+        registry.register(
+                FeatureDefinition.builder(Feature.CATEGORIES)
+                        .displayName("Categorías")
+                        .description("Organiza productos por categorías.")
+                        .category(FeatureCategory.ECOMMERCE)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("🏷️")
+                        .color("primary")
+                        .url("/admin/categorias")
+                        .healthWeight(3)
+                        .premium(false)
+                        .order(20)
+                        .showInSidebar(true)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
 
-            case COUPONS -> 200;
-            case EMAIL_MARKETING -> 210;
-            case WHATSAPP_AUTOMATION -> 220;
-            case AUTOMATIONS -> 230;
+        registry.register(
+                FeatureDefinition.builder(Feature.INVENTORY)
+                        .displayName("Inventario")
+                        .description("Controla stock y disponibilidad.")
+                        .category(FeatureCategory.ECOMMERCE)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("📊")
+                        .color("primary")
+                        .url("/admin/productos")
+                        .healthWeight(5)
+                        .premium(false)
+                        .order(30)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
 
-            case STRIPE_CONNECT -> 300;
-            case CUSTOM_DOMAIN -> 310;
-            case WHITE_LABEL_FULL -> 320;
-            case MULTI_USER -> 330;
-            case API_ACCESS -> 340;
-        };
-    }
+        registry.register(
+                FeatureDefinition.builder(Feature.ORDERS)
+                        .displayName("Pedidos")
+                        .description("Gestiona pedidos de clientes.")
+                        .category(FeatureCategory.ECOMMERCE)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("🧾")
+                        .color("success")
+                        .url("/orders")
+                        .healthWeight(6)
+                        .premium(false)
+                        .order(40)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
 
-    private boolean resolveShowInSidebar(Feature feature) {
-        return switch (feature) {
-            case CHECKOUT,
-                 API_ACCESS -> false;
+        registry.register(
+                FeatureDefinition.builder(Feature.CHECKOUT)
+                        .displayName("Checkout")
+                        .description("Permite pagos y finalización de compra.")
+                        .category(FeatureCategory.ECOMMERCE)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("🛒")
+                        .color("success")
+                        .url("/checkout")
+                        .healthWeight(5)
+                        .premium(false)
+                        .order(50)
+                        .showInSidebar(false)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
 
-            default -> true;
-        };
+        registry.register(
+                FeatureDefinition.builder(Feature.REVIEWS)
+                        .displayName("Reseñas")
+                        .description("Muestra opiniones de clientes.")
+                        .category(FeatureCategory.MARKETING)
+                        .minimumPlan(StorePlan.BASIC)
+                        .icon("⭐")
+                        .color("warning")
+                        .url("/resenas/nueva")
+                        .healthWeight(4)
+                        .premium(false)
+                        .order(60)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(false)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.CRM)
+                        .displayName("CRM")
+                        .description("Gestiona leads y oportunidades comerciales.")
+                        .category(FeatureCategory.CRM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("📊")
+                        .color("primary")
+                        .url("/crm/dashboard")
+                        .healthWeight(8)
+                        .premium(true)
+                        .order(100)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.LEADS)
+                        .displayName("Leads")
+                        .description("Captura y administra prospectos.")
+                        .category(FeatureCategory.CRM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("🗂️")
+                        .color("primary")
+                        .url("/admin/leads")
+                        .healthWeight(6)
+                        .premium(true)
+                        .order(110)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.PIPELINE)
+                        .displayName("Pipeline")
+                        .description("Visualiza oportunidades por etapa.")
+                        .category(FeatureCategory.CRM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("🎯")
+                        .color("primary")
+                        .url("/crm/pipeline")
+                        .healthWeight(6)
+                        .premium(true)
+                        .order(120)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.TASKS)
+                        .displayName("Tareas")
+                        .description("Gestiona seguimiento comercial.")
+                        .category(FeatureCategory.CRM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("✅")
+                        .color("primary")
+                        .url("/crm/tasks")
+                        .healthWeight(4)
+                        .premium(true)
+                        .order(130)
+                        .showInSidebar(true)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.PROPOSALS)
+                        .displayName("Propuestas")
+                        .description("Genera propuestas comerciales.")
+                        .category(FeatureCategory.CRM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("📄")
+                        .color("primary")
+                        .url("/crm/proposals")
+                        .healthWeight(6)
+                        .premium(true)
+                        .order(140)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.ANALYTICS)
+                        .displayName("Analytics")
+                        .description("Consulta reportes y métricas avanzadas.")
+                        .category(FeatureCategory.PLATFORM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("📈")
+                        .color("info")
+                        .url("/crm/reports")
+                        .healthWeight(5)
+                        .premium(true)
+                        .order(150)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.COUPONS)
+                        .displayName("Cupones")
+                        .description("Crea descuentos y promociones.")
+                        .category(FeatureCategory.MARKETING)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("🏷️")
+                        .color("warning")
+                        .url("/admin/coupons")
+                        .healthWeight(3)
+                        .premium(true)
+                        .order(200)
+                        .showInSidebar(true)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.EMAIL_MARKETING)
+                        .displayName("Email Marketing")
+                        .description("Envía campañas y seguimientos por correo.")
+                        .category(FeatureCategory.MARKETING)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("✉️")
+                        .color("warning")
+                        .url("/admin/email-marketing")
+                        .healthWeight(5)
+                        .premium(true)
+                        .order(210)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.WHATSAPP_AUTOMATION)
+                        .displayName("WhatsApp Automation")
+                        .description("Automatiza mensajes por WhatsApp.")
+                        .category(FeatureCategory.AUTOMATION)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("💬")
+                        .color("success")
+                        .url("/admin/whatsapp")
+                        .healthWeight(5)
+                        .premium(true)
+                        .order(220)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.AUTOMATIONS)
+                        .displayName("Automatizaciones")
+                        .description("Crea flujos automáticos para ventas y seguimiento.")
+                        .category(FeatureCategory.AUTOMATION)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("⚡")
+                        .color("warning")
+                        .url("/admin/automations")
+                        .healthWeight(8)
+                        .premium(true)
+                        .order(230)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(true)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.STRIPE_CONNECT)
+                        .displayName("Stripe Connect")
+                        .description("Permite que la tienda reciba pagos propios.")
+                        .category(FeatureCategory.BILLING)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("💳")
+                        .color("success")
+                        .url("/admin/store/settings")
+                        .healthWeight(8)
+                        .premium(true)
+                        .order(300)
+                        .showInSidebar(false)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(false)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.CUSTOM_DOMAIN)
+                        .displayName("Dominio personalizado")
+                        .description("Conecta un dominio propio.")
+                        .category(FeatureCategory.PLATFORM)
+                        .minimumPlan(StorePlan.PRO)
+                        .icon("🌐")
+                        .color("info")
+                        .url("/admin/domains")
+                        .healthWeight(8)
+                        .premium(true)
+                        .order(310)
+                        .showInSidebar(true)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(false)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.WHITE_LABEL_FULL)
+                        .displayName("White Label Full")
+                        .description("Personalización avanzada con CSS, JS y tracking.")
+                        .category(FeatureCategory.PLATFORM)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("🎨")
+                        .color("dark")
+                        .url("/admin/store/settings")
+                        .healthWeight(8)
+                        .premium(true)
+                        .order(320)
+                        .showInSidebar(false)
+                        .showInDashboard(true)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(false)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.MULTI_USER)
+                        .displayName("Multiusuario")
+                        .description("Permite múltiples usuarios por tienda.")
+                        .category(FeatureCategory.PLATFORM)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("👥")
+                        .color("info")
+                        .url("/admin/users")
+                        .healthWeight(4)
+                        .premium(true)
+                        .order(330)
+                        .showInSidebar(true)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(false)
+                        .enabled(true)
+                        .build()
+        );
+
+        registry.register(
+                FeatureDefinition.builder(Feature.API_ACCESS)
+                        .displayName("API Access")
+                        .description("Acceso API para integraciones externas.")
+                        .category(FeatureCategory.PLATFORM)
+                        .minimumPlan(StorePlan.PREMIUM)
+                        .icon("🔌")
+                        .color("dark")
+                        .url("/admin/api")
+                        .healthWeight(4)
+                        .premium(true)
+                        .order(340)
+                        .showInSidebar(false)
+                        .showInDashboard(false)
+                        .showInBilling(true)
+                        .showUpgradeCard(true)
+                        .trackUsage(false)
+                        .enabled(true)
+                        .build()
+        );
     }
 }

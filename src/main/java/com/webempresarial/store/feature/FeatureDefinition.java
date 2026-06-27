@@ -12,14 +12,24 @@ public final class FeatureDefinition {
     private final String description;
     private final FeatureCategory category;
     private final StorePlan minimumPlan;
+
     private final String icon;
     private final String color;
     private final String url;
+
     private final int healthWeight;
     private final boolean premium;
     private final int order;
+
     private final boolean showInSidebar;
+    private final boolean showInDashboard;
+    private final boolean showInBilling;
+    private final boolean showUpgradeCard;
+    private final boolean trackUsage;
     private final boolean enabled;
+
+    private final String section;
+    private final String sectionIcon;
 
     private FeatureDefinition(Builder builder) {
         this.feature = Objects.requireNonNull(builder.feature, "feature es requerido");
@@ -27,85 +37,57 @@ public final class FeatureDefinition {
         this.description = builder.description != null ? builder.description : "";
         this.category = Objects.requireNonNull(builder.category, "category es requerido");
         this.minimumPlan = Objects.requireNonNull(builder.minimumPlan, "minimumPlan es requerido");
+
         this.icon = builder.icon != null ? builder.icon : "●";
         this.color = builder.color != null ? builder.color : "secondary";
         this.url = builder.url != null ? builder.url : "#";
+
         this.healthWeight = Math.max(0, builder.healthWeight);
         this.premium = builder.premium;
         this.order = builder.order;
+
         this.showInSidebar = builder.showInSidebar;
+        this.showInDashboard = builder.showInDashboard;
+        this.showInBilling = builder.showInBilling;
+        this.showUpgradeCard = builder.showUpgradeCard;
+        this.trackUsage = builder.trackUsage;
         this.enabled = builder.enabled;
+
+        this.section = builder.section != null ? builder.section : resolveDefaultSection(builder.category);
+        this.sectionIcon = builder.sectionIcon != null ? builder.sectionIcon : resolveDefaultSectionIcon(builder.category);
     }
 
     public static Builder builder(Feature feature) {
         return new Builder(feature);
     }
 
-    public Feature getFeature() {
-        return feature;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public FeatureCategory getCategory() {
-        return category;
-    }
-
-    public StorePlan getMinimumPlan() {
-        return minimumPlan;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public int getHealthWeight() {
-        return healthWeight;
-    }
-
-    public boolean isPremium() {
-        return premium;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public boolean isShowInSidebar() {
-        return showInSidebar;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
+    public Feature getFeature() { return feature; }
+    public String getDisplayName() { return displayName; }
+    public String getDescription() { return description; }
+    public FeatureCategory getCategory() { return category; }
+    public StorePlan getMinimumPlan() { return minimumPlan; }
+    public String getIcon() { return icon; }
+    public String getColor() { return color; }
+    public String getUrl() { return url; }
+    public int getHealthWeight() { return healthWeight; }
+    public boolean isPremium() { return premium; }
+    public int getOrder() { return order; }
+    public boolean isShowInSidebar() { return showInSidebar; }
+    public boolean isShowInDashboard() { return showInDashboard; }
+    public boolean isShowInBilling() { return showInBilling; }
+    public boolean isShowUpgradeCard() { return showUpgradeCard; }
+    public boolean isTrackUsage() { return trackUsage; }
+    public boolean isEnabled() { return enabled; }
+    public String getSection() { return section; }
+    public String getSectionIcon() { return sectionIcon; }
 
     public boolean requiresUpgradeFrom(StorePlan currentPlan) {
-        if (currentPlan == null) {
-            return true;
-        }
-
+        if (currentPlan == null) return true;
         return planRank(currentPlan) < planRank(this.minimumPlan);
     }
 
     public boolean isAvailableFor(StorePlan plan) {
-        if (plan == null) {
-            return false;
-        }
-
+        if (plan == null) return false;
         return planRank(plan) >= planRank(this.minimumPlan);
     }
 
@@ -117,6 +99,30 @@ public final class FeatureDefinition {
         };
     }
 
+    private static String resolveDefaultSection(FeatureCategory category) {
+        return switch (category) {
+            case ECOMMERCE -> "Ecommerce";
+            case CRM -> "CRM Comercial";
+            case MARKETING -> "Marketing";
+            case AUTOMATION -> "Automatización";
+            case BILLING -> "Billing";
+            case PLATFORM -> "Plataforma";
+            case AI -> "Inteligencia Artificial";
+        };
+    }
+
+    private static String resolveDefaultSectionIcon(FeatureCategory category) {
+        return switch (category) {
+            case ECOMMERCE -> "🛒";
+            case CRM -> "📊";
+            case MARKETING -> "📣";
+            case AUTOMATION -> "⚡";
+            case BILLING -> "💳";
+            case PLATFORM -> "🧩";
+            case AI -> "🤖";
+        };
+    }
+
     public static final class Builder {
 
         private final Feature feature;
@@ -125,14 +131,24 @@ public final class FeatureDefinition {
         private String description;
         private FeatureCategory category;
         private StorePlan minimumPlan = StorePlan.BASIC;
+
         private String icon = "●";
         private String color = "secondary";
         private String url = "#";
+
         private int healthWeight = 0;
         private boolean premium = false;
         private int order = 999;
+
         private boolean showInSidebar = true;
+        private boolean showInDashboard = true;
+        private boolean showInBilling = true;
+        private boolean showUpgradeCard = true;
+        private boolean trackUsage = true;
         private boolean enabled = true;
+
+        private String section;
+        private String sectionIcon;
 
         private Builder(Feature feature) {
             this.feature = Objects.requireNonNull(feature, "feature es requerido");
@@ -193,8 +209,38 @@ public final class FeatureDefinition {
             return this;
         }
 
+        public Builder showInDashboard(boolean showInDashboard) {
+            this.showInDashboard = showInDashboard;
+            return this;
+        }
+
+        public Builder showInBilling(boolean showInBilling) {
+            this.showInBilling = showInBilling;
+            return this;
+        }
+
+        public Builder showUpgradeCard(boolean showUpgradeCard) {
+            this.showUpgradeCard = showUpgradeCard;
+            return this;
+        }
+
+        public Builder trackUsage(boolean trackUsage) {
+            this.trackUsage = trackUsage;
+            return this;
+        }
+
         public Builder enabled(boolean enabled) {
             this.enabled = enabled;
+            return this;
+        }
+
+        public Builder section(String section) {
+            this.section = section;
+            return this;
+        }
+
+        public Builder sectionIcon(String sectionIcon) {
+            this.sectionIcon = sectionIcon;
             return this;
         }
 

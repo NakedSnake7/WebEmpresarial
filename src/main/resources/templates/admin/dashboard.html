@@ -55,7 +55,7 @@
         
         
                     <div class="col-md-4"
-     th:if="${features.canUseCustomDomain(store)}">
+     th:if="${availableFeatures.?[feature.name() == 'STRIPE_CONNECT'].size() > 0}"	>
     <div class="card border-0 shadow-sm h-100 dashboard-card">
         <div class="card-body">
             <div class="fs-2 mb-2">💳</div>
@@ -107,7 +107,7 @@
 </div>
 
 <div class="col-md-3"
-     th:if="${features.canUseAutomations(store)}">
+     th:if="${availableFeatures.?[feature.name() == 'AUTOMATIONS'].size() > 0}">
     <div class="card border-0 shadow-sm h-100">
         <div class="card-body">
             <div class="text-muted small">Automatizaciones</div>
@@ -118,7 +118,7 @@
 </div>
 
 <div class="col-md-3"
-     th:unless="${features.canUseAutomations(store)}">
+     th:if="${lockedFeatures.?[feature.name() == 'AUTOMATIONS'].size() > 0}">
     <div class="card border-0 shadow-sm h-100 border-warning">
         <div class="card-body">
             <div class="text-muted small">Automatizaciones</div>
@@ -137,7 +137,7 @@
     <div class="row g-3">
 
 <div class="col-md-4"
-     th:if="${features.canUseCRM(store)}">
+     th:if="${availableFeatures.?[feature.name() == 'CRM'].size() > 0}">
     <a href="/admin/leads" class="text-decoration-none">
         <div class="card border-0 shadow-sm h-100 dashboard-card">
             <div class="card-body">

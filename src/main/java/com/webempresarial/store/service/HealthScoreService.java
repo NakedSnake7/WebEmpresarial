@@ -117,10 +117,10 @@ public class HealthScoreService {
         LocalDateTime last30Days = LocalDateTime.now().minusDays(30);
 
         long totalEvents =
-                featureUsageRepository.countByStoreAndCreatedAtAfter(
-                        store,
-                        last30Days
-                );
+        		featureUsageRepository.countByStoreAndUsedAtAfter(
+        		        store,
+        		        last30Days
+        		);
 
         if (totalEvents >= 500) {
 

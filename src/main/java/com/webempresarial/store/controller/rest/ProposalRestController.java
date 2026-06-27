@@ -1,6 +1,6 @@
 package com.webempresarial.store.controller.rest;
 
-import java.util.List;  
+import java.util.List;   
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import com.webempresarial.store.service.ProposalPdfService;
-import com.webempresarial.store.service.PlanFeatureService;
-import com.webempresarial.store.exceptions.FeatureNotAllowedException;
+import com.webempresarial.store.service.FeatureAccessService;
+import com.webempresarial.store.model.Feature;
 
 import com.webempresarial.store.dto.lead.CreateProposalDTO;
 import com.webempresarial.store.dto.lead.ProposalDTO;
@@ -26,20 +26,18 @@ public class ProposalRestController {
     private final ProposalService proposalService;
     private final StoreContextService storeContextService;
     private final ProposalPdfService proposalPdfService;
-    private final PlanFeatureService planFeatureService;
-
+    private final FeatureAccessService featureAccessService;
+    
     public ProposalRestController(
             ProposalService proposalService,
             StoreContextService storeContextService,
             ProposalPdfService proposalPdfService,
-            PlanFeatureService planFeatureService
-
+            FeatureAccessService featureAccessService
     ) {
         this.proposalService = proposalService;
         this.storeContextService = storeContextService;
         this.proposalPdfService = proposalPdfService;
-        this.planFeatureService = planFeatureService;
-
+        this.featureAccessService = featureAccessService;
     }
     @GetMapping("/leads/{leadId}/proposals")
     public List<ProposalDTO> getLeadProposals(
@@ -122,11 +120,7 @@ public class ProposalRestController {
     }
     
     private void validateProposalsFeature(Store store) {
-        if (!planFeatureService.canUseProposals(store)) {
-            throw new FeatureNotAllowedException(
-                    "Tu plan actual no incluye propuestas comerciales."
-            );
-        }
+        featureAccessService.requireFeature(store, Feature.PROPOSALS);
     }
     
 }
