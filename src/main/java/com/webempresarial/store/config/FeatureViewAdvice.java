@@ -1,6 +1,7 @@
 package com.webempresarial.store.config;
 
 import com.webempresarial.store.dto.feature.FeatureCardDTO;
+import com.webempresarial.store.dto.feature.FeatureSectionDTO;
 import com.webempresarial.store.feature.FeatureViewService;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.StoreContextService;
@@ -78,11 +79,8 @@ public class FeatureViewAdvice {
     public List<FeatureCardDTO> lockedFeatures(
             HttpServletRequest request
     ) {
-
         try {
-
-            Store store =
-                    storeContextService.getCurrentStore(request);
+            Store store = storeContextService.getCurrentStore(request);
 
             if (store == null) {
                 return List.of();
@@ -91,11 +89,25 @@ public class FeatureViewAdvice {
             return featureViewService.locked(store);
 
         } catch (Exception e) {
-
             return List.of();
-
         }
+    }
+    @ModelAttribute("sidebarSections")
+    public List<FeatureSectionDTO> sidebarSections(
+            HttpServletRequest request
+    ) {
+        try {
+            Store store = storeContextService.getCurrentStore(request);
 
+            if (store == null) {
+                return List.of();
+            }
+
+            return featureViewService.sidebarSections(store);
+
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 
 }

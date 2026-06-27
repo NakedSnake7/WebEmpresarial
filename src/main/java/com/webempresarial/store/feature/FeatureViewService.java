@@ -35,7 +35,7 @@ public class FeatureViewService {
     }
 
     public List<FeatureCardDTO> locked(Store store) {
-        return featureCatalogService.getLockedFeatures(store)
+        return featureCatalogService.getUpgradeFeatures(store)
                 .stream()
                 .map(definition -> toCard(definition, store))
                 .toList();
