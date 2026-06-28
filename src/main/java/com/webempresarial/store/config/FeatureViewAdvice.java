@@ -1,8 +1,7 @@
 package com.webempresarial.store.config;
 
-import com.webempresarial.store.dto.feature.FeatureCardDTO;
-import com.webempresarial.store.dto.feature.FeatureSectionDTO;
-import com.webempresarial.store.feature.FeatureViewService;
+import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
+import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.StoreContextService;
 
@@ -17,97 +16,34 @@ import java.util.List;
 public class FeatureViewAdvice {
 
     private final StoreContextService storeContextService;
-    private final FeatureViewService featureViewService;
+    private final SidebarRegistry sidebarRegistry;
 
     public FeatureViewAdvice(
             StoreContextService storeContextService,
-            FeatureViewService featureViewService
+            SidebarRegistry sidebarRegistry
     ) {
         this.storeContextService = storeContextService;
-        this.featureViewService = featureViewService;
+        this.sidebarRegistry = sidebarRegistry;
     }
 
-    @ModelAttribute("sidebarFeatures")
-    public List<FeatureCardDTO> sidebarFeatures(
-            HttpServletRequest request
-    ) {
-
-        try {
-
-            Store store =
-                    storeContextService.getCurrentStore(request);
-
-            if (store == null) {
-                return List.of();
-            }
-
-            return featureViewService.sidebar(store);
-
-        } catch (Exception e) {
-
-            return List.of();
-
-        }
-
-    }
-
-    @ModelAttribute("availableFeatures")
-    public List<FeatureCardDTO> availableFeatures(
-            HttpServletRequest request
-    ) {
-
-        try {
-
-            Store store =
-                    storeContextService.getCurrentStore(request);
-
-            if (store == null) {
-                return List.of();
-            }
-
-            return featureViewService.available(store);
-
-        } catch (Exception e) {
-
-            return List.of();
-
-        }
-
-    }
-
-    @ModelAttribute("lockedFeatures")
-    public List<FeatureCardDTO> lockedFeatures(
-            HttpServletRequest request
-    ) {
-        try {
-            Store store = storeContextService.getCurrentStore(request);
-
-            if (store == null) {
-                return List.of();
-            }
-
-            return featureViewService.locked(store);
-
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
     @ModelAttribute("sidebarSections")
-    public List<FeatureSectionDTO> sidebarSections(
+    public List<SidebarSectionDTO> sidebarSections(
             HttpServletRequest request
     ) {
-        try {
-            Store store = storeContextService.getCurrentStore(request);
+        Store store = currentStore(request);
 
-            if (store == null) {
-                return List.of();
-            }
-
-            return featureViewService.sidebarSections(store);
-
-        } catch (Exception e) {
+        if (store == null) {
             return List.of();
         }
+
+        return sidebarRegistry.sections(store);
     }
 
+    private Store currentStore(HttpServletRequest request) {
+        try {
+            return storeContextService.getCurrentStore(request);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

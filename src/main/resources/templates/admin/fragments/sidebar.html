@@ -39,41 +39,33 @@
         <span th:text="${section.title}">Sección</span>
     </div>
 
-    <a th:each="feature : ${section.features}"
-       th:href="${feature.url}"
+    <a th:each="item : ${section.items}"
+       th:href="${item.url}"
        class="sidebar-link">
 
         <span class="sidebar-icon"
-              th:text="${feature.icon}">
+              th:text="${item.icon}">
             📦
         </span>
 
         <span class="sidebar-text"
-              th:text="${feature.name}">
+              th:text="${item.title}">
             Módulo
+        </span>
+
+        <span class="badge bg-warning ms-auto"
+              th:if="${item.locked}"
+              th:text="${item.badge}">
+            Upgrade
         </span>
 
     </a>
 
 </th:block>
 
-        <div class="sidebar-section sidebar-text"
-             th:if="${lockedFeatures != null and !lockedFeatures.isEmpty()}">
-            Upgrades
-        </div>
 
-        <a th:each="feature : ${lockedFeatures}"
-           th:href="@{|/admin/upgrade?feature=${feature.feature}|}"
-           class="sidebar-link text-warning">
 
-            <span class="sidebar-icon">🔒</span>
 
-            <span class="sidebar-text"
-                  th:text="${feature.name + ' ' + feature.minimumPlan}">
-                Módulo Pro
-            </span>
-
-        </a>
 
         <div class="sidebar-section sidebar-text"
              th:if="${isSuperAdmin}">

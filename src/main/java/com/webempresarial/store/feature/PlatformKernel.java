@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class FeatureRegistry {
+public class PlatformKernel {
 
     private final Map<Feature, FeatureDefinition> registry =
             new EnumMap<>(Feature.class);
@@ -45,7 +45,9 @@ public class FeatureRegistry {
             return false;
         }
 
-        return get(feature).isAvailableFor(store.getPlan());
+        return get(feature)
+                .getAccessPolicy()
+                .isAvailableFor(store.getPlan());
     }
 
     public boolean isLocked(Store store, Feature feature) {
@@ -67,8 +69,8 @@ public class FeatureRegistry {
 
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.isAvailableFor(store.getPlan()))
+                .filter(this::enabled)
+                .filter(f -> f.getAccessPolicy().isAvailableFor(store.getPlan()))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
@@ -80,8 +82,8 @@ public class FeatureRegistry {
 
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.requiresUpgradeFrom(store.getPlan()))
+                .filter(this::enabled)
+                .filter(f -> f.getAccessPolicy().requiresUpgradeFrom(store.getPlan()))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
@@ -89,35 +91,35 @@ public class FeatureRegistry {
     public List<FeatureDefinition> sidebar(Store store) {
         return available(store)
                 .stream()
-                .filter(FeatureDefinition::isShowInSidebar)
+                .filter(f -> f.getPresentation().isShowInSidebar())
                 .toList();
     }
 
     public List<FeatureDefinition> dashboard(Store store) {
         return available(store)
                 .stream()
-                .filter(FeatureDefinition::isShowInDashboard)
+                .filter(f -> f.getPresentation().isShowInDashboard())
                 .toList();
     }
 
     public List<FeatureDefinition> upgrades(Store store) {
         return locked(store)
                 .stream()
-                .filter(FeatureDefinition::isShowUpgradeCard)
+                .filter(f -> f.getPresentation().isShowUpgradeCard())
                 .toList();
     }
 
     public List<FeatureDefinition> billing(Store store) {
         return available(store)
                 .stream()
-                .filter(FeatureDefinition::isShowInBilling)
+                .filter(f -> f.getPresentation().isShowInBilling())
                 .toList();
     }
 
     public List<FeatureDefinition> trackable(Store store) {
         return available(store)
                 .stream()
-                .filter(FeatureDefinition::isTrackUsage)
+                .filter(f -> f.getPresentation().isTrackUsage())
                 .toList();
     }
 
@@ -135,7 +137,7 @@ public class FeatureRegistry {
 
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
+                .filter(this::enabled)
                 .filter(f -> f.getCategory() == category)
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
@@ -146,41 +148,48 @@ public class FeatureRegistry {
     }
 
     public boolean isPremium(Feature feature) {
-        return get(feature).isPremium();
+        return get(feature).getAccessPolicy().isPremium();
     }
 
-    // Compatibilidad temporal
     public List<FeatureDefinition> getByCategory(FeatureCategory category) {
         return byCategory(category);
     }
 
     public List<FeatureDefinition> getByMinimumPlan(StorePlan plan) {
+        if (plan == null) {
+            return List.of();
+        }
+
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.getMinimumPlan() == plan)
+                .filter(this::enabled)
+                .filter(f -> f.getAccessPolicy().getMinimumPlan() == plan)
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
 
     public List<FeatureDefinition> getAvailableForPlan(StorePlan plan) {
-        if (plan == null) return List.of();
+        if (plan == null) {
+            return List.of();
+        }
 
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.isAvailableFor(plan))
+                .filter(this::enabled)
+                .filter(f -> f.getAccessPolicy().isAvailableFor(plan))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
 
     public List<FeatureDefinition> getLockedForPlan(StorePlan plan) {
-        if (plan == null) return List.of();
+        if (plan == null) {
+            return List.of();
+        }
 
         return registry.values()
                 .stream()
-                .filter(FeatureDefinition::isEnabled)
-                .filter(f -> f.requiresUpgradeFrom(plan))
+                .filter(this::enabled)
+                .filter(f -> f.getAccessPolicy().requiresUpgradeFrom(plan))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
@@ -188,8 +197,12 @@ public class FeatureRegistry {
     public List<FeatureDefinition> getSidebarFeatures(StorePlan plan) {
         return getAvailableForPlan(plan)
                 .stream()
-                .filter(FeatureDefinition::isShowInSidebar)
+                .filter(f -> f.getPresentation().isShowInSidebar())
                 .toList();
+    }
+
+    private boolean enabled(FeatureDefinition definition) {
+        return definition.getAccessPolicy().isEnabled();
     }
 
     private List<FeatureDefinition> ordered(List<FeatureDefinition> features) {
