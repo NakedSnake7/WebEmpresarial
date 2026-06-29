@@ -1,8 +1,9 @@
 package com.webempresarial.store.dto.saas;
 
-import com.webempresarial.store.model.Feature;
 
 public record FeatureUsageMetricDTO(
-        Feature feature,
+        String feature,
+        String icon,
+        String module,
         Long total
 ) {}

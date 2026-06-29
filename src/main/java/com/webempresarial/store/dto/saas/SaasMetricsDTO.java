@@ -32,7 +32,16 @@ public class SaasMetricsDTO {
 
     private BigDecimal annualRecurringRevenue = BigDecimal.ZERO;
     
+    private BigDecimal averageTicket = BigDecimal.ZERO;
     
+
+	public BigDecimal getAverageTicket() {
+		return averageTicket;
+	}
+
+	public void setAverageTicket(BigDecimal averageTicket) {
+		this.averageTicket = averageTicket;
+	}
 
 	public long getTotalLeads() {
 		return totalLeads;

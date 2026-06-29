@@ -19,6 +19,43 @@ public class FeatureUsageMetricsService {
     ) {
         this.featureUsageRepository = featureUsageRepository;
     }
+    
+    private String resolveIcon(Feature feature) {
+        return switch (feature) {
+            case PRODUCTS -> "📦";
+            case CATEGORIES -> "🏷️";
+            case INVENTORY -> "📊";
+            case ORDERS -> "🧾";
+            case CHECKOUT -> "🛒";
+            case CRM -> "📊";
+            case LEADS -> "🗂️";
+            case TASKS -> "✅";
+            case PROPOSALS -> "📄";
+            case PIPELINE -> "🎯";
+            case REVIEWS -> "⭐";
+            case COUPONS -> "🏷️";
+            case EMAIL_MARKETING -> "✉️";
+            case WHATSAPP_AUTOMATION -> "💬";
+            case AUTOMATIONS -> "⚡";
+            case CUSTOM_DOMAIN -> "🌐";
+            case STRIPE_CONNECT -> "💳";
+            case ANALYTICS -> "📈";
+            case MULTI_USER -> "👥";
+            case API_ACCESS -> "🔌";
+            case WHITE_LABEL_FULL -> "🎨";
+        };
+    }
+
+    private String resolveModule(Feature feature) {
+        return switch (feature) {
+            case PRODUCTS, CATEGORIES, INVENTORY, ORDERS, CHECKOUT -> "Ecommerce";
+            case CRM, LEADS, TASKS, PROPOSALS, PIPELINE -> "CRM";
+            case REVIEWS, COUPONS, EMAIL_MARKETING -> "Marketing";
+            case WHATSAPP_AUTOMATION, AUTOMATIONS -> "Automation";
+            case CUSTOM_DOMAIN, ANALYTICS, MULTI_USER, API_ACCESS, WHITE_LABEL_FULL -> "Platform";
+            case STRIPE_CONNECT -> "Billing";
+        };
+    }
 
     public List<FeatureUsageMetricDTO> getUsageByFeature(int days) {
 
@@ -28,10 +65,17 @@ public class FeatureUsageMetricsService {
         return featureUsageRepository
                 .countUsageByFeatureBetween(start, end)
                 .stream()
-                .map(row -> new FeatureUsageMetricDTO(
-                        (Feature) row[0],
-                        ((Number) row[1]).longValue()
-                ))
+                .map(row -> {
+                    Feature feature = (Feature) row[0];
+                    long total = ((Number) row[1]).longValue();
+
+                    return new FeatureUsageMetricDTO(
+                            feature.name(),
+                            resolveIcon(feature),
+                            resolveModule(feature),
+                            total
+                    );
+                }) 
                 .toList();
     }
 

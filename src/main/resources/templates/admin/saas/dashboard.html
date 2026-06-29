@@ -414,9 +414,7 @@
                 <div class="card-body">
                     <div class="text-muted small">Ticket promedio</div>
                     <div class="display-6 fw-bold"
-                         th:text="${metrics.activeSubscriptions > 0
-                            ? #numbers.formatCurrency(metrics.monthlyRecurringRevenue.divide(T(java.math.BigDecimal).valueOf(metrics.activeSubscriptions)))
-                            : '$0.00'}">
+                         th:text="${#numbers.formatCurrency(metrics.averageTicket)}">
                         $0
                     </div>
                     <span class="small text-muted">MRR / suscripciones activas</span>
@@ -671,9 +669,9 @@
         proStores: /*[[${metrics.proStores}]]*/ 0,
         premiumStores: /*[[${metrics.premiumStores}]]*/ 0,
 
-        featureLabels: /*[[${featureUsage.![feature.name()]}]]*/ [],
+        featureLabels: /*[[${featureUsage.![feature]}]]*/ [],
         featureTotals: /*[[${featureUsage.![total]}]]*/ [],
-
+        
         topStoreLabels: /*[[${topStores.![storeName]}]]*/ [],
         topStoreTotals: /*[[${topStores.![total]}]]*/ [],
 

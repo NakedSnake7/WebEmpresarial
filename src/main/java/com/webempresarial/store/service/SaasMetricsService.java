@@ -1,6 +1,7 @@
 package com.webempresarial.store.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.stereotype.Service;
 
@@ -49,9 +50,10 @@ public class SaasMetricsService {
 
         dto.setStripeConnectedStores(storeRepository.countByStripeConnectedTrue());
 
-        dto.setActiveSubscriptions(
-                subscriptionRepository.countByStatus(SubscriptionStatus.ACTIVE)
-        );
+        long activeSubscriptions =
+                subscriptionRepository.countByStatus(SubscriptionStatus.ACTIVE);
+
+        dto.setActiveSubscriptions(activeSubscriptions);
 
         BigDecimal mrr = subscriptionRepository
                 .sumMonthlyAmountByStatus(SubscriptionStatus.ACTIVE);
@@ -63,16 +65,22 @@ public class SaasMetricsService {
         dto.setMonthlyRecurringRevenue(mrr);
         dto.setAnnualRecurringRevenue(mrr.multiply(BigDecimal.valueOf(12)));
 
-        dto.setTotalLeads(
-                leadRepository.countAllPlatformLeads()
-        );
+        BigDecimal averageTicket = BigDecimal.ZERO;
 
-        dto.setTotalProposals(
-                proposalRepository.countAllPlatformProposals()
-        );
+        if (activeSubscriptions > 0) {
+            averageTicket = mrr.divide(
+                    BigDecimal.valueOf(activeSubscriptions),
+                    2,
+                    RoundingMode.HALF_UP
+            );
+        }
 
-        BigDecimal pipelineValue =
-                leadRepository.getGlobalPipelineValue();
+        dto.setAverageTicket(averageTicket);
+
+        dto.setTotalLeads(leadRepository.countAllPlatformLeads());
+        dto.setTotalProposals(proposalRepository.countAllPlatformProposals());
+
+        BigDecimal pipelineValue = leadRepository.getGlobalPipelineValue();
 
         if (pipelineValue == null) {
             pipelineValue = BigDecimal.ZERO;
@@ -91,4 +99,5 @@ public class SaasMetricsService {
 
         return dto;
     }
+    
 }
