@@ -1,8 +1,8 @@
 package com.webempresarial.store.feature.registry;
 
 import com.webempresarial.store.dto.dashboard.DashboardWidgetDTO;
+import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.ModuleDefinition;
-import com.webempresarial.store.feature.dashboard.DashboardWidgetDefinition;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.FeatureAccessService;
 
@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class DashboardRegistry {
 
-    private final List<DashboardWidgetDefinition> widgets = new ArrayList<>();
+    private final List<FeatureDefinition> features = new ArrayList<>();
     private final FeatureAccessService featureAccessService;
 
     public DashboardRegistry(FeatureAccessService featureAccessService) {
@@ -27,33 +27,34 @@ public class DashboardRegistry {
             return;
         }
 
-        widgets.addAll(moduleDefinition.getDashboardWidgets());
+        features.addAll(moduleDefinition.getFeatures());
     }
 
     public List<DashboardWidgetDTO> widgets(Store store) {
-        return widgets.stream()
-                .sorted(Comparator.comparingInt(DashboardWidgetDefinition::order))
-                .map(widget -> toDto(widget, store))
+        return features.stream()
+                .filter(feature -> feature.getPresentation().isShowInDashboard())
+                .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
+                .map(feature -> toDto(feature, store))
                 .toList();
     }
 
     private DashboardWidgetDTO toDto(
-            DashboardWidgetDefinition widget,
+            FeatureDefinition feature,
             Store store
     ) {
         boolean locked = !featureAccessService.canUse(
                 store,
-                widget.feature()
+                feature.getFeature()
         );
 
         return new DashboardWidgetDTO(
-                widget.title(),
-                widget.subtitle(),
-                locked ? "🔒" : widget.icon(),
+                feature.getDisplayName(),
+                feature.getDescription(),
+                locked ? "🔒" : feature.getIcon(),
                 locked
-                        ? "/admin/upgrade?feature=" + widget.feature().name()
-                        : widget.url(),
-                widget.feature(),
+                        ? "/admin/upgrade?feature=" + feature.getFeature().name()
+                        : feature.getUrl(),
+                feature.getFeature(),
                 locked,
                 locked ? "Upgrade" : ""
         );

@@ -40,7 +40,6 @@
                     <a href="/admin/productos" class="small">Gestionar productos →</a>
                 </div>
             </div>
-            
         </div>
 
         <div class="col-md-3">
@@ -52,194 +51,128 @@
                 </div>
             </div>
         </div>
-        
-        
-                    <div class="col-md-4"
-     th:if="${store != null}"	>
-    <div class="card border-0 shadow-sm h-100 dashboard-card">
-        <div class="card-body">
-            <div class="fs-2 mb-2">💳</div>
 
-            <h5 class="fw-bold">Stripe Connect</h5>
+    </div>
 
-            <p class="text-muted mb-3">
-                Conecta la cuenta Stripe de esta tienda para recibir pagos directamente.
-            </p>
+    <div class="row g-3 mb-4">
 
-            <div th:if="${store != null and store.stripeConnected}">
-                <span class="badge text-bg-success mb-2">
-                    Stripe conectado
-                </span>
+        <div class="col-md-4" th:if="${store != null}">
+            <div class="card border-0 shadow-sm h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="fs-2 mb-2">💳</div>
 
-                <div class="small text-muted"
-                     th:text="${store.stripeConnectedAccountId}">
+                    <h5 class="fw-bold">Stripe Connect</h5>
+
+                    <p class="text-muted mb-3">
+                        Conecta la cuenta Stripe de esta tienda para recibir pagos directamente.
+                    </p>
+
+                    <div th:if="${store != null and store.stripeConnected}">
+                        <span class="badge text-bg-success mb-2">
+                            Stripe conectado
+                        </span>
+
+                        <div class="small text-muted"
+                             th:text="${store.stripeConnectedAccountId}">
+                        </div>
+                    </div>
+
+                    <div th:if="${store == null or !store.stripeConnected}">
+                        <span class="badge text-bg-warning mb-2">
+                            Pendiente de conexión
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-dark btn-sm w-100 mt-2"
+                                id="stripeConnectBtn">
+                            Conectar Stripe →
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <div th:if="${store == null or !store.stripeConnected}">
-                <span class="badge text-bg-warning mb-2">
-                    Pendiente de conexión
-                </span>
-
-                <button type="button"
-                        class="btn btn-dark btn-sm w-100 mt-2"
-                        id="stripeConnectBtn">
-                    Conectar Stripe →
-                </button>
-            </div>
         </div>
-    </div>
-</div>
-        
-<div class="col-md-4"
-     th:if="${isSuperAdmin}">
-    <a th:href="@{/admin/stores}" class="text-decoration-none">
-        <div class="card border-0 shadow-sm h-100 dashboard-card">
-            <div class="card-body">
-                <div class="fs-2 mb-2">🏬</div>
-                <h5 class="fw-bold">Tiendas</h5>
-                <p class="text-muted mb-0">
-                    Crea, edita, activa o desactiva tiendas y configura sus dominios.
-                </p>
-            </div>
-        </div>
-    </a>
-</div>
 
-<div class="col-md-3"
-     th:if="${store != null and store.plan.name() == 'PREMIUM'}">
-    <div class="card border-0 shadow-sm h-100">
-        <div class="card-body">
-            <div class="text-muted small">Automatizaciones</div>
-            <div class="display-6 fw-bold">3</div>
-            <span class="small text-muted">WhatsApp · Email · CRM</span>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-3"
-     th:if="${store != null and store.plan.name() != 'PREMIUM'}">
-    <div class="card border-0 shadow-sm h-100 border-warning">
-        <div class="card-body">
-            <div class="text-muted small">Automatizaciones</div>
-            <div class="fw-bold">Bloqueado</div>
-            <span class="small text-muted">Disponible en Premium</span>
-            <a href="/admin/upgrade?feature=AUTOMATIONS"
-               class="btn btn-sm btn-warning mt-2">
-                Mejorar plan
+        <div class="col-md-4" th:if="${isSuperAdmin}">
+            <a th:href="@{/admin/stores}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">🏬</div>
+                        <h5 class="fw-bold">Tiendas</h5>
+                        <p class="text-muted mb-0">
+                            Crea, edita, activa o desactiva tiendas y configura sus dominios.
+                        </p>
+                    </div>
+                </div>
             </a>
         </div>
-    </div>
-</div>
 
+    </div>
+
+    <div class="mb-3">
+        <h5 class="fw-bold mb-1">Módulos disponibles</h5>
+        <p class="text-muted small mb-0">
+            Accesos generados automáticamente desde el Platform Kernel.
+        </p>
     </div>
 
     <div class="row g-3">
 
-<div class="col-md-4"
-     th:if="${store != null and (store.plan.name() == 'PRO' or store.plan.name() == 'PREMIUM')}">
-    <a href="/admin/leads" class="text-decoration-none">
-        <div class="card border-0 shadow-sm h-100 dashboard-card">
-            <div class="card-body">
-                <div class="fs-2 mb-2">🎯</div>
-                <h5 class="fw-bold">Leads & CRM</h5>
-                <p class="text-muted mb-0">
-                    Captura solicitudes, cambia estados y da seguimiento comercial.
-                </p>
-            </div>
-        </div>
-    </a>
-</div>
-        
-        
+        <div class="col-md-4"
+             th:each="widget : ${dashboardWidgets}">
 
-        <div class="col-md-4">
-            <a href="/admin/productos" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
-                    <div class="card-body">
-                        <div class="fs-2 mb-2">📦</div>
-                        <h5 class="fw-bold">Productos</h5>
-                        <p class="text-muted mb-0">
-                            Crea, edita y organiza productos para tu ecommerce.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
+            <a th:href="${widget.url}"
+               class="text-decoration-none">
 
-        <div class="col-md-4">
-            <a href="/orders" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
-                    <div class="card-body">
-                        <div class="fs-2 mb-2">🧾</div>
-                        <h5 class="fw-bold">Pedidos</h5>
-                        <p class="text-muted mb-0">
-                            Revisa órdenes, pagos y flujo de venta.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
+                <div class="card border-0 shadow-sm h-100 dashboard-card"
+                     th:classappend="${widget.locked} ? ' border-warning' : ''">
 
-        <div class="col-md-4">
-            <a href="/nuevo" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
                     <div class="card-body">
-                        <div class="fs-2 mb-2">➕</div>
-                        <h5 class="fw-bold">Subir productos</h5>
-                        <p class="text-muted mb-0">
-                            Agrega nuevos artículos al catálogo de la tienda.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
 
-        <div class="col-md-4">
-            <a href="/modificar-precios" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
-                    <div class="card-body">
-                        <div class="fs-2 mb-2">💲</div>
-                        <h5 class="fw-bold">Precios</h5>
-                        <p class="text-muted mb-0">
-                            Actualiza precios, descuentos y promociones.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
+                        <div class="fs-2 mb-2"
+                             th:text="${widget.icon}">
+                            📦
+                        </div>
 
-        <div class="col-md-4">
-            <a href="/resenas/nueva" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 dashboard-card">
-                    <div class="card-body">
-                        <div class="fs-2 mb-2">⭐</div>
-                        <h5 class="fw-bold">Reseñas</h5>
-                        <p class="text-muted mb-0">
-                            Gestiona testimonios para aumentar confianza.
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <h5 class="fw-bold mb-2"
+                                th:text="${widget.title}">
+                                Módulo
+                            </h5>
+
+                            <span class="badge text-bg-warning"
+                                  th:if="${widget.locked}"
+                                  th:text="${widget.badge}">
+                                Upgrade
+                            </span>
+                        </div>
+
+                        <p class="text-muted mb-0"
+                           th:text="${widget.subtitle}">
+                            Descripción del módulo.
                         </p>
+
                     </div>
                 </div>
             </a>
         </div>
 
     </div>
-    
+
     <script>
-document.getElementById("stripeConnectBtn")?.addEventListener("click", async () => {
-    const response = await fetch("/api/admin/stripe/connect/onboarding", {
-        method: "POST"
-    });
+        document.getElementById("stripeConnectBtn")?.addEventListener("click", async () => {
+            const response = await fetch("/api/admin/stripe/connect/onboarding", {
+                method: "POST"
+            });
 
-    if (!response.ok) {
-        alert("No se pudo iniciar Stripe Connect.");
-        return;
-    }
+            if (!response.ok) {
+                alert("No se pudo iniciar Stripe Connect.");
+                return;
+            }
 
-    const data = await response.json();
-    window.location.href = data.onboardingUrl;
-});
-</script>
+            const data = await response.json();
+            window.location.href = data.onboardingUrl;
+        });
+    </script>
 
 </section>
 

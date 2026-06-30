@@ -1,6 +1,6 @@
 package com.webempresarial.store.feature.catalog;
 
-import com.webempresarial.store.feature.FeatureAccessPolicy;
+import com.webempresarial.store.feature.FeatureAccessPolicy; 
 import com.webempresarial.store.feature.FeatureCategory;
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;

@@ -1,11 +1,12 @@
 package com.webempresarial.store.controller;
 
-import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO;
+import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO; 
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
+import com.webempresarial.store.feature.registry.DashboardRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,17 +25,20 @@ public class HomeController {
     private final ResenaRepository resenaRepository;
     private final StoreThemeResolver storeThemeResolver;
     private final StoreResolver storeResolver;
+    private final DashboardRegistry dashboardRegistry;
 
     public HomeController(
             ProductoService productoService,
             ResenaRepository resenaRepository,
             StoreThemeResolver storeThemeResolver,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            DashboardRegistry dashboardRegistry
     ) {
         this.productoService = productoService;
         this.resenaRepository = resenaRepository;
         this.storeThemeResolver = storeThemeResolver;
         this.storeResolver = storeResolver;
+        this.dashboardRegistry = dashboardRegistry;
     }
 
     private void cargarDatosGlobales(Model model, Store store) {
@@ -211,6 +215,7 @@ public class HomeController {
         Store store = storeResolver.getCurrentStore(request);
 
         model.addAttribute("store", store);
+        model.addAttribute("dashboardWidgets", dashboardRegistry.widgets(store));
 
         return "admin/dashboard";
     }
