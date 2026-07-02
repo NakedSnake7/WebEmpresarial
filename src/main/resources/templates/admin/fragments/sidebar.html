@@ -67,31 +67,52 @@
 
 
 
-        <div class="sidebar-section sidebar-text"
-             th:if="${isSuperAdmin}">
-            Sistema
-        </div>
+<div class="sidebar-section sidebar-text"
+     th:if="${isSuperAdmin}">
+    Sistema
+</div>
 
-        <a href="/admin/stores"
-           class="sidebar-link"
-           th:if="${isSuperAdmin}">
-            <span class="sidebar-icon">🏬</span>
-            <span class="sidebar-text">Tiendas</span>
-        </a>
+<a href="/admin/permissions"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🔐</span>
+    <span class="sidebar-text">Permisos</span>
+</a>
 
-        <a href="/admin/saas"
-           class="sidebar-link"
-           th:if="${isSuperAdmin}">
-            <span class="sidebar-icon">🚀</span>
-            <span class="sidebar-text">SaaS Dashboard</span>
-        </a>
+<a href="/admin/automations/kernel"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">⚙️</span>
+    <span class="sidebar-text">Kernel Automations</span>
+</a>
 
-        <a href="/admin/subscriptions"
-           class="sidebar-link"
-           th:if="${isSuperAdmin}">
-            <span class="sidebar-icon">💳</span>
-            <span class="sidebar-text">Suscripciones</span>
-        </a>
+<a href="/admin/stores"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🏬</span>
+    <span class="sidebar-text">Tiendas</span>
+</a>
+
+<a href="/admin/saas"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🚀</span>
+    <span class="sidebar-text">SaaS Dashboard</span>
+</a>
+
+<a href="/admin/marketplace"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🧩</span>
+    <span class="sidebar-text">Marketplace</span>
+</a>
+
+<a href="/admin/subscriptions"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">💳</span>
+    <span class="sidebar-text">Suscripciones</span>
+</a>
 
     </nav>
 

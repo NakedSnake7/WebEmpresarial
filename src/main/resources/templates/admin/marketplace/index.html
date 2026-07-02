@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Marketplace | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">
+            Platform Kernel
+        </span>
+
+        <h1 class="fw-bold mb-1">
+            Marketplace de módulos
+        </h1>
+
+        <p class="text-muted mb-0">
+            Módulos cargados por el kernel de WebEmpresarial.
+        </p>
+    </div>
+
+    <div class="row g-3">
+
+        <div class="col-md-4"
+             th:each="module : ${modules}">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+
+                        <h5 class="fw-bold mb-0"
+                            th:text="${module.name}">
+                            Module
+                        </h5>
+
+                        <span class="badge text-bg-success"
+                              th:text="${module.badge}">
+                            Instalado
+                        </span>
+
+                    </div>
+
+                    <p class="text-muted small"
+                       th:text="${module.description}">
+                        Descripción del módulo.
+                    </p>
+
+                    <div class="row g-2 small text-muted mb-3">
+
+                        <div class="col-4">
+                            <strong th:text="${module.featureCount}">
+                                0
+                            </strong>
+                            <div>Features</div>
+                        </div>
+
+                        <div class="col-4">
+                            <strong th:text="${module.sidebarSections}">
+                                0
+                            </strong>
+                            <div>Sidebar</div>
+                        </div>
+
+                        <div class="col-4">
+                            <strong th:text="${module.dashboardWidgets}">
+                                0
+                            </strong>
+                            <div>Dashboard</div>
+                        </div>
+
+                    </div>
+
+                    <button class="btn btn-sm btn-outline-dark w-100"
+                            disabled
+                            th:text="${module.installed ? 'Instalado' : 'Instalar'}">
+                        Instalado
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>

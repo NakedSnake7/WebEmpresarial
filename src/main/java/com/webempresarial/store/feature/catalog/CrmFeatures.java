@@ -1,14 +1,17 @@
 package com.webempresarial.store.feature.catalog;
 
-import com.webempresarial.store.feature.FeatureAccessPolicy; 
+import com.webempresarial.store.feature.FeatureAccessPolicy;  
 import com.webempresarial.store.feature.FeatureCategory;
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.ModuleDefinition;
 import com.webempresarial.store.feature.PlatformModule;
+import com.webempresarial.store.feature.automation.AutomationDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
+import com.webempresarial.store.feature.ModuleLifecycleContext;
+import com.webempresarial.store.feature.permission.PermissionDefinition;
 
 import org.springframework.stereotype.Component;
 
@@ -140,5 +143,63 @@ public class CrmFeatures implements PlatformModule {
                 .showUpgradeCard(true)
                 .trackUsage(true)
                 .build();
+    }
+    @Override
+    public void boot(ModuleLifecycleContext context) {
+        context.permissionRegistry().register(
+                new PermissionDefinition(
+                        "crm.read",
+                        "Leer CRM",
+                        "Permite consultar dashboard, leads y pipeline.",
+                        Feature.CRM
+                )
+        );
+
+        context.permissionRegistry().register(
+                new PermissionDefinition(
+                        "crm.write",
+                        "Gestionar CRM",
+                        "Permite crear, editar y mover leads dentro del CRM.",
+                        Feature.CRM
+                )
+        );
+
+        context.permissionRegistry().register(
+                new PermissionDefinition(
+                        "proposals.manage",
+                        "Gestionar propuestas",
+                        "Permite crear, enviar, aceptar y rechazar propuestas.",
+                        Feature.PROPOSALS
+                )
+        );
+        context.automationRegistry().register(
+                new AutomationDefinition(
+                        "crm.lead.created.task",
+                        "Crear tarea al recibir lead",
+                        "Crea una tarea automática cuando entra un nuevo lead.",
+                        Feature.LEADS,
+                        "LEAD_CREATED"
+                )
+        );
+
+        context.automationRegistry().register(
+                new AutomationDefinition(
+                        "crm.proposal.sent.followup",
+                        "Seguimiento de propuesta enviada",
+                        "Crea seguimiento automático 24 horas después de enviar una propuesta.",
+                        Feature.PROPOSALS,
+                        "PROPOSAL_SENT"
+                )
+        );
+
+        context.automationRegistry().register(
+                new AutomationDefinition(
+                        "crm.lead.created.notification",
+                        "Notificación de nuevo lead",
+                        "Notifica al administrador cuando entra un nuevo lead.",
+                        Feature.LEADS,
+                        "LEAD_CREATED"
+                )
+        );
     }
 }
