@@ -9,5 +9,7 @@ public record PlatformConsoleDTO(
         int sidebarSections,
         int permissions,
         int automations,
-        List<PlatformModuleDTO> moduleList
+        List<PlatformModuleDTO> moduleList,
+        List<PlatformHealthDTO> healthResults
+        
 ) {}

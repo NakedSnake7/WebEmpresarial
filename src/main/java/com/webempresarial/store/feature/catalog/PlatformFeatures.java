@@ -6,6 +6,7 @@ import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
+import com.webempresarial.store.feature.health.checks.KernelHealthCheck;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
@@ -19,6 +20,7 @@ public class PlatformFeatures implements PlatformModule {
     public PlatformModuleDescriptor descriptor() {
         return PlatformModuleDescriptor.builder("Platform")
                 .description("Módulos de plataforma, reportes, dominio, usuarios y white label.")
+                .healthCheck(KernelHealthCheck.class)
 
                 .feature(analytics())
                 .feature(customDomain())

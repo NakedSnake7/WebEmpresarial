@@ -6,6 +6,7 @@ import com.webempresarial.store.feature.registry.MarketplaceRegistry;
 import com.webempresarial.store.feature.registry.ModuleRegistry;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.feature.registry.EventRegistry;
+import com.webempresarial.store.feature.registry.HealthRegistry;
 import com.webempresarial.store.feature.registry.PermissionRegistry;
 
 public record ModuleLifecycleContext(
@@ -16,5 +17,7 @@ public record ModuleLifecycleContext(
         MarketplaceRegistry marketplaceRegistry,
         EventRegistry eventRegistry,
         PermissionRegistry permissionRegistry,
+        HealthRegistry healthRegistry,
         AutomationRegistry automationRegistry
+        
 ) {}

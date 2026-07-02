@@ -4,6 +4,7 @@ import com.webempresarial.store.feature.automation.AutomationDefinition;
 import com.webempresarial.store.feature.event.ModuleEventDefinition;
 import com.webempresarial.store.feature.permission.PermissionDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.feature.health.HealthCheck;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public final class PlatformModuleDescriptor {
     private final List<AutomationDefinition> automations;
     private final List<ModuleEventDefinition> events;
     private final ModuleManifest manifest;
+    private final List<Class<? extends HealthCheck>> healthChecks;
     
 
     private PlatformModuleDescriptor(Builder builder) {
@@ -30,6 +32,11 @@ public final class PlatformModuleDescriptor {
         this.automations = List.copyOf(builder.automations);
         this.events = List.copyOf(builder.events);
         this.manifest = builder.manifest != null ? builder.manifest : ModuleManifest.builder(builder.name).build();
+        this.healthChecks = List.copyOf(builder.healthChecks);
+    }
+    
+    public List<Class<? extends HealthCheck>> getHealthChecks() {
+        return healthChecks;
     }
     
     public ModuleManifest getManifest() {
@@ -68,6 +75,12 @@ public final class PlatformModuleDescriptor {
         private final List<AutomationDefinition> automations = new ArrayList<>();
         private final List<ModuleEventDefinition> events = new ArrayList<>();
         private ModuleManifest manifest;
+        private final List<Class<? extends HealthCheck>> healthChecks = new ArrayList<>();
+
+        public Builder healthCheck(Class<? extends HealthCheck> healthCheck) {
+            this.healthChecks.add(healthCheck);
+            return this;
+        }
 
         public Builder manifest(ModuleManifest manifest) {
             this.manifest = manifest;

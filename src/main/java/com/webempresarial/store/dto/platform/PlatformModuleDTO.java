@@ -7,5 +7,7 @@ public record PlatformModuleDTO(
         int dashboardWidgets,
         int sidebarSections,
         int permissions,
-        int automations
+        int automations,
+        String status,
+        String errorMessage
 ) {}
