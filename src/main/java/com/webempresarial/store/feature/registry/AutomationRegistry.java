@@ -21,4 +21,9 @@ public class AutomationRegistry {
     public List<AutomationDefinition> all() {
         return List.copyOf(automations);
     }
+    public List<AutomationDefinition> findByTrigger(String trigger) {
+        return automations.stream()
+                .filter(a -> a.trigger().equals(trigger))
+                .toList();
+    }
 }

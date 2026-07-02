@@ -86,6 +86,13 @@
     <span class="sidebar-text">Kernel Automations</span>
 </a>
 
+<a href="/admin/automations/history"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🕓</span>
+    <span class="sidebar-text">Historial Automations</span>
+</a>
+
 <a href="/admin/stores"
    class="sidebar-link"
    th:if="${isSuperAdmin}">

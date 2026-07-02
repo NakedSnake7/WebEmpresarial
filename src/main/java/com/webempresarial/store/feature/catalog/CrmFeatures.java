@@ -7,11 +7,16 @@ import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.ModuleDefinition;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.automation.AutomationDefinition;
+import com.webempresarial.store.feature.automation.AutomationTrigger;
+import com.webempresarial.store.feature.automation.actions.LogAutomationAction;
+import com.webempresarial.store.feature.automation.conditions.AlwaysTrueCondition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.feature.ModuleLifecycleContext;
 import com.webempresarial.store.feature.permission.PermissionDefinition;
+
+
 
 import org.springframework.stereotype.Component;
 
@@ -173,33 +178,39 @@ public class CrmFeatures implements PlatformModule {
                 )
         );
         context.automationRegistry().register(
-                new AutomationDefinition(
-                        "crm.lead.created.task",
-                        "Crear tarea al recibir lead",
-                        "Crea una tarea automática cuando entra un nuevo lead.",
-                        Feature.LEADS,
-                        "LEAD_CREATED"
-                )
+                AutomationDefinition.builder()
+                        .code("crm.lead.created.task")
+                        .name("Crear tarea al recibir lead")
+                        .description("Crea una tarea automática cuando entra un nuevo lead.")
+                        .feature(Feature.LEADS)
+                        .trigger(AutomationTrigger.LEAD_CREATED)
+                        .when(AlwaysTrueCondition.class)
+                        .action(LogAutomationAction.class)
+                        .build()
         );
 
         context.automationRegistry().register(
-                new AutomationDefinition(
-                        "crm.proposal.sent.followup",
-                        "Seguimiento de propuesta enviada",
-                        "Crea seguimiento automático 24 horas después de enviar una propuesta.",
-                        Feature.PROPOSALS,
-                        "PROPOSAL_SENT"
-                )
+                AutomationDefinition.builder()
+                        .code("crm.proposal.sent.followup")
+                        .name("Seguimiento de propuesta enviada")
+                        .description("Crea seguimiento automático 24 horas después de enviar una propuesta.")
+                        .feature(Feature.PROPOSALS)
+                        .trigger(AutomationTrigger.PROPOSAL_SENT)
+                        .when(AlwaysTrueCondition.class)
+                        .action(LogAutomationAction.class)
+                        .build()
         );
 
         context.automationRegistry().register(
-                new AutomationDefinition(
-                        "crm.lead.created.notification",
-                        "Notificación de nuevo lead",
-                        "Notifica al administrador cuando entra un nuevo lead.",
-                        Feature.LEADS,
-                        "LEAD_CREATED"
-                )
+                AutomationDefinition.builder()
+                        .code("crm.lead.created.notification")
+                        .name("Notificación de nuevo lead")
+                        .description("Notifica al administrador cuando entra un nuevo lead.")
+                        .feature(Feature.LEADS)
+                        .trigger(AutomationTrigger.LEAD_CREATED)
+                        .when(AlwaysTrueCondition.class)
+                        .action(LogAutomationAction.class)
+                        .build()
         );
     }
 }
