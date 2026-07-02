@@ -18,7 +18,7 @@ public final class PlatformModuleDescriptor {
     private final List<PermissionDefinition> permissions;
     private final List<AutomationDefinition> automations;
     private final List<ModuleEventDefinition> events;
-    
+    private final ModuleManifest manifest;
     
 
     private PlatformModuleDescriptor(Builder builder) {
@@ -29,9 +29,12 @@ public final class PlatformModuleDescriptor {
         this.permissions = List.copyOf(builder.permissions);
         this.automations = List.copyOf(builder.automations);
         this.events = List.copyOf(builder.events);
+        this.manifest = builder.manifest != null ? builder.manifest : ModuleManifest.builder(builder.name).build();
     }
     
-    
+    public ModuleManifest getManifest() {
+        return manifest;
+    }
 
     public static Builder builder(String name) {
         return new Builder(name);
@@ -64,6 +67,12 @@ public final class PlatformModuleDescriptor {
         private final List<PermissionDefinition> permissions = new ArrayList<>();
         private final List<AutomationDefinition> automations = new ArrayList<>();
         private final List<ModuleEventDefinition> events = new ArrayList<>();
+        private ModuleManifest manifest;
+
+        public Builder manifest(ModuleManifest manifest) {
+            this.manifest = manifest;
+            return this;
+        }
         
         public Builder event(ModuleEventDefinition event) {
             this.events.add(event);

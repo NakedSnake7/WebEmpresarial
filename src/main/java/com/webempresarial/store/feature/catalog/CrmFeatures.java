@@ -15,6 +15,7 @@ import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.feature.permission.PermissionDefinition;
+import com.webempresarial.store.feature.ModuleManifest;
 
 
 
@@ -25,8 +26,19 @@ public class CrmFeatures implements PlatformModule {
 
 	@Override
 	public PlatformModuleDescriptor descriptor() {
-	    return PlatformModuleDescriptor.builder("CRM")
-	            .description("Módulo comercial para leads, pipeline, tareas y propuestas.")
+		return PlatformModuleDescriptor.builder("CRM")
+		        .manifest(
+		                ModuleManifest.builder("CRM")
+		                        .version("1.0.0")
+		                        .author("WebEmpresarial")
+		                        .vendor("WebEmpresarial")
+		                        .category("Sales")
+		                        .license("Proprietary")
+		                        .minimumPlatformVersion("1.0.0")
+		                        .dependsOn("Automation")
+		                        .build()
+		        )
+		        .description("Módulo comercial para leads, pipeline, tareas y propuestas.")
 
 	            .feature(crm())
 	            .feature(leads())
