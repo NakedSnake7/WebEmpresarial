@@ -1,11 +1,11 @@
 package com.webempresarial.store.feature.catalog;
 
-import com.webempresarial.store.feature.FeatureAccessPolicy;
+import com.webempresarial.store.feature.FeatureAccessPolicy; 
 import com.webempresarial.store.feature.FeatureCategory;
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
-import com.webempresarial.store.feature.ModuleDefinition;
 import com.webempresarial.store.feature.PlatformModule;
+import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 public class AutomationFeatures implements PlatformModule {
 
     @Override
-    public ModuleDefinition definition() {
-        return ModuleDefinition.builder("Automation")
+    public PlatformModuleDescriptor descriptor() {
+        return PlatformModuleDescriptor.builder("Automation")
                 .description("Automatizaciones para ventas, WhatsApp, seguimiento y flujos comerciales.")
 
                 .feature(whatsappAutomation())

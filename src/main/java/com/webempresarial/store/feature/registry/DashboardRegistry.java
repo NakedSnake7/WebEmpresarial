@@ -1,8 +1,8 @@
 package com.webempresarial.store.feature.registry;
 
-import com.webempresarial.store.dto.dashboard.DashboardWidgetDTO;
+import com.webempresarial.store.dto.dashboard.DashboardWidgetDTO; 
 import com.webempresarial.store.feature.FeatureDefinition;
-import com.webempresarial.store.feature.ModuleDefinition;
+import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.FeatureAccessService;
 
@@ -22,12 +22,12 @@ public class DashboardRegistry {
         this.featureAccessService = featureAccessService;
     }
 
-    public void register(ModuleDefinition moduleDefinition) {
-        if (moduleDefinition == null) {
+    public void register(PlatformModuleDescriptor module) {
+        if (module == null) {
             return;
         }
 
-        features.addAll(moduleDefinition.getFeatures());
+        features.addAll(module.getFeatures());
     }
 
     public List<DashboardWidgetDTO> widgets(Store store) {

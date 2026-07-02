@@ -1,9 +1,9 @@
 package com.webempresarial.store.feature.registry;
 
-import com.webempresarial.store.dto.sidebar.SidebarItemDTO;
+import com.webempresarial.store.dto.sidebar.SidebarItemDTO; 
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.service.FeatureAccessService;
-import com.webempresarial.store.feature.ModuleDefinition;
+import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarItemDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Store;
@@ -23,12 +23,12 @@ public class SidebarRegistry {
         this.featureAccessService = featureAccessService;
     }
 
-    public void register(ModuleDefinition moduleDefinition) {
-        if (moduleDefinition == null) {
+    public void register(PlatformModuleDescriptor module) {
+        if (module == null) {
             return;
         }
 
-        sections.addAll(moduleDefinition.getSidebarSections());
+        sections.addAll(module.getSidebarSections());
     }
 
     public List<SidebarSectionDTO> sections(Store store) {

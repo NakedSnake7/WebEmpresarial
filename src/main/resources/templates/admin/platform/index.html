@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Platform Console | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">Platform Kernel</span>
+        <h1 class="fw-bold mb-1">Platform Console</h1>
+        <p class="text-muted mb-0">
+            Consola central para inspeccionar módulos, features, permisos y automatizaciones.
+        </p>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Módulos</div>
+                    <div class="display-6 fw-bold" th:text="${console.modules}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Features</div>
+                    <div class="display-6 fw-bold" th:text="${console.features}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Widgets</div>
+                    <div class="display-6 fw-bold" th:text="${console.dashboardWidgets}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Sidebar</div>
+                    <div class="display-6 fw-bold" th:text="${console.sidebarSections}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Permisos</div>
+                    <div class="display-6 fw-bold" th:text="${console.permissions}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Automations</div>
+                    <div class="display-6 fw-bold" th:text="${console.automations}">0</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Modules Explorer</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Módulo</th>
+                        <th>Descripción</th>
+                        <th>Features</th>
+                        <th>Widgets</th>
+                        <th>Sidebar</th>
+                        <th>Permisos</th>
+                        <th>Automations</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="module : ${console.moduleList}">
+                        <td>
+                            <span class="badge text-bg-dark"
+                                  th:text="${module.name}">
+                                CRM
+                            </span>
+                        </td>
+
+                        <td class="text-muted"
+                            th:text="${module.description}">
+                            Descripción
+                        </td>
+
+                        <td th:text="${module.features}">0</td>
+                        <td th:text="${module.dashboardWidgets}">0</td>
+                        <td th:text="${module.sidebarSections}">0</td>
+                        <td th:text="${module.permissions}">0</td>
+                        <td th:text="${module.automations}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>

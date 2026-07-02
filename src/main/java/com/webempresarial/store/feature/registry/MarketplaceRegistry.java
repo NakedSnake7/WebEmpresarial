@@ -1,7 +1,6 @@
 package com.webempresarial.store.feature.registry;
 
-import com.webempresarial.store.dto.marketplace.MarketplaceModuleDTO;
-import com.webempresarial.store.feature.ModuleDefinition;
+import com.webempresarial.store.dto.marketplace.MarketplaceModuleDTO; 
 
 import org.springframework.stereotype.Component;
 

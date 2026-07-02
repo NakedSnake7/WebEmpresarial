@@ -1,11 +1,11 @@
 package com.webempresarial.store.feature.catalog;
 
-import com.webempresarial.store.feature.FeatureAccessPolicy;
+import com.webempresarial.store.feature.FeatureAccessPolicy; 
 import com.webempresarial.store.feature.FeatureCategory;
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
-import com.webempresarial.store.feature.ModuleDefinition;
 import com.webempresarial.store.feature.PlatformModule;
+import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 public class MarketingFeatures implements PlatformModule {
 
     @Override
-    public ModuleDefinition definition() {
-        return ModuleDefinition.builder("Marketing")
+    public PlatformModuleDescriptor descriptor() {
+        return PlatformModuleDescriptor.builder("Marketing")
                 .description("Módulos para reseñas, cupones y campañas comerciales.")
 
                 .feature(reviews())

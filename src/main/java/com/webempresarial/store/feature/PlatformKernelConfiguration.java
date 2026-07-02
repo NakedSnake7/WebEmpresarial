@@ -50,27 +50,36 @@ public class PlatformKernelConfiguration {
 
     @PostConstruct
     public void registerModules() {
-    	ModuleLifecycleContext context = new ModuleLifecycleContext(
-    	        platformKernel,
-    	        moduleRegistry,
-    	        sidebarRegistry,
-    	        dashboardRegistry,
-    	        marketplaceRegistry,
-    	        eventRegistry,
-    	        permissionRegistry,
-    	        automationRegistry
-    	);
+        ModuleLifecycleContext context = new ModuleLifecycleContext(
+                platformKernel,
+                moduleRegistry,
+                sidebarRegistry,
+                dashboardRegistry,
+                marketplaceRegistry,
+                eventRegistry,
+                permissionRegistry,
+                automationRegistry
+        );
 
         modules.forEach(module -> {
-            ModuleDefinition definition = module.definition();
+            PlatformModuleDescriptor descriptor = module.descriptor();
 
-            moduleRegistry.register(definition);
+            moduleRegistry.register(descriptor);
 
-            definition.getFeatures()
+            descriptor.getFeatures()
                     .forEach(platformKernel::register);
 
-            sidebarRegistry.register(definition);
-            dashboardRegistry.register(definition);
+            sidebarRegistry.register(descriptor);
+            dashboardRegistry.register(descriptor);
+
+            descriptor.getPermissions()
+            .forEach(permissionRegistry::register);
+
+            descriptor.getAutomations()
+            .forEach(automationRegistry::register);
+
+            descriptor.getEvents()
+            .forEach(eventRegistry::register);
 
             module.boot(context);
         });

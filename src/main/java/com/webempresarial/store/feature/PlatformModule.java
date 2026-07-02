@@ -2,7 +2,7 @@ package com.webempresarial.store.feature;
 
 public interface PlatformModule {
 
-    ModuleDefinition definition();
+    PlatformModuleDescriptor descriptor();
 
     default void boot(ModuleLifecycleContext context) {
     }
