@@ -32,6 +32,25 @@ public class AutomationExecution {
             orphanRemoval = true
     )
     private List<AutomationExecutionAction> actions = new ArrayList<>();
+    
+    private String correlationId;
+    private String executionId;
+    
+    private String parentExecutionId;
+    private String spanId;
+
+    public String getParentExecutionId() { return parentExecutionId; }
+    public void setParentExecutionId(String parentExecutionId) { this.parentExecutionId = parentExecutionId; }
+
+    public String getSpanId() { return spanId; }
+    public void setSpanId(String spanId) { this.spanId = spanId; }
+
+    public String getCorrelationId() { return correlationId; }
+    public void setCorrelationId(String correlationId) { this.correlationId = correlationId; }
+
+    public String getExecutionId() { return executionId; }
+    public void setExecutionId(String executionId) { this.executionId = executionId; }
+    
 
     public void addAction(AutomationExecutionAction action) {
         action.setExecution(this);

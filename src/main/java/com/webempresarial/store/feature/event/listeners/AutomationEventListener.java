@@ -22,10 +22,11 @@ public class AutomationEventListener implements PlatformEventListener {
 
     @Override
     public void handle(PlatformEvent event) {
-        automationEngine.fire(
-                event.name(),
-                event.payload(),
-                event.metadata()
-        );
+    	automationEngine.fire(
+    	        event.name(),
+    	        event.executionContext(),
+    	        event.payload(),
+    	        event.metadata()
+    	);
     }
 }

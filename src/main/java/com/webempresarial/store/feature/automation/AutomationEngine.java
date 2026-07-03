@@ -1,6 +1,7 @@
 package com.webempresarial.store.feature.automation;
 
 import com.webempresarial.store.feature.registry.AutomationRegistry;
+import com.webempresarial.store.feature.runtime.ExecutionContext;
 import com.webempresarial.store.service.AutomationHistoryService;
 
 import org.slf4j.Logger;
@@ -40,21 +41,41 @@ public class AutomationEngine {
             Object payload,
             Map<String, Object> metadata
     ) {
+        return fire(
+                trigger,
+                new ExecutionContext(),
+                payload,
+                metadata
+        );
+    }
 
+    public AutomationExecutionReport fire(
+            String trigger,
+            ExecutionContext executionContext,
+            Object payload,
+            Map<String, Object> metadata
+    ) {
         AutomationContext context = new AutomationContext(
                 trigger,
+                executionContext,
                 payload,
                 metadata
         );
 
-        AutomationExecutionReport report =
-                new AutomationExecutionReport(trigger);
+        return execute(context);
+    }
+
+    private AutomationExecutionReport execute(AutomationContext context) {
+    	AutomationExecutionReport report =
+    	        new AutomationExecutionReport(
+    	                context.trigger(),
+    	                context.executionContext()
+    	        );
 
         List<AutomationDefinition> automations =
-                automationRegistry.findByTrigger(trigger);
+                automationRegistry.findByTrigger(context.trigger());
 
         automations.forEach(automation -> {
-
             boolean matches = automation.conditions()
                     .stream()
                     .map(applicationContext::getBean)
@@ -64,52 +85,52 @@ public class AutomationEngine {
                 return;
             }
 
-            automation.actions().forEach(actionClass -> {
-
-                long start = System.currentTimeMillis();
-
-                try {
-
-                    AutomationAction action =
-                            applicationContext.getBean(actionClass);
-
-                    AutomationExecutionResult result =
-                            action.execute(context);
-
-                    report.add(
-                            new ActionExecutionResult(
-                                    actionClass.getSimpleName(),
-                                    result.success(),
-                                    result.message(),
-                                    System.currentTimeMillis() - start
-                            )
-                    );
-
-                } catch (Exception ex) {
-
-                    report.add(
-                            new ActionExecutionResult(
-                                    actionClass.getSimpleName(),
-                                    false,
-                                    ex.getMessage(),
-                                    System.currentTimeMillis() - start
-                            )
-                    );
-
-                    log.error(
-                            "Error ejecutando automation action: {}",
-                            actionClass.getSimpleName(),
-                            ex
-                    );
-                }
-
-            });
-
+            automation.actions().forEach(actionClass -> executeAction(
+                    actionClass,
+                    context,
+                    report
+            ));
         });
 
-        // Persistimos el historial de la ejecución
         automationHistoryService.save(report);
 
         return report;
+    }
+
+    private void executeAction(
+            Class<? extends AutomationAction> actionClass,
+            AutomationContext context,
+            AutomationExecutionReport report
+    ) {
+        long start = System.currentTimeMillis();
+
+        try {
+            AutomationAction action =
+                    applicationContext.getBean(actionClass);
+
+            AutomationExecutionResult result =
+                    action.execute(context);
+
+            report.add(new ActionExecutionResult(
+                    actionClass.getSimpleName(),
+                    result.success(),
+                    result.message(),
+                    System.currentTimeMillis() - start
+            ));
+
+        } catch (Exception ex) {
+            report.add(new ActionExecutionResult(
+                    actionClass.getSimpleName(),
+                    false,
+                    ex.getMessage(),
+                    System.currentTimeMillis() - start
+            ));
+
+            log.error(
+                    "Error ejecutando automation action: {}",
+                    actionClass.getSimpleName(),
+                    ex
+            );
+        }
     }
 }

@@ -30,7 +30,16 @@ public class PlatformEventHistoryService {
         }
 
         PlatformEventExecution execution = new PlatformEventExecution();
+        
+        execution.setParentExecutionId(
+                report.event().executionContext().parentExecutionId()
+        );
 
+        execution.setSpanId(
+                report.event().executionContext().spanId()
+        );
+        execution.setCorrelationId(report.event().executionContext().correlationId());
+        execution.setExecutionId(report.event().executionContext().executionId());
         execution.setEventName(report.event().name());
         execution.setSourceModule(report.event().sourceModule());
         execution.setOccurredAt(report.event().occurredAt());

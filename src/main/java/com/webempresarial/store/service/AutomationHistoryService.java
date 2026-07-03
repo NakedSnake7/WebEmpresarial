@@ -30,6 +30,21 @@ public class AutomationHistoryService {
         }
 
         AutomationExecution execution = new AutomationExecution();
+        
+        execution.setCorrelationId(
+                report.executionContext().correlationId()
+        );
+
+        execution.setExecutionId(
+                report.executionContext().executionId()
+        );
+        execution.setParentExecutionId(
+                report.executionContext().parentExecutionId()
+        );
+
+        execution.setSpanId(
+                report.executionContext().spanId()
+        );
 
         execution.setTriggerName(report.trigger());
         execution.setStartedAt(report.startedAt());

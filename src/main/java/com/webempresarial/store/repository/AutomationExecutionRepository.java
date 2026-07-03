@@ -13,4 +13,5 @@ public interface AutomationExecutionRepository
     List<AutomationExecution> findByTriggerNameOrderByStartedAtDesc(
             String triggerName
     );
+    List<AutomationExecution> findByCorrelationIdOrderByStartedAtDesc(String correlationId);
 }
