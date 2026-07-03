@@ -1,5 +1,6 @@
 package com.webempresarial.store.controller.admin;
 
+import com.webempresarial.store.service.ExecutionTraceService;
 import com.webempresarial.store.service.PlatformTimelineService;
 
 import org.springframework.stereotype.Controller;
@@ -11,11 +12,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class PlatformTimelineController {
 
     private final PlatformTimelineService timelineService;
+    private final ExecutionTraceService executionTraceService;
 
     public PlatformTimelineController(
-            PlatformTimelineService timelineService
+            PlatformTimelineService timelineService,
+            ExecutionTraceService executionTraceService
     ) {
         this.timelineService = timelineService;
+        this.executionTraceService = executionTraceService;
     }
 
     @GetMapping("/admin/platform/timeline/{correlationId}")
@@ -27,5 +31,14 @@ public class PlatformTimelineController {
         model.addAttribute("timeline", timelineService.byCorrelationId(correlationId));
 
         return "admin/platform/timeline-detail";
+    }
+    
+    @GetMapping("/admin/platform/trace/{correlationId}")
+    public String trace(
+            @PathVariable String correlationId,
+            Model model
+    ) {
+        model.addAttribute("trace", executionTraceService.build(correlationId));
+        return "admin/platform/trace-detail";
     }
 }

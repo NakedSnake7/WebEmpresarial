@@ -11,23 +11,33 @@
 
 <section class="container-fluid">
 
-    <div class="mb-4">
-        <span class="badge text-bg-dark mb-2">Platform Kernel</span>
-        <h1 class="fw-bold mb-1">Platform Operations</h1>
-        <p class="text-muted mb-0">
-            Consola operativa del runtime, módulos, salud, métricas, eventos y automatizaciones.
-        </p>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <span class="badge text-bg-dark mb-2">Platform Kernel</span>
+            <h1 class="fw-bold mb-1">Platform Operations</h1>
+            <p class="text-muted mb-0">
+                Runtime, health, métricas, eventos, automatizaciones y trazabilidad.
+            </p>
+        </div>
+
+        <a href="/admin/platform"
+           class="btn btn-outline-dark btn-sm">
+            Platform Console →
+        </a>
     </div>
 
+    <!-- TOP KPIs -->
     <div class="row g-3 mb-4">
 
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small">Módulos</div>
+                    <div class="text-muted small">Runtime Modules</div>
                     <div class="display-6 fw-bold"
                          th:text="${operations.console.modules}">0</div>
-                    <div class="small text-muted">Runtime registrados</div>
+                    <div class="small text-muted">
+                        Módulos cargados por el Kernel
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,7 +48,9 @@
                     <div class="text-muted small">Features</div>
                     <div class="display-6 fw-bold"
                          th:text="${operations.console.features}">0</div>
-                    <div class="small text-muted">Capacidades del kernel</div>
+                    <div class="small text-muted">
+                        Capacidades registradas
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,19 +74,26 @@
                     <div class="text-muted small">Event Runs</div>
                     <div class="display-6 fw-bold"
                          th:text="${operations.eventExecutions}">0</div>
-                    <span class="small text-muted">Eventos publicados</span>
+                    <div class="small text-muted">
+                        Eventos publicados
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
 
+    <!-- HEALTH + METRICS -->
     <div class="row g-3 mb-4">
 
-        <div class="col-lg-6">
+        <div class="col-lg-5">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">Health</h5>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Health Monitor</h5>
+                        <span class="badge text-bg-success">Live</span>
+                    </div>
 
                     <div th:if="${operations.console.healthResults == null or operations.console.healthResults.isEmpty()}"
                          class="alert alert-warning mb-0">
@@ -82,13 +101,16 @@
                     </div>
 
                     <div th:each="health : ${operations.console.healthResults}"
-                         class="d-flex justify-content-between align-items-center border-bottom py-2">
+                         class="d-flex justify-content-between align-items-center border-bottom py-3">
 
                         <div>
-                            <div class="fw-semibold" th:text="${health.name}">
+                            <div class="fw-semibold"
+                                 th:text="${health.name}">
                                 Kernel
                             </div>
-                            <div class="small text-muted" th:text="${health.message}">
+
+                            <div class="small text-muted"
+                                 th:text="${health.message}">
                                 OK
                             </div>
                         </div>
@@ -102,34 +124,40 @@
                               th:text="${health.status}">
                             UP
                         </span>
+
                     </div>
 
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-lg-7">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
+
                     <h5 class="fw-bold mb-3">Kernel Metrics</h5>
 
                     <div class="row g-3">
-                        <div class="col-md-6"
+                        <div class="col-md-6 col-xl-3"
                              th:each="metric : ${operations.console.metrics}">
+
                             <div class="border rounded p-3 h-100">
                                 <div class="small text-muted"
                                      th:text="${metric.name}">
                                     Metric
                                 </div>
+
                                 <div class="h3 fw-bold mb-0"
                                      th:text="${metric.value}">
                                     0
                                 </div>
+
                                 <div class="small text-secondary"
                                      th:text="${metric.unit}">
                                     count
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
@@ -139,54 +167,110 @@
 
     </div>
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <h5 class="fw-bold mb-3">Platform Timeline</h5>
+    <!-- TIMELINE -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
 
-        <div th:if="${operations.timeline == null or operations.timeline.isEmpty()}"
-             class="alert alert-warning mb-0">
-            Aún no hay actividad registrada.
-        </div>
-
-        <div th:each="item : ${operations.timeline}"
-             class="d-flex justify-content-between align-items-start border-bottom py-3">
-
-            <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <span class="badge me-2"
-                          th:classappend="${item.type == 'EVENT'} ? ' text-bg-primary' : ' text-bg-dark'"
-                          th:text="${item.type}">
-                        EVENT
-                    </span>
-
-                    <strong th:text="${item.title}">
-                        LEAD_CREATED
-                    </strong>
+                    <h5 class="fw-bold mb-1">Execution Timeline</h5>
+                    <p class="text-muted small mb-0">
+                        Actividad reciente correlacionada por ejecución.
+                    </p>
                 </div>
 
-                <div class="small text-muted mt-1">
-                    <span th:text="${item.source}">CRM</span>
-                    ·
-                    <span th:text="${item.message}">2 listeners</span>
-                    ·
-                    <span th:text="${item.durationMs}">0</span> ms
-                </div>
-
-                <div class="small text-secondary"
-                     th:text="${item.occurredAt}">
-                    fecha
-                </div>
+                <span class="badge text-bg-dark">
+                    Latest 100
+                </span>
             </div>
 
-            <span class="badge"
-                  th:classappend="${item.status == 'SUCCESS'} ? ' text-bg-success' : ' text-bg-danger'"
-                  th:text="${item.status}">
-                SUCCESS
-            </span>
+            <div th:if="${operations.timeline == null or operations.timeline.isEmpty()}"
+                 class="alert alert-warning mb-0">
+                Aún no hay actividad registrada.
+            </div>
+
+            <div th:each="item : ${operations.timeline}"
+                 class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start gap-3">
+
+                    <div class="flex-grow-1">
+
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge"
+                                  th:classappend="${item.type == 'EVENT'} ? ' text-bg-primary' : ' text-bg-dark'"
+                                  th:text="${item.type}">
+                                EVENT
+                            </span>
+
+                            <strong th:text="${item.title}">
+                                LEAD_CREATED
+                            </strong>
+                        </div>
+
+                        <div class="small text-muted">
+                            <span th:text="${item.source}">CRM</span>
+                            ·
+                            <span th:text="${item.message}">2 listeners</span>
+                            ·
+                            <span th:text="${item.durationMs}">0</span> ms
+                        </div>
+
+                        <div class="small text-secondary mt-1">
+                            <span th:text="${item.occurredAt}">
+                                fecha
+                            </span>
+                        </div>
+
+                        <div class="small text-secondary mt-2"
+                             th:if="${item.correlationId != null}">
+                            Correlation:
+                            <code th:text="${#strings.substring(item.correlationId,0,8)}">
+                                corr
+                            </code>
+
+                            · Execution:
+                            <code th:text="${#strings.substring(item.executionId,0,8)}">
+                                exec
+                            </code>
+
+                            · Parent:
+                            <code th:text="${item.parentExecutionId != null ? #strings.substring(item.parentExecutionId,0,8) : 'ROOT'}">
+                                ROOT
+                            </code>
+                        </div>
+
+                        <div class="mt-3"
+                             th:if="${item.correlationId != null}">
+
+                            <a class="btn btn-sm btn-outline-primary me-2"
+                               th:href="@{|/admin/platform/timeline/${item.correlationId}|}">
+                                📜 Timeline
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-dark"
+                               th:href="@{|/admin/platform/trace/${item.correlationId}|}">
+                                🌳 Trace Graph
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <span class="badge"
+                          th:classappend="${item.status == 'SUCCESS'} ? ' text-bg-success' : ' text-bg-danger'"
+                          th:text="${item.status}">
+                        SUCCESS
+                    </span>
+
+                </div>
+
+            </div>
+
         </div>
     </div>
-</div>
 
+    <!-- MODULE RUNTIME -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
