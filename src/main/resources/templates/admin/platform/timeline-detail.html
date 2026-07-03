@@ -129,6 +129,20 @@
                             </code>
 
                         </div>
+                        
+                        <div class="text-muted">
+    <strong>Parent Execution ID:</strong>
+    <code th:text="${item.parentExecutionId} ?: 'ROOT'">
+        ROOT
+    </code>
+</div>
+
+<div class="text-muted">
+    <strong>Span ID:</strong>
+    <code th:text="${item.spanId}">
+        span-id
+    </code>
+</div>
 
                         <div class="text-muted">
 
