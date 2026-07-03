@@ -10,6 +10,6 @@ public record PlatformConsoleDTO(
         int permissions,
         int automations,
         List<PlatformModuleDTO> moduleList,
-        List<PlatformHealthDTO> healthResults
-        
+        List<PlatformHealthDTO> healthResults,
+        List<PlatformMetricDTO> metrics
 ) {}

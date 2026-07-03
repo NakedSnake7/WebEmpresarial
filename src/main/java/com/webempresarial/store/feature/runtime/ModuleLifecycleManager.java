@@ -127,14 +127,28 @@ public class ModuleLifecycleManager {
             ModuleLifecycleContext context
     ) {
         bootPlan.bootOrder().forEach(runtime -> {
-            try {
-                runtime.module().boot(context);
-                runtime.markBooted();
-            } catch (Exception ex) {
-                runtime.markFailed(ex);
-                throw ex;
-            }
+        	long start = System.currentTimeMillis();
+
+        	try {
+
+        	    runtime.module().boot(context);
+
+        	    runtime.markBooted();
+
+        	    runtime.markBootCompleted(System.currentTimeMillis() - start);
+
+        	}
+        	catch (Exception ex) {
+
+        	    runtime.incrementFailures();
+
+        	    runtime.markFailed(ex);
+
+        	    throw ex;
+
+        	}
         });
+        
     }
 
     private void printBootOrder(PlatformBootPlan bootPlan) {

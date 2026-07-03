@@ -2,9 +2,11 @@ package com.webempresarial.store.service;
 
 import com.webempresarial.store.dto.platform.PlatformConsoleDTO;
 import com.webempresarial.store.dto.platform.PlatformHealthDTO;
+import com.webempresarial.store.dto.platform.PlatformMetricDTO;
 import com.webempresarial.store.dto.platform.PlatformModuleDTO;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.health.HealthEngine;
+import com.webempresarial.store.feature.metrics.MetricsEngine;
 import com.webempresarial.store.feature.registry.AutomationRegistry;
 import com.webempresarial.store.feature.registry.ModuleRegistry;
 import com.webempresarial.store.feature.registry.ModuleRuntimeRegistry;
@@ -23,19 +25,22 @@ public class PlatformExplorerService {
     private final PermissionRegistry permissionRegistry;
     private final AutomationRegistry automationRegistry;
     private final HealthEngine healthEngine;
+    private final MetricsEngine metricsEngine;
 
     public PlatformExplorerService(
             ModuleRegistry moduleRegistry,
             ModuleRuntimeRegistry runtimeRegistry,
             PermissionRegistry permissionRegistry,
             AutomationRegistry automationRegistry,
-            HealthEngine healthEngine
+            HealthEngine healthEngine,
+            MetricsEngine metricsEngine
     ) {
         this.moduleRegistry = moduleRegistry;
         this.runtimeRegistry = runtimeRegistry;
         this.permissionRegistry = permissionRegistry;
         this.automationRegistry = automationRegistry;
         this.healthEngine = healthEngine;
+        this.metricsEngine = metricsEngine;
     }
 
     public PlatformConsoleDTO console() {
@@ -53,6 +58,17 @@ public class PlatformExplorerService {
                         result.checkedAt().toString()
                 ))
                 .toList();
+        
+        List<PlatformMetricDTO> metrics = metricsEngine.collectAll()
+                .stream()
+                .map(metric -> new PlatformMetricDTO(
+                        metric.code(),
+                        metric.name(),
+                        metric.value(),
+                        metric.unit(),
+                        metric.measuredAt().toString()
+                ))
+                .toList();
 
         return new PlatformConsoleDTO(
                 moduleRegistry.count(),
@@ -62,7 +78,8 @@ public class PlatformExplorerService {
                 permissionRegistry.all().size(),
                 automationRegistry.all().size(),
                 modules,
-                healthResults
+                healthResults,
+                metrics
         );
     }
 

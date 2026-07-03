@@ -100,6 +100,13 @@
     <span class="sidebar-text">Platform Console</span>
 </a>
 
+<a href="/admin/platform/operations"
+   class="sidebar-link"
+   th:if="${isSuperAdmin}">
+    <span class="sidebar-icon">🛰️</span>
+    <span class="sidebar-text">Operations</span>
+</a>
+
 <a href="/admin/stores"
    class="sidebar-link"
    th:if="${isSuperAdmin}">

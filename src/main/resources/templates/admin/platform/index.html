@@ -137,6 +137,60 @@
     </div>
 </div>
 
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+            Kernel Metrics
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-3"
+                 th:each="metric : ${console.metrics}">
+
+                <div class="card border h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted"
+                             th:text="${metric.name}">
+                            Metric
+                        </div>
+
+                        <div class="display-6 fw-bold"
+                             th:text="${metric.value}">
+                            0
+                        </div>
+
+                        <div class="small text-secondary">
+
+                            <span th:text="${metric.unit}">
+                                count
+                            </span>
+
+                            ·
+
+                            <span th:text="${metric.measuredAt}">
+                                now
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
