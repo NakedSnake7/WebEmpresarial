@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Platform Developer Kit | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">Platform Developer Kit</span>
+        <h1 class="fw-bold mb-1">Developer Tools</h1>
+        <p class="text-muted mb-0">
+            Herramientas internas para probar eventos, automatizaciones y trazabilidad del Kernel.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Publicar evento</h5>
+
+            <form method="post"
+                  th:action="@{/admin/platform/dev/publish-event}"
+                  class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Evento</label>
+                    <input type="text"
+                           name="eventName"
+                           class="form-control"
+                           th:value="${defaultEvent}">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Source Module</label>
+                    <input type="text"
+                           name="sourceModule"
+                           class="form-control"
+                           value="CRM">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Payload</label>
+                    <input type="text"
+                           name="payload"
+                           class="form-control"
+                           value="TEST_LEAD">
+                </div>
+
+                <div class="col-12">
+                    <button type="submit"
+                            class="btn btn-dark">
+                        Publicar evento →
+                    </button>
+
+                    <a href="/admin/platform/operations"
+                       class="btn btn-outline-secondary">
+                        Ver Operations
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</section>
+
+</th:block>
+</body>
+</html>

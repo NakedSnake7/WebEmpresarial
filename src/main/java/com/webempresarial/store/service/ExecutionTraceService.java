@@ -3,6 +3,7 @@ package com.webempresarial.store.service;
 import com.webempresarial.store.dto.platform.ExecutionTraceDTO;
 import com.webempresarial.store.dto.platform.ExecutionTraceNodeDTO;
 import com.webempresarial.store.repository.AutomationExecutionRepository;
+import com.webempresarial.store.repository.ExecutionSpanRepository;
 import com.webempresarial.store.repository.PlatformEventExecutionRepository;
 
 import org.springframework.stereotype.Service;
@@ -17,13 +18,16 @@ public class ExecutionTraceService {
 
     private final AutomationExecutionRepository automationRepository;
     private final PlatformEventExecutionRepository eventRepository;
+    private final ExecutionSpanRepository spanRepository;
 
     public ExecutionTraceService(
             AutomationExecutionRepository automationRepository,
-            PlatformEventExecutionRepository eventRepository
+            PlatformEventExecutionRepository eventRepository,
+            ExecutionSpanRepository spanRepository
     ) {
         this.automationRepository = automationRepository;
         this.eventRepository = eventRepository;
+        this.spanRepository = spanRepository;
     }
 
     public ExecutionTraceDTO build(String correlationId) {
@@ -60,6 +64,23 @@ public class ExecutionTraceService {
                     node.setStatus(automation.isSuccess() ? "SUCCESS" : "FAILED");
                     node.setOccurredAt(automation.getStartedAt().toString());
                     node.setDurationMs(automation.getTotalDurationMs());
+
+                    nodes.put(node.getExecutionId(), node);
+                });
+
+        spanRepository.findByCorrelationIdOrderByStartedAtDesc(correlationId)
+                .forEach(span -> {
+                    ExecutionTraceNodeDTO node = new ExecutionTraceNodeDTO();
+
+                    node.setExecutionId(span.getExecutionId());
+                    node.setParentExecutionId(span.getParentExecutionId());
+                    node.setSpanId(span.getSpanId());
+                    node.setType(span.getType());
+                    node.setTitle(span.getName());
+                    node.setSource(span.getSource());
+                    node.setStatus(span.isSuccess() ? "SUCCESS" : "FAILED");
+                    node.setOccurredAt(span.getStartedAt().toString());
+                    node.setDurationMs(span.getDurationMs());
 
                     nodes.put(node.getExecutionId(), node);
                 });

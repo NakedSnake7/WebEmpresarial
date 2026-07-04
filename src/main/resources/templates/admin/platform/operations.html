@@ -248,11 +248,15 @@
                                 📜 Timeline
                             </a>
 
-                            <a class="btn btn-sm btn-outline-dark"
-                               th:href="@{|/admin/platform/trace/${item.correlationId}|}">
-                                🌳 Trace Graph
-                            </a>
+<a class="btn btn-sm btn-outline-dark me-2"
+   th:href="@{|/admin/platform/trace/${item.correlationId}|}">
+    🌳 Trace
+</a>
 
+<a class="btn btn-sm btn-dark"
+   th:href="@{|/admin/platform/graph/${item.correlationId}|}">
+    🧬 Visual Graph
+</a>
                         </div>
 
                     </div>

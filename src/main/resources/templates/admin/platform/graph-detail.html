@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Execution Graph | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <a th:href="@{|/admin/platform/trace/${graph.correlationId}|}"
+           class="small text-muted text-decoration-none">
+            ← Volver al trace
+        </a>
+
+        <div class="mt-3">
+            <span class="badge text-bg-dark mb-2">Execution Graph</span>
+            <h1 class="fw-bold mb-1">Execution Graph</h1>
+            <p class="text-muted mb-0">
+                Correlation ID:
+                <code th:text="${graph.correlationId}">correlation-id</code>
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Nodos</div>
+                    <div class="display-6 fw-bold" th:text="${graph.totalNodes}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Correctos</div>
+                    <div class="display-6 fw-bold text-success" th:text="${graph.successfulNodes}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Fallidos</div>
+                    <div class="display-6 fw-bold text-danger" th:text="${graph.failedNodes}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Duración total</div>
+                    <div class="display-6 fw-bold">
+                        <span th:text="${graph.totalDurationMs}">0</span>
+                        <span class="fs-6">ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Visual Graph</h5>
+
+            <div th:if="${graph.nodes == null or graph.nodes.isEmpty()}"
+                 class="alert alert-warning mb-0">
+                No hay nodos para esta ejecución.
+            </div>
+
+            <div th:if="${graph.nodes != null and !graph.nodes.isEmpty()}"
+                 class="border rounded bg-light overflow-auto"
+                 style="min-height: 620px;">
+
+                <svg width="2200" height="1200"
+                     xmlns="http://www.w3.org/2000/svg">
+
+                    <defs>
+                        <marker id="arrow"
+                                markerWidth="10"
+                                markerHeight="10"
+                                refX="10"
+                                refY="3"
+                                orient="auto"
+                                markerUnits="strokeWidth">
+                            <path d="M0,0 L0,6 L9,3 z" fill="#6c757d"></path>
+                        </marker>
+                    </defs>
+
+                    <!-- Edges -->
+                    <g th:each="edge : ${graph.edges}">
+                        <th:block th:each="fromNode : ${graph.nodes}"
+                                  th:if="${fromNode.id == edge.from}">
+                            <th:block th:each="toNode : ${graph.nodes}"
+                                      th:if="${toNode.id == edge.to}">
+
+                                <line th:attr="
+                                        x1=${fromNode.x + 200},
+                                        y1=${fromNode.y + 45},
+                                        x2=${toNode.x},
+                                        y2=${toNode.y + 45}"
+                                      stroke="#6c757d"
+                                      stroke-width="2"
+                                      marker-end="url(#arrow)">
+                                </line>
+
+                            </th:block>
+                        </th:block>
+                    </g>
+
+                    <!-- Nodes -->
+                    <g th:each="node : ${graph.nodes}"
+                       th:attr="transform=|translate(${node.x},${node.y})|">
+
+                        <rect width="210"
+                              height="92"
+                              rx="14"
+                              ry="14"
+                              th:attr="class=${node.status == 'SUCCESS'} ? 'graph-node-success' : 'graph-node-failed'">
+                        </rect>
+
+                        <text x="16" y="24"
+                              font-size="12"
+                              font-weight="700"
+                              fill="#111827"
+                              th:text="${node.type}">
+                            EVENT
+                        </text>
+
+                        <text x="16" y="48"
+                              font-size="14"
+                              font-weight="700"
+                              fill="#111827"
+                              th:text="${node.label}">
+                            LEAD_CREATED
+                        </text>
+
+                        <text x="16" y="68"
+                              font-size="12"
+                              fill="#6b7280"
+                              th:text="${node.source + ' · ' + node.durationMs + ' ms'}">
+                            CRM · 10 ms
+                        </text>
+
+                        <circle cx="188"
+                                cy="22"
+                                r="7"
+                                th:attr="class=${node.status == 'SUCCESS'} ? 'graph-dot-success' : 'graph-dot-failed'">
+                        </circle>
+
+                    </g>
+
+                </svg>
+
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        .graph-node-success {
+            fill: #ffffff;
+            stroke: #198754;
+            stroke-width: 2;
+        }
+
+        .graph-node-failed {
+            fill: #ffffff;
+            stroke: #dc3545;
+            stroke-width: 2;
+        }
+
+        .graph-dot-success {
+            fill: #198754;
+        }
+
+        .graph-dot-failed {
+            fill: #dc3545;
+        }
+    </style>
+
+</section>
+
+</th:block>
+</body>
+</html>

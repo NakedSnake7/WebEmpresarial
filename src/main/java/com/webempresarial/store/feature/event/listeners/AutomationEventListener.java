@@ -3,6 +3,7 @@ package com.webempresarial.store.feature.event.listeners;
 import com.webempresarial.store.feature.automation.AutomationEngine;
 import com.webempresarial.store.feature.event.PlatformEvent;
 import com.webempresarial.store.feature.event.PlatformEventListener;
+import com.webempresarial.store.feature.runtime.ExecutionContext;
 
 import org.springframework.stereotype.Component;
 
@@ -22,11 +23,14 @@ public class AutomationEventListener implements PlatformEventListener {
 
     @Override
     public void handle(PlatformEvent event) {
-    	automationEngine.fire(
-    	        event.name(),
-    	        event.executionContext(),
-    	        event.payload(),
-    	        event.metadata()
-    	);
+        ExecutionContext automationContext =
+                ExecutionContext.childOf(event.executionContext());
+
+        automationEngine.fire(
+                event.name(),
+                automationContext,
+                event.payload(),
+                event.metadata()
+        );
     }
 }

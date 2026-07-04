@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<th:block th:fragment="node(traceNode)">
+
+    <div class="border-start border-4 ps-4 mb-3">
+
+        <div class="d-flex justify-content-between align-items-start">
+
+            <div>
+                <span class="badge me-2"
+                      th:classappend="${traceNode.type == 'EVENT'} ? ' text-bg-primary' : ' text-bg-dark'"
+                      th:text="${traceNode.type}">
+                    EVENT
+                </span>
+
+                <strong th:text="${traceNode.title}">LEAD_CREATED</strong>
+
+                <div class="small text-muted mt-1">
+                    <span th:text="${traceNode.source}">CRM</span>
+                    ·
+                    <span th:text="${traceNode.durationMs}">0</span> ms
+                    ·
+                    <span th:text="${traceNode.occurredAt}">fecha</span>
+                </div>
+
+                <div class="small text-secondary mt-1">
+                    Execution:
+                    <code th:text="${traceNode.executionId}">execution-id</code>
+                </div>
+
+                <div class="small text-secondary">
+                    Parent:
+                    <code th:text="${traceNode.parentExecutionId != null ? traceNode.parentExecutionId : 'ROOT'}">
+                        ROOT
+                    </code>
+                </div>
+
+                <div class="small text-secondary">
+                    Span:
+                    <code th:text="${traceNode.spanId}">span-id</code>
+                </div>
+            </div>
+
+            <span class="badge"
+                  th:classappend="${traceNode.status == 'SUCCESS'} ? ' text-bg-success' : ' text-bg-danger'"
+                  th:text="${traceNode.status}">
+                SUCCESS
+            </span>
+
+        </div>
+
+        <div class="ms-4 mt-3"
+             th:if="${traceNode.children != null and !traceNode.children.isEmpty()}">
+
+            <div th:each="childNode : ${traceNode.children}"
+                 th:replace="~{admin/platform/fragments/trace-node :: node(${childNode})}">
+            </div>
+
+        </div>
+
+    </div>
+
+</th:block>
+
+</body>
+</html>

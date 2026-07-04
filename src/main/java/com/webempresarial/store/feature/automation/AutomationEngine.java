@@ -2,7 +2,9 @@ package com.webempresarial.store.feature.automation;
 
 import com.webempresarial.store.feature.registry.AutomationRegistry;
 import com.webempresarial.store.feature.runtime.ExecutionContext;
+import com.webempresarial.store.feature.runtime.ExecutionScope;
 import com.webempresarial.store.service.AutomationHistoryService;
+import com.webempresarial.store.service.ExecutionSpanService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +23,18 @@ public class AutomationEngine {
     private final AutomationRegistry automationRegistry;
     private final ApplicationContext applicationContext;
     private final AutomationHistoryService automationHistoryService;
+    private final ExecutionSpanService executionSpanService;
 
     public AutomationEngine(
             AutomationRegistry automationRegistry,
             ApplicationContext applicationContext,
-            AutomationHistoryService automationHistoryService
+            AutomationHistoryService automationHistoryService,
+            ExecutionSpanService executionSpanService
     ) {
         this.automationRegistry = automationRegistry;
         this.applicationContext = applicationContext;
         this.automationHistoryService = automationHistoryService;
+        this.executionSpanService = executionSpanService;
     }
 
     public AutomationExecutionReport fire(String trigger, Object payload) {
@@ -55,12 +60,13 @@ public class AutomationEngine {
             Object payload,
             Map<String, Object> metadata
     ) {
-        AutomationContext context = new AutomationContext(
-                trigger,
-                executionContext,
-                payload,
-                metadata
-        );
+    	AutomationContext context = new AutomationContext(
+    	        trigger,
+    	        executionContext,
+    	        ExecutionScope.of(executionContext),
+    	        payload,
+    	        metadata
+    	);
 
         return execute(context);
     }
@@ -102,29 +108,69 @@ public class AutomationEngine {
             AutomationContext context,
             AutomationExecutionReport report
     ) {
+    	ExecutionScope actionScope = context.scope().child();
+    	ExecutionContext actionContext = actionScope.context();
+
         long start = System.currentTimeMillis();
+        var startedAt = java.time.LocalDateTime.now();
 
         try {
             AutomationAction action =
                     applicationContext.getBean(actionClass);
 
+            AutomationContext actionAutomationContext = new AutomationContext(
+                    context.trigger(),
+                    actionContext,
+                    actionScope,
+                    context.payload(),
+                    context.metadata()
+            );
+
             AutomationExecutionResult result =
-                    action.execute(context);
+                    action.execute(actionAutomationContext);
+
+            long duration = System.currentTimeMillis() - start;
 
             report.add(new ActionExecutionResult(
                     actionClass.getSimpleName(),
                     result.success(),
                     result.message(),
-                    System.currentTimeMillis() - start
+                    duration
             ));
 
+            executionSpanService.save(
+                    actionContext,
+                    "ACTION",
+                    actionClass.getSimpleName(),
+                    "AutomationEngine",
+                    result.success(),
+                    result.message(),
+                    startedAt,
+                    java.time.LocalDateTime.now(),
+                    duration
+            );
+
         } catch (Exception ex) {
+            long duration = System.currentTimeMillis() - start;
+
             report.add(new ActionExecutionResult(
                     actionClass.getSimpleName(),
                     false,
                     ex.getMessage(),
-                    System.currentTimeMillis() - start
+                    duration
             ));
+
+            executionSpanService.save(
+                    actionContext,
+                    "ACTION",
+                    actionClass.getSimpleName(),
+                    "AutomationEngine",
+                    false,
+                    ex.getMessage(),
+                    startedAt,
+                    java.time.LocalDateTime.now(),
+                    duration
+            );
 
             log.error(
                     "Error ejecutando automation action: {}",

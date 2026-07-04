@@ -10,6 +10,8 @@ import com.webempresarial.store.feature.automation.AutomationDefinition;
 import com.webempresarial.store.feature.automation.AutomationTrigger;
 import com.webempresarial.store.feature.automation.actions.LogAutomationAction;
 import com.webempresarial.store.feature.automation.conditions.AlwaysTrueCondition;
+import com.webempresarial.store.feature.automation.crm.CreateLeadTaskAction;
+import com.webempresarial.store.feature.automation.crm.NotifyNewLeadAction;
 import com.webempresarial.store.feature.event.ModuleEventDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
@@ -85,7 +87,7 @@ public class CrmFeatures implements PlatformModule {
 	                            .feature(Feature.LEADS)
 	                            .trigger(AutomationTrigger.LEAD_CREATED)
 	                            .when(AlwaysTrueCondition.class)
-	                            .action(LogAutomationAction.class)
+	                            .action(CreateLeadTaskAction.class)
 	                            .build()
 	            )
 
@@ -109,7 +111,7 @@ public class CrmFeatures implements PlatformModule {
 	                            .feature(Feature.LEADS)
 	                            .trigger(AutomationTrigger.LEAD_CREATED)
 	                            .when(AlwaysTrueCondition.class)
-	                            .action(LogAutomationAction.class)
+	                            .action(NotifyNewLeadAction.class)
 	                            .build()
 	            )
 

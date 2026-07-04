@@ -44,6 +44,14 @@ public class ExecutionContext {
         );
     }
 
+    public ExecutionContext childSpan() {
+        return ExecutionContext.childOf(this);
+    }
+    
+    public ExecutionContext childSpan(String name) {
+        return ExecutionContext.childOf(this);
+    }
+    
     public String correlationId() {
         return correlationId;
     }

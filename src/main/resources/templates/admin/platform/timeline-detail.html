@@ -137,7 +137,7 @@
                         
                         <div class="text-muted">
     <strong>Parent Execution ID:</strong>
-    <code th:text="${item.parentExecutionId} ?: 'ROOT'">
+    <code th:text="${item.parentExecutionId != null ? item.parentExecutionId : 'ROOT'}">
         ROOT
     </code>
 </div>
