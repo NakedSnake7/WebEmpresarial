@@ -5,6 +5,7 @@ import com.webempresarial.store.service.ExecutionSpanService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Service
@@ -100,6 +101,63 @@ public class ExecutionTracer {
                 );
 
                 throw ex;
+            }
+        }
+        public void runWithScope(Consumer<ExecutionScope> consumer) {
+            getWithScope(childScope -> {
+                consumer.accept(childScope);
+                return null;
+            });
+        }
+
+        public <T> T getWithScope(java.util.function.Function<ExecutionScope, T> supplier) {
+            ExecutionScope childScope = parentScope.child();
+            ExecutionContext context = childScope.context();
+
+            LocalDateTime startedAt = LocalDateTime.now();
+            long start = System.currentTimeMillis();
+
+            ExecutionScope previous = ExecutionScopeHolder.current();
+            ExecutionScopeHolder.set(childScope);
+
+            try {
+                T result = supplier.apply(childScope);
+
+                executionSpanService.save(
+                        context,
+                        type,
+                        name,
+                        source,
+                        true,
+                        "OK",
+                        startedAt,
+                        LocalDateTime.now(),
+                        System.currentTimeMillis() - start
+                );
+
+                return result;
+
+            } catch (Exception ex) {
+                executionSpanService.save(
+                        context,
+                        type,
+                        name,
+                        source,
+                        false,
+                        ex.getMessage(),
+                        startedAt,
+                        LocalDateTime.now(),
+                        System.currentTimeMillis() - start
+                );
+
+                throw ex;
+
+            } finally {
+                if (previous != null) {
+                    ExecutionScopeHolder.set(previous);
+                } else {
+                    ExecutionScopeHolder.clear();
+                }
             }
         }
     }
