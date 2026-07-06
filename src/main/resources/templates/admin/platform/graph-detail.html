@@ -97,7 +97,6 @@
                         </marker>
                     </defs>
 
-                    <!-- Edges -->
                     <g th:each="edge : ${graph.edges}">
                         <th:block th:each="fromNode : ${graph.nodes}"
                                   th:if="${fromNode.id == edge.from}">
@@ -118,9 +117,11 @@
                         </th:block>
                     </g>
 
-                    <!-- Nodes -->
                     <g th:each="node : ${graph.nodes}"
-                       th:attr="transform=|translate(${node.x},${node.y})|">
+                       class="graph-node"
+                       th:attr="
+                            transform=|translate(${node.x},${node.y})|,
+                            data-execution=${node.id}">
 
                         <rect width="210"
                               height="92"
@@ -167,7 +168,38 @@
         </div>
     </div>
 
+    <div id="nodeInspector"
+         class="position-fixed top-0 end-0 bg-white shadow-lg border-start"
+         style="width:420px;height:100%;transform:translateX(100%);transition:.25s;z-index:1050;overflow:auto;">
+
+        <div class="p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">Node Inspector</h4>
+
+                <button class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        onclick="closeInspector()">
+                    ✕
+                </button>
+            </div>
+
+            <hr>
+
+            <div id="nodeContent" class="text-muted">
+                Selecciona un nodo.
+            </div>
+        </div>
+    </div>
+
     <style>
+        .graph-node {
+            cursor: pointer;
+        }
+
+        .graph-node:hover rect {
+            stroke-width: 4;
+        }
+
         .graph-node-success {
             fill: #ffffff;
             stroke: #198754;
@@ -187,7 +219,135 @@
         .graph-dot-failed {
             fill: #dc3545;
         }
+
+        #nodeInspector code {
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        #nodeInspector pre {
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+        }
     </style>
+
+    <script>
+        document.querySelectorAll(".graph-node").forEach(node => {
+            node.addEventListener("click", async () => {
+                const id = node.dataset.execution;
+
+                const response = await fetch("/api/admin/platform/nodes/" + id);
+
+                if (!response.ok) {
+                    renderInspectorError("No se pudo cargar el nodo.");
+                    return;
+                }
+
+                const json = await response.json();
+
+                if (!json) {
+                    renderInspectorError("Este nodo aún no tiene detalle disponible.");
+                    return;
+                }
+
+                renderInspector(json);
+            });
+        });
+
+        function openInspector() {
+            document.getElementById("nodeInspector").style.transform = "translateX(0)";
+        }
+
+        function closeInspector() {
+            document.getElementById("nodeInspector").style.transform = "translateX(100%)";
+        }
+
+        function safe(value) {
+            return value === null || value === undefined || value === "" ? "—" : value;
+        }
+
+        function statusBadge(success) {
+            return success
+                ? '<span class="badge text-bg-success">SUCCESS</span>'
+                : '<span class="badge text-bg-danger">FAILED</span>';
+        }
+
+        function renderInspectorError(message) {
+            openInspector();
+
+            document.getElementById("nodeContent").innerHTML = `
+                <div class="alert alert-warning">
+                    ${message}
+                </div>
+            `;
+        }
+
+        function renderInspector(node) {
+            openInspector();
+
+            document.getElementById("nodeContent").innerHTML = `
+                <div class="mb-3">
+                    <div class="small text-muted">Nombre</div>
+                    <h5 class="fw-bold">${safe(node.name)}</h5>
+                </div>
+
+                <div class="mb-3">
+                    ${statusBadge(node.success)}
+                    <span class="badge text-bg-dark ms-1">${safe(node.type)}</span>
+                </div>
+
+                <table class="table table-sm align-middle">
+                    <tbody>
+                    <tr>
+                        <th>Source</th>
+                        <td>${safe(node.source)}</td>
+                    </tr>
+                    <tr>
+                        <th>Duración</th>
+                        <td>${safe(node.durationMs)} ms</td>
+                    </tr>
+                    <tr>
+                        <th>Started</th>
+                        <td>${safe(node.startedAt)}</td>
+                    </tr>
+                    <tr>
+                        <th>Finished</th>
+                        <td>${safe(node.finishedAt)}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="fw-bold mt-4">Trace IDs</h6>
+
+                <table class="table table-sm align-middle">
+                    <tbody>
+                    <tr>
+                        <th>Correlation</th>
+                        <td><code>${safe(node.correlationId)}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Execution</th>
+                        <td><code>${safe(node.executionId)}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Parent</th>
+                        <td><code>${safe(node.parentExecutionId)}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Span</th>
+                        <td><code>${safe(node.spanId)}</code></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="fw-bold mt-4">Message</h6>
+                <pre>${safe(node.message)}</pre>
+            `;
+        }
+    </script>
 
 </section>
 
