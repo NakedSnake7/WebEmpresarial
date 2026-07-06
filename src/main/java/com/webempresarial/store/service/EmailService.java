@@ -1,7 +1,9 @@
 package com.webempresarial.store.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper; 
 import com.webempresarial.store.config.MailerSendConfig;
+import com.webempresarial.store.feature.runtime.TraceType;
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.OrderItem;
 
@@ -53,9 +55,13 @@ public class EmailService {
        MÉTODO BASE mailsender
     ===================================================== */
 
+    @Trace(
+            type = TraceType.HTTP,
+            name = "MailerSend API - Send Email",
+            source = "MailerSend"
+    )
     public void enviarCorreoHTML(String destinatario, String asunto, String htmlCuerpo)
             throws IOException {
-
         config.validate();
 
         try {

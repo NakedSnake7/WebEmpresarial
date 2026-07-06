@@ -1,5 +1,7 @@
 package com.webempresarial.store.feature.event;
 
+import com.webempresarial.store.feature.runtime.TraceType; 
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.service.PlatformEventHistoryService;
 
 import org.slf4j.Logger;
@@ -25,6 +27,8 @@ public class PlatformEventBus {
         this.historyService = historyService;
     }
 
+    @Trace(
+            type = TraceType.EVENT,name = "PlatformEventBus.publish", source = "PlatformEventBus")
     public PlatformEventReport publish(PlatformEvent event) {
         PlatformEventReport report = new PlatformEventReport(event);
 

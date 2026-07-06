@@ -1,12 +1,14 @@
 package com.webempresarial.store.scheduler;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.webempresarial.store.entity.Lead;
+import com.webempresarial.store.feature.runtime.TraceType;
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.StoreRepository;
@@ -30,6 +32,10 @@ public class FollowUpScheduler {
     }
 
     @Scheduled(cron = "0 0 * * * *")
+    @Trace(
+            type = TraceType.SCHEDULER,name = "FollowUpScheduler.checkFollowUps",
+            source = "CRM Scheduler"
+    )
     public void checkFollowUps() {
 
         LocalDateTime now = LocalDateTime.now();

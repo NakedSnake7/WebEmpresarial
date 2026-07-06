@@ -1,5 +1,7 @@
 package com.webempresarial.store.scheduler;
 
+import com.webempresarial.store.feature.runtime.TraceType; 
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
@@ -25,8 +27,11 @@ public class OrderExpirationScheduler {
 
     // ⏰ Cada 30 minutos
     @Scheduled(cron = "0 */30 * * * *")
+    @Trace(
+            type = TraceType.SCHEDULER, name = "OrderExpirationScheduler.verificarOrdenesPendientes",
+            source = "Ecommerce Scheduler"
+    )
     public void verificarOrdenesPendientes() {
-
         System.out.println(
                 "🔎 OrderExpirationScheduler: buscando órdenes pendientes..."
         );

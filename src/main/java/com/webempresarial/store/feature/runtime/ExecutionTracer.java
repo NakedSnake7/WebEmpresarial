@@ -161,4 +161,17 @@ public class ExecutionTracer {
             }
         }
     }
+    public TraceOperation operation(
+            TraceType type,
+            ExecutionScope parentScope,
+            String name,
+            String source
+    ) {
+        return new TraceOperation(
+                parentScope,
+                type.name(),
+                name,
+                source
+        );
+    }
 }

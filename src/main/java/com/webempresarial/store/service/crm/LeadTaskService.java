@@ -1,8 +1,8 @@
 package com.webempresarial.store.service.crm;
 
-import com.webempresarial.store.feature.automation.AutomationContext; 
-import com.webempresarial.store.feature.runtime.ExecutionTracer;
-import com.webempresarial.store.feature.runtime.annotations.TraceService;
+import com.webempresarial.store.feature.automation.AutomationContext;  
+import com.webempresarial.store.feature.runtime.TraceType;
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.service.trace.TraceRepositoryService;
 
 import org.springframework.stereotype.Service;
@@ -10,18 +10,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class LeadTaskService {
 
-    private final ExecutionTracer executionTracer;
 
     private final TraceRepositoryService traceRepositoryService;
 
     public LeadTaskService(
-            ExecutionTracer executionTracer,
+           
             TraceRepositoryService traceRepositoryService
     ) {
-        this.executionTracer = executionTracer;
+      
         this.traceRepositoryService = traceRepositoryService;
     }
-    @TraceService(
+    @Trace(
+            type = TraceType.SERVICE,
             name = "LeadTaskService.createTaskForNewLead",
             source = "CRM"
     )

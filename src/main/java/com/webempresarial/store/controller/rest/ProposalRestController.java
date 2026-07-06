@@ -1,6 +1,6 @@
 package com.webempresarial.store.controller.rest;
 
-import java.util.List;   
+import java.util.List;    
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -15,6 +15,8 @@ import com.webempresarial.store.model.Feature;
 
 import com.webempresarial.store.dto.lead.CreateProposalDTO;
 import com.webempresarial.store.dto.lead.ProposalDTO;
+import com.webempresarial.store.feature.runtime.TraceType;
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.ProposalService;
 import com.webempresarial.store.service.StoreContextService;
@@ -50,6 +52,8 @@ public class ProposalRestController {
         return proposalService.getByLead(leadId, store.getId());
     }
 
+    @Trace(
+            type = TraceType.CONTROLLER,name = "POST /api/crm/leads/{leadId}/proposals", source = "ProposalRestController")
     @PostMapping("/leads/{leadId}/proposals")
     public ResponseEntity<ProposalDTO> createProposal(
             @PathVariable Long leadId,
@@ -64,6 +68,8 @@ public class ProposalRestController {
         );
     }
 
+    @Trace(
+            type = TraceType.CONTROLLER,name = "PATCH /api/crm/proposals/{proposalId}/send", source = "ProposalRestController")
     @PatchMapping("/proposals/{proposalId}/send")
     public ProposalDTO sendProposal(
             @PathVariable Long proposalId,
@@ -75,6 +81,8 @@ public class ProposalRestController {
         return proposalService.sendProposal(proposalId, store.getId());
     }
 
+    @Trace(
+            type = TraceType.CONTROLLER,name = "PATCH /api/crm/proposals/{proposalId}/accept", source = "ProposalRestController")
     @PatchMapping("/proposals/{proposalId}/accept")
     public ProposalDTO acceptProposal(
             @PathVariable Long proposalId,
@@ -86,6 +94,8 @@ public class ProposalRestController {
         return proposalService.acceptProposal(proposalId, store.getId());
     }
 
+    @Trace(
+            type = TraceType.CONTROLLER,name = "PATCH /api/crm/proposals/{proposalId}/reject", source = "ProposalRestController")
     @PatchMapping("/proposals/{proposalId}/reject")
     public ProposalDTO rejectProposal(
             @PathVariable Long proposalId,
@@ -97,6 +107,8 @@ public class ProposalRestController {
         return proposalService.rejectProposal(proposalId, store.getId());
     }
     
+    @Trace(
+            type = TraceType.CONTROLLER,name = "GET /api/crm/proposals/{proposalId}/pdf", source = "ProposalRestController")
     @GetMapping("/proposals/{proposalId}/pdf")
     public ResponseEntity<byte[]> downloadPdf(
             @PathVariable Long proposalId,

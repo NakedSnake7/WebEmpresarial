@@ -1,9 +1,8 @@
 package com.webempresarial.store.feature.runtime.aspect;
 
 import com.webempresarial.store.feature.automation.AutomationContext;
-import com.webempresarial.store.feature.runtime.ExecutionScope;
-import com.webempresarial.store.feature.runtime.ExecutionTracer;
-import com.webempresarial.store.feature.runtime.annotations.TraceService;
+import com.webempresarial.store.feature.runtime.*;
+import com.webempresarial.store.feature.runtime.annotations.Trace;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -11,33 +10,42 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-public class TraceServiceAspect {
+public class TraceAspect {
 
     private final ExecutionTracer executionTracer;
 
-    public TraceServiceAspect(ExecutionTracer executionTracer) {
+    public TraceAspect(ExecutionTracer executionTracer) {
         this.executionTracer = executionTracer;
     }
 
-    @Around("@annotation(traceService)")
+    @Around("@annotation(trace)")
     public Object trace(
             ProceedingJoinPoint joinPoint,
-            TraceService traceService
+            Trace trace
     ) throws Throwable {
 
-        ExecutionScope scope = findScope(joinPoint.getArgs());
+        ExecutionScope scope = resolveScope(joinPoint.getArgs());
+
+        if (scope == null && trace.rootIfMissing()) {
+            scope = ExecutionScope.root();
+        }
 
         if (scope == null) {
             return joinPoint.proceed();
         }
 
-        String name = !traceService.name().isBlank()
-                ? traceService.name()
+        String name = !trace.name().isBlank()
+                ? trace.name()
                 : joinPoint.getSignature().toShortString();
 
         try {
             return executionTracer
-                    .service(scope, name, traceService.source())
+                    .operation(
+                            trace.type(),
+                            scope,
+                            name,
+                            trace.source()
+                    )
                     .getWithScope(childScope -> {
                         try {
                             return joinPoint.proceed();
@@ -55,7 +63,13 @@ public class TraceServiceAspect {
         }
     }
 
-    private ExecutionScope findScope(Object[] args) {
+    private ExecutionScope resolveScope(Object[] args) {
+        ExecutionScope current = ExecutionScopeHolder.current();
+
+        if (current != null) {
+            return current;
+        }
+
         for (Object arg : args) {
             if (arg instanceof ExecutionScope scope) {
                 return scope;
