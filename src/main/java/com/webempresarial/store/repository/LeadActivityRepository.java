@@ -10,4 +10,5 @@ public interface LeadActivityRepository extends JpaRepository<LeadActivity, Long
 
     List<LeadActivity> findByLeadIdOrderByCreatedAtDesc(Long leadId);
     List<LeadActivity> findTop8ByLeadStoreIdOrderByCreatedAtDesc(Long storeId);
+    List<LeadActivity> findByLeadId(Long leadId);
 }

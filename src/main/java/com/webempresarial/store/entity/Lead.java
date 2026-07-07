@@ -56,6 +56,9 @@ public class Lead {
 
     @Column(length = 150)
     private String exactSource;
+    
+    @Column(columnDefinition = "TEXT")
+    private String scoreBreakdown;
 
     // =========================
     // CRM COMERCIAL
@@ -81,9 +84,9 @@ public class Lead {
 
     private Integer closeProbability;
 
-    private LocalDateTime lastContactAt;
 
-    private LocalDateTime nextFollowUpAt;
+    private boolean merged = false;
+
 
     // =========================
     // TIMESTAMPS
@@ -96,7 +99,13 @@ public class Lead {
     private LocalDateTime closedAt;
 
     private LocalDateTime lostAt;
+    private LocalDateTime lastContactAt;
 
+    private LocalDateTime nextFollowUpAt;
+    private Long mergedIntoLeadId;
+
+    private LocalDateTime mergedAt;  
+    
     // =========================
     // RELACIONES FUTURAS
     // =========================
@@ -105,6 +114,9 @@ public class Lead {
 
     @OneToMany(mappedBy = "lead", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SalesTask> tasks = new ArrayList<>();
+    
+    
+    
 
     // =========================
     // LIFECYCLE
@@ -343,6 +355,35 @@ public class Lead {
 		this.tasks = tasks;
 	}
 
-    // getters y setters...
+	public String getScoreBreakdown() {
+	    return scoreBreakdown;
+	}
+
+	public void setScoreBreakdown(String scoreBreakdown) {
+	    this.scoreBreakdown = scoreBreakdown;
+	}
+	public boolean isMerged() {
+	    return merged;
+	}
+
+	public void setMerged(boolean merged) {
+	    this.merged = merged;
+	}
+
+	public Long getMergedIntoLeadId() {
+	    return mergedIntoLeadId;
+	}
+
+	public void setMergedIntoLeadId(Long mergedIntoLeadId) {
+	    this.mergedIntoLeadId = mergedIntoLeadId;
+	}
+
+	public LocalDateTime getMergedAt() {
+	    return mergedAt;
+	}
+
+	public void setMergedAt(LocalDateTime mergedAt) {
+	    this.mergedAt = mergedAt;
+	}
     
 }

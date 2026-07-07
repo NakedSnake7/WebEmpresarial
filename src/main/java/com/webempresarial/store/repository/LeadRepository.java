@@ -1,7 +1,7 @@
 package com.webempresarial.store.repository;
 
 import com.webempresarial.store.dto.lead.PipelineStageStatsDTO;  
-import com.webempresarial.store.entity.Lead; 
+import com.webempresarial.store.entity.Lead;
 import com.webempresarial.store.model.LeadStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +16,9 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     List<Lead> findByStoreIdOrderByCreatedAtDesc(Long storeId);
 
     List<Lead> findByStoreIdAndStatus(Long storeId, LeadStatus status);
+    
+    List<Lead> findByStoreIdAndMergedFalseOrderByCreatedAtDesc(Long storeId);
+    
 
     long countByStoreIdAndCreatedAtBetween(
         Long storeId,
@@ -171,6 +174,20 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
         			""")
         			BigDecimal getGlobalPipelineValue();
         		
-    
-        
+        			boolean existsByStoreIdAndWhatsapp(Long storeId, String whatsapp);
+        			Optional<Lead> findFirstByStoreIdAndWhatsapp(
+        			        Long storeId,
+        			        String whatsapp
+        			);
+
+        			Optional<Lead> findFirstByStoreIdAndInstagramIgnoreCase(
+        			        Long storeId,
+        			        String instagram
+        			);
+
+        			Optional<Lead> findFirstByStoreIdAndNombreIgnoreCaseAndEmpresaIgnoreCase(
+        			        Long storeId,
+        			        String nombre,
+        			        String empresa
+        			);
 }

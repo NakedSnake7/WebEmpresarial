@@ -38,6 +38,8 @@ public class TraceAspect {
                 ? trace.name()
                 : joinPoint.getSignature().toShortString();
 
+        Object input = joinPoint.getArgs();
+
         try {
             return executionTracer
                     .operation(
@@ -46,7 +48,7 @@ public class TraceAspect {
                             name,
                             trace.source()
                     )
-                    .getWithScope(childScope -> {
+                    .getWithScope(input, childScope -> {
                         try {
                             return joinPoint.proceed();
                         } catch (Throwable throwable) {

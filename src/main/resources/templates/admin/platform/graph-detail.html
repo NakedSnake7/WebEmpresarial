@@ -345,6 +345,24 @@
 
                 <h6 class="fw-bold mt-4">Message</h6>
                 <pre>${safe(node.message)}</pre>
+                
+                <h6 class="fw-bold mt-4">Payload</h6>
+                <pre>${safe(node.payload)}</pre>
+
+                <h6 class="fw-bold mt-4">Metadata</h6>
+                <pre>${safe(node.metadata)}</pre>
+                
+                <h6 class="fw-bold mt-4">Input</h6>
+                <pre>${safe(node.input)}</pre>
+
+                <h6 class="fw-bold mt-4">Output</h6>
+                <pre>${safe(node.output)}</pre>
+
+                <h6 class="fw-bold mt-4">Exception</h6>
+                <pre>${safe(node.exceptionType)}\n${safe(node.exceptionMessage)}</pre>
+
+                <h6 class="fw-bold mt-4">Stacktrace</h6>
+                <pre>${safe(node.stacktrace)}</pre>
             `;
         }
     </script>

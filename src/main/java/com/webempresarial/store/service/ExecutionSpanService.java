@@ -1,13 +1,11 @@
 package com.webempresarial.store.service;
 
 import com.webempresarial.store.entity.ExecutionSpan;
-import com.webempresarial.store.feature.runtime.ExecutionContext;
+import com.webempresarial.store.feature.runtime.ExecutionSpanRecord;
 import com.webempresarial.store.repository.ExecutionSpanRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 public class ExecutionSpanService {
@@ -19,34 +17,33 @@ public class ExecutionSpanService {
     }
 
     @Transactional
-    public void save(
-            ExecutionContext context,
-            String type,
-            String name,
-            String source,
-            boolean success,
-            String message,
-            LocalDateTime startedAt,
-            LocalDateTime finishedAt,
-            long durationMs
-    ) {
+    public void save(ExecutionSpanRecord record) {
         ExecutionSpan span = new ExecutionSpan();
 
-        span.setCorrelationId(context.correlationId());
-        span.setExecutionId(context.executionId());
-        span.setParentExecutionId(context.parentExecutionId());
-        span.setSpanId(context.spanId());
+        span.setCorrelationId(record.context().correlationId());
+        span.setExecutionId(record.context().executionId());
+        span.setParentExecutionId(record.context().parentExecutionId());
+        span.setSpanId(record.context().spanId());
 
-        span.setType(type);
-        span.setName(name);
-        span.setSource(source);
+        span.setType(record.type());
+        span.setName(record.name());
+        span.setSource(record.source());
 
-        span.setSuccess(success);
-        span.setMessage(message);
+        span.setSuccess(record.success());
+        span.setMessage(record.message());
 
-        span.setStartedAt(startedAt);
-        span.setFinishedAt(finishedAt);
-        span.setDurationMs(durationMs);
+        span.setStartedAt(record.startedAt());
+        span.setFinishedAt(record.finishedAt());
+        span.setDurationMs(record.durationMs());
+
+        span.setPayload(record.payload());
+        span.setMetadata(record.metadata());
+        span.setInput(record.input());
+        span.setOutput(record.output());
+
+        span.setExceptionType(record.exceptionType());
+        span.setExceptionMessage(record.exceptionMessage());
+        span.setStacktrace(record.stacktrace());
 
         repository.save(span);
     }

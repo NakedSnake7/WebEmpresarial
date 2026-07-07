@@ -1,17 +1,16 @@
-package com.webempresarial.store.dto.platform;
+package com.webempresarial.store.feature.runtime;
 
-public record ExecutionNodeDetailDTO(
-        String executionId,
-        String parentExecutionId,
-        String correlationId,
-        String spanId,
+import java.time.LocalDateTime;
+
+public record ExecutionSpanRecord(
+        ExecutionContext context,
         String type,
         String name,
         String source,
         boolean success,
         String message,
-        String startedAt,
-        String finishedAt,
+        LocalDateTime startedAt,
+        LocalDateTime finishedAt,
         long durationMs,
         String payload,
         String metadata,

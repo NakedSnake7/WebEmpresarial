@@ -27,7 +27,14 @@ public class ExecutionNodeInspectorService {
                         span.getMessage(),
                         span.getStartedAt() != null ? span.getStartedAt().toString() : null,
                         span.getFinishedAt() != null ? span.getFinishedAt().toString() : null,
-                        span.getDurationMs()
+                        span.getDurationMs(),
+                        span.getPayload(),
+                        span.getMetadata(),
+                        span.getInput(),
+                        span.getOutput(),
+                        span.getExceptionType(),
+                        span.getExceptionMessage(),
+                        span.getStacktrace()
                 ))
                 .orElse(null);
     }

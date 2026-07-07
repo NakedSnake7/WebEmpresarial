@@ -30,8 +30,97 @@ public class ExecutionSpan {
     private LocalDateTime finishedAt;
 
     private long durationMs;
+    
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String payload;
 
-    public Long getId() { return id; }
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String metadata;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String input;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String output;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String exceptionType;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String exceptionMessage;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String stacktrace;
+    
+
+    public String getPayload() {
+		return payload;
+	}
+
+	public void setPayload(String payload) {
+		this.payload = payload;
+	}
+
+	public String getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(String metadata) {
+		this.metadata = metadata;
+	}
+
+	public String getInput() {
+		return input;
+	}
+
+	public void setInput(String input) {
+		this.input = input;
+	}
+
+	public String getOutput() {
+		return output;
+	}
+
+	public void setOutput(String output) {
+		this.output = output;
+	}
+
+	public String getExceptionType() {
+		return exceptionType;
+	}
+
+	public void setExceptionType(String exceptionType) {
+		this.exceptionType = exceptionType;
+	}
+
+	public String getExceptionMessage() {
+		return exceptionMessage;
+	}
+
+	public void setExceptionMessage(String exceptionMessage) {
+		this.exceptionMessage = exceptionMessage;
+	}
+
+	public String getStacktrace() {
+		return stacktrace;
+	}
+
+	public void setStacktrace(String stacktrace) {
+		this.stacktrace = stacktrace;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Long getId() { return id; }
 
     public String getCorrelationId() { return correlationId; }
     public void setCorrelationId(String correlationId) { this.correlationId = correlationId; }

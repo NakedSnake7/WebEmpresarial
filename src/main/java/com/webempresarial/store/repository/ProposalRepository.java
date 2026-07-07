@@ -16,6 +16,7 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
             Long storeId
     );
 
+    List<Proposal> findByLeadId(Long leadId);
     List<Proposal> findByLeadStoreIdOrderByCreatedAtDesc(Long storeId);
 
     Optional<Proposal> findByIdAndLeadStoreId(Long id, Long storeId);

@@ -1,13 +1,21 @@
  package com.webempresarial.store.service;
 
- import java.util.List;  
+ import java.util.List;   
  import java.util.ArrayList;
 
  import com.webempresarial.store.dto.lead.CreateNoteDTO;
 import com.webempresarial.store.dto.lead.LeadActivityDTO;
+import com.webempresarial.store.dto.lead.LeadAuditLogDTO;
 import com.webempresarial.store.dto.lead.LeadCardDTO;
  import com.webempresarial.store.dto.lead.LeadDetailDTO;
+import com.webempresarial.store.dto.lead.LeadScoreDTO;
 import com.webempresarial.store.dto.lead.SalesTaskDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webempresarial.store.crm.duplicates.DuplicateCheckResult;
+import com.webempresarial.store.crm.duplicates.DuplicateLeadException;
+import com.webempresarial.store.crm.duplicates.LeadDuplicateService;
+import com.webempresarial.store.crm.scoring.LeadScoreResult;
+import com.webempresarial.store.crm.scoring.LeadScoringEngine;
 import com.webempresarial.store.dto.LeadRequestDTO; 
 import com.webempresarial.store.entity.Lead;
 import com.webempresarial.store.events.LeadCreatedEvent;
@@ -18,6 +26,7 @@ import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.LeadActivityRepository;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.SalesTaskRepository;
+import com.webempresarial.store.service.crm.LeadAuditLogService;
 
 import jakarta.transaction.Transactional;
 
@@ -34,19 +43,31 @@ public class LeadService {
     private final LeadActivityService activityService;
     private final LeadActivityRepository leadActivityRepository;
     private final SalesTaskRepository salesTaskRepository;
+    private final LeadAuditLogService leadAuditLogService;
+    private final LeadScoringEngine leadScoringEngine;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final LeadDuplicateService leadDuplicateService;
+    
     public LeadService(
             LeadRepository leadRepository,
             ApplicationEventPublisher eventPublisher,
             LeadActivityService activityService,
             LeadActivityRepository leadActivityRepository,
-            SalesTaskRepository salesTaskRepository
+            SalesTaskRepository salesTaskRepository,
+            LeadAuditLogService leadAuditLogService,
+            LeadScoringEngine leadScoringEngine,
+            LeadDuplicateService leadDuplicateService
     ) {
         this.leadRepository = leadRepository;
         this.eventPublisher = eventPublisher;
         this.activityService = activityService;
         this.leadActivityRepository = leadActivityRepository;
         this.salesTaskRepository = salesTaskRepository;
+        this.leadAuditLogService = leadAuditLogService;
+        this.leadScoringEngine = leadScoringEngine;
+        this.leadDuplicateService = leadDuplicateService;
     }
 
     @Transactional
@@ -54,19 +75,53 @@ public class LeadService {
             LeadRequestDTO dto,
             Store store
     ) {
+        String whatsapp = dto.getWhatsapp() != null
+                ? dto.getWhatsapp().trim()
+                : null;
+
+        if (whatsapp == null || whatsapp.isBlank()) {
+            throw new RuntimeException("El WhatsApp es obligatorio");
+        }
+
+
+        DuplicateCheckResult duplicate =
+                leadDuplicateService.check(dto, store);
+
+        if (duplicate.duplicated()) {
+            throw new DuplicateLeadException(
+                    duplicate.existingLead().getId(),
+                    duplicate.reason()
+            );
+        }
+
         Lead lead = new Lead();
 
         lead.setStore(store);
         lead.setNombre(dto.getNombre().trim());
-        lead.setWhatsapp(dto.getWhatsapp().trim());
+        lead.setWhatsapp(whatsapp);
         lead.setEmpresa(trimOrNull(dto.getEmpresa()));
         lead.setInstagram(trimOrNull(dto.getInstagram()));
-        lead.setServicio(dto.getServicio() == null || dto.getServicio().isBlank()? "Sin definir": dto.getServicio().trim());
-        lead.setPresupuesto(dto.getPresupuesto() == null || dto.getPresupuesto().isBlank()? "Sin definir": dto.getPresupuesto().trim());
+        lead.setServicio(dto.getServicio() == null || dto.getServicio().isBlank()
+                ? "Sin definir"
+                : dto.getServicio().trim());
+        lead.setPresupuesto(dto.getPresupuesto() == null || dto.getPresupuesto().isBlank()
+                ? "Sin definir"
+                : dto.getPresupuesto().trim());
         lead.setObjetivo(trimOrNull(dto.getObjetivo()));
         lead.setSource(trimOrDefault(dto.getSource(), "index"));
 
+        recalculateScore(lead);
+
         Lead savedLead = leadRepository.save(lead);
+        
+        leadAuditLogService.record(
+                savedLead,
+                "LEAD_CREATED",
+                "lead",
+                null,
+                savedLead.getNombre(),
+                "SYSTEM"
+        );
         
         activityService.log(
                 savedLead,
@@ -134,6 +189,15 @@ public class LeadService {
         }
 
         leadRepository.save(lead);
+        
+        leadAuditLogService.record(
+                lead,
+                "STATUS_CHANGED",
+                "status",
+                oldStatus,
+                newStatus,
+                user != null ? user.getEmail() : "SYSTEM"
+        );
 
         activityService.log(
                 lead,
@@ -166,7 +230,7 @@ public class LeadService {
     
     public List<LeadCardDTO> getLeadsForStore(Long storeId) {
 
-        return leadRepository.findByStoreIdOrderByCreatedAtDesc(storeId)
+        return leadRepository.findByStoreIdAndMergedFalseOrderByCreatedAtDesc(storeId)
                 .stream()
                 .map(lead -> new LeadCardDTO(
                         lead.getId(),
@@ -215,6 +279,11 @@ public class LeadService {
                         task.getDueAt()
                 ))
                 .toList();
+        List<LeadAuditLogDTO> auditLogs =
+                leadAuditLogService.getByLead(
+                        lead.getId(),
+                        storeId
+                );
 
         return new LeadDetailDTO(
                 lead.getId(),
@@ -230,7 +299,35 @@ public class LeadService {
                 lead.getProjectedValue(),
                 activities,
                 tasks,
-                new ArrayList<>()
+                new ArrayList<>(),
+                auditLogs
+        );
+    }
+    
+    private void recalculateScore(Lead lead) {
+        try {
+            LeadScoreResult result = leadScoringEngine.calculate(lead);
+
+            lead.setScore(result.total());
+            lead.setScoreBreakdown(
+                    objectMapper.writeValueAsString(result.items())
+            );
+
+        } catch (Exception ex) {
+            lead.setScore(0);
+            lead.setScoreBreakdown("[]");
+        }
+    }
+    
+    public LeadScoreDTO getScore(Long leadId, Long storeId) {
+        Lead lead = leadRepository.findByIdAndStoreId(leadId, storeId)
+                .orElseThrow(() -> new RuntimeException("Lead no encontrado para esta tienda"));
+
+        LeadScoreResult result = leadScoringEngine.calculate(lead);
+
+        return new LeadScoreDTO(
+                result.total(),
+                result.items()
         );
     }
 }

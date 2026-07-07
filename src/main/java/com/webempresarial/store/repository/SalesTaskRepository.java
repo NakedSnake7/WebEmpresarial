@@ -15,6 +15,8 @@ public interface SalesTaskRepository extends JpaRepository<SalesTask, Long> {
     List<SalesTask> findByLeadIdOrderByDueAtAsc(Long leadId);
 
     List<SalesTask> findByLeadStoreIdOrderByDueAtAsc(Long storeId);
+    
+    List<SalesTask> findByLeadId(Long leadId);
 
     List<SalesTask> findByAssignedToIdAndStatusOrderByDueAtAsc(
             Long userId,

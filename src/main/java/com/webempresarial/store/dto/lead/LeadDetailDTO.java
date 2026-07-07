@@ -4,18 +4,19 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record LeadDetailDTO(
-	    Long id,
-	    String fullName,
-	    String businessName,
-	    String email,
-	    String phone,
-	    String status,
-	    String temperature,
-	    String priority,
-	    Integer score,
-	    BigDecimal estimatedBudget,
-	    BigDecimal projectedValue,
-	    List<LeadActivityDTO> activities,
-	    List<SalesTaskDTO> tasks,
-	    List<ProposalDTO> proposals
-	) {}
+        Long id,
+        String fullName,
+        String businessName,
+        String email,
+        String phone,
+        String status,
+        String temperature,
+        String priority,
+        Integer score,
+        BigDecimal estimatedBudget,
+        BigDecimal projectedValue,
+        List<LeadActivityDTO> activities,
+        List<SalesTaskDTO> tasks,
+        List<ProposalDTO> proposals,
+        List<LeadAuditLogDTO> auditLogs
+) {}
