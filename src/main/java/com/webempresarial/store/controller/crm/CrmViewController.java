@@ -1,9 +1,10 @@
 package com.webempresarial.store.controller.crm;
 
-import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.Feature; 
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.FeatureUsageService;
+import com.webempresarial.store.service.LeadService;
 import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class CrmViewController {
@@ -18,15 +20,18 @@ public class CrmViewController {
     private final StoreContextService storeContextService;
     private final FeatureAccessService featureAccessService;
     private final FeatureUsageService featureUsageService;
+    private final LeadService leadService;
 
     public CrmViewController(
             StoreContextService storeContextService,
             FeatureAccessService featureAccessService,
-            FeatureUsageService featureUsageService
+            FeatureUsageService featureUsageService,
+            LeadService leadService
     ) {
         this.storeContextService = storeContextService;
         this.featureAccessService = featureAccessService;
         this.featureUsageService = featureUsageService;
+        this.leadService = leadService;
     }
 
     @GetMapping("/crm/dashboard")
@@ -79,5 +84,22 @@ public class CrmViewController {
         model.addAttribute("title", "Reportes CRM | WebEmpresarial");
 
         return "crm/reports";
+    }
+    @GetMapping("/crm/leads/{id}")
+    public String leadDetail(
+            @PathVariable Long id,
+            Model model,
+            HttpServletRequest request
+    ) {
+        Store store = storeContextService.getCurrentStore(request);
+
+        featureAccessService.requireFeature(store, Feature.LEADS);
+        featureUsageService.track(store, Feature.LEADS, "crm_lead_detail");
+
+        model.addAttribute("crmPage", true);
+        model.addAttribute("title", "Detalle Lead | WebEmpresarial");
+        model.addAttribute("lead", leadService.getDetail(id, store.getId()));
+
+        return "crm/lead-detail";
     }
 }

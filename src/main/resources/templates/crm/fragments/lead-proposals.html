@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="proposals(lead)" class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <span class="crm-kicker">Proposals</span>
+            <h3>Propuestas</h3>
+        </div>
+
+        <span class="badge text-bg-dark"
+              th:text="${#lists.size(lead.proposals)} + ' propuestas'">
+            0 propuestas
+        </span>
+    </div>
+
+    <div class="mt-3">
+
+        <div th:if="${#lists.isEmpty(lead.proposals)}"
+             class="crm-empty">
+            No hay propuestas registradas para este lead.
+        </div>
+
+        <div th:each="proposal : ${lead.proposals}"
+             class="border rounded p-3 mb-2">
+
+            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                <div>
+                    <h6 class="fw-bold mb-1"
+                        th:text="${proposal.title}">
+                        Propuesta
+                    </h6>
+
+                    <p class="text-muted mb-2"
+                       th:text="${proposal.description}">
+                        Descripción
+                    </p>
+
+                    <small class="text-secondary">
+                        Monto:
+                        <strong th:text="${proposal.amount != null ? '$' + proposal.amount : '$0'}">
+                            $0
+                        </strong>
+                    </small>
+                </div>
+
+                <div class="text-end">
+                    <span class="badge text-bg-primary"
+                          th:text="${proposal.status}">
+                        DRAFT
+                    </span>
+
+                    <div class="mt-2">
+                        <a th:href="@{|/api/crm/proposals/${proposal.id}/pdf|}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-dark">
+                            PDF
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

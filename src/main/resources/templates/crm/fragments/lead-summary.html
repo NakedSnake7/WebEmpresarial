@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="summary(lead)" class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <span class="crm-kicker">Lead</span>
+            <h3 th:text="${lead.fullName}">Nombre lead</h3>
+        </div>
+
+        <span class="badge badge-source"
+              th:text="${lead.status}">
+            NEW
+        </span>
+    </div>
+
+    <div class="crm-info-grid mt-3">
+
+        <div>
+            <span>Empresa</span>
+            <strong th:text="${lead.businessName} ?: 'Sin empresa'">
+                Empresa
+            </strong>
+        </div>
+
+        <div>
+            <span>WhatsApp</span>
+            <strong th:text="${lead.phone} ?: '—'">
+                —
+            </strong>
+        </div>
+
+        <div>
+            <span>Email</span>
+            <strong th:text="${lead.email} ?: '—'">
+                —
+            </strong>
+        </div>
+
+        <div>
+            <span>Temperatura</span>
+            <strong th:text="${lead.temperature}">
+                WARM
+            </strong>
+        </div>
+
+        <div>
+            <span>Prioridad</span>
+            <strong th:text="${lead.priority}">
+                MEDIUM
+            </strong>
+        </div>
+
+        <div>
+            <span>Score</span>
+            <strong>
+                <span th:text="${lead.score}">0</span> pts
+            </strong>
+        </div>
+
+        <div>
+            <span>Valor proyectado</span>
+            <strong th:text="${lead.projectedValue != null ? '$' + lead.projectedValue : '$0'}">
+                $0
+            </strong>
+        </div>
+
+        <div>
+            <span>Presupuesto estimado</span>
+            <strong th:text="${lead.estimatedBudget != null ? '$' + lead.estimatedBudget : '—'}">
+                —
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <a th:href="@{/crm/pipeline}" class="crm-btn">
+            ← Pipeline
+        </a>
+
+        <a th:href="@{|https://wa.me/${lead.phone}|}"
+           target="_blank"
+           class="crm-btn crm-btn-primary"
+           th:if="${lead.phone != null}">
+            WhatsApp
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

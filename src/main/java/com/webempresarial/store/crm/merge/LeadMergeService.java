@@ -10,9 +10,11 @@ import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.ProposalRepository;
 import com.webempresarial.store.repository.SalesTaskRepository;
 import com.webempresarial.store.service.crm.LeadAuditLogService;
+import com.webempresarial.store.events.LeadMergedEvent;
 
 import jakarta.transaction.Transactional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ public class LeadMergeService {
     private final LeadAuditLogRepository auditLogRepository;
     private final LeadScoringEngine leadScoringEngine;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ApplicationEventPublisher eventPublisher;
 
     public LeadMergeService(
             LeadRepository leadRepository,
@@ -36,7 +39,8 @@ public class LeadMergeService {
             SalesTaskRepository salesTaskRepository,
             ProposalRepository proposalRepository,
             LeadAuditLogRepository auditLogRepository,
-            LeadScoringEngine leadScoringEngine
+            LeadScoringEngine leadScoringEngine,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.leadRepository = leadRepository;
         this.auditLogService = auditLogService;
@@ -45,6 +49,7 @@ public class LeadMergeService {
         this.proposalRepository = proposalRepository;
         this.auditLogRepository = auditLogRepository;
         this.leadScoringEngine = leadScoringEngine;
+        this.eventPublisher = eventPublisher;
     }
     private void recalculateScore(Lead lead, String actor) {
         try {
@@ -147,6 +152,13 @@ public class LeadMergeService {
                 "Lead #" + source.getId(),
                 "Lead #" + target.getId(),
                 actor
+        );
+        eventPublisher.publishEvent(
+                new LeadMergedEvent(
+                        source,
+                        target,
+                        strategy
+                )
         );
 
         return new LeadMergeResult(

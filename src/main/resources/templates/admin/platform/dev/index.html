@@ -28,13 +28,20 @@
                   th:action="@{/admin/platform/dev/publish-event}"
                   class="row g-3">
 
-                <div class="col-md-4">
-                    <label class="form-label">Evento</label>
-                    <input type="text"
-                           name="eventName"
-                           class="form-control"
-                           th:value="${defaultEvent}">
-                </div>
+<div class="col-md-4">
+    <label class="form-label">Evento</label>
+
+    <select name="eventName"
+            class="form-select">
+
+        <option th:each="event : ${events}"
+                th:value="${event}"
+                th:text="${event}"
+                th:selected="${event == defaultEvent}">
+        </option>
+
+    </select>
+</div>
 
                 <div class="col-md-4">
                     <label class="form-label">Source Module</label>

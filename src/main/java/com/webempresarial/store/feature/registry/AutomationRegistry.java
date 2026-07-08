@@ -26,4 +26,11 @@ public class AutomationRegistry {
                 .filter(a -> a.trigger().equals(trigger))
                 .toList();
     }
+    public List<String> getRegisteredTriggers() {
+        return automations.stream()
+                .map(AutomationDefinition::trigger)
+                .distinct()
+                .sorted()
+                .toList();
+    }
 }

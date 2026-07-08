@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Detalle Lead | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+<th:block th:fragment="content">
+
+<section class="crm-page">
+
+    <div class="crm-header">
+        <div>
+            <span class="crm-kicker">CRM Lead Detail</span>
+            <h1 th:text="${lead.fullName}">Detalle del lead</h1>
+            <p>
+                Centro operativo del lead: actividad, score, tareas, propuestas, auditoría y merge.
+            </p>
+        </div>
+
+        <div class="crm-header-actions">
+            <a href="/crm/pipeline" class="crm-btn">← Pipeline</a>
+            <a href="/crm/tasks" class="crm-btn">Tareas</a>
+            <a href="/crm/dashboard" class="crm-btn crm-btn-primary">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <div th:replace="~{crm/fragments/lead-summary :: summary(${lead})}"></div>
+
+            <div class="mt-4"
+                 th:replace="~{crm/fragments/lead-timeline :: timeline(${lead})}">
+            </div>
+
+            <div class="mt-4"
+                 th:replace="~{crm/fragments/lead-tasks :: tasks(${lead})}">
+            </div>
+
+            <div class="mt-4"
+                 th:replace="~{crm/fragments/lead-proposals :: proposals(${lead})}">
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            <div th:replace="~{crm/fragments/lead-score :: score(${lead})}"></div>
+
+            <div class="mt-4"
+                 th:replace="~{crm/fragments/lead-audit :: audit(${lead})}">
+            </div>
+
+            <div class="mt-4"
+                 th:replace="~{crm/fragments/lead-duplicates :: duplicates(${lead})}">
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+</body>
+</html>

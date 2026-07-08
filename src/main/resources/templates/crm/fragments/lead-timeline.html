@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="timeline(lead)"
+     class="crm-panel">
+
+    <div class="crm-panel-header">
+
+        <div>
+            <span class="crm-kicker">Timeline</span>
+            <h3>Actividad del Lead</h3>
+        </div>
+
+        <span class="badge text-bg-dark"
+              th:text="${#lists.size(lead.timeline)} + ' eventos'">
+            0 eventos
+        </span>
+
+    </div>
+
+    <div class="crm-timeline mt-4">
+
+<div th:each="item : ${lead.timeline}"
+     class="crm-timeline-item">
+
+    <div class="crm-timeline-dot"></div>
+
+    <div class="crm-timeline-content">
+
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h6 class="mb-1">
+                    <span th:text="${item.icon}">🟢</span>
+                    <span th:text="${item.title}">Lead creado</span>
+                </h6>
+
+                <small class="text-muted">
+                    <span th:text="${item.type}">ACTIVITY</span>
+                    ·
+                    <span th:text="${item.actor}">SYSTEM</span>
+                </small>
+            </div>
+
+            <small class="text-muted"
+                   th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}">
+                fecha
+            </small>
+        </div>
+
+        <p class="mt-2 mb-0"
+           th:text="${item.description}">
+            Descripción
+        </p>
+
+    </div>
+</div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

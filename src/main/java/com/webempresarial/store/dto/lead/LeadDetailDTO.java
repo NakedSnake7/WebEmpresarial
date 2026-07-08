@@ -18,5 +18,6 @@ public record LeadDetailDTO(
         List<LeadActivityDTO> activities,
         List<SalesTaskDTO> tasks,
         List<ProposalDTO> proposals,
-        List<LeadAuditLogDTO> auditLogs
+        List<LeadAuditLogDTO> auditLogs,
+        List<LeadTimelineItemDTO> timeline
 ) {}

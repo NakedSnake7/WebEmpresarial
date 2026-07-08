@@ -60,6 +60,8 @@
                     <th>Servicio</th>
                     <th>Status</th>
                     <th>WhatsApp</th>
+                    <th>Acciones</th>
+
                 </tr>
 
                 </thead>
@@ -107,7 +109,12 @@
                         </a>
 
                     </td>
-
+                    <td>
+    <a class="btn btn-outline-dark btn-sm"
+       th:href="@{/crm/leads/{id}(id=${lead.id})}">
+        Ver detalle
+    </a>
+</td>
                 </tr>
 
                 </tbody>

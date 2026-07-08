@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="score(lead)" class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <span class="crm-kicker">Scoring</span>
+            <h3>Lead Score</h3>
+        </div>
+
+        <strong>
+            <span th:text="${lead.score}">0</span> pts
+        </strong>
+    </div>
+
+    <div class="mt-3">
+        <div class="progress" style="height: 10px;">
+            <div class="progress-bar"
+                 th:style="'width:' + (${lead.score != null ? lead.score : 0}) + '%'">
+            </div>
+        </div>
+
+        <p class="text-muted small mt-2 mb-0">
+            Puntuación calculada automáticamente por el motor comercial.
+        </p>
+    </div>
+
+    <div class="mt-4">
+        <a th:href="@{|/api/crm/leads/${lead.id}/score|}"
+           target="_blank"
+           class="crm-btn w-100">
+            Ver desglose JSON
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

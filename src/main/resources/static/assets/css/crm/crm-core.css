@@ -152,3 +152,30 @@
 .mt-4 {
     margin-top: 1.5rem;
 }
+.crm-panel,
+.crm-panel * {
+    color: #f8fafc;
+}
+
+.crm-panel .text-muted,
+.crm-panel .text-secondary,
+.crm-panel small,
+.crm-panel p {
+    color: #94a3b8 !important;
+}
+
+.crm-panel input,
+.crm-panel select,
+.crm-panel textarea {
+    color: #0f172a;
+    background: #ffffff;
+}
+
+.crm-empty {
+    color: #94a3b8 !important;
+}
+
+.crm-info-grid span,
+.crm-kicker {
+    color: #67e8f9 !important;
+}

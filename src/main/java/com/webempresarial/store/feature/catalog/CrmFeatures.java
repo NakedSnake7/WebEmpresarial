@@ -114,6 +114,17 @@ public class CrmFeatures implements PlatformModule {
 	                            .action(NotifyNewLeadAction.class)
 	                            .build()
 	            )
+	            .automation(
+	                    AutomationDefinition.builder()
+	                            .code("crm.lead.merged.audit")
+	                            .name("Procesar lead fusionado")
+	                            .description("Ejecuta acciones posteriores cuando dos leads son fusionados.")
+	                            .feature(Feature.LEADS)
+	                            .trigger(AutomationTrigger.LEAD_MERGED)
+	                            .when(AlwaysTrueCondition.class)
+	                            .action(LogAutomationAction.class)
+	                            .build()
+	            )
 
 	            .event(new ModuleEventDefinition(
 	                    AutomationTrigger.LEAD_CREATED,
@@ -124,6 +135,11 @@ public class CrmFeatures implements PlatformModule {
 	            .event(new ModuleEventDefinition(
 	                    AutomationTrigger.PROPOSAL_SENT,
 	                    "Se dispara cuando una propuesta es enviada.",
+	                    "CRM"
+	            ))
+	            .event(new ModuleEventDefinition(
+	                    AutomationTrigger.LEAD_MERGED,
+	                    "Se dispara cuando dos leads son fusionados.",
 	                    "CRM"
 	            ))
 

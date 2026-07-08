@@ -9,6 +9,7 @@ import com.webempresarial.store.dto.lead.LeadAuditLogDTO;
 import com.webempresarial.store.dto.lead.LeadCardDTO;
  import com.webempresarial.store.dto.lead.LeadDetailDTO;
 import com.webempresarial.store.dto.lead.LeadScoreDTO;
+import com.webempresarial.store.dto.lead.LeadTimelineItemDTO;
 import com.webempresarial.store.dto.lead.SalesTaskDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webempresarial.store.crm.duplicates.DuplicateCheckResult;
@@ -27,6 +28,7 @@ import com.webempresarial.store.repository.LeadActivityRepository;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.SalesTaskRepository;
 import com.webempresarial.store.service.crm.LeadAuditLogService;
+import com.webempresarial.store.service.crm.LeadTimelineService;
 
 import jakarta.transaction.Transactional;
 
@@ -45,6 +47,7 @@ public class LeadService {
     private final SalesTaskRepository salesTaskRepository;
     private final LeadAuditLogService leadAuditLogService;
     private final LeadScoringEngine leadScoringEngine;
+    private final LeadTimelineService leadTimelineService;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -58,7 +61,8 @@ public class LeadService {
             SalesTaskRepository salesTaskRepository,
             LeadAuditLogService leadAuditLogService,
             LeadScoringEngine leadScoringEngine,
-            LeadDuplicateService leadDuplicateService
+            LeadDuplicateService leadDuplicateService,
+            LeadTimelineService leadTimelineService
     ) {
         this.leadRepository = leadRepository;
         this.eventPublisher = eventPublisher;
@@ -68,6 +72,7 @@ public class LeadService {
         this.leadAuditLogService = leadAuditLogService;
         this.leadScoringEngine = leadScoringEngine;
         this.leadDuplicateService = leadDuplicateService;
+        this.leadTimelineService = leadTimelineService;
     }
 
     @Transactional
@@ -284,6 +289,11 @@ public class LeadService {
                         lead.getId(),
                         storeId
                 );
+        List<LeadTimelineItemDTO> timeline =
+                leadTimelineService.getTimeline(
+                        lead.getId(),
+                        storeId
+                );
 
         return new LeadDetailDTO(
                 lead.getId(),
@@ -300,7 +310,8 @@ public class LeadService {
                 activities,
                 tasks,
                 new ArrayList<>(),
-                auditLogs
+                auditLogs,
+                timeline
         );
     }
     
