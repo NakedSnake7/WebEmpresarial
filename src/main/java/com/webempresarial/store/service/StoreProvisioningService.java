@@ -102,30 +102,32 @@ public class StoreProvisioningService {
             subscriptionType = "INTERNAL";
         }
 
+        var initialPlan = store.getPlan();
+
         switch (subscriptionType.toUpperCase()) {
 
             case "TRIAL" ->
                     subscriptionService.createTrial(
                             store,
-                            store.getPlan()
+                            initialPlan
                     );
 
             case "PAID" ->
                     subscriptionService.createTrial(
                             store,
-                            store.getPlan()
+                            initialPlan
                     );
 
             case "INTERNAL" ->
                     subscriptionService.createInternalSubscription(
                             store,
-                            store.getPlan()
+                            initialPlan
                     );
 
             default ->
                     subscriptionService.createInternalSubscription(
                             store,
-                            store.getPlan()
+                            initialPlan
                     );
         }
     }

@@ -50,6 +50,15 @@ public class Store {
     @Column(nullable = false)
     private boolean activa = true;
 
+    /**
+     * Compatibility cache.
+     *
+     * The source of truth for commercial permissions is Subscription.plan
+     * together with Subscription.status.
+     *
+     * Do not use this field to authorize features.
+     * Use PlatformAccessService / FeatureAccessService instead.
+     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StorePlan plan = StorePlan.BASIC;

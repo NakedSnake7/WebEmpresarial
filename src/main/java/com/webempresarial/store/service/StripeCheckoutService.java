@@ -132,6 +132,7 @@ public class StripeCheckoutService {
         metadata.put("ownerName", dto.getOwnerName());
         metadata.put("email", dto.getEmail());
         metadata.put("plan", dto.getPlan().name());
+        metadata.put("stripe_price_id", priceId);
         metadata.put("env", environment);
 
         String baseUrl = resolvePlatformBaseUrl();

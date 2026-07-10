@@ -16,12 +16,66 @@ import jakarta.transaction.Transactional;
 @Service
 public class SubscriptionService {
 
-    private final SubscriptionRepository subscriptionRepository;
+	private final SubscriptionRepository subscriptionRepository;
+	private final StripePlanMapper stripePlanMapper;
 
-    public SubscriptionService(SubscriptionRepository subscriptionRepository) {
-        this.subscriptionRepository = subscriptionRepository;
+	public SubscriptionService(
+	        SubscriptionRepository subscriptionRepository,
+	        StripePlanMapper stripePlanMapper
+	) {
+	    this.subscriptionRepository = subscriptionRepository;
+	    this.stripePlanMapper = stripePlanMapper;
+	}
+    private Subscription findByStripeSubscriptionOrCustomer(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        Subscription subscription = subscriptionRepository
+                .findByStripeSubscriptionId(stripeSubscription.getId())
+                .orElse(null);
+
+        if (subscription != null) {
+            return subscription;
+        }
+
+        String stripeCustomerId = stripeSubscription.getCustomer();
+
+        if (stripeCustomerId == null || stripeCustomerId.isBlank()) {
+            return null;
+        }
+
+        return subscriptionRepository
+                .findByStripeCustomerId(stripeCustomerId)
+                .orElse(null);
     }
+    private LocalDateTime fromStripeEpoch(Long epochSeconds) {
+        if (epochSeconds == null) {
+            return null;
+        }
 
+        return java.time.Instant
+                .ofEpochSecond(epochSeconds)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+    
+    private String resolveStripePriceId(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        if (stripeSubscription.getItems() == null ||
+                stripeSubscription.getItems().getData() == null ||
+                stripeSubscription.getItems().getData().isEmpty()) {
+            return null;
+        }
+
+        var item = stripeSubscription.getItems().getData().get(0);
+
+        if (item.getPrice() == null) {
+            return null;
+        }
+
+        return item.getPrice().getId();
+    }
+    
     @Transactional
     public Subscription createTrial(Store store, StorePlan plan) {
         LocalDateTime now = LocalDateTime.now();
@@ -49,7 +103,8 @@ public class SubscriptionService {
             Store store,
             StorePlan plan,
             String stripeCustomerId,
-            String stripeSubscriptionId
+            String stripeSubscriptionId,
+            String stripePriceId
     ) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -63,12 +118,21 @@ public class SubscriptionService {
 
         subscription.setStripeCustomerId(stripeCustomerId);
         subscription.setStripeSubscriptionId(stripeSubscriptionId);
+        subscription.setStripePriceId(stripePriceId);
 
         subscription.setStartsAt(now);
         subscription.setEndsAt(null);
         subscription.setCurrentPeriodStart(now);
         subscription.setCurrentPeriodEnd(now.plusMonths(1));
         subscription.setNextBillingDate(now.plusMonths(1));
+
+        subscription.setBillingExempt(false);
+        subscription.setCancelAtPeriodEnd(false);
+
+        subscription.setPendingPlan(null);
+        subscription.setPendingPlanEffectiveAt(null);
+        subscription.setPendingPlan(null);
+        subscription.setPendingPlanEffectiveAt(null);
 
         store.setPlan(plan);
         store.setActiva(true);
@@ -162,8 +226,11 @@ public class SubscriptionService {
     public Subscription markPastDue(String stripeSubscriptionId) {
         Subscription subscription = subscriptionRepository
                 .findByStripeSubscriptionId(stripeSubscriptionId)
-                .orElseThrow(() -> new RuntimeException("Suscripción Stripe no encontrada"));
-
+                .orElse(null);
+        if (subscription == null) {
+            return null;
+        }
+        
         subscription.setStatus(SubscriptionStatus.PAST_DUE);
 
         return subscriptionRepository.save(subscription);
@@ -213,9 +280,18 @@ public class SubscriptionService {
 
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setEndsAt(null);
-        subscription.setCurrentPeriodStart(now);
-        subscription.setCurrentPeriodEnd(now.plusMonths(1));
-        subscription.setNextBillingDate(now.plusMonths(1));
+     // Valores temporales.
+     // El webhook customer.subscription.updated los reemplazará
+     // por los periodos reales enviados por Stripe.
+     subscription.setCurrentPeriodStart(now);
+     subscription.setCurrentPeriodEnd(now.plusMonths(1));
+     subscription.setNextBillingDate(now.plusMonths(1));
+     subscription.setBillingExempt(false);
+
+     subscription.setPendingPlan(null);
+     subscription.setPendingPlanEffectiveAt(null);
+
+     subscription.setCancelAtPeriodEnd(false);
 
         subscription.getStore().setActiva(true);
 
@@ -259,7 +335,11 @@ public class SubscriptionService {
 
         Subscription subscription = subscriptionRepository
                 .findByStripeSubscriptionId(stripeSubscriptionId)
-                .orElseThrow(() -> new RuntimeException("Suscripción Stripe no encontrada"));
+                .orElse(null);
+
+        if (subscription == null) {
+            return null;
+        }
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
         subscription.setEndsAt(LocalDateTime.now());
@@ -275,16 +355,32 @@ public class SubscriptionService {
 
         Subscription subscription = subscriptionRepository
                 .findByStripeSubscriptionId(stripeSubscriptionId)
-                .orElseThrow(() -> new RuntimeException("Suscripción Stripe no encontrada"));
+                .orElse(null);
+
+        if (subscription == null) {
+            return null;
+        }
 
         LocalDateTime now = LocalDateTime.now();
 
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setEndsAt(null);
-        subscription.setCurrentPeriodStart(now);
-        subscription.setCurrentPeriodEnd(now.plusMonths(1));
-        subscription.setNextBillingDate(now.plusMonths(1));
 
+        if (subscription.getCurrentPeriodStart() == null) {
+            subscription.setCurrentPeriodStart(now);
+        }
+
+        subscription.setCurrentPeriodEnd(
+                subscription.getCurrentPeriodEnd() != null
+                        ? subscription.getCurrentPeriodEnd()
+                        : now.plusMonths(1)
+        );
+
+        subscription.setNextBillingDate(
+                subscription.getCurrentPeriodEnd()
+        );
+
+        subscription.setNextBillingDate(subscription.getCurrentPeriodEnd());
         subscription.getStore().setActiva(true);
 
         return subscriptionRepository.save(subscription);
@@ -295,37 +391,130 @@ public class SubscriptionService {
             com.stripe.model.Subscription stripeSubscription
     ) {
 
-        Subscription subscription = subscriptionRepository
-                .findByStripeSubscriptionId(stripeSubscription.getId())
-                .orElseThrow(() -> new RuntimeException("Suscripción Stripe no encontrada"));
+        Subscription subscription =
+                findByStripeSubscriptionOrCustomer(stripeSubscription);
+
+        if (subscription == null) {
+            return null;
+        }
+
+        subscription.setStripeSubscriptionId(
+                stripeSubscription.getId()
+        );
+
+        if (stripeSubscription.getCustomer() != null &&
+            !stripeSubscription.getCustomer().isBlank()) {
+
+            subscription.setStripeCustomerId(
+                    stripeSubscription.getCustomer()
+            );
+        }
 
         String stripeStatus = stripeSubscription.getStatus();
 
-        if ("active".equalsIgnoreCase(stripeStatus)) {
-            subscription.setStatus(SubscriptionStatus.ACTIVE);
-            subscription.getStore().setActiva(true);
+        String stripePriceId =
+                resolveStripePriceId(stripeSubscription);
+
+        if (stripePriceId != null && !stripePriceId.isBlank()) {
+
+        	StorePlan synchronizedPlan =
+        	        stripePlanMapper.getPlanByPriceId(stripePriceId);
+
+        	subscription.setStripePriceId(stripePriceId);
+
+        	if (subscription.getPendingPlan() == null) {
+
+        	    subscription.setPlan(synchronizedPlan);
+        	    subscription.getStore().setPlan(synchronizedPlan);
+
+        	} else if (subscription.getPendingPlan() == synchronizedPlan) {
+
+        	    subscription.setPlan(synchronizedPlan);
+        	    subscription.getStore().setPlan(synchronizedPlan);
+
+        	    subscription.setPendingPlan(null);
+        	    subscription.setPendingPlanEffectiveAt(null);
+        	}
         }
 
-        if ("past_due".equalsIgnoreCase(stripeStatus)) {
-            subscription.setStatus(SubscriptionStatus.PAST_DUE);
+        LocalDateTime periodStart =
+                fromStripeEpoch(
+                        stripeSubscription.getCurrentPeriodStart()
+                );
+
+        LocalDateTime periodEnd =
+                fromStripeEpoch(
+                        stripeSubscription.getCurrentPeriodEnd()
+                );
+
+        subscription.setCurrentPeriodStart(periodStart);
+        subscription.setCurrentPeriodEnd(periodEnd);
+        subscription.setNextBillingDate(periodEnd);
+
+        if (subscription.getStartsAt() == null) {
+            subscription.setStartsAt(periodStart);
         }
 
-        if ("canceled".equalsIgnoreCase(stripeStatus)
-                || "cancelled".equalsIgnoreCase(stripeStatus)) {
-            subscription.setStatus(SubscriptionStatus.CANCELLED);
-            subscription.setEndsAt(LocalDateTime.now());
-            subscription.setNextBillingDate(null);
-            subscription.getStore().setActiva(false);
-        }
+        subscription.setNextBillingDate(
+                fromStripeEpoch(
+                        stripeSubscription.getCurrentPeriodEnd()
+                )
+        );
 
-        if ("incomplete_expired".equalsIgnoreCase(stripeStatus)) {
-            subscription.setStatus(SubscriptionStatus.EXPIRED);
-            subscription.setEndsAt(LocalDateTime.now());
-            subscription.setNextBillingDate(null);
-            subscription.getStore().setActiva(false);
+        boolean cancelAtPeriodEnd =
+                Boolean.TRUE.equals(
+                        stripeSubscription.getCancelAtPeriodEnd()
+                );
+
+        subscription.setCancelAtPeriodEnd(cancelAtPeriodEnd);
+        
+        switch (stripeStatus.toLowerCase()) {
+
+            case "trialing" -> {
+                subscription.setStatus(SubscriptionStatus.TRIAL);
+                subscription.getStore().setActiva(true);
+            }
+
+            case "active" -> {
+                subscription.setStatus(SubscriptionStatus.ACTIVE);
+                subscription.setEndsAt(null);
+                subscription.getStore().setActiva(true);
+            }
+
+            case "past_due" -> {
+                subscription.setStatus(SubscriptionStatus.PAST_DUE);
+                subscription.getStore().setActiva(true);
+            }
+
+            case "canceled", "cancelled" -> {
+                subscription.setStatus(SubscriptionStatus.CANCELLED);
+                subscription.setEndsAt(LocalDateTime.now());
+                subscription.setNextBillingDate(null);
+                subscription.getStore().setActiva(false);
+            }
+
+            case "unpaid", "incomplete_expired", "paused" -> {
+                subscription.setStatus(SubscriptionStatus.EXPIRED);
+                subscription.setEndsAt(LocalDateTime.now());
+                subscription.setNextBillingDate(null);
+                subscription.getStore().setActiva(false);
+            }
+
+            case "incomplete" -> {
+                subscription.setStatus(SubscriptionStatus.PAST_DUE);
+                subscription.getStore().setActiva(true);
+            }
+
+            default -> {
+                return subscriptionRepository.save(subscription);
+            }
         }
 
         return subscriptionRepository.save(subscription);
     }
+    
+
+
+
     
 }

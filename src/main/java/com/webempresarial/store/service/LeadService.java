@@ -28,7 +28,11 @@ import com.webempresarial.store.repository.LeadActivityRepository;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.SalesTaskRepository;
 import com.webempresarial.store.service.crm.LeadAuditLogService;
+import com.webempresarial.store.crm.budget.BudgetRange;
+import com.webempresarial.store.crm.budget.LeadBudgetMapper;
 import com.webempresarial.store.service.crm.LeadTimelineService;
+
+
 
 import jakarta.transaction.Transactional;
 
@@ -48,6 +52,8 @@ public class LeadService {
     private final LeadAuditLogService leadAuditLogService;
     private final LeadScoringEngine leadScoringEngine;
     private final LeadTimelineService leadTimelineService;
+    private final LeadBudgetMapper leadBudgetMapper;
+    
     
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,7 +68,8 @@ public class LeadService {
             LeadAuditLogService leadAuditLogService,
             LeadScoringEngine leadScoringEngine,
             LeadDuplicateService leadDuplicateService,
-            LeadTimelineService leadTimelineService
+            LeadTimelineService leadTimelineService,
+            LeadBudgetMapper leadBudgetMapper
     ) {
         this.leadRepository = leadRepository;
         this.eventPublisher = eventPublisher;
@@ -73,6 +80,7 @@ public class LeadService {
         this.leadScoringEngine = leadScoringEngine;
         this.leadDuplicateService = leadDuplicateService;
         this.leadTimelineService = leadTimelineService;
+        this.leadBudgetMapper = leadBudgetMapper;
     }
 
     @Transactional
@@ -109,9 +117,26 @@ public class LeadService {
         lead.setServicio(dto.getServicio() == null || dto.getServicio().isBlank()
                 ? "Sin definir"
                 : dto.getServicio().trim());
-        lead.setPresupuesto(dto.getPresupuesto() == null || dto.getPresupuesto().isBlank()
-                ? "Sin definir"
-                : dto.getPresupuesto().trim());
+        String rawBudget = trimOrDefault(
+                dto.getPresupuesto(),
+                "Sin definir"
+        );
+
+        BudgetRange budgetRange =
+                leadBudgetMapper.resolve(rawBudget);
+
+        lead.setPresupuesto(rawBudget);               // Compatibilidad temporal
+        lead.setBudgetLabel(budgetRange.getLabel());  // Nuevo campo
+        lead.setEstimatedBudget(
+                budgetRange.getEstimatedValue()
+        );
+        lead.setBudgetLabel(
+                leadBudgetMapper.label(dto.getPresupuesto())
+        );
+
+        lead.setEstimatedBudget(
+                leadBudgetMapper.estimate(dto.getPresupuesto())
+        );
         lead.setObjetivo(trimOrNull(dto.getObjetivo()));
         lead.setSource(trimOrDefault(dto.getSource(), "index"));
 
@@ -305,7 +330,8 @@ public class LeadService {
                 lead.getTemperature().name(),
                 lead.getPriority().name(),
                 lead.getScore(),
-                null,
+                lead.getBudgetLabel(),
+                lead.getEstimatedBudget(),
                 lead.getProjectedValue(),
                 activities,
                 tasks,

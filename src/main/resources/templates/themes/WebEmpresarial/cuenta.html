@@ -75,6 +75,7 @@
 
                     <form th:action="@{/cuenta/direccion}"
                           method="post">
+                          <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
                         <textarea name="address"
                                   class="account-input"
@@ -125,6 +126,7 @@
 
                 <form th:action="@{/cuenta/actualizar}"
                       method="post">
+                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
                     <div class="account-grid">
 

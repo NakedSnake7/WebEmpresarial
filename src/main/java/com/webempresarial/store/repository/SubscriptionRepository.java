@@ -21,6 +21,8 @@ public interface SubscriptionRepository
     Optional<Subscription> findByStripeCustomerId(String stripeCustomerId);
 
     Optional<Subscription> findByStripeSubscriptionId(String stripeSubscriptionId);
+    
+    
 
     long countByStatus(SubscriptionStatus status);
 

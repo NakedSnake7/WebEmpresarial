@@ -114,6 +114,7 @@ h2 {
     </p>
 
  <form th:action="@{'/orders/' + ${order.id} + '/confirm-payment'}" method="post">
+ <th:block th:replace="~{fragments/csrf :: token}"></th:block>
     <button type="submit" class="btn btn-maya">
         ✅ Confirmar pago recibido
     </button>
@@ -136,6 +137,7 @@ h2 {
     <form th:if="${order.paid and !order.delivered}"
           th:action="@{/orders/update-shipping}"
           method="post">
+          <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
         <input type="hidden" name="orderId" th:value="${order.id}"/>
 

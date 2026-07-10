@@ -51,7 +51,9 @@ public class StoreThemeResolver {
             };
         }
 
-        return resolveThemeByPlan(store.getPlan());
+     // Legacy visual fallback only.
+     // Do not use Store.plan for feature authorization.
+     return resolveThemeByPlan(store.getPlan());
     }
 
     private String resolveCustomTheme(Store store) {

@@ -19,6 +19,90 @@
 
 <section class="container-fluid">
 
+<div th:if="${param.changeRequested}"
+     class="alert alert-info alert-dismissible fade show"
+     role="alert">
+
+    <strong>Upgrade solicitado.</strong>
+    Stripe está procesando el cambio y el cobro proporcional.
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Cerrar">
+    </button>
+</div>
+
+<div th:if="${param.downgradeScheduled}"
+     class="alert alert-info alert-dismissible fade show"
+     role="alert">
+
+    <strong>Downgrade programado.</strong>
+    Mantendrás tu plan actual hasta finalizar el periodo pagado.
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Cerrar">
+    </button>
+</div>
+
+    <div th:if="${param.expired}"
+         class="alert alert-danger alert-dismissible fade show"
+         role="alert">
+
+        <strong>Suscripción expirada.</strong>
+        Renueva tu plan para recuperar acceso completo.
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+    </div>
+    
+    <div th:if="${param.changeRequested}"
+     class="alert alert-info alert-dismissible fade show"
+     role="alert">
+
+    <strong>Cambio solicitado.</strong>
+    Stripe está procesando la actualización del plan.
+    La página reflejará el nuevo plan cuando recibamos la confirmación.
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Cerrar">
+    </button>
+</div>
+
+    <div th:if="${param.success}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert">
+
+        <strong>Pago confirmado.</strong>
+        Tu suscripción se actualizó correctamente.
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+    </div>
+
+    <div th:if="${param.cancelled}"
+         class="alert alert-warning alert-dismissible fade show"
+         role="alert">
+
+        El proceso de pago fue cancelado. No se realizó ningún cambio.
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+    </div>
+
     <div class="mb-4">
         <span class="badge text-bg-dark mb-2">Billing</span>
 
@@ -37,7 +121,7 @@
             <h5 class="fw-bold mb-2">Plan actual</h5>
 
             <div class="display-6 fw-bold"
-                 th:text="${store.plan}">
+                 th:text="${currentPlan}">
                 BASIC
             </div>
 
@@ -48,6 +132,25 @@
                     ACTIVE
                 </strong>
             </p>
+            
+            <div th:if="${subscription != null
+          and subscription.pendingPlan != null}"
+     class="alert alert-light border mt-3 mb-0">
+
+    Cambio programado a
+    <strong th:text="${subscription.pendingPlan}">
+        BASIC
+    </strong>
+
+    <span th:if="${subscription.pendingPlanEffectiveAt != null}">
+        a partir del
+        <strong th:text="${#temporals.format(
+            subscription.pendingPlanEffectiveAt,
+            'dd/MM/yyyy HH:mm'
+        )}">
+        </strong>
+    </span>.
+</div>
 
             <p class="text-muted mb-0"
                th:if="${subscription == null}">
@@ -60,6 +163,7 @@
       method="post"
       th:action="@{/admin/billing/portal}"
       class="mt-3">
+      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
     <button type="submit"
             class="btn btn-outline-dark">
@@ -91,17 +195,20 @@
 
                     <button class="btn btn-outline-dark w-100"
                             disabled
-                            th:if="${store.plan.name() == 'BASIC'}">
+                            th:if="${currentPlan.name() == 'BASIC'}">
                         Plan actual
                     </button>
 
-                    <form th:if="${store.plan.name() != 'BASIC'}"
+                    <form th:if="${currentPlan.name() != 'BASIC'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
+                          <th:block th:replace="~{fragments/csrf :: token}"></th:block>
                         <input type="hidden" name="plan" value="BASIC">
-                        <button class="btn btn-dark w-100" type="submit">
-                            Cambiar a Basic
-                        </button>
+<button class="btn btn-dark w-100" type="submit"
+        th:text="${currentPlan.ordinal() > T(com.webempresarial.store.model.StorePlan).BASIC.ordinal()}
+                 ? 'Cambiar a Basic'
+                 : 'Actualizar a Basic'">
+</button>
                     </form>
 
                 </div>
@@ -129,17 +236,20 @@
 
                     <button class="btn btn-outline-primary w-100"
                             disabled
-                            th:if="${store.plan.name() == 'PRO'}">
+                            th:if="${currentPlan.name() == 'PRO'}">
                         Plan actual
                     </button>
 
-                    <form th:if="${store.plan.name() != 'PRO'}"
+                    <form th:if="${currentPlan.name() != 'PRO'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
+                          <th:block th:replace="~{fragments/csrf :: token}"></th:block>
                         <input type="hidden" name="plan" value="PRO">
-                        <button class="btn btn-primary w-100" type="submit">
-                            Actualizar a Pro
-                        </button>
+<button class="btn btn-primary w-100" type="submit"
+        th:text="${currentPlan == T(com.webempresarial.store.model.StorePlan).BASIC}
+                 ? 'Actualizar a Pro'
+                 : 'Cambiar a Pro'">
+</button>
                     </form>
 
                 </div>
@@ -166,17 +276,20 @@
 
                     <button class="btn btn-outline-dark w-100"
                             disabled
-                            th:if="${store.plan.name() == 'PREMIUM'}">
+                            th:if="${currentPlan.name() == 'PREMIUM'}">
                         Plan actual
                     </button>
 
-                    <form th:if="${store.plan.name() != 'PREMIUM'}"
+                    <form th:if="${currentPlan.name() != 'PREMIUM'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
+                          <th:block th:replace="~{fragments/csrf :: token}"></th:block>
                         <input type="hidden" name="plan" value="PREMIUM">
-                        <button class="btn btn-dark w-100" type="submit">
-                            Actualizar a Premium
-                        </button>
+<button class="btn btn-dark w-100" type="submit"
+        th:text="${currentPlan != T(com.webempresarial.store.model.StorePlan).PREMIUM}
+                 ? 'Actualizar a Premium'
+                 : 'Plan actual'">
+</button>
                     </form>
 
                 </div>

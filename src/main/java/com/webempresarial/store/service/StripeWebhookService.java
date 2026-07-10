@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import java.util.Map;
+import java.util.Map; 
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,11 +9,14 @@ import com.stripe.model.Event;
 import com.stripe.model.Invoice;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
+import com.webempresarial.store.entity.StripeWebhookEvent;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.PaymentStatus;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
+import com.webempresarial.store.model.StripeWebhookEventStatus;
 import com.webempresarial.store.repository.StoreRepository;
+import com.webempresarial.store.repository.StripeWebhookEventRepository;
 
 @Service
 public class StripeWebhookService {
@@ -22,41 +25,77 @@ public class StripeWebhookService {
     private final StoreRepository storeRepository;
     private final ProvisioningService provisioningService;
     private final SubscriptionService subscriptionService;
+    private final StripeWebhookEventRepository webhookEventRepository;
+    private final StripePlanMapper stripePlanMapper;
 
     public StripeWebhookService(
             OrderService orderService,
             StoreRepository storeRepository,
             ProvisioningService provisioningService,
-            SubscriptionService subscriptionService
+            SubscriptionService subscriptionService,
+            StripeWebhookEventRepository webhookEventRepository,
+            StripePlanMapper stripePlanMapper
     ) {
         this.orderService = orderService;
         this.storeRepository = storeRepository;
         this.provisioningService = provisioningService;
         this.subscriptionService = subscriptionService;
+        this.webhookEventRepository = webhookEventRepository;
+        this.stripePlanMapper = stripePlanMapper;
     }
 
+    @Transactional
     public void handle(Event event) {
 
-        switch (event.getType()) {
+        String stripeEventId = event.getId();
 
-            case "checkout.session.completed" ->
-                    handleCheckoutSessionCompleted(event);
+        StripeWebhookEvent webhookEvent = webhookEventRepository
+                .findByStripeEventId(stripeEventId)
+                .orElse(null);
 
-            case "customer.subscription.updated" ->
-                    handleSubscriptionUpdated(event);
+        if (webhookEvent != null && webhookEvent.isProcessed()) {
+            return;
+        }
 
-            case "customer.subscription.deleted" ->
-                    handleSubscriptionDeleted(event);
+        if (webhookEvent == null) {
+            webhookEvent = new StripeWebhookEvent();
+            webhookEvent.setStripeEventId(stripeEventId);
+            webhookEvent.setEventType(event.getType());
+            webhookEvent.setStatus(StripeWebhookEventStatus.PROCESSING);
+            webhookEvent = webhookEventRepository.save(webhookEvent);
+        }
 
-            case "invoice.payment_failed" ->
-                    handleInvoicePaymentFailed(event);
+        try {
+            switch (event.getType()) {
 
-            case "invoice.paid" ->
-                    handleInvoicePaid(event);
+                case "checkout.session.completed" ->
+                        handleCheckoutSessionCompleted(event);
+                        
+                case "customer.subscription.created" ->
+                handleSubscriptionUpdated(event);
 
-            default -> {
-                // Evento ignorado
+                case "customer.subscription.updated" ->
+                        handleSubscriptionUpdated(event);
+
+                case "customer.subscription.deleted" ->
+                        handleSubscriptionDeleted(event);
+
+                case "invoice.payment_failed" ->
+                        handleInvoicePaymentFailed(event);
+
+                case "invoice.paid" ->
+                        handleInvoicePaid(event);
+
+                default -> {
+                    // Evento ignorado, pero marcado como procesado
+                }
             }
+
+            webhookEvent.markProcessed();
+
+        } catch (Exception e) {
+            webhookEvent.markFailed(e);
+            throw e;
         }
     }
 
@@ -122,9 +161,12 @@ public class StripeWebhookService {
                 invoice.getSubscription()
         );
     }
-
     @Transactional
     public void procesarCheckoutCompleted(Session session) {
+
+        if (!"paid".equalsIgnoreCase(session.getPaymentStatus())) {
+            return;
+        }
 
         Map<String, String> metadata = session.getMetadata();
 
@@ -134,17 +176,24 @@ public class StripeWebhookService {
 
         String checkoutType = metadata.get("checkout_type");
 
-        if ("SAAS_SUBSCRIPTION".equalsIgnoreCase(checkoutType)) {
-            procesarSaasSubscription(session, metadata);
-            return;
-        }
+        switch (checkoutType) {
 
-        if ("ECOMMERCE_ORDER".equalsIgnoreCase(checkoutType)) {
-            procesarEcommerceOrder(session, metadata);
+            case "SAAS_SUBSCRIPTION" ->
+                    procesarNuevaTiendaSaas(session, metadata);
+
+            case "SAAS_SUBSCRIPTION_EXISTING_STORE" ->
+                    procesarUpgradeSaas(session, metadata);
+
+            case "ECOMMERCE_ORDER" ->
+                    procesarEcommerceOrder(session, metadata);
+
+            default -> {
+                // checkout desconocido
+            }
         }
     }
 
-    private void procesarSaasSubscription(
+    private void procesarNuevaTiendaSaas(
             Session session,
             Map<String, String> metadata
     ) {
@@ -153,16 +202,22 @@ public class StripeWebhookService {
         String ownerName = metadata.get("ownerName");
         String email = metadata.get("email");
         String planValue = metadata.get("plan");
-
+        String stripePriceId = metadata.get("stripe_price_id");
+        
         if (companyName == null ||
                 domain == null ||
                 ownerName == null ||
                 email == null ||
-                planValue == null) {
+                planValue == null ||
+                stripePriceId == null) {
             throw new IllegalStateException("Stripe session SaaS sin metadata completa");
         }
 
         StorePlan plan = StorePlan.valueOf(planValue);
+        
+        if (!stripePlanMapper.matches(plan, stripePriceId)) {
+            throw new IllegalStateException("Stripe priceId no corresponde al plan recibido");
+        }
 
         provisioningService.provisionStoreFromCheckout(
                 companyName,
@@ -172,10 +227,42 @@ public class StripeWebhookService {
                 plan,
                 session.getCustomer(),
                 session.getSubscription(),
-                null
+                stripePriceId
         );
     }
+    private void procesarUpgradeSaas(
+            Session session,
+            Map<String, String> metadata
+    ) {
+        String storeIdValue = metadata.get("store_id");
+        String planValue = metadata.get("plan");
+        String stripePriceId = metadata.get("stripe_price_id");
 
+        if (storeIdValue == null ||
+                planValue == null ||
+                stripePriceId == null) {
+            throw new IllegalStateException("Stripe session upgrade SaaS sin metadata completa");
+        }
+
+        StorePlan plan = StorePlan.valueOf(planValue);
+
+        if (!stripePlanMapper.matches(plan, stripePriceId)) {
+            throw new IllegalStateException("Stripe priceId no corresponde al plan recibido");
+        }
+
+        Long storeId = Long.valueOf(storeIdValue);
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalStateException("Store no encontrada para upgrade SaaS"));
+
+        subscriptionService.activate(
+                store,
+                plan,
+                session.getCustomer(),
+                session.getSubscription(),
+                stripePriceId
+        );
+    }
     private void procesarEcommerceOrder(
             Session session,
             Map<String, String> metadata

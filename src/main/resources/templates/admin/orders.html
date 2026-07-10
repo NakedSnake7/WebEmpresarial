@@ -199,13 +199,20 @@
                     ⏳ Esperando pago
                 </span>
 
-                <a class="btn btn-danger btn-sm"
-                   rel="nofollow"
-                   th:if="${order.paymentStatus != T(com.webempresarial.store.model.PaymentStatus).PAID}"
-                   th:href="@{/orders/{id}/delete(id=${order.id})}"
-                   onclick="return confirm('¿Seguro que deseas eliminar esta orden?');">
-                    ✖ Eliminar
-                </a>
+<form th:action="@{/orders/{id}/delete(id=${order.id})}"
+      method="post"
+      th:if="${order.paymentStatus != T(com.webempresarial.store.model.PaymentStatus).PAID}"
+      onsubmit="return confirm('¿Seguro que deseas eliminar esta orden?');">
+      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
+
+    <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <button type="submit" class="btn btn-danger btn-sm">
+        ✖ Eliminar
+    </button>
+</form>
 
             </td>
         </tr>

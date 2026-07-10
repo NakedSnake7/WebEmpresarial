@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'CRM Settings | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">CRM Settings</span>
+        <h1 class="fw-bold mb-1">Configuración CRM</h1>
+        <p class="text-muted mb-0">
+            Configura reglas comerciales, rangos de presupuesto, scoring y comportamiento CRM por tienda.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">Rangos de presupuesto</h5>
+                            <p class="text-muted small mb-0">
+                                Estos rangos alimentan formularios, lead scoring, pipeline y reportes.
+                            </p>
+                        </div>
+
+                        <span class="badge text-bg-primary"
+                              th:text="${#lists.size(budgetRanges)} + ' rangos'">
+                            0 rangos
+                        </span>
+                    </div>
+
+                    <div th:if="${param.budgetCreated}" class="alert alert-success">
+    Rango creado correctamente.
+</div>
+
+<div th:if="${param.budgetUpdated}" class="alert alert-success">
+    Rango actualizado correctamente.
+</div>
+
+<div th:if="${param.budgetDeleted}" class="alert alert-success">
+    Rango eliminado correctamente.
+</div>
+
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead class="table-light">
+        <tr>
+            <th>Código</th>
+            <th>Etiqueta</th>
+            <th>Mínimo</th>
+            <th>Máximo</th>
+            <th>Estimado</th>
+            <th>Score</th>
+            <th>Orden</th>
+            <th>Activo</th>
+            <th class="text-end">Acciones</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="range : ${budgetRanges}">
+            <td><code th:text="${range.code}">10k-25k</code></td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="label"
+                       class="form-control form-control-sm"
+                       th:value="${range.label}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="minAmount"
+                       type="number"
+                       step="0.01"
+                       class="form-control form-control-sm"
+                       th:value="${range.minAmount}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="maxAmount"
+                       type="number"
+                       step="0.01"
+                       class="form-control form-control-sm"
+                       th:value="${range.maxAmount}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="estimatedAmount"
+                       type="number"
+                       step="0.01"
+                       class="form-control form-control-sm"
+                       th:value="${range.estimatedAmount}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="scoreWeight"
+                       type="number"
+                       class="form-control form-control-sm"
+                       th:value="${range.scoreWeight}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       name="sortOrder"
+                       type="number"
+                       class="form-control form-control-sm"
+                       th:value="${range.sortOrder}">
+            </td>
+
+            <td>
+                <input th:form="'updateRangeForm-' + ${range.id}"
+                       type="checkbox"
+                       name="active"
+                       value="true"
+                       th:checked="${range.active}">
+            </td>
+
+            <td class="text-end">
+                <form th:id="'updateRangeForm-' + ${range.id}"
+                      th:action="@{|/admin/store/crm/budget-ranges/${range.id}/update|}"
+                      method="post"
+                      class="d-inline">
+                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
+                    <button type="submit" class="btn btn-sm btn-dark">
+                        Guardar
+                    </button>
+                </form>
+
+                <form th:action="@{|/admin/store/crm/budget-ranges/${range.id}/delete|}"
+                      method="post"
+                      class="d-inline"
+                      onsubmit="return confirm('¿Eliminar este rango?');">
+                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<hr class="my-4">
+
+<h6 class="fw-bold mb-3">Nuevo rango</h6>
+
+<form th:action="@{/admin/store/crm/budget-ranges}"
+      method="post"
+      class="row g-3">
+<th:block th:replace="~{fragments/csrf :: token}"></th:block>
+    <div class="col-md-3">
+        <label class="form-label small text-muted">Código</label>
+        <input name="code" class="form-control" placeholder="100k-plus" required>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label small text-muted">Etiqueta</label>
+        <input name="label" class="form-control" placeholder="Más de $100,000" required>
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small text-muted">Mínimo</label>
+        <input name="minAmount" type="number" step="0.01" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small text-muted">Máximo</label>
+        <input name="maxAmount" type="number" step="0.01" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small text-muted">Estimado</label>
+        <input name="estimatedAmount" type="number" step="0.01" class="form-control" value="0">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small text-muted">Score</label>
+        <input name="scoreWeight" type="number" class="form-control" value="0">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small text-muted">Orden</label>
+        <input name="sortOrder" type="number" class="form-control" value="50">
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">
+            Crear rango
+        </button>
+    </div>
+
+</form>
+
+                    <div th:if="${#lists.isEmpty(budgetRanges)}"
+                         class="alert alert-warning mt-3">
+                        No hay rangos configurados para esta tienda.
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-success mb-2">Multitenant</span>
+
+                    <h5 class="fw-bold mb-2">Configuración por tienda</h5>
+
+                    <p class="text-muted small mb-0">
+                        Cada tienda puede tener sus propios rangos, pesos comerciales y reglas CRM.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2">Próximos ajustes CRM</h5>
+
+                    <ul class="text-muted small mb-0">
+                        <li>Lead Sources</li>
+                        <li>Pipeline Stages</li>
+                        <li>Scoring Rules</li>
+                        <li>Duplicate Detection</li>
+                        <li>Merge Rules</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+</body>
+</html>

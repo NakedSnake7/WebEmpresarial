@@ -163,7 +163,7 @@ public class OrdersController {
         return "redirect:/orders/" + orderId;
     }
 
-    @GetMapping("/{id}/delete")
+    @PostMapping("/{id}/delete")
     public String eliminarOrden(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes,

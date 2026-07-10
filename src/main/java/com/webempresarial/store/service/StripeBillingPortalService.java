@@ -7,13 +7,15 @@ import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.SubscriptionRepository;
 
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StripeBillingPortalService {
 
-    @Value("${stripe.secret-key}")
+    @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
     @Value("${app.base-url}")
@@ -27,9 +29,12 @@ public class StripeBillingPortalService {
         this.subscriptionRepository = subscriptionRepository;
     }
 
-    public String createPortalSession(Store store) throws Exception {
-
+    @PostConstruct
+    public void init() {
         Stripe.apiKey = stripeSecretKey;
+    }
+
+    public String createPortalSession(Store store) throws Exception {
 
         Subscription subscription =
                 subscriptionRepository.findByStoreId(store.getId())

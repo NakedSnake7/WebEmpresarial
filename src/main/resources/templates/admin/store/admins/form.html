@@ -32,6 +32,7 @@
                 <form th:action="@{/admin/stores/{storeId}/admins/guardar(storeId=${store.id})}"
                       th:object="${adminUser}"
                       method="post">
+                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
                     <input type="hidden" th:field="*{id}">
 

@@ -13,6 +13,7 @@ public record LeadDetailDTO(
         String temperature,
         String priority,
         Integer score,
+        String budgetLabel,
         BigDecimal estimatedBudget,
         BigDecimal projectedValue,
         List<LeadActivityDTO> activities,

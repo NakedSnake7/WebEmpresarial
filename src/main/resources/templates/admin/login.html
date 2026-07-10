@@ -196,7 +196,8 @@
         <h2>Iniciar sesión</h2>
 
 <form th:action="@{/admin/login}" method="post">
-    <label for="username">Usuario:</label>
+    <th:block th:replace="~{fragments/csrf :: token}"></th:block>
+        <label for="username">Usuario:</label>
     <input type="text" id="username" name="username" required>
 
     <label for="password">Contraseña:</label>

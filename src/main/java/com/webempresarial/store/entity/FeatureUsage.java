@@ -1,6 +1,6 @@
 package com.webempresarial.store.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;

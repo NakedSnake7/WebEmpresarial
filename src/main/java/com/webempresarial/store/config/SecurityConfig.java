@@ -39,22 +39,27 @@ public class SecurityConfig {
 
         http
             .securityMatcher("/admin/**", "/api/admin/**")
-            .csrf(csrf -> csrf.disable())
+
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    "/api/admin/stripe/connect/**"
+                )
+            )
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/login").permitAll()
 
                 .requestMatchers(
-                	    "/admin/stores/**",
-                	    "/admin/subscriptions/**",
-                	    "/admin/saas/**"
-                	).hasRole("SUPER_ADMIN")
+                    "/admin/stores/**",
+                    "/admin/subscriptions/**",
+                    "/admin/saas/**"
+                ).hasRole("SUPER_ADMIN")
 
-                	.requestMatchers(
-                	    "/admin/billing/**",
-                	    "/admin/store/settings/**",
-                	    "/api/admin/stripe/connect/**"
-                	).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
+                .requestMatchers(
+                    "/admin/billing/**",
+                    "/admin/store/settings/**",
+                    "/api/admin/stripe/connect/**"
+                ).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
 
                 .anyRequest().hasAnyRole(
                     "SUPER_ADMIN",
@@ -88,8 +93,13 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
-
+        .csrf(csrf -> csrf
+        	    .ignoringRequestMatchers(
+        	        "/api/stripe/**",
+        	        "/api/leads",
+        	        "/api/leads/**"
+        	    )
+        	)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/index", "/inicio", "/privacy",

@@ -41,6 +41,12 @@ public class Subscription {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private SubscriptionStatus status = SubscriptionStatus.TRIAL;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private StorePlan pendingPlan;
+
+    private LocalDateTime pendingPlanEffectiveAt;
 
     private LocalDateTime startsAt;
 
@@ -64,6 +70,9 @@ public class Subscription {
 
     @Column(nullable = false)
     private boolean billingExempt = false;
+    
+    @Column(nullable = false)
+    private boolean cancelAtPeriodEnd = false;
 
 	@PrePersist
     public void prePersist() {
@@ -210,5 +219,79 @@ public class Subscription {
 	public void setBillingExempt(boolean billingExempt) {
 	    this.billingExempt = billingExempt;
 	}
-    // getters/setters
+	
+	public boolean isCancelAtPeriodEnd() {
+	    return cancelAtPeriodEnd;
+	}
+
+	public void setCancelAtPeriodEnd(boolean cancelAtPeriodEnd) {
+	    this.cancelAtPeriodEnd = cancelAtPeriodEnd;
+	}
+	
+	public StorePlan getPendingPlan() {
+	    return pendingPlan;
+	}
+
+	public void setPendingPlan(StorePlan pendingPlan) {
+	    this.pendingPlan = pendingPlan;
+	}
+
+	public LocalDateTime getPendingPlanEffectiveAt() {
+	    return pendingPlanEffectiveAt;
+	}
+
+	public void setPendingPlanEffectiveAt(LocalDateTime pendingPlanEffectiveAt) {
+	    this.pendingPlanEffectiveAt = pendingPlanEffectiveAt;
+	}
+	// =====================================================
+	// DOMAIN BEHAVIOR
+	// =====================================================
+
+	public boolean isActive() {
+	    return status == SubscriptionStatus.ACTIVE;
+	}
+
+	public boolean isTrial() {
+	    return status == SubscriptionStatus.TRIAL;
+	}
+
+	public boolean isPastDue() {
+	    return status == SubscriptionStatus.PAST_DUE;
+	}
+
+	public boolean isCancelled() {
+	    return status == SubscriptionStatus.CANCELLED;
+	}
+
+	public boolean isExpired() {
+	    return status == SubscriptionStatus.EXPIRED;
+	}
+
+	public boolean canAccessPlatform() {
+	    return isActive()
+	            || isTrial()
+	            || isPastDue()
+	            || billingExempt;
+	}
+
+	public boolean requiresPayment() {
+	    return !billingExempt
+	            && (isPastDue() || isExpired() || isCancelled());
+	}
+
+	public boolean isBillable() {
+	    return !billingExempt
+	            && stripeSubscriptionId != null
+	            && !stripeSubscriptionId.isBlank();
+	}
+
+	public boolean isPaidAccess() {
+	    return isActive() && !billingExempt;
+	}
+
+	public boolean isTrialExpired() {
+	    return isTrial()
+	            && endsAt != null
+	            && endsAt.isBefore(LocalDateTime.now());
+	}
 }

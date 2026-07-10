@@ -50,45 +50,47 @@ public class ProvisioningService {
             String stripePriceId
     ) {
 
-        String normalizedDomain = normalizeDomain(domain);
-        String finalDomain = normalizedDomain + ".web-empresarial.com";
+    	String normalizedDomain = normalizeDomain(domain);
+    	String finalDomain = normalizedDomain + ".web-empresarial.com";
 
-        if (storeRepository.existsByDominio(finalDomain)) {
-            throw new RuntimeException("Ya existe una tienda con ese dominio: " + finalDomain);
-        }
+    	var existingStore = storeRepository.findByDominio(finalDomain);
 
-        Store store = new Store();
+    	if (existingStore.isPresent()) {
+    	    return existingStore.get();
+    	}
 
-        store.setNombre(companyName);
-        store.setTheme("default");
-        store.setDominio(finalDomain);
-        store.setActiva(true);
-        store.setPlan(plan);
-        store.setContactName(ownerName);
-        store.setCompanyEmail(email);
-        store.setCurrency("MXN");
+    	LocalDateTime now = LocalDateTime.now();
 
-        Store savedStore = storeRepository.save(store);
+    	Store store = new Store();
+    	store.setNombre(companyName);
+    	store.setTheme("default");
+    	store.setDominio(finalDomain);
+    	store.setActiva(true);
+    	store.setPlan(plan);
+    	store.setContactName(ownerName);
+    	store.setCompanyEmail(email);
+    	store.setCurrency("MXN");
 
-        Subscription subscription = new Subscription();
+    	Store savedStore = storeRepository.save(store);
 
-        subscription.setStore(savedStore);
-        subscription.setPlan(plan);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStripeCustomerId(stripeCustomerId);
-        subscription.setStripeSubscriptionId(stripeSubscriptionId);
+    	Subscription subscription = new Subscription();
+    	subscription.setStore(savedStore);
+    	subscription.setPlan(plan);
+    	subscription.setStatus(SubscriptionStatus.ACTIVE);
+    	subscription.setStripeCustomerId(stripeCustomerId);
+    	subscription.setStripeSubscriptionId(stripeSubscriptionId);
+    	subscription.setStripePriceId(stripePriceId);
+    	subscription.setStartsAt(now);
+    	subscription.setEndsAt(null);
+    	subscription.setCurrentPeriodStart(now);
+    	subscription.setCurrentPeriodEnd(now.plusMonths(1));
+    	subscription.setNextBillingDate(now.plusMonths(1));
 
-        // Si ya agregaste stripePriceId a Subscription, descomenta:
-        // subscription.setStripePriceId(stripePriceId);
+    	subscriptionRepository.save(subscription);
 
-        subscription.setStartsAt(LocalDateTime.now());
-        subscription.setNextBillingDate(LocalDateTime.now().plusMonths(1));
+    	createStoreAdmin(savedStore, ownerName, email);
 
-        subscriptionRepository.save(subscription);
-
-        createStoreAdmin(savedStore, ownerName, email);
-
-        return savedStore;
+    	return savedStore;
     }
 
     private void createStoreAdmin(

@@ -1,11 +1,13 @@
 package com.webempresarial.store.controller;
 
-import com.webempresarial.store.dto.CloudinaryUploadResult;
+import com.webempresarial.store.dto.CloudinaryUploadResult; 
 import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
+
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -22,15 +24,18 @@ public class StoreSettingsController {
     private final StoreContextService storeContextService;
     private final StoreSettingsService storeSettingsService;
     private final CloudinaryService cloudinaryService;
+    private final FeatureAccessService features;
 
     public StoreSettingsController(
             StoreContextService storeContextService,
             StoreSettingsService storeSettingsService,
-            CloudinaryService cloudinaryService
+            CloudinaryService cloudinaryService,
+            FeatureAccessService features
     ) {
         this.storeContextService = storeContextService;
         this.storeSettingsService = storeSettingsService;
         this.cloudinaryService = cloudinaryService;
+        this.features = features;
     }
 
     @GetMapping
@@ -43,8 +48,9 @@ public class StoreSettingsController {
 
         model.addAttribute("store", store);
         model.addAttribute("settings", settings);
+        model.addAttribute("features", features);
 
-        return "admin/stores/settings";
+        return "admin/store/settings";
     }
 
     @CacheEvict(value = "storesByDomain", allEntries = true)

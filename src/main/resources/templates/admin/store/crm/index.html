@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'CRM Settings | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+<th:block th:fragment="content">
+
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <span class="badge text-bg-dark mb-2">CRM Engine</span>
+        <h1 class="fw-bold mb-1">Configuración CRM</h1>
+        <p class="text-muted mb-0">
+            Configura el comportamiento comercial de esta tienda: leads, scoring, pipeline, duplicados y automatizaciones.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-primary mb-2">Scoring</span>
+                    <h5 class="fw-bold">Rangos de presupuesto</h5>
+                    <p class="text-muted small">
+                        Define rangos, valores estimados y puntos para el lead scoring.
+                    </p>
+                    <a href="/admin/store/crm/budget-ranges"
+                       class="btn btn-dark btn-sm">
+                        Configurar →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Leads</span>
+                    <h5 class="fw-bold">Lead Sources</h5>
+                    <p class="text-muted small">
+                        Administra fuentes comerciales como Facebook, Google, WhatsApp o referidos.
+                    </p>
+                    <a href="/admin/store/crm/lead-sources"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Pipeline</span>
+                    <h5 class="fw-bold">Pipeline Stages</h5>
+                    <p class="text-muted small">
+                        Personaliza etapas del pipeline comercial por tienda.
+                    </p>
+                    <a href="/admin/store/crm/pipeline"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Rules</span>
+                    <h5 class="fw-bold">Lead Scoring</h5>
+                    <p class="text-muted small">
+                        Activa o ajusta reglas de puntuación comercial.
+                    </p>
+                    <a href="/admin/store/crm/scoring"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Duplicates</span>
+                    <h5 class="fw-bold">Duplicate Detection</h5>
+                    <p class="text-muted small">
+                        Configura reglas para detectar leads duplicados por tienda.
+                    </p>
+                    <a href="/admin/store/crm/duplicate"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Merge</span>
+                    <h5 class="fw-bold">Merge Rules</h5>
+                    <p class="text-muted small">
+                        Define comportamiento de fusión de leads y auditoría.
+                    </p>
+                    <a href="/admin/store/crm/merge"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">Automation</span>
+                    <h5 class="fw-bold">Automatizaciones CRM</h5>
+                    <p class="text-muted small">
+                        Configura acciones al crear leads, fusionarlos o enviar propuestas.
+                    </p>
+                    <a href="/admin/store/crm/automation"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <span class="badge text-bg-secondary mb-2">AI</span>
+                    <h5 class="fw-bold">AI CRM</h5>
+                    <p class="text-muted small">
+                        Configuración futura para resumen, scoring inteligente y recomendaciones.
+                    </p>
+                    <a href="/admin/store/crm/ai"
+                       class="btn btn-outline-dark btn-sm">
+                        Próximamente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+</body>
+</html>

@@ -176,6 +176,7 @@
 
                                 <form th:action="@{|/admin/subscriptions/${subscription.id}/trial|}"
                                       method="post">
+                                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
                                     <input type="hidden"
                                            name="days"
                                            value="14">

@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import com.webempresarial.store.exceptions.FeatureLockedException;
+import com.webempresarial.store.exceptions.FeatureLockedException; 
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.PlatformKernel;
 import com.webempresarial.store.model.Feature;
@@ -19,6 +19,16 @@ public class FeatureAccessService {
         this.platformKernel = platformKernel;
     }
 
+    public boolean canUse(Store store, String featureCode) {
+        try {
+            return canUse(
+                    store,
+                    Feature.valueOf(featureCode)
+            );
+        } catch (Exception ex) {
+            return false;
+        }
+    }
     public boolean canUse(Store store, Feature feature) {
         return platformKernel.hasFeature(store, feature);
     }

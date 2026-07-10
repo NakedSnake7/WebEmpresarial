@@ -1,0 +1,6 @@
+<th:block th:fragment="token">
+    <input th:if="${_csrf != null}"
+           type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+</th:block>

@@ -2,9 +2,12 @@ package com.webempresarial.store.service;
 
 import com.stripe.Stripe;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
+
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,37 +15,74 @@ import org.springframework.stereotype.Service;
 @Service
 public class StripeBillingService {
 
-    @Value("${stripe.secret-key}")
+    private final StripePlanMapper stripePlanMapper;
+
+    @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
-    @Value("${stripe.billing.price.basic}")
-    private String basicPriceId;
+    @Value("${app.environment:prod}")
+    private String environment;
 
-    @Value("${stripe.billing.price.pro}")
-    private String proPriceId;
+    public StripeBillingService(StripePlanMapper stripePlanMapper) {
+        this.stripePlanMapper = stripePlanMapper;
+    }
 
-    @Value("${stripe.billing.price.premium}")
-    private String premiumPriceId;
-
-    @Value("${app.base-url}")
-    private String baseUrl;
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeSecretKey;
+    }
 
     public String createCheckoutSession(
             Store store,
             StorePlan plan
     ) throws Exception {
 
-        Stripe.apiKey = stripeSecretKey;
-
-        String priceId = resolvePriceId(plan);
+        String priceId = stripePlanMapper.getPriceId(plan);
+        String storeBaseUrl = resolveStoreBaseUrl(store);
 
         SessionCreateParams params =
                 SessionCreateParams.builder()
                         .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                        .setSuccessUrl(baseUrl + "/admin/billing/success?session_id={CHECKOUT_SESSION_ID}")
-                        .setCancelUrl(baseUrl + "/admin/billing?cancelled=true")
-                        .putMetadata("storeId", store.getId().toString())
-                        .putMetadata("plan", plan.name())
+
+                        .setSuccessUrl(
+                                storeBaseUrl
+                                        + "/admin/billing/success"
+                                        + "?session_id={CHECKOUT_SESSION_ID}"
+                        )
+
+                        .setCancelUrl(
+                                storeBaseUrl
+                                        + "/admin/billing?cancelled=true"
+                        )
+
+                        .putMetadata(
+                                "checkout_type",
+                                "SAAS_SUBSCRIPTION_EXISTING_STORE"
+                        )
+                        .putMetadata(
+                                "store_id",
+                                store.getId().toString()
+                        )
+                        .putMetadata(
+                                "plan",
+                                plan.name()
+                        )
+                        .putMetadata(
+                                "stripe_price_id",
+                                priceId
+                        )
+                        .putMetadata(
+                                "env",
+                                environment
+                        )
+
+                        .setClientReferenceId(
+                                "STORE-"
+                                        + store.getId()
+                                        + "-"
+                                        + plan.name()
+                        )
+
                         .addLineItem(
                                 SessionCreateParams.LineItem.builder()
                                         .setPrice(priceId)
@@ -51,17 +91,48 @@ public class StripeBillingService {
                         )
                         .build();
 
-        Session session = Session.create(params);
+        RequestOptions options = RequestOptions.builder()
+                .setIdempotencyKey(
+                        "store_"
+                                + store.getId()
+                                + "_subscription_"
+                                + plan.name()
+                                + "_"
+                                + java.util.UUID.randomUUID()
+                )
+                .build();
+
+        Session session = Session.create(params, options);
 
         return session.getUrl();
     }
 
-    private String resolvePriceId(StorePlan plan) {
+    private String resolveStoreBaseUrl(Store store) {
 
-        return switch (plan) {
-            case BASIC -> basicPriceId;
-            case PRO -> proPriceId;
-            case PREMIUM -> premiumPriceId;
-        };
+        if (store == null
+                || store.getDominio() == null
+                || store.getDominio().isBlank()) {
+            throw new IllegalStateException(
+                    "La tienda no tiene dominio configurado"
+            );
+        }
+
+        String domain = store.getDominio()
+                .trim()
+                .toLowerCase();
+
+        if (domain.endsWith(".local")) {
+            return "http://" + domain + ":8080";
+        }
+
+        if (domain.contains("localhost")) {
+            return domain.startsWith("http")
+                    ? domain
+                    : "http://" + domain;
+        }
+
+        return domain.startsWith("http")
+                ? domain
+                : "https://" + domain;
     }
 }

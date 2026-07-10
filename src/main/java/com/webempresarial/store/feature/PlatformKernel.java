@@ -1,6 +1,6 @@
 package com.webempresarial.store.feature;
 
-import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.Feature; 
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 
@@ -14,6 +14,12 @@ import java.util.Map;
 
 @Component
 public class PlatformKernel {
+	
+	private final PlatformAccessService platformAccessService;
+
+	public PlatformKernel(PlatformAccessService platformAccessService) {
+	    this.platformAccessService = platformAccessService;
+	}
 
     private final Map<Feature, FeatureDefinition> registry =
             new EnumMap<>(Feature.class);
@@ -45,9 +51,11 @@ public class PlatformKernel {
             return false;
         }
 
+        StorePlan effectivePlan = platformAccessService.resolveEffectivePlan(store);
+
         return get(feature)
                 .getAccessPolicy()
-                .isAvailableFor(store.getPlan());
+                .isAvailableFor(effectivePlan);
     }
 
     public boolean isLocked(Store store, Feature feature) {
@@ -67,10 +75,12 @@ public class PlatformKernel {
             return List.of();
         }
 
+        StorePlan effectivePlan = platformAccessService.resolveEffectivePlan(store);
+
         return registry.values()
                 .stream()
                 .filter(this::enabled)
-                .filter(f -> f.getAccessPolicy().isAvailableFor(store.getPlan()))
+                .filter(f -> f.getAccessPolicy().isAvailableFor(effectivePlan))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }
@@ -80,10 +90,12 @@ public class PlatformKernel {
             return List.of();
         }
 
+        StorePlan effectivePlan = platformAccessService.resolveEffectivePlan(store);
+
         return registry.values()
                 .stream()
                 .filter(this::enabled)
-                .filter(f -> f.getAccessPolicy().requiresUpgradeFrom(store.getPlan()))
+                .filter(f -> f.getAccessPolicy().requiresUpgradeFrom(effectivePlan))
                 .sorted(Comparator.comparingInt(FeatureDefinition::getOrder))
                 .toList();
     }

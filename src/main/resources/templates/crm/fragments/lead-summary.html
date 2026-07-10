@@ -67,13 +67,18 @@
             </strong>
         </div>
 
-        <div>
-            <span>Presupuesto estimado</span>
-            <strong th:text="${lead.estimatedBudget != null ? '$' + lead.estimatedBudget : '—'}">
-                —
-            </strong>
-        </div>
+<div>
+    <span>Presupuesto</span>
 
+    <strong th:text="${lead.estimatedBudget != null ? '$' + lead.estimatedBudget : '$0'}">
+        $0
+    </strong>
+
+    <div class="small text-muted"
+         th:text="${lead.budgetLabel != null ? lead.budgetLabel : 'Sin definir'}">
+        Sin definir
+    </div>
+</div>
     </div>
 
     <div class="d-flex gap-2 mt-4">

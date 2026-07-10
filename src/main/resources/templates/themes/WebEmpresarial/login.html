@@ -259,6 +259,7 @@
         <!-- FORM -->
         <form th:action="@{/login}"
               method="post">
+              <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
             <div class="form-group">
 

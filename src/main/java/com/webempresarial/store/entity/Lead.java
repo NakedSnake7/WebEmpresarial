@@ -47,6 +47,12 @@ public class Lead {
 
     @Column(nullable = false, length = 50)
     private String presupuesto;
+    
+    @Column(length = 80)
+    private String budgetLabel;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal estimatedBudget;
 
     @Column(columnDefinition = "TEXT")
     private String objetivo;
@@ -384,6 +390,21 @@ public class Lead {
 
 	public void setMergedAt(LocalDateTime mergedAt) {
 	    this.mergedAt = mergedAt;
+	}
+	public String getBudgetLabel() {
+	    return budgetLabel;
+	}
+
+	public void setBudgetLabel(String budgetLabel) {
+	    this.budgetLabel = budgetLabel;
+	}
+
+	public BigDecimal getEstimatedBudget() {
+	    return estimatedBudget;
+	}
+
+	public void setEstimatedBudget(BigDecimal estimatedBudget) {
+	    this.estimatedBudget = estimatedBudget;
 	}
     
 }
