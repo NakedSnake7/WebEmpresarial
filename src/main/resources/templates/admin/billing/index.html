@@ -151,6 +151,21 @@
         </strong>
     </span>.
 </div>
+<div class="alert alert-info"
+     th:if="${subscription.pendingPlan != null}">
+
+    Tu plan cambiará automáticamente a
+
+    <strong th:text="${subscription.pendingPlan}"></strong>
+
+    el
+
+    <strong
+        th:text="${#temporals.format(subscription.pendingPlanEffectiveAt,
+                                     'dd MMM yyyy')}">
+    </strong>
+
+</div>
 
             <p class="text-muted mb-0"
                th:if="${subscription == null}">

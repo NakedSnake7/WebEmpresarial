@@ -22,7 +22,7 @@ public interface SubscriptionRepository
 
     Optional<Subscription> findByStripeSubscriptionId(String stripeSubscriptionId);
     
-    
+    List<Subscription> findByStripeSubscriptionIdIsNotNull();
 
     long countByStatus(SubscriptionStatus status);
 

@@ -43,6 +43,44 @@ public class StripeWebhookService {
         this.webhookEventRepository = webhookEventRepository;
         this.stripePlanMapper = stripePlanMapper;
     }
+    
+    private void handleSubscriptionScheduleFinished(Event event) {
+
+        com.stripe.model.SubscriptionSchedule schedule =
+                deserializeEventObject(
+                        event,
+                        com.stripe.model.SubscriptionSchedule.class
+                );
+
+        if (schedule == null
+                || schedule.getSubscription() == null
+                || schedule.getSubscription().isBlank()) {
+            return;
+        }
+
+        subscriptionService.reconcileStripeSubscription(
+                schedule.getSubscription()
+        );
+    }
+    
+    private void handleSubscriptionScheduleCanceled(Event event) {
+
+        com.stripe.model.SubscriptionSchedule schedule =
+                deserializeEventObject(
+                        event,
+                        com.stripe.model.SubscriptionSchedule.class
+                );
+
+        if (schedule == null
+                || schedule.getSubscription() == null
+                || schedule.getSubscription().isBlank()) {
+            return;
+        }
+
+        subscriptionService.clearPendingPlanByStripeSubscriptionId(
+                schedule.getSubscription()
+        );
+    }
 
     @Transactional
     public void handle(Event event) {
@@ -67,6 +105,22 @@ public class StripeWebhookService {
 
         try {
             switch (event.getType()) {
+            
+            
+            case "subscription_schedule.created",
+            "subscription_schedule.updated" -> {
+           // Solo auditoría.
+           // El plan efectivo se sincroniza mediante
+           // customer.subscription.updated.
+       }
+
+       case "subscription_schedule.completed",
+            "subscription_schedule.released" ->
+               handleSubscriptionScheduleFinished(event);
+
+       case "subscription_schedule.canceled",
+            "subscription_schedule.aborted" ->
+               handleSubscriptionScheduleCanceled(event);
 
                 case "checkout.session.completed" ->
                         handleCheckoutSessionCompleted(event);
@@ -340,6 +394,14 @@ public class StripeWebhookService {
 
         if (clazz.equals(Invoice.class)) {
             return clazz.cast(Invoice.GSON.fromJson(rawJson, Invoice.class));
+        }
+        if (clazz.equals(com.stripe.model.SubscriptionSchedule.class)) {
+            return clazz.cast(
+                    com.stripe.model.SubscriptionSchedule.GSON.fromJson(
+                            rawJson,
+                            com.stripe.model.SubscriptionSchedule.class
+                    )
+            );
         }
 
         return null;

@@ -1,0 +1,14 @@
+checkout.session.completed
+customer.subscription.created
+customer.subscription.updated
+customer.subscription.deleted
+invoice.paid
+invoice.payment_failed
+subscription_schedule.created
+subscription_schedule.updated
+subscription_schedule.completed
+subscription_schedule.released
+subscription_schedule.canceled
+subscription_schedule.aborted
+
+StripeWebhookEvent garantiza idempotencia por stripeEventId.

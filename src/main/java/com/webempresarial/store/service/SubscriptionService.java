@@ -58,6 +58,14 @@ public class SubscriptionService {
                 .toLocalDateTime();
     }
     
+    @Transactional
+    public boolean hasPendingDowngrade(Long storeId) {
+
+        return subscriptionRepository
+                .findByStoreId(storeId)
+                .map(s -> s.getPendingPlan() != null)
+                .orElse(false);
+    }
     private String resolveStripePriceId(
             com.stripe.model.Subscription stripeSubscription
     ) {
@@ -126,13 +134,14 @@ public class SubscriptionService {
         subscription.setCurrentPeriodEnd(now.plusMonths(1));
         subscription.setNextBillingDate(now.plusMonths(1));
 
-        subscription.setBillingExempt(false);
-        subscription.setCancelAtPeriodEnd(false);
+        subscription.setPendingPlan(null);
+        subscription.setPendingPlanEffectiveAt(null);
 
-        subscription.setPendingPlan(null);
-        subscription.setPendingPlanEffectiveAt(null);
-        subscription.setPendingPlan(null);
-        subscription.setPendingPlanEffectiveAt(null);
+        subscription.setCancelAtPeriodEnd(false);
+        subscription.setBillingExempt(false);
+        
+        subscription.setMonthlyAmount(null);
+
 
         store.setPlan(plan);
         store.setActiva(true);
@@ -323,6 +332,15 @@ public class SubscriptionService {
         subscription.setCurrentPeriodStart(now);
         subscription.setCurrentPeriodEnd(null);
         subscription.setNextBillingDate(null);
+        
+        subscription.setStripeCustomerId(null);
+        subscription.setStripeSubscriptionId(null);
+        subscription.setStripePriceId(null);
+
+        subscription.setPendingPlan(null);
+        subscription.setPendingPlanEffectiveAt(null);
+
+        subscription.setCancelAtPeriodEnd(false);
 
         store.setPlan(plan);
         store.setActiva(true);
@@ -376,10 +394,6 @@ public class SubscriptionService {
                         : now.plusMonths(1)
         );
 
-        subscription.setNextBillingDate(
-                subscription.getCurrentPeriodEnd()
-        );
-
         subscription.setNextBillingDate(subscription.getCurrentPeriodEnd());
         subscription.getStore().setActiva(true);
 
@@ -417,24 +431,72 @@ public class SubscriptionService {
 
         if (stripePriceId != null && !stripePriceId.isBlank()) {
 
-        	StorePlan synchronizedPlan =
-        	        stripePlanMapper.getPlanByPriceId(stripePriceId);
+            StorePlan synchronizedPlan =
+                    stripePlanMapper.getPlanByPriceId(stripePriceId);
 
-        	subscription.setStripePriceId(stripePriceId);
+            StorePlan pendingPlan =
+                    subscription.getPendingPlan();
 
-        	if (subscription.getPendingPlan() == null) {
+            /*
+             * CASO 1:
+             * No existe cambio pendiente.
+             * Checkout nuevo o upgrade inmediato.
+             */
+            if (pendingPlan == null) {
 
-        	    subscription.setPlan(synchronizedPlan);
-        	    subscription.getStore().setPlan(synchronizedPlan);
+                subscription.setStripePriceId(stripePriceId);
+                subscription.setPlan(synchronizedPlan);
+                subscription.getStore().setPlan(synchronizedPlan);
+            }
 
-        	} else if (subscription.getPendingPlan() == synchronizedPlan) {
+            /*
+             * CASO 2:
+             * Existe downgrade pendiente, pero Stripe todavía
+             * conserva el precio del plan actual.
+             *
+             * Ejemplo:
+             * plan local       = PRO
+             * pendingPlan      = BASIC
+             * synchronizedPlan = PRO
+             *
+             * No limpiamos ni adelantamos el downgrade.
+             */
+            else if (synchronizedPlan == subscription.getPlan()) {
 
-        	    subscription.setPlan(synchronizedPlan);
-        	    subscription.getStore().setPlan(synchronizedPlan);
+                subscription.setStripePriceId(stripePriceId);
+            }
 
-        	    subscription.setPendingPlan(null);
-        	    subscription.setPendingPlanEffectiveAt(null);
-        	}
+            /*
+             * CASO 3:
+             * Stripe inició la siguiente fase y el precio activo
+             * ya corresponde al plan pendiente.
+             *
+             * Aquí materializamos definitivamente el downgrade.
+             */
+            else if (synchronizedPlan == pendingPlan) {
+
+                subscription.setStripePriceId(stripePriceId);
+                subscription.setPlan(synchronizedPlan);
+                subscription.getStore().setPlan(synchronizedPlan);
+
+                subscription.setPendingPlan(null);
+                subscription.setPendingPlanEffectiveAt(null);
+            }
+
+            /*
+             * CASO 4:
+             * Precio inesperado mientras existe un cambio pendiente.
+             * No cambiamos permisos automáticamente.
+             */
+            else {
+                throw new IllegalStateException(
+                        "El precio activo de Stripe no coincide con "
+                        + "el plan actual ni con el plan pendiente. "
+                        + "stripePriceId=" + stripePriceId
+                        + ", currentPlan=" + subscription.getPlan()
+                        + ", pendingPlan=" + pendingPlan
+                );
+            }
         }
 
         LocalDateTime periodStart =
@@ -455,11 +517,6 @@ public class SubscriptionService {
             subscription.setStartsAt(periodStart);
         }
 
-        subscription.setNextBillingDate(
-                fromStripeEpoch(
-                        stripeSubscription.getCurrentPeriodEnd()
-                )
-        );
 
         boolean cancelAtPeriodEnd =
                 Boolean.TRUE.equals(
@@ -467,6 +524,10 @@ public class SubscriptionService {
                 );
 
         subscription.setCancelAtPeriodEnd(cancelAtPeriodEnd);
+        
+        if (stripeStatus == null || stripeStatus.isBlank()) {
+            return subscriptionRepository.save(subscription);
+        }
         
         switch (stripeStatus.toLowerCase()) {
 
@@ -514,7 +575,55 @@ public class SubscriptionService {
     }
     
 
+    @Transactional
+    public Subscription reconcileStripeSubscription(
+            String stripeSubscriptionId
+    ) {
 
+        if (stripeSubscriptionId == null
+                || stripeSubscriptionId.isBlank()) {
+            return null;
+        }
+
+        try {
+            com.stripe.model.Subscription stripeSubscription =
+                    com.stripe.model.Subscription.retrieve(
+                            stripeSubscriptionId
+                    );
+
+            return syncStripeSubscriptionUpdated(
+                    stripeSubscription
+            );
+
+        } catch (com.stripe.exception.StripeException e) {
+            throw new IllegalStateException(
+                    "No se pudo reconciliar la suscripción Stripe: "
+                            + stripeSubscriptionId,
+                    e
+            );
+        }
+    }
+    @Transactional
+    public Subscription clearPendingPlanByStripeSubscriptionId(
+            String stripeSubscriptionId
+    ) {
+
+        Subscription subscription =
+                subscriptionRepository
+                        .findByStripeSubscriptionId(
+                                stripeSubscriptionId
+                        )
+                        .orElse(null);
+
+        if (subscription == null) {
+            return null;
+        }
+
+        subscription.setPendingPlan(null);
+        subscription.setPendingPlanEffectiveAt(null);
+
+        return subscriptionRepository.save(subscription);
+    }
 
     
 }
