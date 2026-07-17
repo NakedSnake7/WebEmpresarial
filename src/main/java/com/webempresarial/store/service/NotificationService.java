@@ -1,129 +1,99 @@
 package com.webempresarial.store.service;
 
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.webempresarial.store.entity.Lead;
 import com.webempresarial.store.model.Order;
-import com.webempresarial.store.model.OrderStatus;
-import com.webempresarial.store.model.PaymentStatus;
-import com.webempresarial.store.repository.OrderRepository;
+import com.webempresarial.store.model.OrderNotificationType;
+import com.webempresarial.store.repository.OrderOutboxRepository;
 
 @Service
 public class NotificationService {
 
-    private final EmailService emailService;
-    private final OrderRepository orderRepository;
+    private final OrderOutboxRepository outboxRepository;
 
-    public NotificationService(EmailService emailService,
-                               OrderRepository orderRepository) {
-        this.emailService = emailService;
-        this.orderRepository = orderRepository;
+    public NotificationService(
+            OrderOutboxRepository outboxRepository
+    ) {
+        this.outboxRepository = outboxRepository;
     }
 
-    // ============================
-    // TRANSFERENCIA
-    // ============================
     @Transactional
     public void sendTransferInstructions(Order order) {
-
-        if (order.getPaymentMethod() != Order.PaymentMethod.TRANSFER) return;
-        if (order.isTransferInstructionsSent()) return;
-
-        try {
-            emailService.enviarCorreoDatosTransferencia(order);
-
-            order.setTransferInstructionsSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            System.err.println("⚠️ Error correo transferencia. Orden=" + order.getId());
-        }
+        enqueue(
+                order,
+                OrderNotificationType.TRANSFER_INSTRUCTIONS,
+                null
+        );
     }
 
-    // ============================
-    // CONFIRMACIÓN DE PAGO
-    // ============================
     @Transactional
     public void sendPaymentConfirmation(Order order) {
-
-        if (order.getPaymentStatus() != PaymentStatus.PAID) return;
-        if (order.getOrderStatus() != OrderStatus.PROCESSED) return;
-        if (order.isPaymentConfirmedSent()) return;
-
-        try {
-            emailService.enviarCorreoPedidoProcesado(
-                    order.getCustomerEmail(),
-                    order.getCustomerName(),
-                    order.getId(),
-                    order.getItems()
-            );
-
-            order.setPaymentConfirmedSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            System.err.println("⚠️ Error correo confirmación. Orden=" + order.getId());
-        }
+        enqueue(
+                order,
+                OrderNotificationType.PAYMENT_CONFIRMATION,
+                null
+        );
     }
 
-    // ============================
-    // ENVÍO
-    // ============================
     @Transactional
     public void sendShipping(Order order) {
-
-        if (order.getPaymentStatus() != PaymentStatus.PAID) return;
-        if (order.getOrderStatus() != OrderStatus.SHIPPED) return;
-        if (order.isShippingConfirmationSent()) return;
-        if (order.getTrackingNumber() == null || order.getTrackingNumber().isBlank()) return;
-
-        try {
-            emailService.enviarCorreoEnvio(
-                    order.getCustomerEmail(),
-                    order.getCustomerName(),
-                    order.getId(),
-                    order.getOrderDate().toString(),
-                    order.getTrackingNumber(),
-                    order.getCarrier()
-            );
-
-            order.setShippingConfirmationSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            System.err.println("⚠️ Error correo envío. Orden=" + order.getId());
-        }
+        enqueue(
+                order,
+                OrderNotificationType.SHIPPING_CONFIRMATION,
+                null
+        );
     }
 
-    // ============================
-    // ORDEN EXPIRADA
-    // ============================
     @Transactional
-    public void sendExpired(Order order, LocalDateTime limite) {
+    public void sendExpired(
+            Order order,
+            LocalDateTime expirationDate
+    ) {
+        enqueue(
+                order,
+                OrderNotificationType.ORDER_EXPIRED,
+                expirationDate
+        );
+    }
 
-        if (order.getPaymentMethod() != Order.PaymentMethod.TRANSFER) return;
-        if (order.getPaymentStatus() != PaymentStatus.EXPIRED) return;
-        if (order.getOrderStatus() != OrderStatus.CANCELLED) return;
-        if (order.isOrderExpiredSent()) return;
-
-        try {
-            emailService.enviarCorreoOrdenExpirada(order, limite);
-
-            order.setOrderExpiredSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            System.err.println("⚠️ Error correo expiración. Orden=" + order.getId());
+    private void enqueue(
+            Order order,
+            OrderNotificationType type,
+            LocalDateTime expirationDate
+    ) {
+        if (order == null || order.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La orden persistida es obligatoria"
+            );
         }
+
+        if (order.getStore() == null
+                || order.getStore().getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda de la orden es obligatoria"
+            );
+        }
+
+        String idempotencyKey =
+                "ORDER:"
+                        + order.getId()
+                        + ":"
+                        + type.name();
+
+        outboxRepository.enqueueIgnoringDuplicate(
+                order.getId(),
+                order.getStore().getId(),
+                type.name(),
+                expirationDate,
+                idempotencyKey
+        );
     }
-    
+
     public void notifyNewLead(Lead lead) {
-        System.out.println("Nuevo lead recibido: " + lead.getNombre());
+        // Puede migrarse al Outbox posteriormente.
     }
-    
 }

@@ -4,6 +4,7 @@ import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.OrderStatus;
 import com.webempresarial.store.model.PaymentStatus;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.repository.OrderAuditLogRepository;
 import com.webempresarial.store.service.OrderService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,13 +26,17 @@ public class OrdersController {
 
     private final OrderService orderService;
     private final StoreResolver storeResolver;
+    private final OrderAuditLogRepository orderAuditLogRepository;
 
     public OrdersController(
             OrderService orderService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            OrderAuditLogRepository orderAuditLogRepository
     ) {
         this.orderService = orderService;
         this.storeResolver = storeResolver;
+        this.orderAuditLogRepository =
+                orderAuditLogRepository;
     }
 
     @GetMapping
@@ -96,6 +101,14 @@ public class OrdersController {
         );
 
         model.addAttribute("order", order);
+        model.addAttribute(
+                "auditLogs",
+                orderAuditLogRepository
+                        .findByOrderIdAndStoreIdOrderByCreatedAtAsc(
+                                id,
+                                store.getId()
+                        )
+        );
 
         return "admin/order-details";
     }
@@ -163,34 +176,34 @@ public class OrdersController {
         return "redirect:/orders/" + orderId;
     }
 
-    @PostMapping("/{id}/delete")
-    public String eliminarOrden(
+    @PostMapping("/{id}/cancel")
+    public String cancelarOrden(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request
     ) {
-
         Store store = storeResolver.getCurrentStore(request);
 
-        Order order = orderService.getById(id, store);
-
-        if (order.getPaymentStatus() == PaymentStatus.PAID ||
-                order.getOrderStatus() == OrderStatus.CANCELLED) {
+        try {
+            orderService.cancelOrder(id, store);
 
             redirectAttributes.addFlashAttribute(
-                    "error",
-                    "No se puede eliminar esta orden"
+                    "success",
+                    "Orden cancelada correctamente. El inventario fue restaurado."
             );
 
-            return "redirect:/orders";
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage()
+            );
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No fue posible cancelar la orden."
+            );
         }
-
-        orderService.deleteOrder(id, store);
-
-        redirectAttributes.addFlashAttribute(
-                "success",
-                "Orden eliminada"
-        );
 
         return "redirect:/orders";
     }

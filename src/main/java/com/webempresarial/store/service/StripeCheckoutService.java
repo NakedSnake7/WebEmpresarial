@@ -45,7 +45,19 @@ public class StripeCheckoutService {
 
     public Session createSession(Order order) throws StripeException {
 
-        long amountInCents = BigDecimal.valueOf(order.getTotal())
+        if (order == null || order.getTotal() == null) {
+            throw new IllegalArgumentException(
+                    "La orden y su total son obligatorios"
+            );
+        }
+
+        if (order.getTotal().signum() <= 0) {
+            throw new IllegalArgumentException(
+                    "El total de la orden debe ser mayor a cero"
+            );
+        }
+
+        long amountInCents = order.getTotal()
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(0, RoundingMode.HALF_UP)
                 .longValueExact();

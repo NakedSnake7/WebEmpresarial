@@ -25,6 +25,11 @@ public class FeatureViewAdvice {
         this.storeContextService = storeContextService;
         this.sidebarRegistry = sidebarRegistry;
     }
+    
+    @ModelAttribute("currentPath")
+    public String currentPath(HttpServletRequest request) {
+        return request.getRequestURI();
+    }
 
     @ModelAttribute("sidebarSections")
     public List<SidebarSectionDTO> sidebarSections(

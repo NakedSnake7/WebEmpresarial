@@ -1,18 +1,26 @@
 package com.webempresarial.store.scheduler;
 
-import com.webempresarial.store.feature.runtime.TraceType; 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.webempresarial.store.feature.runtime.TraceType;
 import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.service.OrderService;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class OrderExpirationScheduler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(
+                    OrderExpirationScheduler.class
+            );
 
     private final OrderService orderService;
     private final StoreRepository storeRepository;
@@ -25,49 +33,70 @@ public class OrderExpirationScheduler {
         this.storeRepository = storeRepository;
     }
 
-    // ⏰ Cada 30 minutos
-    @Scheduled(cron = "0 */30 * * * *")
+    @Scheduled(
+            cron = "${orders.expiration.cron:0 */30 * * * *}"
+    )
     @Trace(
-            type = TraceType.SCHEDULER, name = "OrderExpirationScheduler.verificarOrdenesPendientes",
+            type = TraceType.SCHEDULER,
+            name = "OrderExpirationScheduler.verificarOrdenesPendientes",
             source = "Ecommerce Scheduler"
     )
     public void verificarOrdenesPendientes() {
-        System.out.println(
-                "🔎 OrderExpirationScheduler: buscando órdenes pendientes..."
-        );
 
-        List<Store> stores = storeRepository.findAll();
+        List<Store> stores =
+                storeRepository.findAll();
+
+        int checked = 0;
+        int expired = 0;
+        int failed = 0;
+
+        log.info(
+                "[Order Expiration] Revisando {} tiendas",
+                stores.size()
+        );
 
         for (Store store : stores) {
 
-            List<Order> ordenes =
+            if (!store.isActiva()) {
+                continue;
+            }
+
+            List<Order> orders =
                     orderService.findPendingOrders(store);
 
-            for (Order order : ordenes) {
+            for (Order order : orders) {
+                checked++;
 
                 try {
+                    boolean wasExpired =
+                            orderService
+                                    .expirarOrdenTransferencia(
+                                            order.getId(),
+                                            store
+                                    );
 
-                    orderService.expirarOrdenTransferencia(
-                            order,
-                            store
+                    if (wasExpired) {
+                        expired++;
+                    }
+
+                } catch (Exception ex) {
+                    failed++;
+
+                    log.error(
+                            "[Order Expiration] Error en orden {} de tienda {}",
+                            order.getId(),
+                            store.getId(),
+                            ex
                     );
-
-                } catch (Exception e) {
-
-                    System.err.println(
-                            "❌ Error expirando orden "
-                                    + order.getId()
-                                    + " store="
-                                    + store.getNombre()
-                    );
-
-                    e.printStackTrace();
                 }
             }
         }
 
-        System.out.println(
-                "✔️ OrderExpirationScheduler finalizado."
+        log.info(
+                "[Order Expiration] Finalizado. Revisadas: {}, expiradas: {}, fallidas: {}",
+                checked,
+                expired,
+                failed
         );
     }
 }

@@ -1,6 +1,6 @@
 package com.webempresarial.store.repository;
 
-import java.math.BigDecimal; 
+import java.math.BigDecimal;  
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -58,5 +58,16 @@ public interface SubscriptionRepository
             Collection<SubscriptionStatus> statuses,
             LocalDateTime date
     );
+    @Query("""
+            SELECT COALESCE(SUM(s.monthlyAmount), 0)
+            FROM Subscription s
+            WHERE s.status IN (
+                com.webempresarial.store.model.SubscriptionStatus.ACTIVE,
+                com.webempresarial.store.model.SubscriptionStatus.PAST_DUE
+            )
+            AND s.billingExempt = false
+            AND s.monthlyAmount IS NOT NULL
+        """)
+        BigDecimal calculatePlatformMRR();
     
 }

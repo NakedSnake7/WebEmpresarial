@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Kardex de inventario | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <style>
+        .inventory-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(13, 110, 253, .2),
+                    transparent 35%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
+
+        .inventory-header .text-muted {
+            color: rgba(255,255,255,.68) !important;
+        }
+
+        .inventory-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15,23,42,.08);
+        }
+
+        .inventory-table {
+            min-width: 1180px;
+        }
+
+        .inventory-table th {
+            white-space: nowrap;
+            font-size: .76rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--bs-secondary-color);
+        }
+
+        .inventory-table td {
+            vertical-align: middle;
+        }
+
+        .movement-badge {
+            min-width: 105px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .stock-change {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            white-space: nowrap;
+        }
+
+        .stock-value {
+            min-width: 44px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 767.98px) {
+            .inventory-header {
+                border-radius: 1rem;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- Encabezado -->
+        <div class="inventory-header shadow-sm mb-4">
+
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
+
+                    <div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                            <span class="badge text-bg-primary">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Inventario
+                            </span>
+
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2">
+                            Kardex de inventario
+                        </h1>
+
+                        <p class="text-muted mb-0">
+                            Consulta ventas, restauraciones,
+                            ajustes y movimientos históricos.
+                        </p>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-outline-light">
+                            Ver productos
+                        </a>
+
+                        <a th:href="@{/admin/dashboard}"
+                           class="btn btn-light">
+                            Dashboard
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Filtros -->
+        <div class="card inventory-card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex flex-column flex-lg-row
+                            justify-content-between gap-3 mb-4">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Filtros
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Filtra movimientos por tipo,
+                            producto, orden o periodo.
+                        </p>
+
+                    </div>
+
+                    <a th:href="@{/admin/inventory/movements}"
+                       class="btn btn-outline-secondary align-self-lg-start">
+                        Limpiar filtros
+                    </a>
+
+                </div>
+
+                <form method="get"
+                      th:action="@{/admin/inventory/movements}">
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-md-6 col-xl-2">
+
+                            <label for="type"
+                                   class="form-label fw-semibold">
+                                Tipo
+                            </label>
+
+                            <select id="type"
+                                    name="type"
+                                    class="form-select">
+
+                                <option value="">
+                                    Todos
+                                </option>
+
+                                <option th:each="typeOption : ${movementTypes}"
+                                        th:value="${typeOption}"
+                                        th:text="${typeOption}"
+                                        th:selected="${param.type != null
+                                            and param.type[0] == typeOption.toString()}">
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-6 col-xl-3">
+
+                            <label for="productId"
+                                   class="form-label fw-semibold">
+                                Producto
+                            </label>
+
+                            <select id="productId"
+                                    name="productId"
+                                    class="form-select">
+
+                                <option value="">
+                                    Todos
+                                </option>
+
+<option th:each="product : ${products}"
+        th:value="${product.id}"
+        th:text="${product.productName}"
+        th:selected="${param.productId != null
+            and param.productId[0] == product.id.toString()}">
+</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+
+                            <label for="orderId"
+                                   class="form-label fw-semibold">
+                                Orden
+                            </label>
+
+                            <input type="number"
+                                   id="orderId"
+                                   name="orderId"
+                                   min="1"
+                                   class="form-control"
+                                   th:value="${param.orderId}"
+                                   placeholder="# orden">
+
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+
+                            <label for="from"
+                                   class="form-label fw-semibold">
+                                Desde
+                            </label>
+
+                            <input type="date"
+                                   id="from"
+                                   name="from"
+                                   class="form-control"
+                                   th:value="${param.from}">
+
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+
+                            <label for="to"
+                                   class="form-label fw-semibold">
+                                Hasta
+                            </label>
+
+                            <input type="date"
+                                   id="to"
+                                   name="to"
+                                   class="form-control"
+                                   th:value="${param.to}">
+
+                        </div>
+
+                        <div class="col-md-6 col-xl-1">
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100">
+                                🔎
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <!-- Tabla -->
+        <div class="card inventory-card overflow-hidden">
+
+            <div class="card-header bg-body border-bottom p-3 p-lg-4">
+
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between
+                            align-items-md-center gap-2">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Movimientos
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Registros ordenados desde el más reciente.
+                        </p>
+
+                    </div>
+
+                    <span class="badge text-bg-light border"
+                          th:text="${movements != null
+                              ? #lists.size(movements) + ' movimientos'
+                              : '0 movimientos'}">
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${movements != null
+                        and !#lists.isEmpty(movements)}">
+
+                <table class="table inventory-table align-middle mb-0">
+
+                    <thead>
+
+                    <tr>
+
+                        <th class="ps-4">
+                            Fecha
+                        </th>
+
+                        <th>
+                            Tipo
+                        </th>
+
+                        <th>
+                            Producto
+                        </th>
+
+                        <th>
+                            Variante
+                        </th>
+
+                        <th>
+                            Orden
+                        </th>
+
+                        <th>
+                            Cantidad
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
+                        <th class="pe-4">
+                            Motivo
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="movement : ${movements}">
+
+                        <td class="ps-4">
+
+                            <div th:text="${#temporals.format(
+                                movement.createdAt,
+                                'dd/MM/yyyy'
+                            )}">
+                            </div>
+
+                            <div class="small text-muted"
+                                 th:text="${#temporals.format(
+                                     movement.createdAt,
+                                     'HH:mm:ss'
+                                 )}">
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge movement-badge"
+                                  th:classappend="${
+                                      movement.type.name() == 'SALE'
+                                          ? ' text-bg-danger'
+                                      : movement.type.name() == 'RESTORE'
+                                          ? ' text-bg-success'
+                                      : movement.type.name() == 'ADJUSTMENT_IN'
+                                          ? ' text-bg-primary'
+                                      : movement.type.name() == 'ADJUSTMENT_OUT'
+                                          ? ' text-bg-warning'
+                                      : ' text-bg-secondary'
+                                  }"
+                                  th:text="${
+                                      movement.type.name() == 'SALE'
+                                          ? 'Venta'
+                                      : movement.type.name() == 'RESTORE'
+                                          ? 'Restauración'
+                                      : movement.type.name() == 'ADJUSTMENT_IN'
+                                          ? 'Ajuste entrada'
+                                      : movement.type.name() == 'ADJUSTMENT_OUT'
+                                          ? 'Ajuste salida'
+                                      : movement.type
+                                  }">
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="fw-semibold"
+                                 th:text="${movement.productName}">
+                            </div>
+
+                            <div class="small text-muted"
+                                 th:text="'Producto #' + ${movement.productId}">
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span th:if="${movement.variantId != null}"
+                                  class="badge text-bg-light border"
+                                  th:text="${movement.variantLabel}">
+                            </span>
+
+                            <span th:unless="${movement.variantId != null}"
+                                  class="text-muted small">
+                                Producto simple
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <a th:if="${movement.orderId != null}"
+                               th:href="@{/orders/{id}(id=${movement.orderId})}"
+                               class="btn btn-sm btn-outline-primary"
+                               th:text="'#' + ${movement.orderId}">
+                            </a>
+
+                            <span th:unless="${movement.orderId != null}"
+                                  class="text-muted small">
+                                Sin orden
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="fw-bold"
+                                  th:classappend="${
+                                      movement.type.name() == 'SALE'
+                                      or movement.type.name() == 'ADJUSTMENT_OUT'
+                                          ? ' text-danger'
+                                          : ' text-success'
+                                  }"
+                                  th:text="${
+                                      movement.type.name() == 'SALE'
+                                      or movement.type.name() == 'ADJUSTMENT_OUT'
+                                          ? '-' + movement.quantity
+                                          : '+' + movement.quantity
+                                  }">
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="stock-change">
+
+                                <span class="stock-value"
+                                      th:text="${movement.stockBefore}">
+                                </span>
+
+                                <span class="text-muted">
+                                    →
+                                </span>
+
+                                <span class="stock-value"
+                                      th:text="${movement.stockAfter}">
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                        <td class="pe-4">
+
+                            <div class="small"
+                                 th:text="${movement.reason != null
+                                     and !#strings.isEmpty(movement.reason)
+                                     ? movement.reason
+                                     : 'Sin descripción'}">
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Estado vacío -->
+            <div th:if="${movements == null
+                        or #lists.isEmpty(movements)}"
+                 class="empty-state">
+
+                <div class="display-5 mb-3">
+                    📦
+                </div>
+
+                <h4 class="fw-bold">
+                    Sin movimientos de inventario
+                </h4>
+
+                <p class="text-muted mx-auto"
+                   style="max-width: 540px;">
+                    Todavía no existen movimientos que coincidan
+                    con los filtros seleccionados.
+                </p>
+
+                <a th:href="@{/admin/productos}"
+                   class="btn btn-primary">
+                    Ver productos
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</th:block>
+
+</body>
+</html>

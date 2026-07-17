@@ -88,23 +88,53 @@ public class UserService {
             Cliente cliente,
             Store store
     ) {
+        if (cliente == null) {
+            throw new IllegalArgumentException("El cliente es obligatorio");
+        }
+
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException("La tienda es obligatoria");
+        }
+
+        if (cliente.getEmail() == null
+                || cliente.getEmail().isBlank()) {
+            throw new IllegalArgumentException(
+                    "El correo del cliente es obligatorio"
+            );
+        }
+
         String normalizedEmail =
                 cliente.getEmail().trim().toLowerCase();
 
-        Optional<Cliente> existingUser =
-                userRepository.findByEmailAndStore(
-                        normalizedEmail,
-                        store
-                );
+        Cliente persistentCliente = userRepository
+                .findByEmailAndStore(normalizedEmail, store)
+                .orElseGet(Cliente::new);
 
-        if (existingUser.isPresent()) {
-            return existingUser.get();
+        persistentCliente.setStore(store);
+        persistentCliente.setEmail(normalizedEmail);
+
+        if (cliente.getFullName() != null
+                && !cliente.getFullName().isBlank()) {
+            persistentCliente.setFullName(
+                    cliente.getFullName().trim()
+            );
         }
 
-        cliente.setEmail(normalizedEmail);
-        cliente.setStore(store);
+        if (cliente.getPhone() != null
+                && !cliente.getPhone().isBlank()) {
+            persistentCliente.setPhone(
+                    cliente.getPhone().trim()
+            );
+        }
 
-        return userRepository.save(cliente);
+        if (cliente.getDefaultAddress() != null
+                && !cliente.getDefaultAddress().isBlank()) {
+            persistentCliente.setDefaultAddress(
+                    cliente.getDefaultAddress().trim()
+            );
+        }
+
+        return userRepository.save(persistentCliente);
     }
 
     public Optional<Cliente> findByEmail(

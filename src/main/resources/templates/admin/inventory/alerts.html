@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Alertas de inventario | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <style>
+        .alerts-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(220, 53, 69, .22),
+                    transparent 36%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
+
+        .alerts-header .text-muted {
+            color: rgba(255, 255, 255, .68) !important;
+        }
+
+        .alert-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
+
+        .alert-summary-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-summary-card::after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            top: -35px;
+            right: -35px;
+            background: rgba(220, 53, 69, .08);
+            pointer-events: none;
+        }
+
+        .summary-label {
+            color: var(--bs-secondary-color);
+            font-size: .82rem;
+            margin-bottom: .45rem;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .active-alert {
+            position: relative;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: var(--bs-body-bg);
+        }
+
+        .active-alert::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            border-radius: 1rem 0 0 1rem;
+            background: var(--bs-warning);
+        }
+
+        .active-alert.is-critical::before,
+        .active-alert.is-out-of-stock::before {
+            background: var(--bs-danger);
+        }
+
+        .alert-stock {
+            font-size: 1.55rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .alert-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem 1rem;
+            font-size: .8rem;
+            color: var(--bs-secondary-color);
+        }
+
+        .history-table {
+            min-width: 1180px;
+        }
+
+        .history-table th {
+            white-space: nowrap;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--bs-secondary-color);
+        }
+
+        .history-table td {
+            vertical-align: middle;
+        }
+
+        .empty-state {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: .9rem;
+            background: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .alerts-header {
+                border-radius: 1rem;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- Mensajes -->
+        <div th:if="${success}"
+             class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            <span th:text="${success}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+
+        <div th:if="${error}"
+             class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <span th:text="${error}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+
+        <!-- Encabezado -->
+        <div class="alerts-header shadow-sm mb-4">
+
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
+
+                    <div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                            <span class="badge text-bg-danger">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Inventario
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Alertas persistentes
+                            </span>
+
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2">
+                            Alertas de inventario
+                        </h1>
+
+                        <p class="text-muted mb-0">
+                            Supervisa productos agotados, stock crítico,
+                            alertas reconocidas y recuperaciones automáticas.
+                        </p>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a th:href="@{/admin/inventory}"
+                           class="btn btn-outline-light">
+                            Dashboard
+                        </a>
+
+                        <a th:href="@{/admin/inventory/movements}"
+                           class="btn btn-outline-light">
+                            Ver Kardex
+                        </a>
+
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-light">
+                            Productos
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Resumen -->
+        <div class="row g-4 mb-4">
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card alert-card alert-summary-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="summary-label">
+                            Alertas activas
+                        </div>
+
+                        <div class="summary-value text-danger"
+                             th:text="${activeAlertCount}">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-2">
+                            Abiertas o reconocidas
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card alert-card alert-summary-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="summary-label">
+                            Agotadas
+                        </div>
+
+                        <div class="summary-value text-danger"
+                             th:text="${activeAlerts != null
+                                 ? activeAlerts.?[
+                                     level.name() == 'OUT_OF_STOCK'
+                                   ].size()
+                                 : 0}">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-2">
+                            Sin existencias
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card alert-card alert-summary-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="summary-label">
+                            Críticas
+                        </div>
+
+                        <div class="summary-value text-danger"
+                             th:text="${activeAlerts != null
+                                 ? activeAlerts.?[
+                                     level.name() == 'CRITICAL'
+                                   ].size()
+                                 : 0}">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-2">
+                            Stock entre 1 y 2
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card alert-card alert-summary-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="summary-label">
+                            Historial
+                        </div>
+
+                        <div class="summary-value"
+                             th:text="${alertHistory != null
+                                 ? #lists.size(alertHistory)
+                                 : 0}">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-2">
+                            Alertas registradas
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Alertas activas -->
+        <div class="card alert-card mb-4">
+
+            <div class="card-header bg-body border-bottom p-4">
+
+                <div class="d-flex flex-column flex-lg-row
+                            justify-content-between
+                            align-items-lg-center gap-3">
+
+                    <div class="section-heading">
+
+                        <div class="section-icon">
+                            🚨
+                        </div>
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Alertas activas
+                            </h5>
+
+                            <p class="text-muted small mb-0">
+                                Requieren revisión o seguimiento del administrador.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <span class="badge text-bg-danger"
+                          th:text="${activeAlertCount + ' activas'}">
+                        0 activas
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="card-body p-4"
+                 th:if="${activeAlerts != null
+                        and !#lists.isEmpty(activeAlerts)}">
+
+                <div class="row g-4">
+
+                    <div class="col-xl-6"
+                         th:each="alert : ${activeAlerts}">
+
+                        <div class="active-alert h-100"
+                             th:classappend="${alert.level.name()
+                                 == 'OUT_OF_STOCK'
+                                     ? ' is-out-of-stock'
+                                     : alert.level.name()
+                                         == 'CRITICAL'
+                                             ? ' is-critical'
+                                             : ''}">
+
+                            <div class="d-flex flex-column
+                                        flex-md-row
+                                        justify-content-between
+                                        gap-3 mb-3">
+
+                                <div>
+
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                        <span class="badge"
+                                              th:classappend="${alert.level.name()
+                                                  == 'OUT_OF_STOCK'
+                                                      ? ' text-bg-danger'
+                                                      : alert.level.name()
+                                                          == 'CRITICAL'
+                                                              ? ' text-bg-danger'
+                                                              : ' text-bg-warning'}"
+                                              th:text="${alert.level.name()
+                                                  == 'OUT_OF_STOCK'
+                                                      ? 'Agotado'
+                                                      : alert.level.name()
+                                                          == 'CRITICAL'
+                                                              ? 'Crítico'
+                                                              : 'Stock bajo'}">
+                                        </span>
+
+                                        <span class="badge"
+                                              th:classappend="${alert.status.name()
+                                                  == 'ACKNOWLEDGED'
+                                                      ? ' text-bg-primary'
+                                                      : ' text-bg-light border'}"
+                                              th:text="${alert.status.name()
+                                                  == 'ACKNOWLEDGED'
+                                                      ? 'Reconocida'
+                                                      : 'Abierta'}">
+                                        </span>
+
+                                    </div>
+
+                                    <h5 class="fw-bold mb-1"
+                                        th:text="${alert.producto.productName}">
+                                        Producto
+                                    </h5>
+
+                                    <div class="small text-muted"
+                                         th:if="${alert.variante != null}"
+                                         th:text="${alert.variante.nombreVisual}">
+                                        Variante
+                                    </div>
+
+                                    <div class="small text-muted"
+                                         th:unless="${alert.variante != null}">
+                                        Producto simple
+                                    </div>
+
+                                </div>
+
+                                <div class="text-md-end">
+
+                                    <div class="small text-muted mb-1">
+                                        Stock actual
+                                    </div>
+
+                                    <div class="alert-stock"
+                                         th:classappend="${alert.currentStock <= 0
+                                             ? ' text-danger'
+                                             : alert.currentStock <= 2
+                                                 ? ' text-danger'
+                                                 : ' text-warning'}"
+                                         th:text="${alert.currentStock}">
+                                        0
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="alert-meta mb-3">
+
+                                <span>
+                                    Límite:
+                                    <strong th:text="${alert.stockThreshold}">
+                                        5
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Ocurrencias:
+                                    <strong th:text="${alert.occurrenceCount}">
+                                        1
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Detectada:
+                                    <strong th:text="${#temporals.format(
+                                        alert.firstDetectedAt,
+                                        'dd/MM/yyyy HH:mm'
+                                    )}">
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Última detección:
+                                    <strong th:text="${#temporals.format(
+                                        alert.lastDetectedAt,
+                                        'dd/MM/yyyy HH:mm'
+                                    )}">
+                                    </strong>
+                                </span>
+
+                            </div>
+
+                            <div th:if="${alert.status.name()
+                                        == 'ACKNOWLEDGED'}"
+                                 class="alert alert-primary py-2 px-3 small mb-3">
+
+                                Reconocida por
+                                <strong th:text="${alert.acknowledgedBy != null
+                                    ? alert.acknowledgedBy
+                                    : 'Administrador'}">
+                                </strong>
+
+                                <span th:if="${alert.acknowledgedAt != null}">
+                                    el
+                                    <span th:text="${#temporals.format(
+                                        alert.acknowledgedAt,
+                                        'dd/MM/yyyy HH:mm'
+                                    )}">
+                                    </span>
+                                </span>
+
+                            </div>
+
+                            <div class="d-flex flex-column
+                                        flex-sm-row gap-2">
+
+                                <a th:href="@{/admin/productos/{id}/inventory(
+                                       id=${alert.producto.id},
+                                       variantId=${alert.variante != null
+                                           ? alert.variante.id
+                                           : null}
+                                   )}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Gestionar inventario
+                                </a>
+
+                                <form th:if="${alert.status.name()
+                                             == 'OPEN'}"
+                                      th:action="@{/admin/inventory/alerts/{id}/acknowledge(
+                                          id=${alert.id}
+                                      )}"
+                                      method="post">
+
+                                    <th:block th:replace="~{fragments/csrf :: token}">
+                                    </th:block>
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-primary"
+                                            onclick="return confirm(
+                                                '¿Deseas reconocer esta alerta?'
+                                            );">
+                                        Reconocer
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div th:if="${activeAlerts == null
+                        or #lists.isEmpty(activeAlerts)}"
+                 class="empty-state">
+
+                <div class="display-5 mb-3">
+                    ✅
+                </div>
+
+                <h4 class="fw-bold">
+                    No hay alertas activas
+                </h4>
+
+                <p class="text-muted mx-auto"
+                   style="max-width: 540px;">
+                    Todos los productos y variantes se encuentran
+                    por encima de los límites configurados.
+                </p>
+
+                <a th:href="@{/admin/inventory}"
+                   class="btn btn-primary">
+                    Volver al dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Historial -->
+        <div class="card alert-card overflow-hidden">
+
+            <div class="card-header bg-body border-bottom p-4">
+
+                <div class="section-heading">
+
+                    <div class="section-icon">
+                        🕘
+                    </div>
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Historial de alertas
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Alertas abiertas, reconocidas y resueltas automáticamente.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${alertHistory != null
+                        and !#lists.isEmpty(alertHistory)}">
+
+                <table class="table history-table align-middle mb-0">
+
+                    <thead>
+
+                    <tr>
+                        <th class="ps-4">Producto</th>
+                        <th>Variante</th>
+                        <th>Nivel</th>
+                        <th>Estado</th>
+                        <th>Stock</th>
+                        <th>Primera detección</th>
+                        <th>Última detección</th>
+                        <th>Resolución</th>
+                        <th class="pe-4">Acción</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="alert : ${alertHistory}">
+
+                        <td class="ps-4">
+
+                            <div class="fw-semibold"
+                                 th:text="${alert.producto.productName}">
+                                Producto
+                            </div>
+
+                            <div class="small text-muted"
+                                 th:text="'Producto #' + ${alert.producto.id}">
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span th:if="${alert.variante != null}"
+                                  class="badge text-bg-light border"
+                                  th:text="${alert.variante.nombreVisual}">
+                                Variante
+                            </span>
+
+                            <span th:unless="${alert.variante != null}"
+                                  class="text-muted small">
+                                Producto simple
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge"
+                                  th:classappend="${alert.level.name()
+                                      == 'OUT_OF_STOCK'
+                                          ? ' text-bg-danger'
+                                          : alert.level.name()
+                                              == 'CRITICAL'
+                                                  ? ' text-bg-danger'
+                                                  : ' text-bg-warning'}"
+                                  th:text="${alert.level.name()
+                                      == 'OUT_OF_STOCK'
+                                          ? 'Agotado'
+                                          : alert.level.name()
+                                              == 'CRITICAL'
+                                                  ? 'Crítico'
+                                                  : 'Stock bajo'}">
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge"
+                                  th:classappend="${alert.status.name()
+                                      == 'RESOLVED'
+                                          ? ' text-bg-success'
+                                          : alert.status.name()
+                                              == 'ACKNOWLEDGED'
+                                                  ? ' text-bg-primary'
+                                                  : ' text-bg-light border'}"
+                                  th:text="${alert.status.name()
+                                      == 'RESOLVED'
+                                          ? 'Resuelta'
+                                          : alert.status.name()
+                                              == 'ACKNOWLEDGED'
+                                                  ? 'Reconocida'
+                                                  : 'Abierta'}">
+                            </span>
+
+                        </td>
+
+                        <td>
+                            <strong th:text="${alert.currentStock}">
+                                0
+                            </strong>
+                        </td>
+
+                        <td th:text="${#temporals.format(
+                            alert.firstDetectedAt,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                        </td>
+
+                        <td th:text="${#temporals.format(
+                            alert.lastDetectedAt,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                        </td>
+
+                        <td>
+
+                            <div th:if="${alert.status.name()
+                                        == 'RESOLVED'}">
+
+                                <div th:text="${alert.resolvedAt != null
+                                    ? #temporals.format(
+                                        alert.resolvedAt,
+                                        'dd/MM/yyyy HH:mm'
+                                      )
+                                    : 'Resuelta'}">
+                                </div>
+
+                                <div class="small text-muted"
+                                     th:if="${alert.resolutionNote != null}"
+                                     th:text="${alert.resolutionNote}">
+                                </div>
+
+                            </div>
+
+                            <span th:unless="${alert.status.name()
+                                             == 'RESOLVED'}"
+                                  class="text-muted small">
+                                Pendiente
+                            </span>
+
+                        </td>
+
+                        <td class="pe-4">
+
+                            <a th:href="@{/admin/productos/{id}/inventory(
+                                   id=${alert.producto.id},
+                                   variantId=${alert.variante != null
+                                       ? alert.variante.id
+                                       : null}
+                               )}"
+                               class="btn btn-sm btn-outline-secondary">
+                                Ver producto
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div th:if="${alertHistory == null
+                        or #lists.isEmpty(alertHistory)}"
+                 class="empty-state">
+
+                <div class="display-5 mb-3">
+                    🕘
+                </div>
+
+                <h4 class="fw-bold">
+                    Sin historial de alertas
+                </h4>
+
+                <p class="text-muted mb-0">
+                    Las alertas detectadas aparecerán en esta sección.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</th:block>
+
+</body>
+</html>

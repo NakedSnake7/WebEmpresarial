@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -106,7 +107,7 @@ public class OrderExportController {
                             ? order.getUser().getFullName()
                             : order.getCustomerName()
             );
-            row.createCell(3).setCellValue(order.getTotal());
+            row.createCell(3).setCellValue(order.getTotal().doubleValue());
             row.createCell(4).setCellValue(order.getOrderStatusLabel());
             row.createCell(5).setCellValue(order.getPaymentStatusLabel());
             row.createCell(6).setCellValue(
@@ -240,7 +241,10 @@ public class OrderExportController {
             table.addCell(
                     new PdfPCell(
                             new Phrase(
-                                    "$" + order.getTotal(),
+                            		"$" + order.getTotal().setScale(
+                            		        2,
+                            		        RoundingMode.HALF_UP
+                            		),
                                     cellFont
                             )
                     )

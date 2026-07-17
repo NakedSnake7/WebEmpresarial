@@ -22,12 +22,19 @@
 
     <nav class="sidebar-nav">
 
-        <a href="/admin/dashboard" class="sidebar-link">
+        <a href="/admin/dashboard"
+   class="sidebar-link"
+   th:classappend="${currentPath == '/admin'
+                    or currentPath == '/admin/dashboard'}
+                    ? ' active' : ''">
             <span class="sidebar-icon">🏠</span>
             <span class="sidebar-text">Dashboard</span>
         </a>
 
-        <a href="/admin/billing" class="sidebar-link">
+        <a href="/admin/billing"
+   class="sidebar-link"
+   th:classappend="${currentPath.startsWith('/admin/billing')}
+                    ? ' active' : ''">
             <span class="sidebar-icon">💼</span>
             <span class="sidebar-text">Billing</span>
         </a>
@@ -39,9 +46,16 @@
         <span th:text="${section.title}">Sección</span>
     </div>
 
-    <a th:each="item : ${section.items}"
-       th:href="${item.url}"
-       class="sidebar-link">
+<a th:each="item : ${section.items}"
+   th:href="${item.url}"
+   class="sidebar-link"
+   th:classappend="${
+       currentPath == item.url
+       or (
+           item.url != '/'
+           and currentPath.startsWith(item.url + '/')
+       )
+   } ? ' active' : ''">
 
         <span class="sidebar-icon"
               th:text="${item.icon}">
@@ -148,12 +162,18 @@
     Configuración
 </div>
 
-<a href="/admin/store/settings" class="sidebar-link">
+<a href="/admin/store/settings"
+   class="sidebar-link"
+   th:classappend="${currentPath.startsWith('/admin/store/settings')}
+                    ? ' active' : ''">
     <span class="sidebar-icon">⚙️</span>
     <span class="sidebar-text">General tienda</span>
 </a>
 
-<a href="/admin/store/crm" class="sidebar-link">
+<a href="/admin/store/crm"
+   class="sidebar-link"
+   th:classappend="${currentPath.startsWith('/admin/store/crm')}
+                    ? ' active' : ''">
     <span class="sidebar-icon">📊</span>
     <span class="sidebar-text">CRM Settings</span>
 </a>

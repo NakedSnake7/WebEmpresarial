@@ -30,8 +30,11 @@ public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     
-    private static final double ENVIO_COSTO = 120;
-    private static final double ENVIO_GRATIS_MIN = 1250;
+    private static final BigDecimal ENVIO_COSTO =
+            new BigDecimal("120.00");
+
+    private static final BigDecimal ENVIO_GRATIS_MIN =
+            new BigDecimal("1250.00");
     private static final DecimalFormat MONEY = new DecimalFormat("#,##0.00");
     private static final ZoneId MX_ZONE = ZoneId.of("America/Mexico_City");
 
@@ -293,11 +296,11 @@ public class EmailService {
 
     private BigDecimal calcularEnvio(BigDecimal subtotal) {
 
-        if (subtotal.compareTo(BigDecimal.valueOf(ENVIO_GRATIS_MIN)) >= 0) {
+        if (subtotal.compareTo(ENVIO_GRATIS_MIN) >= 0) {
             return BigDecimal.ZERO;
         }
 
-        return BigDecimal.valueOf(ENVIO_COSTO);
+        return ENVIO_COSTO;
     }
 
     private String cargarTemplate(String path) throws IOException {

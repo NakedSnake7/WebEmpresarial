@@ -26,7 +26,7 @@ public class MarketingFeatures implements PlatformModule {
 
                 .sidebarSection(
                         SidebarSectionDefinition.builder("Marketing", "📣")
-                                .item("Reseñas", "⭐", "/resenas/nueva", Feature.REVIEWS)
+                                .item("Reseñas", "⭐", "/resenas", Feature.REVIEWS)
                                 .item("Cupones", "🏷️", "/admin/coupons", Feature.COUPONS)
                                 .item("Email Marketing", "✉️", "/admin/email-marketing", Feature.EMAIL_MARKETING)
                                 .build()

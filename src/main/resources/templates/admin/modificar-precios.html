@@ -1,469 +1,1394 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modificar Precios</title>
-
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-<style>
-body{
-    background:#1f1f1f;
-    color:#fff;
-}
-
-.container{
-    margin-top:40px;
-}
-
-.table input{
-    background:#2c2c2c;
-    color:#fff;
-    border:1px solid #555;
-    border-radius:6px;
-    padding:6px;
-    width:120px;
-}
-
-.table-secondary{
-    opacity:.55;
-}
-
-.hint{
-    font-size:.85rem;
-    color:#9ca3af;
-}
-
-/* =========================
-   VARIANTES ANIMADAS
-========================= */
-.fila-variante{
-    display:none;
-    opacity:0;
-    transform:translateY(-8px);
-    transition:all .28s ease;
-}
-
-.fila-variante.show{
-    display:table-row;
-    opacity:1;
-    transform:translateY(0);
-}
-
-.btnToggleVariante{
-    transition:.2s ease;
-}
-
-.btnToggleVariante.activo{
-    background:#0ea5e9;
-    border-color:#0ea5e9;
-    color:#fff;
-}
-</style>
-</head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Precios y promociones | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
 
 <body>
 
-<div class="container">
+<th:block th:fragment="content">
 
-<h2 class="text-center mb-1">💲 Modificar Precios</h2>
+    <style>
+        .commerce-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(13, 110, 253, .18),
+                    transparent 35%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
 
-<p class="text-center hint mb-4">
-    Edita el precio y presiona <strong>Enter</strong> para guardar
-</p>
+        .commerce-header .text-muted {
+            color: rgba(255, 255, 255, .66) !important;
+        }
 
-<div class="table-responsive">
+        .pricing-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
 
-<!-- FILTROS -->
-<div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+        .pricing-table {
+            min-width: 940px;
+        }
 
-<select id="filtroCategoria"
-        class="form-control form-control-sm"
-        style="max-width:220px">
+        .pricing-table th {
+            white-space: nowrap;
+            font-size: .76rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--bs-secondary-color);
+        }
 
-<option value="">Todas las categorías</option>
+        .pricing-table td {
+            vertical-align: middle;
+        }
 
-<option th:each="cat : ${categorias}"
-        th:value="${cat}"
-        th:text="${cat}">
-</option>
+        .product-row.product-hidden {
+            opacity: .62;
+        }
+
+        .product-name {
+            max-width: 360px;
+        }
+
+        .price-input,
+        .variant-price-input {
+            max-width: 160px;
+            transition:
+                border-color .2s ease,
+                background-color .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .price-input.is-saving,
+        .variant-price-input.is-saving {
+            border-color: var(--bs-warning);
+            background-color: var(--bs-warning-bg-subtle);
+        }
+
+        .price-input.is-saved,
+        .variant-price-input.is-saved {
+            border-color: var(--bs-success);
+            background-color: var(--bs-success-bg-subtle);
+            box-shadow: 0 0 0 .2rem rgba(25, 135, 84, .12);
+        }
+
+        .price-input.is-error,
+        .variant-price-input.is-error {
+            border-color: var(--bs-danger);
+            background-color: var(--bs-danger-bg-subtle);
+            box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .12);
+        }
+
+        .variant-row > td {
+            background: var(--bs-tertiary-bg);
+        }
+
+        .variant-container {
+            border: 1px solid var(--bs-border-color);
+            border-radius: .9rem;
+            background: var(--bs-body-bg);
+            padding: 1rem;
+        }
+
+        .variant-attributes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
+
+        .bulk-adjustment {
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--bs-warning-bg-subtle),
+                    var(--bs-body-bg)
+                );
+            border: 1px solid var(--bs-warning-border-subtle);
+        }
+
+        .keyboard-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .8rem;
+            color: var(--bs-secondary-color);
+        }
+
+        .keyboard-key {
+            padding: .15rem .4rem;
+            border: 1px solid var(--bs-border-color);
+            border-bottom-width: 2px;
+            border-radius: .35rem;
+            background: var(--bs-tertiary-bg);
+            font-family: monospace;
+            font-size: .75rem;
+        }
+
+        .empty-state {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 767.98px) {
+            .commerce-header {
+                border-radius: 1rem;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- CSRF para peticiones fetch -->
+        <div id="csrfData"
+             class="d-none"
+             th:if="${_csrf != null}"
+             th:attr="data-token=${_csrf.token},
+                      data-header=${_csrf.headerName}">
+        </div>
+
+        <!-- Encabezado -->
+        <div class="commerce-header shadow-sm mb-4">
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
+
+                    <div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge text-bg-primary">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Pricing
+                            </span>
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2">
+                            Precios y promociones
+                        </h1>
+
+                        <p class="text-muted mb-0">
+                            Actualiza precios individuales, variantes
+                            y categorías completas desde un solo lugar.
+                        </p>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-outline-light">
+                            ← Productos
+                        </a>
+
+                        <a th:href="@{/nuevo}"
+                           class="btn btn-light">
+                            ＋ Nuevo producto
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Ajuste masivo -->
+        <div class="card pricing-card bulk-adjustment mb-4">
+            <div class="card-body p-4">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-lg">
+                        <h5 class="fw-bold mb-1">
+                            Ajuste masivo por categoría
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Aumenta o disminuye todos los precios
+                            de una categoría usando un monto o porcentaje.
+                        </p>
+                    </div>
+
+                    <div class="col-md-4 col-lg-3">
+                        <label for="bulkCategory"
+                               class="form-label fw-semibold">
+                            Categoría
+                        </label>
+
+<select id="bulkCategory"
+        class="form-select">
+
+    <option value="">
+        Selecciona una categoría
+    </option>
+
+    <option th:each="categoria : ${categorias}"
+            th:value="${categoria.id}"
+            th:text="${categoria.nombre}">
+    </option>
 
 </select>
+                    </div>
 
-<input type="text"
-       id="buscarNombre"
-       class="form-control form-control-sm"
-       style="max-width:260px"
-       placeholder="Buscar producto...">
+                    <div class="col-md-3 col-lg-2">
+                        <label for="bulkMode"
+                               class="form-label fw-semibold">
+                            Tipo de ajuste
+                        </label>
 
-<small class="text-muted ml-2">
-Filtrar por categoría o nombre
-</small>
+                        <select id="bulkMode"
+                                class="form-select">
 
-</div>
+                            <option value="MONTO">
+                                Monto fijo
+                            </option>
 
-<!-- AJUSTE MASIVO -->
-<div class="card bg-dark border-secondary mb-3">
+                            <option value="PORCENTAJE">
+                                Porcentaje
+                            </option>
 
-<div class="card-body d-flex flex-wrap align-items-center gap-2">
+                        </select>
+                    </div>
 
-<select id="categoriaSelect"
-        class="form-control form-control-sm mr-2"
-        style="max-width:220px">
+                    <div class="col-md-3 col-lg-2">
+                        <label for="bulkValue"
+                               class="form-label fw-semibold">
+                            Valor
+                        </label>
 
-<option value="">Categoría</option>
+                        <div class="input-group">
 
-<option th:each="cat : ${categorias}"
-        th:value="${cat}"
-        th:text="${cat}">
-</option>
+                            <span id="bulkPrefix"
+                                  class="input-group-text">
+                                $
+                            </span>
+
+                            <input type="number"
+                                   id="bulkValue"
+                                   class="form-control"
+                                   step="0.01"
+                                   placeholder="+10 o -5">
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 col-lg-auto">
+                        <button type="button"
+                                id="bulkApplyButton"
+                                class="btn btn-warning w-100">
+                            Aplicar
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="alert alert-warning small mt-3 mb-0">
+                    Esta acción modifica todos los productos y variantes
+                    asociados con la categoría seleccionada.
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card pricing-card mb-4">
+            <div class="card-body p-3 p-lg-4">
+
+                <div class="row g-3 align-items-center">
+
+                    <div class="col-md-5 col-lg-4">
+<select id="filterCategory"
+        class="form-select">
+
+    <option value="">
+        Todas las categorías
+    </option>
+
+    <option th:each="categoria : ${categorias}"
+            th:value="${categoria.nombre}"
+            th:text="${categoria.nombre}">
+    </option>
 
 </select>
+                    </div>
 
-<select id="modoSelect"
-        class="form-control form-control-sm mr-2"
-        style="max-width:160px">
+                    <div class="col-md-7 col-lg">
 
-<option value="MONTO">Monto fijo ($)</option>
-<option value="PORCENTAJE">Porcentaje (%)</option>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                🔎
+                            </span>
 
-</select>
+                            <input type="search"
+                                   id="searchProduct"
+                                   class="form-control"
+                                   placeholder="Buscar por nombre, categoría o ID..."
+                                   autocomplete="off">
+                        </div>
 
-<input type="number"
-       id="valorInput"
-       class="form-control form-control-sm mr-2"
-       style="max-width:160px"
-       placeholder="+10 / -5">
+                    </div>
 
-<button class="btn btn-warning btn-sm"
-        onclick="aplicarAjusteCategoria()">
-Aplicar
-</button>
+                    <div class="col-lg-auto">
+                        <button type="button"
+                                id="clearFiltersButton"
+                                class="btn btn-outline-secondary w-100">
+                            Limpiar filtros
+                        </button>
+                    </div>
 
-</div>
-</div>
+                </div>
 
-<table class="table table-dark table-striped">
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between gap-2 mt-3">
 
-<thead>
-<tr>
-<th>ID</th>
-<th>Producto</th>
-<th>Precio actual</th>
-<th>Nuevo precio</th>
-</tr>
-</thead>
+                    <div id="filterSummary"
+                         class="small text-muted">
+                    </div>
 
-<tbody>
+                    <div class="keyboard-hint">
+                        Edita un precio y presiona
+                        <span class="keyboard-key">Enter</span>
+                        para guardarlo.
+                    </div>
 
-<th:block th:each="producto : ${productos}" th:if="${producto != null}">
+                </div>
 
-<!-- FILA PRODUCTO -->
-<tr th:attr="
-        data-categoria=${producto.categoriaNombre},
-        data-nombre=${#strings.toLowerCase(producto.productName)}
-    "
-    th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
+            </div>
+        </div>
 
-<td th:text="${producto.id}"></td>
+        <!-- Tabla -->
+        <div class="card pricing-card overflow-hidden">
 
-<td>
+            <div class="card-header bg-body border-bottom p-3 p-lg-4">
 
-<span class="text-muted"
-      th:text="${producto.categoriaNombre}">
-</span>
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between
+                            align-items-md-center gap-2">
 
-<span class="mx-1">·</span>
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            Catálogo de precios
+                        </h5>
 
-<strong th:text="${producto.productName}"></strong>
+                        <p class="text-muted small mb-0">
+                            Los productos con variantes se editan
+                            individualmente.
+                        </p>
+                    </div>
 
-<br>
+                    <div class="small text-muted">
+                        Los productos ocultos aparecen atenuados.
+                    </div>
 
-<span class="badge badge-info"
-      th:if="${producto.tieneVariantes}">
-Variantes
-</span>
+                </div>
 
-<span class="badge badge-danger"
-      th:if="${producto.tienePromocion}">
-Promo
-</span>
+            </div>
 
-</td>
+            <div class="table-responsive"
+                 th:if="${productos != null and !#lists.isEmpty(productos)}">
 
-<td>
+                <table class="table pricing-table align-middle mb-0">
 
-<div th:if="${producto.tienePromocion}">
-<span style="text-decoration:line-through;">
-$<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
-</span>
-<br>
-<span class="text-success font-weight-bold">
-$<span th:text="${#numbers.formatDecimal(producto.precioFinal,1,2)}"></span>
-</span>
-</div>
+                    <thead>
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Producto</th>
+                        <th>Precio actual</th>
+                        <th class="pe-4">Nuevo precio</th>
+                    </tr>
+                    </thead>
 
-<div th:if="${!producto.tienePromocion and producto.tieneVariantes}">
-Desde $
-<span th:text="${#numbers.formatDecimal(producto.precioMinimo,1,2)}"></span>
-</div>
+                    <tbody>
 
-<div th:if="${!producto.tienePromocion and !producto.tieneVariantes}">
-$<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
-</div>
+                    <th:block th:each="producto : ${productos}"
+                              th:if="${producto != null}">
 
-</td>
+                        <!-- Producto -->
+                        <tr class="product-row"
+                            th:classappend="${!producto.visibleEnMenu}
+                                ? ' product-hidden' : ''"
+                            th:attr="
+                                data-id=${producto.id},
+                                data-category=${producto.categoriaNombre},
+                                data-search=|${producto.id}
+                                    ${producto.productName}
+                                    ${producto.categoriaNombre}|
+                            ">
 
-<td>
+                            <td class="ps-4 fw-semibold"
+                                th:text="${producto.id}">
+                            </td>
 
-<input type="number"
-       step="0.01"
-       min="0"
-       class="price-input"
-       th:if="${!producto.tieneVariantes}"
-       th:attr="data-id=${producto.id}"
-       placeholder="Nuevo precio">
+                            <td class="product-name">
 
-<button class="btn btn-info btn-sm btnToggleVariante"
-        th:if="${producto.tieneVariantes}"
-        th:attr="data-target='var-' + ${producto.id}">
-Editar variantes
-</button>
+                                <div class="small text-muted mb-1"
+                                     th:text="${producto.categoriaNombre}">
+                                    Categoría
+                                </div>
 
-</td>
-</tr>
+                                <strong th:text="${producto.productName}">
+                                    Producto
+                                </strong>
 
-<!-- FILA VARIANTES -->
-<tr th:id="'var-' + ${producto.id}"
-    class="fila-variante bg-dark">
+                                <div class="d-flex flex-wrap gap-1 mt-2">
 
-<td colspan="4">
+                                    <span th:if="${producto.tieneVariantes}"
+                                          class="badge text-bg-info">
+                                        Variantes
+                                    </span>
 
-<table class="table table-sm table-bordered text-white mb-0">
+                                    <span th:if="${producto.tienePromocion}"
+                                          class="badge text-bg-danger">
+                                        Promoción
+                                    </span>
 
-<thead>
-<tr>
-<th>Atributos</th>
-<th>Precio</th>
-<th>Editar</th>
-</tr>
-</thead>
+                                    <span th:unless="${producto.visibleEnMenu}"
+                                          class="badge text-bg-secondary">
+                                        Oculto
+                                    </span>
 
-<tbody>
+                                </div>
 
-<tr th:each="var : ${producto.variantes}">
+                            </td>
 
-<td>
-<span th:each="attr : ${var.atributos}">
-<b th:text="${attr.key}"></b>:
-<span th:text="${attr.value}"></span> |
-</span>
-</td>
+                            <td>
 
-<td>
-$<span th:text="${#numbers.formatDecimal(var.precio,1,2)}"></span>
-</td>
+                                <div th:if="${producto.tienePromocion}">
 
-<td>
-<input type="number"
-       step="0.01"
-       min="0"
-       class="price-variante-input"
-       th:attr="data-id=${var.id}"
-       placeholder="Nuevo precio">
-</td>
+                                    <div class="small text-muted
+                                                text-decoration-line-through">
+                                        $
+                                        <span th:text="${#numbers.formatDecimal(
+                                            producto.precio,
+                                            1,
+                                            2
+                                        )}">
+                                        </span>
+                                    </div>
 
-</tr>
+                                    <div class="fw-bold text-success">
+                                        $
+                                        <span th:text="${#numbers.formatDecimal(
+                                            producto.precioFinal,
+                                            1,
+                                            2
+                                        )}">
+                                        </span>
+                                    </div>
 
-</tbody>
-</table>
+                                </div>
 
-</td>
-</tr>
+                                <div th:if="${!producto.tienePromocion
+                                            and producto.tieneVariantes}">
+
+                                    <span class="small text-muted">
+                                        Desde
+                                    </span>
+
+                                    <div class="fw-semibold">
+                                        $
+                                        <span th:text="${#numbers.formatDecimal(
+                                            producto.precioMinimo,
+                                            1,
+                                            2
+                                        )}">
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <div th:if="${!producto.tienePromocion
+                                            and !producto.tieneVariantes}"
+                                     class="fw-semibold">
+
+                                    $
+                                    <span th:text="${#numbers.formatDecimal(
+                                        producto.precio,
+                                        1,
+                                        2
+                                    )}">
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                            <td class="pe-4">
+
+                                <div th:if="${!producto.tieneVariantes}"
+                                     class="d-flex align-items-center gap-2">
+
+                                    <div class="input-group input-group-sm"
+                                         style="max-width: 190px;">
+
+                                        <span class="input-group-text">
+                                            $
+                                        </span>
+
+                                        <input type="number"
+                                               class="form-control price-input"
+                                               min="0.01"
+                                               step="0.01"
+                                               inputmode="decimal"
+                                               th:attr="
+                                                   data-id=${producto.id},
+                                                   data-name=${producto.productName}
+                                               "
+                                               placeholder="Nuevo precio">
+
+                                    </div>
+
+                                    <span class="save-status small"></span>
+
+                                </div>
+
+                                <button th:if="${producto.tieneVariantes}"
+                                        type="button"
+                                        class="btn btn-sm btn-outline-info
+                                               toggle-variants"
+                                        data-bs-toggle="collapse"
+                                        th:attr="
+                                            data-bs-target='#variants-' + ${producto.id},
+                                            aria-controls='variants-' + ${producto.id}
+                                        "
+                                        aria-expanded="false">
+
+                                    Editar variantes
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Variantes -->
+                        <tr th:if="${producto.tieneVariantes}"
+                            class="collapse variant-row"
+                            th:id="'variants-' + ${producto.id}"
+                            th:attr="
+                                data-parent-id=${producto.id},
+                                data-parent-category=${producto.categoriaNombre}
+                            ">
+
+                            <td colspan="4" class="px-4 py-3">
+
+                                <div class="variant-container">
+
+                                    <div class="d-flex flex-column flex-md-row
+                                                justify-content-between
+                                                align-items-md-center gap-2 mb-3">
+
+                                        <div>
+                                            <h6 class="fw-bold mb-1">
+                                                Variantes de
+                                                <span th:text="${producto.productName}">
+                                                </span>
+                                            </h6>
+
+                                            <p class="small text-muted mb-0">
+                                                Cada precio se guarda de forma individual.
+                                            </p>
+                                        </div>
+
+                                        <span class="badge text-bg-info"
+                                              th:text="${producto.variantes != null
+                                                  ? #lists.size(producto.variantes)
+                                                    + ' variantes'
+                                                  : '0 variantes'}">
+                                        </span>
+
+                                    </div>
+
+                                    <div class="table-responsive">
+
+                                        <table class="table table-sm
+                                                      align-middle mb-0">
+
+                                            <thead>
+                                            <tr>
+                                                <th>Atributos</th>
+                                                <th>Precio actual</th>
+                                                <th>Nuevo precio</th>
+                                            </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                            <tr th:each="variante : ${producto.variantes}">
+
+                                                <td>
+
+                                                    <div class="variant-attributes">
+
+                                                        <span th:each="atributo
+                                                                       : ${variante.atributos}"
+                                                              class="badge text-bg-light border">
+
+                                                            <strong th:text="${atributo.key}">
+                                                            </strong>:
+
+                                                            <span th:text="${atributo.value}">
+                                                            </span>
+
+                                                        </span>
+
+                                                    </div>
+
+                                                </td>
+
+                                                <td class="fw-semibold">
+                                                    $
+                                                    <span th:text="${#numbers.formatDecimal(
+                                                        variante.precio,
+                                                        1,
+                                                        2
+                                                    )}">
+                                                    </span>
+                                                </td>
+
+                                                <td>
+
+                                                    <div class="d-flex
+                                                                align-items-center gap-2">
+
+                                                        <div class="input-group
+                                                                    input-group-sm"
+                                                             style="max-width: 190px;">
+
+                                                            <span class="input-group-text">
+                                                                $
+                                                            </span>
+
+                                                            <input type="number"
+                                                                   class="form-control
+                                                                          variant-price-input"
+                                                                   min="0.01"
+                                                                   step="0.01"
+                                                                   inputmode="decimal"
+                                                                   th:attr="
+                                                                       data-id=${variante.id},
+                                                                       data-product=${producto.productName}
+                                                                   "
+                                                                   placeholder="Nuevo precio">
+
+                                                        </div>
+
+                                                        <span class="save-status small">
+                                                        </span>
+
+                                                    </div>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <tr th:if="${producto.variantes == null
+                                                       or #lists.isEmpty(
+                                                           producto.variantes
+                                                       )}">
+
+                                                <td colspan="3"
+                                                    class="text-center
+                                                           text-muted py-4">
+                                                    No existen variantes registradas.
+                                                </td>
+
+                                            </tr>
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    </th:block>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Sin productos -->
+            <div th:if="${productos == null or #lists.isEmpty(productos)}"
+                 class="empty-state">
+
+                <div class="display-5 mb-3">
+                    💲
+                </div>
+
+                <h4 class="fw-bold">
+                    No hay productos para modificar
+                </h4>
+
+                <p class="text-muted mx-auto"
+                   style="max-width: 520px;">
+                    Crea un producto para comenzar a administrar
+                    precios y promociones.
+                </p>
+
+                <a th:href="@{/nuevo}"
+                   class="btn btn-primary">
+                    Crear producto
+                </a>
+
+            </div>
+
+            <!-- Sin resultados de búsqueda -->
+            <div id="noResults"
+                 class="empty-state d-none">
+
+                <div class="display-6 mb-3">
+                    🔎
+                </div>
+
+                <h5 class="fw-bold">
+                    No encontramos productos
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Cambia la categoría o el texto de búsqueda.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+        <div id="pricingToast"
+             class="toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="toast-header">
+
+                <strong class="me-auto">
+                    WebEmpresarial Commerce™
+                </strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+
+            </div>
+
+            <div id="pricingToastBody"
+                 class="toast-body">
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const csrfData =
+                document.getElementById("csrfData");
+
+            const csrfToken =
+                csrfData?.dataset.token;
+
+            const csrfHeader =
+                csrfData?.dataset.header;
+
+            const filterCategory =
+                document.getElementById("filterCategory");
+
+            const searchProduct =
+                document.getElementById("searchProduct");
+
+            const clearFiltersButton =
+                document.getElementById("clearFiltersButton");
+
+            const filterSummary =
+                document.getElementById("filterSummary");
+
+            const noResults =
+                document.getElementById("noResults");
+
+            const bulkCategory =
+                document.getElementById("bulkCategory");
+
+            const bulkMode =
+                document.getElementById("bulkMode");
+
+            const bulkValue =
+                document.getElementById("bulkValue");
+
+            const bulkPrefix =
+                document.getElementById("bulkPrefix");
+
+            const bulkApplyButton =
+                document.getElementById("bulkApplyButton");
+
+            const toastElement =
+                document.getElementById("pricingToast");
+
+            const toastBody =
+                document.getElementById("pricingToastBody");
+
+            const toast =
+                toastElement && window.bootstrap
+                    ? bootstrap.Toast.getOrCreateInstance(toastElement)
+                    : null;
+
+            function showMessage(message) {
+                if (toast && toastBody) {
+                    toastBody.textContent = message;
+                    toast.show();
+                    return;
+                }
+
+                window.alert(message);
+            }
+
+            function requestHeaders() {
+                const headers = {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                };
+
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                return headers;
+            }
+
+            async function postForm(url, values) {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: requestHeaders(),
+                    body: new URLSearchParams(values)
+                });
+
+                if (!response.ok) {
+                    const responseText =
+                        await response.text();
+
+                    throw new Error(
+                        responseText ||
+                        `Error HTTP ${response.status}`
+                    );
+                }
+
+                return response;
+            }
+
+            function resetInputState(input) {
+                input.classList.remove(
+                    "is-saving",
+                    "is-saved",
+                    "is-error"
+                );
+            }
+
+            function setInputStatus(
+                input,
+                status,
+                message = ""
+            ) {
+                resetInputState(input);
+                input.classList.add(status);
+
+                const statusElement =
+                    input.closest(".d-flex")
+                        ?.querySelector(".save-status");
+
+                if (statusElement) {
+                    statusElement.textContent = message;
+
+                    statusElement.className =
+                        "save-status small " +
+                        (
+                            status === "is-saved"
+                                ? "text-success"
+                                : status === "is-error"
+                                    ? "text-danger"
+                                    : "text-muted"
+                        );
+                }
+
+                if (
+                    status === "is-saved" ||
+                    status === "is-error"
+                ) {
+                    window.setTimeout(() => {
+                        resetInputState(input);
+
+                        if (statusElement) {
+                            statusElement.textContent = "";
+                        }
+                    }, 1600);
+                }
+            }
+
+            async function updateProductPrice(input) {
+                const price = Number(input.value);
+
+                if (!Number.isFinite(price) || price <= 0) {
+                    setInputStatus(
+                        input,
+                        "is-error",
+                        "Precio inválido"
+                    );
+
+                    return false;
+                }
+
+                input.disabled = true;
+
+                setInputStatus(
+                    input,
+                    "is-saving",
+                    "Guardando..."
+                );
+
+                try {
+                    await postForm(
+                        "/api/productos/actualizarPrecio",
+                        {
+                            productoId: input.dataset.id,
+                            precio: price
+                        }
+                    );
+
+                    setInputStatus(
+                        input,
+                        "is-saved",
+                        "Guardado"
+                    );
+
+                    return true;
+
+                } catch (error) {
+                    console.error(error);
+
+                    setInputStatus(
+                        input,
+                        "is-error",
+                        "Error"
+                    );
+
+                    showMessage(
+                        error.message ||
+                        "No se pudo actualizar el precio."
+                    );
+
+                    return false;
+
+                } finally {
+                    input.disabled = false;
+                }
+            }
+
+            async function updateVariantPrice(input) {
+                const price = Number(input.value);
+
+                if (!Number.isFinite(price) || price <= 0) {
+                    setInputStatus(
+                        input,
+                        "is-error",
+                        "Precio inválido"
+                    );
+
+                    return false;
+                }
+
+                input.disabled = true;
+
+                setInputStatus(
+                    input,
+                    "is-saving",
+                    "Guardando..."
+                );
+
+                try {
+                    await postForm(
+                        "/api/variantes/actualizarPrecio",
+                        {
+                            varianteId: input.dataset.id,
+                            precio: price
+                        }
+                    );
+
+                    setInputStatus(
+                        input,
+                        "is-saved",
+                        "Guardado"
+                    );
+
+                    return true;
+
+                } catch (error) {
+                    console.error(error);
+
+                    setInputStatus(
+                        input,
+                        "is-error",
+                        "Error"
+                    );
+
+                    showMessage(
+                        error.message ||
+                        "No se pudo actualizar el precio de la variante."
+                    );
+
+                    return false;
+
+                } finally {
+                    input.disabled = false;
+                }
+            }
+
+            document
+                .querySelectorAll(".price-input")
+                .forEach((input, index, inputs) => {
+
+                    input.addEventListener(
+                        "keydown",
+                        async event => {
+
+                            if (event.key !== "Enter") {
+                                return;
+                            }
+
+                            event.preventDefault();
+
+                            const saved =
+                                await updateProductPrice(input);
+
+                            if (saved && inputs[index + 1]) {
+                                inputs[index + 1].focus();
+                                inputs[index + 1].select();
+                            }
+                        }
+                    );
+                });
+
+            document
+                .querySelectorAll(".variant-price-input")
+                .forEach(input => {
+
+                    input.addEventListener(
+                        "keydown",
+                        async event => {
+
+                            if (event.key !== "Enter") {
+                                return;
+                            }
+
+                            event.preventDefault();
+
+                            await updateVariantPrice(input);
+                        }
+                    );
+                });
+
+            document
+                .querySelectorAll(".toggle-variants")
+                .forEach(button => {
+
+                    const targetSelector =
+                        button.dataset.bsTarget;
+
+                    const target =
+                        document.querySelector(targetSelector);
+
+                    target?.addEventListener(
+                        "shown.bs.collapse",
+                        () => {
+                            button.textContent =
+                                "Ocultar variantes";
+
+                            button.classList.remove(
+                                "btn-outline-info"
+                            );
+
+                            button.classList.add(
+                                "btn-info"
+                            );
+                        }
+                    );
+
+                    target?.addEventListener(
+                        "hidden.bs.collapse",
+                        () => {
+                            button.textContent =
+                                "Editar variantes";
+
+                            button.classList.remove(
+                                "btn-info"
+                            );
+
+                            button.classList.add(
+                                "btn-outline-info"
+                            );
+                        }
+                    );
+                });
+
+            function applyFilters() {
+                const selectedCategory =
+                    filterCategory.value
+                        .trim()
+                        .toLocaleLowerCase("es-MX");
+
+                const searchTerm =
+                    searchProduct.value
+                        .trim()
+                        .toLocaleLowerCase("es-MX");
+
+                const rows =
+                    [...document.querySelectorAll(".product-row")];
+
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const category =
+                        (row.dataset.category || "")
+                            .trim()
+                            .toLocaleLowerCase("es-MX");
+
+                    const searchable =
+                        (row.dataset.search || "")
+                            .toLocaleLowerCase("es-MX");
+
+                    const categoryMatches =
+                        !selectedCategory ||
+                        category === selectedCategory;
+
+                    const textMatches =
+                        !searchTerm ||
+                        searchable.includes(searchTerm);
+
+                    const visible =
+                        categoryMatches && textMatches;
+
+                    row.classList.toggle(
+                        "d-none",
+                        !visible
+                    );
+
+                    const variantRow =
+                        document.querySelector(
+                            `[data-parent-id="${row.dataset.id}"]`
+                        );
+
+                    if (variantRow) {
+                        if (!visible) {
+                            if (window.bootstrap) {
+                                bootstrap.Collapse
+                                    .getOrCreateInstance(
+                                        variantRow,
+                                        {toggle: false}
+                                    )
+                                    .hide();
+                            }
+
+                            variantRow.classList.add("d-none");
+
+                        } else {
+                            variantRow.classList.remove("d-none");
+                        }
+                    }
+
+                    if (visible) {
+                        visibleCount += 1;
+                    }
+                });
+
+                filterSummary.textContent =
+                    `${visibleCount} producto${
+                        visibleCount === 1 ? "" : "s"
+                    } visible${visibleCount === 1 ? "" : "s"}.`;
+
+                noResults?.classList.toggle(
+                    "d-none",
+                    visibleCount !== 0
+                );
+            }
+
+            filterCategory?.addEventListener(
+                "change",
+                applyFilters
+            );
+
+            searchProduct?.addEventListener(
+                "input",
+                applyFilters
+            );
+
+            clearFiltersButton?.addEventListener(
+                "click",
+                () => {
+                    filterCategory.value = "";
+                    searchProduct.value = "";
+
+                    applyFilters();
+                    searchProduct.focus();
+                }
+            );
+
+            bulkMode?.addEventListener(
+                "change",
+                () => {
+                    bulkPrefix.textContent =
+                        bulkMode.value === "PORCENTAJE"
+                            ? "%"
+                            : "$";
+                }
+            );
+
+            /*
+             * Ajuste masivo directo:
+             * valida, confirma y ejecuta la petición.
+             */
+             bulkApplyButton?.addEventListener(
+            		    "click",
+            		    async () => {
+
+            		        const categoryId =
+            		            bulkCategory.value;
+
+            		        const categoryName =
+            		            bulkCategory.options[
+            		                bulkCategory.selectedIndex
+            		            ]?.text?.trim() || "";
+
+            		        const mode =
+            		            bulkMode.value;
+
+            		        const value =
+            		            Number(bulkValue.value);
+
+            		        bulkCategory.classList.remove(
+            		            "is-invalid"
+            		        );
+
+            		        bulkValue.classList.remove(
+            		            "is-invalid"
+            		        );
+
+            		        if (!categoryId) {
+            		            bulkCategory.classList.add(
+            		                "is-invalid"
+            		            );
+
+            		            bulkCategory.focus();
+
+            		            showMessage(
+            		                "Selecciona una categoría."
+            		            );
+
+            		            return;
+            		        }
+
+            		        if (!Number.isFinite(value) || value === 0) {
+            		            bulkValue.classList.add(
+            		                "is-invalid"
+            		            );
+
+            		            bulkValue.focus();
+
+            		            showMessage(
+            		                "Escribe un ajuste distinto de cero."
+            		            );
+
+            		            return;
+            		        }
+
+            		        const description =
+            		            mode === "PORCENTAJE"
+            		                ? (
+            		                    value > 0
+            		                        ? `aumentar ${value}%`
+            		                        : `disminuir ${Math.abs(value)}%`
+            		                )
+            		                : (
+            		                    value > 0
+            		                        ? `aumentar $${value.toFixed(2)}`
+            		                        : `disminuir $${Math.abs(value).toFixed(2)}`
+            		                );
+
+            		        const confirmed =
+            		            window.confirm(
+            		                `¿Deseas ${description} los precios de la categoría "${categoryName}"?`
+            		            );
+
+            		        if (!confirmed) {
+            		            return;
+            		        }
+
+            		        bulkApplyButton.disabled = true;
+            		        bulkApplyButton.textContent =
+            		            "Aplicando...";
+
+            		        try {
+            		            await postForm(
+            		                "/api/productos/ajustarPrecioCategoria",
+            		                {
+            		                    categoriaId: categoryId,
+            		                    valor: value,
+            		                    modo: mode
+            		                }
+            		            );
+
+            		            showMessage(
+            		                "Ajuste aplicado correctamente."
+            		            );
+
+            		            window.setTimeout(
+            		                () => window.location.reload(),
+            		                700
+            		            );
+
+            		        } catch (error) {
+            		            console.error(
+            		                "Error al ajustar precios:",
+            		                error
+            		            );
+
+            		            showMessage(
+            		                error.message ||
+            		                "No se pudo aplicar el ajuste masivo."
+            		            );
+
+            		        } finally {
+            		            bulkApplyButton.disabled = false;
+            		            bulkApplyButton.textContent =
+            		                "Aplicar";
+            		        }
+            		    }
+            		);
+
+            applyFilters();
+
+        })();
+    </script>
 
 </th:block>
-
-</tbody>
-</table>
-
-</div>
-
-    <button type="button"
-       class="btn btn-success float-btn"
-            onclick="history.back()">
-     ⬅ Volver
-    </button>
-
-</div>
-
-<!-- =========================
-     TOGGLE VARIANTES
-========================= -->
-<script>
-document.addEventListener('click', function(e){
-
-    const btn = e.target.closest('.btnToggleVariante');
-    if(!btn) return;
-
-    const id = btn.dataset.target;
-    const fila = document.getElementById(id);
-
-    if(!fila) return;
-
-    const abierta = fila.classList.contains('show');
-
-    document.querySelectorAll('.fila-variante.show').forEach(x=>{
-        if(x.id !== id) x.classList.remove('show');
-    });
-
-    document.querySelectorAll('.btnToggleVariante.activo').forEach(x=>{
-        if(x !== btn) x.classList.remove('activo');
-    });
-
-    fila.classList.toggle('show');
-    btn.classList.toggle('activo');
-
-    btn.innerText = abierta
-        ? 'Editar variantes'
-        : 'Ocultar variantes';
-});
-</script>
-
-<!-- =========================
-     GUARDAR VARIANTE
-========================= -->
-<script>
-document.querySelectorAll('.price-variante-input').forEach(input=>{
-
-input.addEventListener('keydown',function(e){
-
-if(e.key!=='Enter') return;
-
-const id=this.dataset.id;
-const precio=this.value;
-
-if(!precio || precio<=0){
-marcarError(this);
-return;
-}
-
-fetch('/api/variantes/actualizarPrecio',{
-method:'POST',
-headers:{'Content-Type':'application/x-www-form-urlencoded'},
-body:new URLSearchParams({
-varianteId:id,
-precio:precio
-})
-})
-.then(res=>{
-if(!res.ok) throw new Error();
-marcarGuardado(this);
-})
-.catch(()=>marcarError(this));
-
-});
-});
-</script>
-
-<!-- =========================
-     FILTROS
-========================= -->
-<script>
-const filtroCategoria=document.getElementById('filtroCategoria');
-const buscarNombre=document.getElementById('buscarNombre');
-
-function aplicarFiltros(){
-
-const categoria=filtroCategoria.value;
-const texto=buscarNombre.value.toLowerCase().trim();
-
-document.querySelectorAll('tbody tr').forEach(fila=>{
-
-const cat=fila.dataset.categoria;
-const nom=fila.dataset.nombre;
-
-if(cat===undefined) return;
-
-const okCat=!categoria || cat===categoria;
-const okNom=!texto || nom.includes(texto);
-
-fila.style.display=(okCat && okNom)?'':'none';
-});
-}
-
-filtroCategoria.addEventListener('change',aplicarFiltros);
-buscarNombre.addEventListener('input',aplicarFiltros);
-</script>
-
-<!-- =========================
-     GUARDAR SIMPLE
-========================= -->
-<script>
-document.querySelectorAll('.price-input').forEach((input,index,inputs)=>{
-
-input.addEventListener('keydown',function(e){
-
-if(e.key!=='Enter') return;
-
-e.preventDefault();
-
-const productoId=this.dataset.id;
-const nuevoPrecio=this.value;
-
-if(!nuevoPrecio || nuevoPrecio<=0){
-marcarError(this);
-return;
-}
-
-fetch('/api/productos/actualizarPrecio',{
-method:'POST',
-headers:{'Content-Type':'application/x-www-form-urlencoded'},
-body:new URLSearchParams({
-productoId:productoId,
-precio:nuevoPrecio
-})
-})
-.then(res=>{
-if(!res.ok) throw new Error();
-
-marcarGuardado(this);
-
-if(inputs[index+1]){
-inputs[index+1].focus();
-inputs[index+1].select();
-}
-})
-.catch(()=>marcarError(this));
-
-});
-});
-</script>
-
-<!-- =========================
-     FEEDBACK
-========================= -->
-<script>
-function marcarGuardado(input){
-input.style.borderColor='#22c55e';
-input.style.backgroundColor='rgba(34,197,94,.15)';
-
-setTimeout(()=>{
-input.style.borderColor='';
-input.style.backgroundColor='';
-},900);
-}
-
-function marcarError(input){
-input.style.borderColor='#ef4444';
-input.style.backgroundColor='rgba(239,68,68,.2)';
-
-setTimeout(()=>{
-input.style.borderColor='';
-input.style.backgroundColor='';
-},1200);
-}
-</script>
 
 </body>
 </html>

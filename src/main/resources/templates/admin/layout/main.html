@@ -4,7 +4,13 @@
       th:fragment="layout(title, content)">
 
 <head>
+<meta name="_csrf"
+      th:if="${_csrf != null}"
+      th:content="${_csrf.token}">
 
+<meta name="_csrf_header"
+      th:if="${_csrf != null}"
+      th:content="${_csrf.headerName}">
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -109,7 +115,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+<script>
+    document
+        .getElementById("stripeConnectBtn")
+        ?.addEventListener("click", async () => {
 
+            const csrfToken =
+                document.querySelector('meta[name="_csrf"]')?.content;
+
+            const csrfHeader =
+                document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            const headers = {};
+
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
+            const response = await fetch(
+                "/api/admin/stripe/connect/onboarding",
+                {
+                    method: "POST",
+                    headers
+                }
+            );
+
+            if (!response.ok) {
+                alert("No se pudo iniciar Stripe Connect.");
+                return;
+            }
+
+            const data = await response.json();
+
+            window.location.href = data.onboardingUrl;
+        });
+</script>
 <!-- CRM APP -->
 <script type="module"
         th:src="@{/assets/js/crm/crm-app.js}"

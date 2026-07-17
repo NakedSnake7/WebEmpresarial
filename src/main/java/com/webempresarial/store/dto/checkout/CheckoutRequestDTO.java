@@ -59,9 +59,5 @@ public class CheckoutRequestDTO {
         this.paymentMethod = paymentMethod;
     }
 
-    public List<String> getProductNames() {
-        return cart.stream()
-                   .map(CartItemDTO::getName)
-                   .toList();
-    }
+
 }

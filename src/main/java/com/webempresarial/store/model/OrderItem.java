@@ -56,6 +56,15 @@ public class OrderItem {
         this.order = order;
     }
 
+    public BigDecimal getSubtotal() {
+
+        if (price == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+
+        return price.multiply(BigDecimal.valueOf(quantity.longValue()));
+    }
+    
     // Getters y setters
     
     public Long getId() {

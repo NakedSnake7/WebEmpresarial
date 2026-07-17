@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Detalle de inventario | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <style>
+        .inventory-detail-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(13, 110, 253, .24),
+                    transparent 36%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
+
+        .inventory-detail-header .text-muted {
+            color: rgba(255, 255, 255, .68) !important;
+        }
+
+        .inventory-card,
+        .metric-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 1rem;
+            background: var(--bs-primary-bg-subtle);
+            font-size: 1.3rem;
+        }
+
+        .metric-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: .9rem;
+            background: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            font-size: 1.2rem;
+        }
+
+        .variant-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .variant-stock {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .movement-table {
+            min-width: 1100px;
+        }
+
+        .movement-table th {
+            white-space: nowrap;
+            font-size: .76rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--bs-secondary-color);
+        }
+
+        .movement-table td {
+            vertical-align: middle;
+        }
+
+        .stock-change {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            white-space: nowrap;
+        }
+
+        .stock-value {
+            min-width: 36px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .adjustment-preview {
+            border: 1px dashed var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .form-help {
+            font-size: .8rem;
+            color: var(--bs-secondary-color);
+        }
+
+        @media (max-width: 767.98px) {
+            .inventory-detail-header {
+                border-radius: 1rem;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- Alertas -->
+        <div th:if="${success}"
+             class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            <span th:text="${success}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+
+        <div th:if="${error}"
+             class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <span th:text="${error}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+
+        <!-- Encabezado -->
+        <div class="inventory-detail-header shadow-sm mb-4">
+
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
+
+                    <div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                            <span class="badge text-bg-primary">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Inventario
+                            </span>
+
+                            <span class="badge bg-light text-dark"
+                                  th:text="${inventory.hasVariants
+                                      ? 'Producto con variantes'
+                                      : 'Producto simple'}">
+                            </span>
+
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2"
+                            th:text="${inventory.productName}">
+                            Producto
+                        </h1>
+
+                        <div class="d-flex flex-wrap gap-3 text-muted">
+
+                            <span>
+                                ID:
+                                <strong class="text-white"
+                                        th:text="${inventory.productId}">
+                                </strong>
+                            </span>
+
+                            <span>
+                                SKU:
+                                <strong class="text-white"
+                                        th:text="${inventory.sku != null
+                                            and !#strings.isEmpty(inventory.sku)
+                                            ? inventory.sku
+                                            : 'Sin SKU'}">
+                                </strong>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a th:href="@{/admin/inventory}"
+                           class="btn btn-outline-light">
+                            Dashboard de inventario
+                        </a>
+
+                        <a th:href="@{/admin/inventory/movements(
+                               productId=${inventory.productId}
+                           )}"
+                           class="btn btn-outline-light">
+                            Ver Kardex
+                        </a>
+
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-light">
+                            Productos
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Métricas -->
+        <div class="row g-4 mb-4">
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex justify-content-between gap-3">
+
+                            <div>
+
+                                <div class="text-muted small mb-2">
+                                    Stock total
+                                </div>
+
+                                <div class="metric-value"
+                                     th:text="${inventory.hasVariants
+                                         ? #aggregates.sum(
+                                             inventory.variants.![stock]
+                                           )
+                                         : inventory.simpleStock}">
+                                    0
+                                </div>
+
+                            </div>
+
+                            <div class="metric-icon">
+                                📦
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex justify-content-between gap-3">
+
+                            <div>
+
+                                <div class="text-muted small mb-2">
+                                    Variantes
+                                </div>
+
+                                <div class="metric-value"
+                                     th:text="${inventory.hasVariants
+                                         ? #lists.size(inventory.variants)
+                                         : 0}">
+                                    0
+                                </div>
+
+                            </div>
+
+                            <div class="metric-icon">
+                                🧩
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex justify-content-between gap-3">
+
+                            <div>
+
+                                <div class="text-muted small mb-2">
+                                    Precio base
+                                </div>
+
+                                <div class="metric-value text-success">
+                                    $
+
+                                    <span th:text="${#numbers.formatDecimal(
+                                        inventory.basePrice != null
+                                            ? inventory.basePrice
+                                            : 0,
+                                        1,
+                                        'COMMA',
+                                        2,
+                                        'POINT'
+                                    )}">
+                                        0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <div class="metric-icon">
+                                💰
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex justify-content-between gap-3">
+
+                            <div>
+
+                                <div class="text-muted small mb-2">
+                                    Movimientos registrados
+                                </div>
+
+                                <div class="metric-value"
+                                     th:text="${inventory.movements != null
+                                         ? #lists.size(inventory.movements)
+                                         : 0}">
+                                    0
+                                </div>
+
+                            </div>
+
+                            <div class="metric-icon">
+                                📊
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row g-4 mb-4">
+
+            <!-- Ajuste manual -->
+            <div class="col-xl-5">
+
+                <div class="card inventory-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="section-heading">
+
+                            <div class="section-icon">
+                                ✏️
+                            </div>
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    Ajuste manual
+                                </h5>
+
+                                <p class="text-muted small mb-0">
+                                    Registra entradas o salidas con trazabilidad.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <form th:action="@{/admin/productos/{id}/inventory/adjust(
+                                  id=${inventory.productId}
+                              )}"
+                              th:object="${adjustment}"
+                              method="post"
+                              id="inventoryAdjustmentForm">
+
+                            <th:block th:replace="~{fragments/csrf :: token}">
+                            </th:block>
+
+                            <!-- Variante -->
+                            <div class="mb-3"
+                                 th:if="${inventory.hasVariants}">
+
+                                <label for="variantId"
+                                       class="form-label fw-semibold">
+                                    Variante
+                                </label>
+
+                                <select id="variantId"
+                                        th:field="*{variantId}"
+                                        class="form-select"
+                                        required>
+
+                                    <option value="">
+                                        Selecciona una variante
+                                    </option>
+
+                                    <option th:each="variant : ${inventory.variants}"
+                                            th:value="${variant.variantId}"
+                                            th:text="${variant.label
+                                                + ' · Stock: '
+                                                + variant.stock}">
+                                    </option>
+
+                                </select>
+
+                                <div class="form-help mt-1">
+                                    El ajuste se aplicará únicamente a la variante seleccionada.
+                                </div>
+
+                            </div>
+
+                            <!-- Producto simple -->
+                            <div class="alert alert-light border mb-3"
+                                 th:unless="${inventory.hasVariants}">
+
+                                <div class="d-flex justify-content-between gap-3">
+
+                                    <span class="text-muted">
+                                        Stock actual
+                                    </span>
+
+                                    <strong th:text="${inventory.simpleStock}">
+                                        0
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                            <!-- Tipo -->
+                            <div class="mb-3">
+
+                                <label for="type"
+                                       class="form-label fw-semibold">
+                                    Tipo de movimiento
+                                </label>
+
+                                <select id="type"
+                                        th:field="*{type}"
+                                        class="form-select"
+                                        required>
+
+                                    <option value="">
+                                        Selecciona el tipo
+                                    </option>
+
+                                    <option th:each="typeOption : ${adjustmentTypes}"
+                                            th:value="${typeOption}"
+                                            th:text="${typeOption.name()
+                                                == 'ADJUSTMENT_IN'
+                                                ? 'Entrada de inventario'
+                                                : 'Salida de inventario'}">
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div class="mb-3">
+
+                                <label for="quantity"
+                                       class="form-label fw-semibold">
+                                    Cantidad
+                                </label>
+
+                                <input type="number"
+                                       id="quantity"
+                                       th:field="*{quantity}"
+                                       min="1"
+                                       step="1"
+                                       class="form-control"
+                                       placeholder="Ej. 10"
+                                       required>
+
+                            </div>
+
+                            <!-- Motivo -->
+                            <div class="mb-3">
+
+                                <label for="reason"
+                                       class="form-label fw-semibold">
+                                    Motivo
+                                </label>
+
+                                <textarea id="reason"
+                                          th:field="*{reason}"
+                                          class="form-control"
+                                          rows="4"
+                                          maxlength="500"
+                                          placeholder="Ej. Recepción de mercancía, producto dañado, ajuste por inventario físico..."
+                                          required>
+                                </textarea>
+
+                                <div class="form-help mt-1">
+                                    Este texto aparecerá en el Kardex.
+                                </div>
+
+                            </div>
+
+                            <!-- Vista previa -->
+                            <div class="adjustment-preview mb-3">
+
+                                <div class="small text-muted mb-1">
+                                    Resumen del movimiento
+                                </div>
+
+                                <div id="adjustmentPreview"
+                                     class="fw-semibold">
+                                    Completa los datos del ajuste.
+                                </div>
+
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100"
+                                    id="adjustmentSubmitButton">
+
+                                Guardar ajuste
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Inventario actual -->
+            <div class="col-xl-7">
+
+                <div class="card inventory-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="section-heading">
+
+                            <div class="section-icon">
+                                🧩
+                            </div>
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    Inventario actual
+                                </h5>
+
+                                <p class="text-muted small mb-0"
+                                   th:text="${inventory.hasVariants
+                                       ? 'Existencias y precios por variante.'
+                                       : 'Existencias actuales del producto simple.'}">
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Producto simple -->
+                        <div th:unless="${inventory.hasVariants}"
+                             class="variant-card">
+
+                            <div class="d-flex flex-column flex-sm-row
+                                        justify-content-between
+                                        align-items-sm-center gap-3">
+
+                                <div>
+
+                                    <div class="fw-bold mb-1"
+                                         th:text="${inventory.productName}">
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Producto simple
+                                    </div>
+
+                                </div>
+
+                                <div class="text-sm-end">
+
+                                    <div class="small text-muted">
+                                        Stock
+                                    </div>
+
+                                    <div class="variant-stock"
+                                         th:classappend="${inventory.simpleStock <= 0
+                                             ? ' text-danger'
+                                             : inventory.simpleStock <= 2
+                                                 ? ' text-danger'
+                                                 : inventory.simpleStock <= 5
+                                                     ? ' text-warning'
+                                                     : ' text-success'}"
+                                         th:text="${inventory.simpleStock}">
+                                        0
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Variantes -->
+                        <div th:if="${inventory.hasVariants
+                                    and inventory.variants != null
+                                    and !#lists.isEmpty(inventory.variants)}"
+                             class="row g-3">
+
+                            <div class="col-md-6"
+                                 th:each="variant : ${inventory.variants}">
+
+                                <div class="variant-card h-100">
+
+                                    <div class="d-flex justify-content-between gap-3 mb-3">
+
+                                        <div>
+
+                                            <div class="fw-bold"
+                                                 th:text="${variant.label}">
+                                                Variante
+                                            </div>
+
+                                            <div class="small text-muted"
+                                                 th:text="'Variante #'
+                                                     + ${variant.variantId}">
+                                            </div>
+
+                                        </div>
+
+                                        <span class="badge align-self-start"
+                                              th:classappend="${variant.stock <= 0
+                                                  ? ' text-bg-danger'
+                                                  : variant.stock <= 2
+                                                      ? ' text-bg-danger'
+                                                      : variant.stock <= 5
+                                                          ? ' text-bg-warning'
+                                                          : ' text-bg-success'}"
+                                              th:text="${variant.stock <= 0
+                                                  ? 'Agotada'
+                                                  : variant.stock <= 2
+                                                      ? 'Crítica'
+                                                      : variant.stock <= 5
+                                                          ? 'Stock bajo'
+                                                          : 'Disponible'}">
+                                        </span>
+
+                                    </div>
+
+                                    <div class="d-flex justify-content-between
+                                                align-items-end gap-3">
+
+                                        <div>
+
+                                            <div class="small text-muted">
+                                                Precio
+                                            </div>
+
+                                            <div class="fw-semibold">
+                                                $
+
+                                                <span th:text="${#numbers.formatDecimal(
+                                                    variant.price != null
+                                                        ? variant.price
+                                                        : 0,
+                                                    1,
+                                                    'COMMA',
+                                                    2,
+                                                    'POINT'
+                                                )}">
+                                                    0.00
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="text-end">
+
+                                            <div class="small text-muted">
+                                                Stock
+                                            </div>
+
+                                            <div class="variant-stock"
+                                                 th:text="${variant.stock}">
+                                                0
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div th:if="${inventory.hasVariants
+                                    and (inventory.variants == null
+                                         or #lists.isEmpty(inventory.variants))}"
+                             class="empty-state">
+
+                            <div class="display-6 mb-3">
+                                🧩
+                            </div>
+
+                            <h6 class="fw-bold">
+                                Sin variantes registradas
+                            </h6>
+
+                            <p class="text-muted small mb-0">
+                                El producto está marcado con variantes,
+                                pero no tiene registros disponibles.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Historial -->
+        <div class="card inventory-card overflow-hidden">
+
+            <div class="card-header bg-body border-bottom p-4">
+
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between
+                            align-items-md-center gap-3">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Historial de movimientos
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Últimos 50 movimientos del producto.
+                        </p>
+
+                    </div>
+
+                    <a th:href="@{/admin/inventory/movements(
+                           productId=${inventory.productId}
+                       )}"
+                       class="btn btn-sm btn-outline-primary">
+                        Ver historial completo
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${inventory.movements != null
+                        and !#lists.isEmpty(inventory.movements)}">
+
+                <table class="table movement-table align-middle mb-0">
+
+                    <thead>
+
+                    <tr>
+                        <th class="ps-4">Fecha</th>
+                        <th>Tipo</th>
+                        <th>Variante</th>
+                        <th>Orden</th>
+                        <th>Cantidad</th>
+                        <th>Stock</th>
+                        <th class="pe-4">Motivo</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="movement : ${inventory.movements}">
+
+                        <td class="ps-4">
+
+                            <div th:text="${#temporals.format(
+                                movement.createdAt,
+                                'dd/MM/yyyy'
+                            )}">
+                            </div>
+
+                            <div class="small text-muted"
+                                 th:text="${#temporals.format(
+                                     movement.createdAt,
+                                     'HH:mm:ss'
+                                 )}">
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge"
+                                  th:classappend="${movement.type.name()
+                                      == 'SALE'
+                                          ? ' text-bg-danger'
+                                      : movement.type.name()
+                                          == 'RESTORE'
+                                              ? ' text-bg-success'
+                                      : movement.type.name()
+                                          == 'ADJUSTMENT_IN'
+                                              ? ' text-bg-primary'
+                                      : movement.type.name()
+                                          == 'ADJUSTMENT_OUT'
+                                              ? ' text-bg-warning'
+                                              : ' text-bg-secondary'}"
+                                  th:text="${movement.type.name()
+                                      == 'SALE'
+                                          ? 'Venta'
+                                      : movement.type.name()
+                                          == 'RESTORE'
+                                              ? 'Restauración'
+                                      : movement.type.name()
+                                          == 'ADJUSTMENT_IN'
+                                              ? 'Ajuste entrada'
+                                      : movement.type.name()
+                                          == 'ADJUSTMENT_OUT'
+                                              ? 'Ajuste salida'
+                                              : movement.type}">
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span th:if="${movement.variantId != null}"
+                                  class="badge text-bg-light border"
+                                  th:text="${movement.variantLabel}">
+                            </span>
+
+                            <span th:unless="${movement.variantId != null}"
+                                  class="text-muted small">
+                                Producto simple
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <a th:if="${movement.orderId != null}"
+                               th:href="@{/orders/{id}(
+                                   id=${movement.orderId}
+                               )}"
+                               class="btn btn-sm btn-outline-primary"
+                               th:text="'#' + ${movement.orderId}">
+                            </a>
+
+                            <span th:unless="${movement.orderId != null}"
+                                  class="text-muted small">
+                                Sin orden
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="fw-bold"
+                                  th:classappend="${movement.type.name()
+                                      == 'SALE'
+                                      or movement.type.name()
+                                      == 'ADJUSTMENT_OUT'
+                                          ? ' text-danger'
+                                          : ' text-success'}"
+                                  th:text="${movement.type.name()
+                                      == 'SALE'
+                                      or movement.type.name()
+                                      == 'ADJUSTMENT_OUT'
+                                          ? '-' + movement.quantity
+                                          : '+' + movement.quantity}">
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="stock-change">
+
+                                <span class="stock-value"
+                                      th:text="${movement.stockBefore}">
+                                </span>
+
+                                <span class="text-muted">
+                                    →
+                                </span>
+
+                                <span class="stock-value"
+                                      th:text="${movement.stockAfter}">
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                        <td class="pe-4">
+
+                            <div class="small"
+                                 th:text="${movement.reason != null
+                                     and !#strings.isEmpty(movement.reason)
+                                     ? movement.reason
+                                     : 'Sin descripción'}">
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div th:if="${inventory.movements == null
+                        or #lists.isEmpty(inventory.movements)}"
+                 class="empty-state">
+
+                <div class="display-6 mb-3">
+                    📊
+                </div>
+
+                <h6 class="fw-bold">
+                    Sin movimientos registrados
+                </h6>
+
+                <p class="text-muted small mb-0">
+                    Los ajustes, ventas y restauraciones aparecerán aquí.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const form =
+                document.getElementById(
+                    "inventoryAdjustmentForm"
+                );
+
+            if (!form) {
+                return;
+            }
+
+            const typeSelect =
+                document.getElementById("type");
+
+            const quantityInput =
+                document.getElementById("quantity");
+
+            const variantSelect =
+                document.getElementById("variantId");
+
+            const reasonInput =
+                document.getElementById("reason");
+
+            const preview =
+                document.getElementById(
+                    "adjustmentPreview"
+                );
+
+            const submitButton =
+                document.getElementById(
+                    "adjustmentSubmitButton"
+                );
+
+            function updatePreview() {
+                const type =
+                    typeSelect?.value;
+
+                const quantity =
+                    quantityInput?.value;
+
+                const reason =
+                    reasonInput?.value?.trim();
+
+                const selectedVariant =
+                    variantSelect
+                        && variantSelect.value
+                        ? variantSelect.options[
+                            variantSelect.selectedIndex
+                          ]?.text
+                        : null;
+
+                if (!type || !quantity) {
+                    preview.textContent =
+                        "Completa los datos del ajuste.";
+                    return;
+                }
+
+                const operation =
+                    type === "ADJUSTMENT_IN"
+                        ? "Entrada"
+                        : "Salida";
+
+                let text =
+                    `${operation} de ${quantity} unidad(es)`;
+
+                if (selectedVariant) {
+                    text += ` para ${selectedVariant}`;
+                }
+
+                if (reason) {
+                    text += `. Motivo: ${reason}`;
+                }
+
+                preview.textContent = text;
+            }
+
+            [
+                typeSelect,
+                quantityInput,
+                variantSelect,
+                reasonInput
+            ]
+                .filter(Boolean)
+                .forEach(element => {
+                    element.addEventListener(
+                        "input",
+                        updatePreview
+                    );
+
+                    element.addEventListener(
+                        "change",
+                        updatePreview
+                    );
+                });
+
+            form.addEventListener(
+                "submit",
+                event => {
+
+                    const type =
+                        typeSelect.value;
+
+                    const quantity =
+                        quantityInput.value;
+
+                    if (!type || !quantity) {
+                        return;
+                    }
+
+                    const operation =
+                        type === "ADJUSTMENT_IN"
+                            ? "registrar una entrada"
+                            : "registrar una salida";
+
+                    const confirmed =
+                        window.confirm(
+                            `¿Confirmas ${operation} de `
+                            + `${quantity} unidad(es)?`
+                        );
+
+                    if (!confirmed) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    submitButton.disabled = true;
+                    submitButton.textContent =
+                        "Guardando ajuste...";
+                }
+            );
+
+            updatePreview();
+        })();
+    </script>
+
+</th:block>
+
+</body>
+</html>

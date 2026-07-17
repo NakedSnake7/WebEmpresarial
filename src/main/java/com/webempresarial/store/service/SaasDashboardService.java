@@ -9,6 +9,7 @@ import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.repository.LeadRepository;
 import com.webempresarial.store.repository.ProposalRepository;
 import com.webempresarial.store.repository.StoreRepository;
+import com.webempresarial.store.repository.SubscriptionRepository;
 
 @Service
 public class SaasDashboardService {
@@ -16,39 +17,72 @@ public class SaasDashboardService {
     private final StoreRepository storeRepository;
     private final LeadRepository leadRepository;
     private final ProposalRepository proposalRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     public SaasDashboardService(
             StoreRepository storeRepository,
             LeadRepository leadRepository,
-            ProposalRepository proposalRepository
+            ProposalRepository proposalRepository,
+            SubscriptionRepository subscriptionRepository
     ) {
         this.storeRepository = storeRepository;
         this.leadRepository = leadRepository;
         this.proposalRepository = proposalRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     public SaasDashboardDTO getDashboard() {
 
-        long totalStores = storeRepository.count();
-        long activeStores = storeRepository.countByActivaTrue();
+        long totalStores =
+                storeRepository.count();
 
-        long basicStores = storeRepository.countByPlan(StorePlan.BASIC);
-        long proStores = storeRepository.countByPlan(StorePlan.PRO);
-        long premiumStores = storeRepository.countByPlan(StorePlan.PREMIUM);
+        long activeStores =
+                storeRepository.countByActivaTrue();
 
-        long totalLeads = leadRepository.countAllPlatformLeads();
-        long totalProposals = proposalRepository.countAllPlatformProposals();
+        /*
+         * Estas métricas siguen usando Store.plan como caché
+         * de compatibilidad para distribución visual.
+         */
+        long basicStores =
+                storeRepository.countByPlan(StorePlan.BASIC);
 
-        BigDecimal globalPipelineValue = leadRepository.getGlobalPipelineValue();
-        BigDecimal globalRevenueForecast = proposalRepository.getGlobalRevenueForecast();
+        long proStores =
+                storeRepository.countByPlan(StorePlan.PRO);
 
-        BigDecimal estimatedMRR = calculateMRR(
-                basicStores,
-                proStores,
-                premiumStores
-        );
+        long premiumStores =
+                storeRepository.countByPlan(StorePlan.PREMIUM);
 
-        BigDecimal estimatedARR = estimatedMRR.multiply(BigDecimal.valueOf(12));
+        long totalLeads =
+                leadRepository.countAllPlatformLeads();
+
+        long totalProposals =
+                proposalRepository.countAllPlatformProposals();
+
+        BigDecimal globalPipelineValue =
+                leadRepository.getGlobalPipelineValue();
+
+        BigDecimal globalRevenueForecast =
+                proposalRepository.getGlobalRevenueForecast();
+
+        if (globalPipelineValue == null) {
+            globalPipelineValue = BigDecimal.ZERO;
+        }
+
+        if (globalRevenueForecast == null) {
+            globalRevenueForecast = BigDecimal.ZERO;
+        }
+
+        BigDecimal estimatedMRR =
+                subscriptionRepository.calculatePlatformMRR();
+
+        if (estimatedMRR == null) {
+            estimatedMRR = BigDecimal.ZERO;
+        }
+
+        BigDecimal estimatedARR =
+                estimatedMRR.multiply(
+                        BigDecimal.valueOf(12)
+                );
 
         return new SaasDashboardDTO(
                 totalStores,
@@ -63,19 +97,5 @@ public class SaasDashboardService {
                 estimatedMRR,
                 estimatedARR
         );
-    }
-
-    private BigDecimal calculateMRR(
-            long basicStores,
-            long proStores,
-            long premiumStores
-    ) {
-        BigDecimal basicPrice = BigDecimal.valueOf(499);
-        BigDecimal proPrice = BigDecimal.valueOf(999);
-        BigDecimal premiumPrice = BigDecimal.valueOf(1999);
-
-        return basicPrice.multiply(BigDecimal.valueOf(basicStores))
-                .add(proPrice.multiply(BigDecimal.valueOf(proStores)))
-                .add(premiumPrice.multiply(BigDecimal.valueOf(premiumStores)));
     }
 }

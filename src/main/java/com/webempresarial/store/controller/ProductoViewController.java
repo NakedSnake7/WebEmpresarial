@@ -292,7 +292,7 @@ public class ProductoViewController {
 
         model.addAttribute(
                 "categorias",
-                productoService.obtenerCategorias(store)
+                productoService.obtenerCategoriasAdmin(store)
         );
 
         return "admin/modificar-precios";

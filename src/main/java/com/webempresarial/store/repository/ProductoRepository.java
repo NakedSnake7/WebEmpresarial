@@ -1,5 +1,6 @@
 package com.webempresarial.store.repository;
 
+import com.webempresarial.store.dto.inventory.SimpleProductStockProjection;
 import com.webempresarial.store.dto.producto.publico.ProductoCardDTO;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.Store;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -249,6 +251,85 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
             @Param("store") Store store
     );
     
+    @Query("""
+    	    SELECT COUNT(p)
+    	    FROM Producto p
+    	    WHERE p.store = :store
+    	    AND (
+    	        (p.variantes IS EMPTY AND p.stockSimple <= 0)
+    	        OR EXISTS (
+    	            SELECT v.id
+    	            FROM ProductoVariante v
+    	            WHERE v.producto = p
+    	            AND v.stock <= 0
+    	        )
+    	    )
+    	""")
+    	long countOutOfStock(
+    	        @Param("store") Store store
+    	);
+    
+    @Query("""
+    	    SELECT COUNT(p)
+    	    FROM Producto p
+    	    WHERE p.store = :store
+    	    AND p.variantes IS EMPTY
+    	    AND p.stockSimple > 0
+    	    AND p.stockSimple <= :threshold
+    	""")
+    	long countLowStockSimpleProducts(
+    	        @Param("store") Store store,
+    	        @Param("threshold") int threshold
+    	);
+    
+    @Query("""
+    	    SELECT COALESCE(SUM(p.price * p.stockSimple), 0)
+    	    FROM Producto p
+    	    WHERE p.store = :store
+    	    AND p.variantes IS EMPTY
+    	""")
+    	BigDecimal calculateSimpleInventoryValue(
+    	        @Param("store") Store store
+    	);
+    
+    @Query("""
+    	    SELECT new com.webempresarial.store.dto.inventory.SimpleProductStockProjection(
+    	        p.id,
+    	        p.productName,
+    	        p.stockSimple,
+    	        p.price
+    	    )
+    	    FROM Producto p
+    	    WHERE p.store = :store
+    	    AND p.variantes IS EMPTY
+    	    AND p.stockSimple <= :threshold
+    	    ORDER BY p.stockSimple ASC, p.productName ASC
+    	""")
+    	List<SimpleProductStockProjection> findLowStockSimpleProducts(
+    	        @Param("store") Store store,
+    	        @Param("threshold") int threshold
+    	);
+    
+    @Query("""
+    	    SELECT COALESCE(SUM(p.stockSimple), 0)
+    	    FROM Producto p
+    	    WHERE p.store = :store
+    	    AND p.variantes IS EMPTY
+    	""")
+    	long sumSimpleStock(
+    	        @Param("store") Store store
+    	);
+    
+    @Query("""
+    	    SELECT DISTINCT p
+    	    FROM Producto p
+    	    LEFT JOIN FETCH p.variantes v
+    	    LEFT JOIN FETCH v.atributos
+    	    WHERE p.store = :store
+    	""")
+    	List<Producto> findProductosConVariantesYStock(
+    	        @Param("store") Store store
+    	);
     long countByStoreId(Long storeId);
 
     long countByStoreIdAndVisibleEnMenuTrue(Long storeId);

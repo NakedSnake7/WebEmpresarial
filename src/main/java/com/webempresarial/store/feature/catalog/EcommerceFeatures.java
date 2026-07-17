@@ -15,26 +15,71 @@ import org.springframework.stereotype.Component;
 @Component
 public class EcommerceFeatures implements PlatformModule {
 
-    @Override
-    public PlatformModuleDescriptor descriptor() {
-        return PlatformModuleDescriptor.builder("Ecommerce")
-                .description("Módulos base para productos, inventario, pedidos y checkout.")
-                .feature(products())
-                .feature(categories())
-                .feature(inventory())
-                .feature(orders())
-                .feature(checkout())
-                .sidebarSection(
-                        SidebarSectionDefinition.builder("Ecommerce", "🛒")
-                                .item("Productos", "📦", "/admin/productos", Feature.PRODUCTS)
-                                .item("Categorías", "🏷️", "/admin/categorias", Feature.CATEGORIES)
-                                .item("Inventario", "📊", "/admin/productos", Feature.INVENTORY)
-                                .item("Pedidos", "🧾", "/orders", Feature.ORDERS)
-                                .build()
-                )
-          
-                .build();
-    }
+	@Override
+	public PlatformModuleDescriptor descriptor() {
+	    return PlatformModuleDescriptor.builder("Ecommerce")
+	            .description(
+	                    "Módulos base para catálogo, precios, inventario, pedidos y checkout."
+	            )
+	            .feature(products())
+	            .feature(categories())
+	            .feature(inventory())
+	            .feature(inventoryKardex())
+	            .feature(orders())
+	            .feature(checkout())
+	            .sidebarSection(
+	                    SidebarSectionDefinition.builder(
+	                                    "WebEmpresarial Commerce™",
+	                                    "🛒"
+	                            )
+	                            .item(
+	                                    "Productos",
+	                                    "📦",
+	                                    "/admin/productos",
+	                                    Feature.PRODUCTS
+	                            )
+	                            .item(
+	                                    "Nuevo producto",
+	                                    "➕",
+	                                    "/nuevo",
+	                                    Feature.PRODUCTS
+	                            )
+	                            .item(
+	                                    "Precios y promociones",
+	                                    "💲",
+	                                    "/modificar-precios",
+	                                    Feature.INVENTORY
+	                            )
+	                            
+	                            .item(
+	                                    "Dashboard de inventario",
+	                                    "📦",
+	                                    "/admin/inventory",
+	                                    Feature.INVENTORY
+	                            )
+	                            .item(
+	                                    "Alertas de inventario",
+	                                    "🚨",
+	                                    "/admin/inventory/alerts",
+	                                    Feature.INVENTORY
+	                            )
+	                            
+	                            .item(
+	                                    "Kardex de inventario",
+	                                    "📊",
+	                                    "/admin/inventory/movements",
+	                                    Feature.INVENTORY_KARDEX
+	                            )
+	                            .item(
+	                                    "Pedidos",
+	                                    "🧾",
+	                                    "/orders",
+	                                    Feature.ORDERS
+	                            )
+	                            .build()
+	            )
+	            .build();
+	}
 
     private FeatureDefinition products() {
         return FeatureDefinition.builder(Feature.PRODUCTS)
@@ -65,15 +110,16 @@ public class EcommerceFeatures implements PlatformModule {
                 .presentation(standardBasic(false))
                 .build();
     }
-
     private FeatureDefinition inventory() {
         return FeatureDefinition.builder(Feature.INVENTORY)
                 .displayName("Inventario")
-                .description("Controla stock y disponibilidad.")
+                .description(
+                        "Controla existencias, disponibilidad y precios operativos."
+                )
                 .category(FeatureCategory.ECOMMERCE)
-                .icon("📊")
+                .icon("📦")
                 .color("primary")
-                .url("/admin/productos")
+                .url("/admin/inventory")
                 .healthWeight(5)
                 .order(30)
                 .accessPolicy(basic())
@@ -134,6 +180,27 @@ public class EcommerceFeatures implements PlatformModule {
                 .showInBilling(true)
                 .showUpgradeCard(false)
                 .trackUsage(true)
+                .build();
+    }
+    
+    private FeatureDefinition inventoryKardex() {
+        return FeatureDefinition.builder(
+                        Feature.INVENTORY_KARDEX
+                )
+                .displayName("Kardex de inventario")
+                .description(
+                        "Consulta entradas, salidas, ventas, restauraciones y ajustes de inventario."
+                )
+                .category(FeatureCategory.ECOMMERCE)
+                .icon("📊")
+                .color("info")
+                .url("/admin/inventory/movements")
+                .healthWeight(4)
+                .order(35)
+                .accessPolicy(basic())
+                .presentation(
+                        standardBasic(true)
+                )
                 .build();
     }
 }

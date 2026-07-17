@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import org.slf4j.Logger; 
+import org.slf4j.Logger;  
 import org.slf4j.LoggerFactory;
 
 import org.springframework.transaction.annotation.Propagation;
@@ -10,13 +10,18 @@ import com.webempresarial.store.dto.checkout.CheckoutRequestDTO;
 import com.webempresarial.store.dto.order.OrderRequestDTO;
 import com.webempresarial.store.dto.producto.reportes.ProductoVentaDTO;
 import com.webempresarial.store.exceptions.OrderNotFoundException;
+import com.webempresarial.store.exceptions.ResourceNotFoundException;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.OrderStatus;
+import com.webempresarial.store.model.OrderTransition;
+import com.webempresarial.store.model.OrderTransitionContext;
 import com.webempresarial.store.model.PaymentStatus;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.ProductoVariante;
 import com.webempresarial.store.model.Cliente;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.repository.InventoryMovementRepository;
+import com.webempresarial.store.repository.OrderOutboxRepository;
 import com.webempresarial.store.repository.OrderRepository;
 import com.webempresarial.store.repository.ProductoRepository;
 import com.webempresarial.store.repository.ProductoVarianteRepository;
@@ -40,21 +45,31 @@ public class OrderService {
     private final ProductoVarianteRepository productoVarianteRepository;
     private final StockService stockService;
     private final NotificationService notificationService;
+    private final OrderStateMachine orderStateMachine;
+    private final OrderOutboxRepository orderOutboxRepository;
+    private final InventoryMovementRepository
+    inventoryMovementRepository;
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(
-    	    OrderRepository orderRepository,
-    	    ProductoRepository productoRepository,
+            OrderRepository orderRepository,
+            ProductoRepository productoRepository,
             ProductoVarianteRepository productoVarianteRepository,
-    	    StockService stockService,
-    	    NotificationService notificationService
-    	) {
-    	    this.orderRepository = orderRepository;
-    	    this.productoRepository = productoRepository;
-    	    this.productoVarianteRepository = productoVarianteRepository;
-    	    this.stockService = stockService;
-    	    this.notificationService = notificationService;
-    	}
+            StockService stockService,
+            NotificationService notificationService,
+            OrderStateMachine orderStateMachine,
+            OrderOutboxRepository orderOutboxRepository,
+            InventoryMovementRepository inventoryMovementRepository
+    ) {
+        this.orderRepository = orderRepository;
+        this.productoRepository = productoRepository;
+        this.productoVarianteRepository = productoVarianteRepository;
+        this.stockService = stockService;
+        this.notificationService = notificationService;
+        this.orderStateMachine = orderStateMachine;
+        this.orderOutboxRepository = orderOutboxRepository;
+        this.inventoryMovementRepository = inventoryMovementRepository;
+    }
 
     public Optional<Order> findByStripeSessionId(String stripeSessionId, Store store) {
         return orderRepository.findByStripeSessionIdAndStore(stripeSessionId, store);
@@ -93,7 +108,19 @@ public class OrderService {
  
 
 
-   
+    @Transactional
+    public Producto obtenerProductoConLock(
+            Long productId,
+            Store store
+    ) {
+        return productoRepository
+                .findByIdForUpdate(productId, store)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Producto no encontrado: " + productId
+                        )
+                );
+    }
  
     
     /* =====================================================
@@ -164,52 +191,92 @@ guardar orden por transferencia
             String paymentIntentId,
             Store store
     ) {
-
-        Order order = getById(orderId, store);
+        Order order = getByIdForUpdate(orderId, store);
 
         if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("No puedes pagar una orden cancelada");
+            throw new IllegalStateException(
+                    "No puedes pagar una orden cancelada"
+            );
         }
 
-        order.markAsPaid(paymentIntentId);
-        orderRepository.save(order);
+        if (order.isPaid()) {
+            return;
+        }
+
+        orderStateMachine.transition(
+                order,
+                OrderTransition.PAYMENT_CONFIRMED,
+                OrderTransitionContext.payment(
+                        paymentIntentId
+                )
+        );
     }
  /* =====================================================
     POST-PAGO – PASO 2 (PUEDE FALLAR)
     👉 STOCK / LOGÍSTICA
  ===================================================== */
 
- @Transactional
- public void procesarPostPago(Long orderId, Store store) {
+    @Transactional
+    public void procesarPostPago(
+            Long orderId,
+            Store store
+    ) {
+        Order order =
+                getFullOrderByIdForUpdate(
+                        orderId,
+                        store
+                );
 
-     Order order = getOrderByIdWithUserAndItems(orderId, store);
+        if (!order.isPaid()) {
+            throw new IllegalStateException(
+                    "No puedes procesar una orden no pagada"
+            );
+        }
 
-     if (!order.isPaid()) {
-         throw new IllegalStateException("No puedes procesar una orden no pagada");
-     }
+        if (order.isStockReduced()) {
 
-     if (order.isStockReduced()) {
-         if (order.getOrderStatus() != OrderStatus.PROCESSED) {
-             order.markAsProcessed();
-             orderRepository.save(order);
-         }
-         return;
-     }
+            orderStateMachine.transition(
+                    order,
+                    OrderTransition.STOCK_CONFIRMED,
+                    OrderTransitionContext.empty()
+            );
 
-     try {
-         stockService.descontarStock(order, store);
+            notificationService
+                    .sendPaymentConfirmation(order);
 
-         order.markAsProcessed();
-         orderRepository.save(order);
+            return;
+        }
 
-     } catch (Exception e) {
+        try {
+            stockService.descontarStock(
+                    order,
+                    store
+            );
 
-         order.markAsPendingStock();
-         orderRepository.save(order);
+            orderStateMachine.transition(
+                    order,
+                    OrderTransition.STOCK_CONFIRMED,
+                    OrderTransitionContext.empty()
+            );
 
-         log.error("Stock falló en orden {}", orderId, e);
-     }
- }
+            notificationService
+                    .sendPaymentConfirmation(order);
+
+        } catch (Exception ex) {
+
+            orderStateMachine.transition(
+                    order,
+                    OrderTransition.STOCK_FAILED,
+                    OrderTransitionContext.empty()
+            );
+
+            log.error(
+                    "Stock falló en orden {}",
+                    orderId,
+                    ex
+            );
+        }
+    }
  
  public List<Order> findOrdersForExport(
 	        OrderStatus status,
@@ -228,34 +295,89 @@ guardar orden por transferencia
 	}
  
  @Transactional
- public void confirmarPagoTransferencia(Long orderId, Store store) {
+ public void confirmarPagoTransferencia(
+         Long orderId,
+         Store store
+ ) {
+     Order order =
+             getFullOrderByIdForUpdate(
+                     orderId,
+                     store
+             );
 
-     Order order = getOrderByIdWithUserAndItems(orderId, store);
-
-     if (order.isPaid() && order.getOrderStatus() == OrderStatus.PROCESSED) {
+     if (order.isPaid()
+             && order.getOrderStatus()
+                     == OrderStatus.PROCESSED) {
          return;
      }
 
-     order.markAsPaid(null);
-     order.markAsProcessed();
+     if (!order.isStockReduced()) {
+         stockService.descontarStock(
+                 order,
+                 store
+         );
+     }
 
-     orderRepository.save(order);
+     if (!order.isPaid()) {
+         orderStateMachine.transition(
+                 order,
+                 OrderTransition.PAYMENT_CONFIRMED,
+                 OrderTransitionContext.empty()
+         );
+     }
 
-     notificationService.sendPaymentConfirmation(order);
+     orderStateMachine.transition(
+             order,
+             OrderTransition.STOCK_CONFIRMED,
+             OrderTransitionContext.empty()
+     );
+
+     notificationService
+             .sendPaymentConfirmation(order);
  }
     // ============================
     // ACTUALIZAR ESTADO + STOCK
     // ============================
  @Transactional
- public Order updateOrderStatus(Long orderId, String newStatus, Store store) {
+ public Order updateOrderStatus(
+         Long orderId,
+         String newStatus,
+         Store store						
+ ) {
+     Order order =
+             getFullOrderByIdForUpdate(
+                     orderId,
+                     store
+             );
 
-     Order order = getOrderByIdWithUserAndItems(orderId, store);
+     OrderStatus targetStatus;
 
-     OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
+     try {
+         targetStatus =
+                 OrderStatus.valueOf(
+                         newStatus.trim().toUpperCase()
+                 );
+     } catch (Exception ex) {
+         throw new IllegalArgumentException(
+                 "Estado de orden no válido: "
+                         + newStatus
+         );
+     }
 
-     order.changeStatus(status);
+     if (targetStatus != OrderStatus.DELIVERED) {
+         throw new IllegalStateException(
+                 "Este endpoint solo permite marcar "
+                         + "órdenes como entregadas"
+         );
+     }
 
-     return orderRepository.save(order);
+     orderStateMachine.transition(
+             order,
+             OrderTransition.DELIVERED,
+             OrderTransitionContext.empty()
+     );
+
+     return order;
  }
     // ============================
     // ACTUALIZAR INFO DE ENVÍO
@@ -267,26 +389,112 @@ guardar orden por transferencia
          String carrier,
          Store store
  ) {
+     Order order =
+             getFullOrderByIdForUpdate(
+                     orderId,
+                     store
+             );
 
-     Order order = getById(orderId, store);
+     orderStateMachine.transition(
+             order,
+             OrderTransition.SHIPPED,
+             OrderTransitionContext.shipping(
+                     tracking,
+                     carrier
+             )
+     );
 
-     order.markAsShipped(tracking, carrier);
+     notificationService.sendShipping(order);
 
-     Order saved = orderRepository.save(order);
-
-     notificationService.sendShipping(saved);
-
-     return saved;
+     return order;
  }
     // ============================
     // ELIMINAR ORDEN
     // ============================
  @Transactional
- public void deleteOrder(Long id, Store store) {
+ public void deleteOrder(
+         Long orderId,
+         Store store
+ ) {
+     Order order =
+             getFullOrderByIdForUpdate(
+                     orderId,
+                     store
+             );
 
-     Order order = getById(id, store);
+     if (order.isPaid()) {
+         throw new IllegalStateException(
+                 "No se puede eliminar una orden pagada"
+         );
+     }
+     
+     if (inventoryMovementRepository.existsByOrderId(orderId)) {
+    	    throw new IllegalStateException(
+    	            "No se puede eliminar una orden con movimientos de inventario"
+    	    );
+    	}
+
+     if (orderOutboxRepository.existsByOrderId(orderId)) {
+         throw new IllegalStateException(
+                 "No se puede eliminar la orden porque ya tiene "
+                 + "eventos de notificación registrados"
+         );
+     }
+
+     if (order.isTransferInstructionsSent()
+             || order.isPaymentConfirmedSent()
+             || order.isShippingConfirmationSent()
+             || order.isOrderExpiredSent()) {
+         throw new IllegalStateException(
+                 "No se puede eliminar una orden con notificaciones enviadas"
+         );
+     }
+
+     if (order.isStockReduced()) {
+         stockService.restaurarStock(
+                 order,
+                 store
+         );
+     }
 
      orderRepository.delete(order);
+ }
+ 
+ @Transactional
+ public Order cancelOrder(
+         Long orderId,
+         Store store
+ ) {
+     Order order =
+             getFullOrderByIdForUpdate(
+                     orderId,
+                     store
+             );
+
+     if (order.isPaid()) {
+         throw new IllegalStateException(
+                 "Una orden pagada no puede cancelarse directamente"
+         );
+     }
+
+     if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+         return order;
+     }
+
+     if (order.isStockReduced()) {
+         stockService.restaurarStock(
+                 order,
+                 store
+         );
+     }
+
+     orderStateMachine.transition(
+             order,
+             OrderTransition.CANCELLED,
+             OrderTransitionContext.empty()
+     );
+
+     return order;
  }
  
  public Order getOrderById(Long id, Store store) {
@@ -315,18 +523,42 @@ guardar orden por transferencia
     EXPIRAR ÓRDENES (TRANSFERENCIAS)
  ===================================================== */
     @Transactional
-    public boolean expirarOrdenTransferencia(Order order, Store store) {
+    public boolean expirarOrdenTransferencia(
+            Long orderId,
+            Store store
+    ) {
+        Order order =
+                getFullOrderByIdForUpdate(orderId, store);
 
-        if (!order.canExpire()) return false;
+        /*
+         * La orden pudo cambiar desde que el scheduler obtuvo
+         * la lista. Volvemos a validar bajo lock.
+         */
+        if (!order.canExpire()) {
+            return false;
+        }
 
         if (order.isStockReduced()) {
             stockService.restaurarStock(order, store);
         }
 
-        order.markAsExpired();
-        orderRepository.save(order);
+        orderStateMachine.transition(
+                order,
+                OrderTransition.EXPIRED,
+                OrderTransitionContext.empty()
+        );
 
-        notificationService.sendExpired(order, order.getOrderDate().plusHours(24));
+        LocalDateTime expirationDate =
+                order.getOrderDate().plusHours(24);
+
+        /*
+         * La entidad está administrada por JPA.
+         * No es obligatorio llamar save().
+         */
+        notificationService.sendExpired(
+                order,
+                expirationDate
+        );
 
         return true;
     }
@@ -341,7 +573,31 @@ guardar orden por transferencia
 
         return orderRepository.getPaidProductSalesByDate(fromDT, toDT, store);
     }
+    private Order getByIdForUpdate(
+            Long orderId,
+            Store store
+    ) {
+        return orderRepository
+                .findByIdForUpdateAndStore(orderId, store)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Orden no encontrada"
+                        )
+                );
+    }
 
+    private Order getFullOrderByIdForUpdate(
+            Long orderId,
+            Store store
+    ) {
+        return orderRepository
+                .findByIdFullForUpdateAndStore(orderId, store)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Orden no encontrada"
+                        )
+                );
+    }
  // ============================
  // PEDIDOS POR USUARIO (FRONT)
  // ============================
@@ -362,8 +618,12 @@ guardar orden por transferencia
  public ProductoVariante obtenerVarianteConLock(Long id, Store store) {
      return productoVarianteRepository
              .findByIdForUpdate(id, store)
-             .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
- }
+             .orElseThrow(() ->
+             new ResourceNotFoundException(
+                     "Variante no encontrada: " + id
+             )
+     );
+     }
  public List<Order> filterOrders(
 	        LocalDate from,
 	        LocalDate to,

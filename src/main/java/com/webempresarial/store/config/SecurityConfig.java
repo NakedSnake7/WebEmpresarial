@@ -1,15 +1,15 @@
 package com.webempresarial.store.config;
 
-import com.webempresarial.store.service.AdminUserDetailsService;
+import com.webempresarial.store.service.AdminUserDetailsService; 
 import com.webempresarial.store.service.AuthUserDetailsService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -88,32 +88,33 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain storeSecurity(
-            HttpSecurity http,
-            PasswordEncoder passwordEncoder
+            HttpSecurity http
+            
     ) throws Exception {
 
         http
-        .csrf(csrf -> csrf
-        	    .ignoringRequestMatchers(
-        	        "/api/stripe/**",
-        	        "/api/leads",
-        	        "/api/leads/**"
-        	    )
-        	)
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    "/api/checkout",
+                    "/api/stripe/**",
+                    "/api/leads",
+                    "/api/leads/**"
+                )
+            )
+
             .authorizeHttpRequests(auth -> auth
+
                 .requestMatchers(
-                    "/", "/index", "/inicio", "/privacy",
+                    "/",
+                    "/index",
+                    "/inicio",
+                    "/privacy",
                     "/productos/**",
                     "/products/**",
                     "/producto-detalle/**",
                     "/fragmento-menu",
                     "/fragmento-resenas",
                     "/login",
-                    "/api/checkout",
-                    "/api/stripe/**",
-                    "/api/user/me",
-                    "/api/leads",
-                    "/api/leads/**",
                     "/themes/**",
                     "/assets/**",
                     "/css/**",
@@ -121,6 +122,22 @@ public class SecurityConfig {
                     "/images/**",
                     "/webjars/**",
                     "/favicon.ico"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/checkout"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/user/me"
+                ).permitAll()
+
+                .requestMatchers(
+                    "/api/stripe/**",
+                    "/api/leads",
+                    "/api/leads/**"
                 ).permitAll()
 
                 .requestMatchers(

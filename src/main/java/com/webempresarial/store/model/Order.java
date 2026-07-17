@@ -23,6 +23,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +65,7 @@ public class Order {
 
     @NotNull(message = "El total de la orden no puede ser nulo")
     @Min(value = 0, message = "El total debe ser positivo")
-    private Double total;
+    private BigDecimal total;
 
     @NotBlank(message = "La dirección no puede estar vacía")
     @Size(min = 5, max = 255, message = "La dirección debe tener entre 5 y 255 caracteres")
@@ -178,7 +180,7 @@ private LocalDateTime paidAt;
     public Order() {}
 
     // Constructor sin 'phone'
-    public Order(Cliente cliente, Double total, String address, String customerName, String customerEmail) {
+    public Order(Cliente cliente, BigDecimal total, String address, String customerName, String customerEmail) {
         this.cliente = cliente;
         this.total = total;
         this.address = address;
@@ -324,11 +326,11 @@ private LocalDateTime paidAt;
         this.isGuest = (cliente == null);
     }
 
-    public Double getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
-    public void setTotal(Double total) {
+    public void setTotal(BigDecimal total) {
         this.total = total;
     }
 

@@ -1,12 +1,12 @@
-
 package com.webempresarial.store.model;
 
-import java.math.BigDecimal;   
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -15,25 +15,11 @@ import jakarta.validation.constraints.Min;
 @Entity
 @Table(name = "producto_variantes")
 public class ProductoVariante {
-	
-	@Column(nullable = false)
-	private Boolean principal = false;
-	
-	
-
-	public String getNombreVisual() {
-	    Map<String,String> map = getAtributosMap();
-
-	    return map.getOrDefault("Color","") +
-	           " " +
-	           map.getOrDefault("Talla","");
-	}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relación con producto base
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
@@ -44,64 +30,136 @@ public class ProductoVariante {
 
     @DecimalMin("0.0")
     private BigDecimal precio;
-    
 
-    // 🔥 ATRIBUTOS DINÁMICOS (lo importante del cambio)
+    @Column(nullable = false)
+    private Boolean principal = false;
+
     @OneToMany(
-    	    mappedBy = "variante",
-    	    cascade = CascadeType.ALL,
-    	    orphanRemoval = true,
-    	    fetch = FetchType.LAZY
-    	)
-    	private Set<VarianteAtributo> atributos = new LinkedHashSet<>();
-    
-    
-    
-    public void addAtributo(VarianteAtributo atributo) {
+            mappedBy = "variante",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<VarianteAtributo> atributos =
+            new LinkedHashSet<>();
+
+    // =============================
+    // HELPERS
+    // =============================
+
+    @Transient
+    public String getNombreVisual() {
+
+        if (atributos == null || atributos.isEmpty()) {
+            return id != null
+                    ? "Variante #" + id
+                    : "Variante";
+        }
+
+        String nombre = atributos.stream()
+                .filter(atributo ->
+                        atributo.getNombre() != null
+                                && !atributo.getNombre().isBlank()
+                                && atributo.getValor() != null
+                                && !atributo.getValor().isBlank()
+                )
+                .sorted(
+                        Comparator.comparing(
+                                VarianteAtributo::getNombre,
+                                String.CASE_INSENSITIVE_ORDER
+                        )
+                )
+                .map(atributo ->
+                        atributo.getNombre().trim()
+                                + ": "
+                                + atributo.getValor().trim()
+                )
+                .collect(Collectors.joining(" · "));
+
+        return nombre.isBlank()
+                ? id != null
+                    ? "Variante #" + id
+                    : "Variante"
+                : nombre;
+    }
+
+    @Transient
+    public Map<String, String> getAtributosMap() {
+
+        if (atributos == null || atributos.isEmpty()) {
+            return Map.of();
+        }
+
+        return atributos.stream()
+                .filter(atributo ->
+                        atributo.getNombre() != null
+                                && atributo.getValor() != null
+                )
+                .collect(Collectors.toMap(
+                        VarianteAtributo::getNombre,
+                        VarianteAtributo::getValor,
+                        (valorAnterior, valorNuevo) -> valorNuevo,
+                        LinkedHashMap::new
+                ));
+    }
+
+    public void addAtributo(
+            VarianteAtributo atributo
+    ) {
+        if (atributo == null) {
+            return;
+        }
+
         atributo.setVariante(this);
         atributos.add(atributo);
     }
-    
-    
-    public Map<String, String> getAtributosMap() {
-        return atributos.stream()
-            .collect(Collectors.toMap(
-                VarianteAtributo::getNombre,
-                VarianteAtributo::getValor
-            ));
+
+    public void agregarAtributo(
+            VarianteAtributo atributo
+    ) {
+        addAtributo(atributo);
     }
-    
+
+    public void agregarAtributo(
+            String nombre,
+            String valor
+    ) {
+        VarianteAtributo atributo =
+                new VarianteAtributo();
+
+        atributo.setNombre(nombre);
+        atributo.setValor(valor);
+        atributo.setVariante(this);
+
+        atributos.add(atributo);
+    }
+
+    public BigDecimal getPrecioFinal() {
+        return precio != null
+                ? precio
+                : producto != null
+                    ? producto.getPrice()
+                    : BigDecimal.ZERO;
+    }
+
     @PrePersist
     @PreUpdate
     private void validar() {
+
         if (stock == null || stock < 0) {
-            throw new IllegalArgumentException("Stock inválido");
+            throw new IllegalArgumentException(
+                    "Stock inválido"
+            );
+        }
+
+        if (principal == null) {
+            principal = false;
         }
     }
 
-    // -----------------------------
-    // HELPERS
-    // -----------------------------
-    public void agregarAtributo(VarianteAtributo attr) {
-        attr.setVariante(this);
-        this.atributos.add(attr);
-    }
-    
-    public BigDecimal getPrecioFinal() {
-        return precio != null ? precio : producto.getPrice();
-    }
-
-    public void agregarAtributo(String nombre, String valor) {
-        VarianteAtributo attr = new VarianteAtributo();
-        attr.setNombre(nombre);
-        attr.setValor(valor);
-        attr.setVariante(this);
-        atributos.add(attr);
-    }
-
-    // -----------------------------
+    // =============================
     // GETTERS / SETTERS
-    // -----------------------------
+    // =============================
 
     public Long getId() {
         return id;
@@ -115,7 +173,9 @@ public class ProductoVariante {
         return producto;
     }
 
-    public void setProducto(Producto producto) {
+    public void setProducto(
+            Producto producto
+    ) {
         this.producto = producto;
     }
 
@@ -123,7 +183,9 @@ public class ProductoVariante {
         return stock;
     }
 
-    public void setStock(Integer stock) {
+    public void setStock(
+            Integer stock
+    ) {
         this.stock = stock;
     }
 
@@ -131,31 +193,35 @@ public class ProductoVariante {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
+    public void setPrecio(
+            BigDecimal precio
+    ) {
         this.precio = precio;
     }
 
-  
     public Boolean getPrincipal() {
-		return principal;
-	}
+        return principal;
+    }
 
-	public void setPrincipal(Boolean principal) {
-		this.principal = principal;
-	}
+    public void setPrincipal(
+            Boolean principal
+    ) {
+        this.principal = principal;
+    }
 
-	public Set<VarianteAtributo> getAtributos() {
-	    return atributos;
-	}
-	    
-	public void setAtributos(Set<VarianteAtributo> atributos) {
-	    this.atributos.clear();
+    public Set<VarianteAtributo> getAtributos() {
+        return atributos;
+    }
 
-	    if (atributos != null) {
-	        for (VarianteAtributo attr : atributos) {
-	            attr.setVariante(this);
-	            this.atributos.add(attr);
-	        }
-	    }
-	}
+    public void setAtributos(
+            Set<VarianteAtributo> atributos
+    ) {
+        this.atributos.clear();
+
+        if (atributos == null) {
+            return;
+        }
+
+        atributos.forEach(this::addAtributo);
+    }
 }

@@ -2,7 +2,11 @@ package com.webempresarial.store.repository;
 
 import com.webempresarial.store.dto.producto.reportes.ProductoVentaDTO;
 import com.webempresarial.store.model.*;
+
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,19 +36,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-        SELECT DISTINCT o
-        FROM Order o
-        JOIN FETCH o.cliente
-        JOIN FETCH o.items i
-        JOIN FETCH i.producto
-        LEFT JOIN FETCH i.variante
-        WHERE o.id = :id
-        AND o.store = :store
-    """)
-    Optional<Order> findByIdWithClienteAndItemsAndStore(
-            @Param("id") Long id,
-            @Param("store") Store store
-    );
+    	    SELECT DISTINCT o
+    	    FROM Order o
+    	    LEFT JOIN FETCH o.cliente
+    	    LEFT JOIN FETCH o.items i
+    	    LEFT JOIN FETCH i.producto
+    	    LEFT JOIN FETCH i.variante
+    	    WHERE o.id = :id
+    	    AND o.store = :store
+    	""")
+    	Optional<Order> findByIdWithClienteAndItemsAndStore(
+    	        @Param("id") Long id,
+    	        @Param("store") Store store
+    	);
 
     @Query("""
     	    SELECT o
@@ -142,19 +146,47 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
+    	    SELECT DISTINCT o
+    	    FROM Order o
+    	    LEFT JOIN FETCH o.cliente
+    	    LEFT JOIN FETCH o.items i
+    	    LEFT JOIN FETCH i.producto
+    	    LEFT JOIN FETCH i.variante
+    	    WHERE o.id = :id
+    	    AND o.store = :store
+    	""")
+    	Optional<Order> findByIdFullAndStore(
+    	        @Param("id") Long id,
+    	        @Param("store") Store store
+    	);
+    
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT o
+        FROM Order o
+        WHERE o.id = :id
+        AND o.store = :store
+    """)
+    Optional<Order> findByIdForUpdateAndStore(
+            @Param("id") Long id,
+            @Param("store") Store store
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
         SELECT DISTINCT o
         FROM Order o
+        LEFT JOIN FETCH o.cliente
         LEFT JOIN FETCH o.items i
         LEFT JOIN FETCH i.producto
         LEFT JOIN FETCH i.variante
         WHERE o.id = :id
         AND o.store = :store
     """)
-    Optional<Order> findByIdFullAndStore(
+    Optional<Order> findByIdFullForUpdateAndStore(
             @Param("id") Long id,
             @Param("store") Store store
     );
-    
     long countByStoreId(Long storeId);
     
 }

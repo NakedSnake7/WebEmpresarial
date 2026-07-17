@@ -1,271 +1,1238 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administrar Reseñas</title>
-
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<!-- <link rel="stylesheet" href="/assets/css/custom-styles.css"> -->
-
-<style>
-body {
-    background: #2c2c2c;
-    color: #fff;
-}
-</style>
-<style>
-.review-card-inner {
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.review-card-inner:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-.img-container {
-    overflow: hidden;
-    height: 200px;
-}
-
-.img-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.img-container:hover img {
-    transform: scale(1.05);
-}
-
-.stars {
-    font-size: 1.2rem;
-    color: gold;
-}
-
-.comment {
-    font-size: 0.95rem;
-    opacity: 0.9;
-}
-</style>
-</head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Reseñas | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
 
 <body>
 
-<!-- ================= FORMULARIO ================= -->
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Agregar Nueva Reseña</h2>
+<th:block th:fragment="content">
 
-    <form th:action="@{/resenas/nueva}"
-          th:object="${resena}"
-          method="post"
-          enctype="multipart/form-data"
-          class="bg-dark p-4 rounded">
+    <style>
+        .commerce-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(255, 193, 7, .22),
+                    transparent 35%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
 
-        <div class="form-group">
-            <label>Nombre</label>
-            <input th:field="*{nombre}" class="form-control" required>
+        .commerce-header .text-muted {
+            color: rgba(255, 255, 255, .68) !important;
+        }
+
+        .reviews-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: .85rem;
+            background: var(--bs-warning-bg-subtle);
+            color: var(--bs-warning-text-emphasis);
+            flex-shrink: 0;
+        }
+
+        .review-card-inner {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                border-color .2s ease;
+            background: var(--bs-body-bg);
+        }
+
+        .review-card-inner:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 .8rem 1.8rem rgba(15, 23, 42, .12);
+            border-color: var(--bs-warning);
+        }
+
+        .review-image-container {
+            height: 220px;
+            overflow: hidden;
+            background: var(--bs-tertiary-bg);
+            position: relative;
+        }
+
+        .review-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .3s ease;
+        }
+
+        .review-card-inner:hover .review-image-container img {
+            transform: scale(1.04);
+        }
+
+        .review-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            font-size: 3rem;
+            color: var(--bs-secondary-color);
+        }
+
+        .stars {
+            color: #f5b301;
+            letter-spacing: .12rem;
+            font-size: 1.05rem;
+        }
+
+        .review-comment {
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+            min-height: 72px;
+        }
+
+        .image-preview {
+            display: none;
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: .85rem;
+            border: 1px solid var(--bs-border-color);
+            margin-top: 1rem;
+        }
+
+        .review-edit-panel {
+            background: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: .85rem;
+            padding: 1rem;
+        }
+
+        .empty-state {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        .is-processing {
+            opacity: .65;
+            pointer-events: none;
+        }
+
+        @media (max-width: 767.98px) {
+            .commerce-header {
+                border-radius: 1rem;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- CSRF para fetch -->
+        <div id="csrfData"
+             class="d-none"
+             th:if="${_csrf != null}"
+             th:attr="data-token=${_csrf.token},
+                      data-header=${_csrf.headerName}">
         </div>
 
-       <div class="form-group">
-    <label>Imagen</label>
-    <input type="file" name="imagen" class="form-control"
-           accept="image/jpeg,image/png,image/webp" required>
-</div>
+        <!-- Encabezado -->
+        <div class="commerce-header shadow-sm mb-4">
+            <div class="p-4 p-lg-5">
 
-        <div class="form-group">
-            <label>Comentario</label>
-            <textarea th:field="*{comentario}" class="form-control" required></textarea>
-        </div>
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
 
-        <div class="form-group">
-            <label>Estrellas</label>
-            <select th:field="*{estrellas}" class="form-control" required>
-                <option value="1">1 ⭐</option>
-                <option value="2">2 ⭐</option>
-                <option value="3">3 ⭐</option>
-                <option value="4">4 ⭐</option>
-                <option value="5">5 ⭐</option>
-            </select>
-        </div>
+                    <div>
 
-        <div class="form-check mb-3">
-            <input th:field="*{verificado}" type="checkbox" class="form-check-input">
-            <label class="form-check-label">Usuario verificado</label>
-        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
 
-        <button class="btn btn-success btn-block">Guardar reseña</button>
-    </form>
-</div>
+                            <span class="badge text-bg-warning">
+                                WebEmpresarial Commerce™
+                            </span>
 
-<!-- ================= LISTADO ADMIN ================= -->
-<div class="container mt-5">
-    <h3 class="mb-4 text-center">⭐ Reseñas de clientes</h3>
+                            <span class="badge bg-light text-dark">
+                                Reputación
+                            </span>
 
-    <div class="row">
+                        </div>
 
-        <div class="col-md-4 mb-4 review-card"
-             th:each="r : ${resenas}"
-             th:attr="data-id=${r.id}">
+                        <h1 class="display-6 fw-bold mb-2">
+                            Reseñas de clientes
+                        </h1>
 
-            <div class="card h-100 shadow-sm border-0 review-card-inner bg-dark text-light">
+                        <p class="text-muted mb-0">
+                            Crea, edita y administra testimonios
+                            visibles en la tienda.
+                        </p>
 
-                <!-- Imagen -->
-                <div class="img-container">
-                    <img th:src="${r.imagenUrl} ?: '/imgs/default.png'"
-                         class="card-img-top">
-                </div>
-
-                <div class="card-body d-flex flex-column">
-
-                    <!-- Nombre -->
-                    <h5 class="mb-1 font-weight-bold">
-                        <span th:text="${r.nombre}"></span>
-                        <span th:if="${r.verificado}" class="badge badge-success ml-2">
-                            ✔ Verificado
-                        </span>
-                    </h5>
-
-                    <!-- Estrellas -->
-                    <div class="mb-2">
-                        <span class="stars" th:attr="id='stars-' + ${r.id}">
-                            <span th:each="i : ${#numbers.sequence(1, r.estrellas)}">⭐</span>
-                        </span>
                     </div>
 
-                    <!-- Comentario -->
-                    <p class="comment flex-grow-1"
-                       th:attr="id='comment-' + ${r.id}"
-                       th:text="${r.comentario}">
-                    </p>
+                    <div class="d-flex flex-column flex-sm-row gap-2">
 
-                    <!-- Upload -->
-                    <input type="file"
-                           class="form-control mb-2 edit-image"
-                           th:attr="id='edit-image-' + ${r.id}">
+                        <a th:href="@{/admin/dashboard}"
+                           class="btn btn-outline-light">
+                            Dashboard
+                        </a>
 
-                    <!-- Botones -->
-                    <div class="mt-auto">
-
-                        <button class="btn btn-outline-danger btn-sm btn-block mb-2 delete-image"
-                                th:attr="data-id=${r.id}">
-                            🗑️ Eliminar imagen
-                        </button>
-
-                        <button class="btn btn-warning btn-sm btn-block btn-edit"
-                                th:attr="data-id=${r.id},data-estrellas=${r.estrellas}">
-                            ✏️ Editar
-                        </button>
-
-                        <button class="btn btn-danger btn-sm btn-block mt-2 btn-delete"
-                                th:attr="data-id=${r.id}">
-                            Eliminar reseña
-                        </button>
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-light">
+                            Ver productos
+                        </a>
 
                     </div>
 
                 </div>
+
             </div>
         </div>
 
+        <!-- Mensajes -->
+        <div th:if="${param.success}"
+             class="alert alert-success shadow-sm">
+            Reseña guardada correctamente.
+        </div>
+
+        <div th:if="${param.error}"
+             class="alert alert-danger shadow-sm">
+            No se pudo guardar la reseña.
+        </div>
+
+        <div th:if="${errorMsg != null}"
+             class="alert alert-danger shadow-sm"
+             th:text="${errorMsg}">
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Formulario -->
+            <div class="col-xl-4">
+
+                <div class="card reviews-card">
+                    <div class="card-body p-4">
+
+                        <div class="section-heading">
+
+                            <div class="section-icon">
+                                ✍️
+                            </div>
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Nueva reseña
+                                </h5>
+
+                                <p class="text-muted small mb-0">
+                                    Agrega un testimonio manualmente.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <form th:action="@{/resenas/nueva}"
+                              th:object="${resena}"
+                              method="post"
+                              enctype="multipart/form-data"
+                              id="reviewForm">
+
+                            <th:block th:replace="~{fragments/csrf :: token}">
+                            </th:block>
+
+                            <div class="mb-3">
+
+                                <label for="reviewName"
+                                       class="form-label fw-semibold">
+                                    Nombre
+                                </label>
+
+                                <input id="reviewName"
+                                       th:field="*{nombre}"
+                                       class="form-control"
+                                       maxlength="150"
+                                       required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label for="reviewImage"
+                                       class="form-label fw-semibold">
+                                    Imagen
+                                </label>
+
+                                <input type="file"
+                                       id="reviewImage"
+                                       name="imagen"
+                                       class="form-control"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       required>
+
+                                <div class="form-text">
+                                    JPG, PNG o WEBP.
+                                </div>
+
+                                <img id="reviewImagePreview"
+                                     class="image-preview"
+                                     alt="Vista previa">
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label for="reviewComment"
+                                       class="form-label fw-semibold">
+                                    Comentario
+                                </label>
+
+                                <textarea id="reviewComment"
+                                          th:field="*{comentario}"
+                                          class="form-control"
+                                          rows="5"
+                                          maxlength="1500"
+                                          required>
+                                </textarea>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label for="reviewStars"
+                                       class="form-label fw-semibold">
+                                    Calificación
+                                </label>
+
+                                <select id="reviewStars"
+                                        th:field="*{estrellas}"
+                                        class="form-select"
+                                        required>
+
+                                    <option value="">
+                                        Selecciona
+                                    </option>
+
+                                    <option value="1">
+                                        1 ⭐
+                                    </option>
+
+                                    <option value="2">
+                                        2 ⭐
+                                    </option>
+
+                                    <option value="3">
+                                        3 ⭐
+                                    </option>
+
+                                    <option value="4">
+                                        4 ⭐
+                                    </option>
+
+                                    <option value="5">
+                                        5 ⭐
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <div class="form-check form-switch mb-4">
+
+                                <input th:field="*{verificado}"
+                                       type="checkbox"
+                                       class="form-check-input"
+                                       role="switch"
+                                       id="reviewVerified">
+
+                                <label class="form-check-label"
+                                       for="reviewVerified">
+                                    Cliente verificado
+                                </label>
+
+                            </div>
+
+                            <button type="submit"
+                                    id="saveReviewButton"
+                                    class="btn btn-warning w-100">
+                                Guardar reseña
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Listado -->
+            <div class="col-xl-8">
+
+                <div class="card reviews-card">
+                    <div class="card-header bg-body border-bottom p-4">
+
+                        <div class="d-flex flex-column flex-md-row
+                                    justify-content-between
+                                    align-items-md-center gap-2">
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    Testimonios publicados
+                                </h5>
+
+                                <p class="text-muted small mb-0">
+                                    Administra contenido, imagen y calificación.
+                                </p>
+
+                            </div>
+
+                            <span class="badge text-bg-light border"
+                                  th:text="${resenas != null
+                                      ? #lists.size(resenas) + ' reseñas'
+                                      : '0 reseñas'}">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <div class="row g-4"
+                             th:if="${resenas != null
+                                    and !#lists.isEmpty(resenas)}">
+
+                            <div class="col-md-6 col-xxl-4 review-card"
+                                 th:each="review : ${resenas}"
+                                 th:attr="data-id=${review.id}">
+
+                                <article class="review-card-inner h-100">
+
+                                    <!-- Imagen -->
+                                    <div class="review-image-container">
+
+                                        <img th:if="${review.imagenUrl != null
+                                                    and !#strings.isEmpty(review.imagenUrl)}"
+                                             th:src="${review.imagenUrl}"
+                                             th:alt="${review.nombre}"
+                                             class="review-image">
+
+                                        <div th:unless="${review.imagenUrl != null
+                                                       and !#strings.isEmpty(review.imagenUrl)}"
+                                             class="review-image-placeholder">
+                                            👤
+                                        </div>
+
+                                    </div>
+
+                                    <div class="p-3 d-flex flex-column h-100">
+
+                                        <!-- Nombre -->
+                                        <div class="d-flex flex-wrap
+                                                    align-items-center gap-2 mb-2">
+
+                                            <h6 class="fw-bold mb-0 review-name"
+                                                th:text="${review.nombre}">
+                                            </h6>
+
+                                            <span th:if="${review.verificado}"
+                                                  class="badge text-bg-success">
+                                                ✔ Verificado
+                                            </span>
+
+                                        </div>
+
+                                        <!-- Estrellas -->
+                                        <div class="stars mb-3"
+                                             th:id="'stars-' + ${review.id}">
+
+                                            <span th:each="index :
+                                                ${#numbers.sequence(1, review.estrellas)}">
+                                                ⭐
+                                            </span>
+
+                                        </div>
+
+                                        <!-- Comentario -->
+                                        <p class="review-comment text-muted
+                                                  flex-grow-1 mb-3"
+                                           th:id="'comment-' + ${review.id}"
+                                           th:text="${review.comentario}">
+                                        </p>
+
+                                        <!-- Panel edición -->
+                                        <div class="review-edit-panel d-none mb-3"
+                                             th:id="'edit-panel-' + ${review.id}">
+
+                                            <div class="mb-3">
+
+                                                <label th:for="'edit-comment-' + ${review.id}"
+                                                       class="form-label fw-semibold">
+                                                    Comentario
+                                                </label>
+
+                                                <textarea class="form-control edit-comment"
+                                                          rows="4"
+                                                          th:id="'edit-comment-' + ${review.id}"
+                                                          th:text="${review.comentario}">
+                                                </textarea>
+
+                                            </div>
+
+                                            <div class="mb-3">
+
+                                                <label th:for="'edit-stars-' + ${review.id}"
+                                                       class="form-label fw-semibold">
+                                                    Calificación
+                                                </label>
+
+                                                <select class="form-select edit-stars"
+                                                        th:id="'edit-stars-' + ${review.id}">
+
+                                                    <option value="1"
+                                                            th:selected="${review.estrellas == 1}">
+                                                        1 ⭐
+                                                    </option>
+
+                                                    <option value="2"
+                                                            th:selected="${review.estrellas == 2}">
+                                                        2 ⭐
+                                                    </option>
+
+                                                    <option value="3"
+                                                            th:selected="${review.estrellas == 3}">
+                                                        3 ⭐
+                                                    </option>
+
+                                                    <option value="4"
+                                                            th:selected="${review.estrellas == 4}">
+                                                        4 ⭐
+                                                    </option>
+
+                                                    <option value="5"
+                                                            th:selected="${review.estrellas == 5}">
+                                                        5 ⭐
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+                                            <div class="mb-3">
+
+                                                <label th:for="'edit-image-' + ${review.id}"
+                                                       class="form-label fw-semibold">
+                                                    Nueva imagen
+                                                </label>
+
+                                                <input type="file"
+                                                       class="form-control edit-image"
+                                                       th:id="'edit-image-' + ${review.id}"
+                                                       accept="image/jpeg,image/png,image/webp">
+
+                                            </div>
+
+                                            <div class="d-flex gap-2">
+
+                                                <button type="button"
+                                                        class="btn btn-sm
+                                                               btn-success save-review-edit"
+                                                        th:attr="data-id=${review.id}">
+                                                    Guardar cambios
+                                                </button>
+
+                                                <button type="button"
+                                                        class="btn btn-sm
+                                                               btn-outline-secondary
+                                                               cancel-review-edit"
+                                                        th:attr="data-id=${review.id}">
+                                                    Cancelar
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Acciones -->
+                                        <div class="d-grid gap-2 mt-auto">
+
+                                            <button type="button"
+                                                    class="btn btn-sm
+                                                           btn-outline-warning
+                                                           edit-review"
+                                                    th:attr="data-id=${review.id}">
+                                                Editar
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-sm
+                                                           btn-outline-secondary
+                                                           delete-image"
+                                                    th:attr="data-id=${review.id}"
+                                                    th:disabled="${review.imagenUrl == null
+                                                        or #strings.isEmpty(review.imagenUrl)}">
+                                                Eliminar imagen
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-sm
+                                                           btn-outline-danger
+                                                           delete-review"
+                                                    th:attr="
+                                                        data-id=${review.id},
+                                                        data-name=${review.nombre}
+                                                    ">
+                                                Eliminar reseña
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Estado vacío -->
+                        <div th:if="${resenas == null
+                                    or #lists.isEmpty(resenas)}"
+                             class="empty-state">
+
+                            <div class="display-5 mb-3">
+                                ⭐
+                            </div>
+
+                            <h4 class="fw-bold">
+                                Aún no hay reseñas
+                            </h4>
+
+                            <p class="text-muted mx-auto"
+                               style="max-width: 520px;">
+                                Agrega el primer testimonio para mostrar
+                                confianza y prueba social en tu tienda.
+                            </p>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+        <div id="reviewsToast"
+             class="toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="toast-header">
+
+                <strong class="me-auto">
+                    WebEmpresarial Commerce™
+                </strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+
+            </div>
+
+            <div id="reviewsToastBody"
+                 class="toast-body">
+            </div>
+
+        </div>
+
     </div>
-</div>
-<div>
-    <button type="button"
-       class="btn btn-success float-btn"
-            onclick="history.back()">
-     ⬅ Volver
-    </button>
-</div>
-<script>
-document.addEventListener("click", e => {
 
-    const del = e.target.closest(".btn-delete");
-    if (del) {
-        const id = del.dataset.id;
-        if (!confirm("¿Eliminar reseña?")) return;
+    <script>
+        (() => {
+            "use strict";
 
-        fetch(`/resenas/eliminar/${id}`, { method: "DELETE" })
-            .then(() => document.querySelector(`.review-card[data-id='${id}']`)?.remove());
-    }
+            const csrfData =
+                document.getElementById("csrfData");
 
-    const delImg = e.target.closest(".delete-image");
-    if (delImg) {
-        const id = delImg.dataset.id;
-        if (!confirm("¿Eliminar imagen?")) return;
+            const csrfToken =
+                csrfData?.dataset.token;
 
-        fetch(`/resenas/${id}/imagen`, { method: "DELETE" })
-            .then(() => {
-                const img = document.querySelector(`.review-card[data-id='${id}'] img`);
-                if (img) img.src = "/imgs/default.png";
-            });
-    }
+            const csrfHeader =
+                csrfData?.dataset.header;
 
-    const edit = e.target.closest(".btn-edit");
-    if (!edit) return;
+            const toastElement =
+                document.getElementById("reviewsToast");
 
-    const id = edit.dataset.id;
-    const estrellas = edit.dataset.estrellas;
+            const toastBody =
+                document.getElementById("reviewsToastBody");
 
-    const commentEl = document.getElementById(`comment-${id}`);
-    const starsEl = document.getElementById(`stars-${id}`);
+            const toast =
+                toastElement && window.bootstrap
+                    ? bootstrap.Toast.getOrCreateInstance(toastElement)
+                    : null;
 
-    const original = commentEl.innerText;
+            const reviewForm =
+                document.getElementById("reviewForm");
 
-    commentEl.innerHTML = `
-        <textarea class="form-control mb-2" id="edit-comment-${id}">${original}</textarea>
-        <select class="form-control mb-2" id="edit-stars-${id}">
-            <option value="1">1 ⭐</option>
-            <option value="2">2 ⭐</option>
-            <option value="3">3 ⭐</option>
-            <option value="4">4 ⭐</option>
-            <option value="5">5 ⭐</option>
-        </select>
-        <button class="btn btn-success btn-sm" id="save-${id}">Guardar</button>
-        <button class="btn btn-secondary btn-sm" id="cancel-${id}">Cancelar</button>
-    `;
+            const saveReviewButton =
+                document.getElementById("saveReviewButton");
 
-    document.getElementById(`edit-stars-${id}`).value = estrellas;
+            const reviewImage =
+                document.getElementById("reviewImage");
 
-    document.getElementById(`cancel-${id}`).onclick = () => {
-        commentEl.innerText = original;
-    };
+            const reviewImagePreview =
+                document.getElementById("reviewImagePreview");
 
-    document.getElementById(`save-${id}`).onclick = () => {
-        const comentario = document.getElementById(`edit-comment-${id}`).value;
-        const nuevasEstrellas = document.getElementById(`edit-stars-${id}`).value;
+            function showMessage(message) {
+                if (toast && toastBody) {
+                    toastBody.textContent = message;
+                    toast.show();
+                    return;
+                }
 
-        fetch(`/resenas/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ comentario, estrellas: nuevasEstrellas })
-        })
-        .then(res => res.json())
-        .then(data => {
-            commentEl.innerText = data.comentario;
-            starsEl.innerHTML = "⭐".repeat(data.estrellas);
-            edit.dataset.estrellas = data.estrellas;
-        });
+                window.alert(message);
+            }
 
-        const imgInput = document.getElementById(`edit-image-${id}`);
-        if (imgInput.files.length) {
-            const fd = new FormData();
-            fd.append("imagen", imgInput.files[0]);
+            function csrfHeaders(extraHeaders = {}) {
+                const headers = {
+                    ...extraHeaders
+                };
 
-            fetch(`/resenas/${id}/imagen`, { method: "PUT", body: fd })
-                .then(r => r.json())
-                .then(d => {
-                    const img = document.querySelector(`.review-card[data-id='${id}'] img`);
-                    if (img) img.src = d.imagenUrl;
-                });
-        }
-    };
-});
-</script>
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                return headers;
+            }
+
+            async function request(url, options = {}) {
+                const response =
+                    await fetch(url, options);
+
+                if (!response.ok) {
+                    const text =
+                        await response.text();
+
+                    throw new Error(
+                        text ||
+                        `Error HTTP ${response.status}`
+                    );
+                }
+
+                return response;
+            }
+
+            function setProcessing(element, processing) {
+                if (!element) {
+                    return;
+                }
+
+                element.classList.toggle(
+                    "is-processing",
+                    processing
+                );
+
+                if (
+                    element instanceof HTMLButtonElement ||
+                    element instanceof HTMLInputElement ||
+                    element instanceof HTMLSelectElement ||
+                    element instanceof HTMLTextAreaElement
+                ) {
+                    element.disabled = processing;
+                }
+            }
+
+            reviewImage?.addEventListener(
+                "change",
+                function () {
+                    const file =
+                        this.files?.[0];
+
+                    if (!file) {
+                        reviewImagePreview.removeAttribute("src");
+                        reviewImagePreview.style.display = "none";
+                        return;
+                    }
+
+                    if (!file.type.startsWith("image/")) {
+                        this.value = "";
+
+                        showMessage(
+                            "Selecciona un archivo de imagen válido."
+                        );
+
+                        return;
+                    }
+
+                    const reader =
+                        new FileReader();
+
+                    reader.onload = event => {
+                        reviewImagePreview.src =
+                            event.target.result;
+
+                        reviewImagePreview.style.display =
+                            "block";
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            );
+
+            reviewForm?.addEventListener(
+                "submit",
+                () => {
+                    saveReviewButton.disabled = true;
+                    saveReviewButton.textContent =
+                        "Guardando reseña...";
+                }
+            );
+
+            document.addEventListener(
+                "click",
+                async event => {
+
+                    /*
+                     * Abrir edición
+                     */
+                    const editButton =
+                        event.target.closest(".edit-review");
+
+                    if (editButton) {
+                        const id =
+                            editButton.dataset.id;
+
+                        const panel =
+                            document.getElementById(
+                                `edit-panel-${id}`
+                            );
+
+                        panel?.classList.remove("d-none");
+                        editButton.classList.add("d-none");
+
+                        return;
+                    }
+
+                    /*
+                     * Cancelar edición
+                     */
+                    const cancelButton =
+                        event.target.closest(
+                            ".cancel-review-edit"
+                        );
+
+                    if (cancelButton) {
+                        const id =
+                            cancelButton.dataset.id;
+
+                        const panel =
+                            document.getElementById(
+                                `edit-panel-${id}`
+                            );
+
+                        const edit =
+                            document.querySelector(
+                                `.edit-review[data-id="${id}"]`
+                            );
+
+                        panel?.classList.add("d-none");
+                        edit?.classList.remove("d-none");
+
+                        return;
+                    }
+
+                    /*
+                     * Guardar edición
+                     */
+                    const saveEditButton =
+                        event.target.closest(
+                            ".save-review-edit"
+                        );
+
+                    if (saveEditButton) {
+                        const id =
+                            saveEditButton.dataset.id;
+
+                        const commentInput =
+                            document.getElementById(
+                                `edit-comment-${id}`
+                            );
+
+                        const starsInput =
+                            document.getElementById(
+                                `edit-stars-${id}`
+                            );
+
+                        const imageInput =
+                            document.getElementById(
+                                `edit-image-${id}`
+                            );
+
+                        const comment =
+                            commentInput.value.trim();
+
+                        const stars =
+                            Number(starsInput.value);
+
+                        if (!comment) {
+                            commentInput.classList.add(
+                                "is-invalid"
+                            );
+
+                            commentInput.focus();
+
+                            showMessage(
+                                "El comentario es obligatorio."
+                            );
+
+                            return;
+                        }
+
+                        commentInput.classList.remove(
+                            "is-invalid"
+                        );
+
+                        setProcessing(
+                            saveEditButton,
+                            true
+                        );
+
+                        try {
+                            const response =
+                                await request(
+                                    `/resenas/${id}`,
+                                    {
+                                        method: "PUT",
+                                        headers: csrfHeaders({
+                                            "Content-Type":
+                                                "application/json"
+                                        }),
+                                        body: JSON.stringify({
+                                            comentario: comment,
+                                            estrellas: stars
+                                        })
+                                    }
+                                );
+
+                            const updatedReview =
+                                await response.json();
+
+                            const commentElement =
+                                document.getElementById(
+                                    `comment-${id}`
+                                );
+
+                            const starsElement =
+                                document.getElementById(
+                                    `stars-${id}`
+                                );
+
+                            if (commentElement) {
+                                commentElement.textContent =
+                                    updatedReview.comentario;
+                            }
+
+                            if (starsElement) {
+                                starsElement.textContent =
+                                    "⭐".repeat(
+                                        updatedReview.estrellas
+                                    );
+                            }
+
+                            if (
+                                imageInput.files &&
+                                imageInput.files.length > 0
+                            ) {
+                                const formData =
+                                    new FormData();
+
+                                formData.append(
+                                    "imagen",
+                                    imageInput.files[0]
+                                );
+
+                                const imageResponse =
+                                    await request(
+                                        `/resenas/${id}/imagen`,
+                                        {
+                                            method: "PUT",
+                                            headers: csrfHeaders(),
+                                            body: formData
+                                        }
+                                    );
+
+                                const imageData =
+                                    await imageResponse.json();
+
+                                const card =
+                                    document.querySelector(
+                                        `.review-card[data-id="${id}"]`
+                                    );
+
+                                const image =
+                                    card?.querySelector(
+                                        ".review-image"
+                                    );
+
+                                const placeholder =
+                                    card?.querySelector(
+                                        ".review-image-placeholder"
+                                    );
+
+                                if (image) {
+                                    image.src =
+                                        imageData.imagenUrl;
+                                } else if (placeholder) {
+                                    const newImage =
+                                        document.createElement(
+                                            "img"
+                                        );
+
+                                    newImage.className =
+                                        "review-image";
+
+                                    newImage.src =
+                                        imageData.imagenUrl;
+
+                                    newImage.alt =
+                                        "Imagen de reseña";
+
+                                    placeholder.replaceWith(
+                                        newImage
+                                    );
+                                }
+
+                                const deleteImageButton =
+                                    card?.querySelector(
+                                        ".delete-image"
+                                    );
+
+                                if (deleteImageButton) {
+                                    deleteImageButton.disabled =
+                                        false;
+                                }
+                            }
+
+                            const panel =
+                                document.getElementById(
+                                    `edit-panel-${id}`
+                                );
+
+                            const editButton =
+                                document.querySelector(
+                                    `.edit-review[data-id="${id}"]`
+                                );
+
+                            panel?.classList.add("d-none");
+                            editButton?.classList.remove(
+                                "d-none"
+                            );
+
+                            showMessage(
+                                "Reseña actualizada correctamente."
+                            );
+
+                        } catch (error) {
+                            console.error(
+                                "Error actualizando reseña:",
+                                error
+                            );
+
+                            showMessage(
+                                "No se pudo actualizar la reseña."
+                            );
+
+                        } finally {
+                            setProcessing(
+                                saveEditButton,
+                                false
+                            );
+                        }
+
+                        return;
+                    }
+
+                    /*
+                     * Eliminar imagen
+                     */
+                    const deleteImageButton =
+                        event.target.closest(
+                            ".delete-image"
+                        );
+
+                    if (deleteImageButton) {
+                        const id =
+                            deleteImageButton.dataset.id;
+
+                        const confirmed =
+                            window.confirm(
+                                "¿Eliminar la imagen de esta reseña?"
+                            );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        setProcessing(
+                            deleteImageButton,
+                            true
+                        );
+
+                        try {
+                            await request(
+                                `/resenas/${id}/imagen`,
+                                {
+                                    method: "DELETE",
+                                    headers: csrfHeaders()
+                                }
+                            );
+
+                            const card =
+                                document.querySelector(
+                                    `.review-card[data-id="${id}"]`
+                                );
+
+                            const imageContainer =
+                                card?.querySelector(
+                                    ".review-image-container"
+                                );
+
+                            if (imageContainer) {
+                                imageContainer.innerHTML = `
+                                    <div class="review-image-placeholder">
+                                        👤
+                                    </div>
+                                `;
+                            }
+
+                            deleteImageButton.disabled = true;
+
+                            showMessage(
+                                "Imagen eliminada correctamente."
+                            );
+
+                        } catch (error) {
+                            console.error(
+                                "Error eliminando imagen:",
+                                error
+                            );
+
+                            deleteImageButton.disabled =
+                                false;
+
+                            showMessage(
+                                "No se pudo eliminar la imagen."
+                            );
+                        }
+
+                        return;
+                    }
+
+                    /*
+                     * Eliminar reseña
+                     */
+                    const deleteReviewButton =
+                        event.target.closest(
+                            ".delete-review"
+                        );
+
+                    if (deleteReviewButton) {
+                        const id =
+                            deleteReviewButton.dataset.id;
+
+                        const name =
+                            deleteReviewButton.dataset.name ||
+                            "esta reseña";
+
+                        const confirmed =
+                            window.confirm(
+                                `¿Eliminar definitivamente la reseña de "${name}"?`
+                            );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        setProcessing(
+                            deleteReviewButton,
+                            true
+                        );
+
+                        try {
+                            const response =
+                                await request(
+                                    `/resenas/eliminar/${id}`,
+                                    {
+                                        method: "DELETE",
+                                        headers: csrfHeaders()
+                                    }
+                                );
+
+                            const result =
+                                await response.json();
+
+                            if (!result.success) {
+                                throw new Error(
+                                    "La reseña no fue encontrada."
+                                );
+                            }
+
+                            const card =
+                                document.querySelector(
+                                    `.review-card[data-id="${id}"]`
+                                );
+
+                            card?.remove();
+
+                            showMessage(
+                                "Reseña eliminada correctamente."
+                            );
+
+                        } catch (error) {
+                            console.error(
+                                "Error eliminando reseña:",
+                                error
+                            );
+
+                            setProcessing(
+                                deleteReviewButton,
+                                false
+                            );
+
+                            showMessage(
+                                "No se pudo eliminar la reseña."
+                            );
+                        }
+                    }
+                }
+            );
+
+        })();
+    </script>
+
+</th:block>
 
 </body>
 </html>

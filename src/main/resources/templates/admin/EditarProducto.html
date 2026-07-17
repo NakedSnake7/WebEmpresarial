@@ -1,794 +1,1521 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Editar Producto</title>
-
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-
-<style>
-:root{
---bg:#0b0b0d;
---card:#141418;
---card2:#1b1c21;
---line:#2a2b31;
---text:#f4f4f5;
---muted:#9ca3af;
---green:#10b981;
---blue:#3b82f6;
---red:#ef4444;
---gold:#f59e0b;
-}
-
-*{box-sizing:border-box}
-
-body{
-margin:0;
-background:linear-gradient(135deg,#0a0a0a,#111827,#0b0b0d);
-min-height:100vh;
-color:var(--text);
-font-family:Inter,system-ui;
-}
-
-.wrapper{
-max-width:1300px;
-margin:auto;
-padding:30px 15px;
-}
-
-.glass{
-background:rgba(20,20,24,.92);
-border:1px solid rgba(255,255,255,.05);
-backdrop-filter:blur(12px);
-border-radius:24px;
-box-shadow:0 20px 60px rgba(0,0,0,.45);
-}
-
-.header{
-padding:28px;
-margin-bottom:22px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:15px;
-flex-wrap:wrap;
-}
-
-.title{
-font-size:2rem;
-font-weight:800;
-margin:0;
-}
-
-.sub{
-color:var(--muted);
-margin-top:5px;
-}
-
-.section{
-padding:24px;
-margin-bottom:22px;
-}
-
-label{
-font-weight:700;
-font-size:.92rem;
-margin-bottom:7px;
-display:block;
-}
-
-.form-control{
-background:#111216;
-border:1px solid var(--line);
-color:#fff;
-border-radius:14px;
-padding:12px 14px;
-height:auto;
-}
-
-.form-control:focus{
-background:#111216;
-color:white;
-border-color:#3b82f6;
-box-shadow:none;
-}
-
-textarea.form-control{
-min-height:130px;
-resize:vertical;
-}
-
-.btn{
-border:none;
-border-radius:14px;
-padding:11px 18px;
-font-weight:700;
-}
-
-.btn-pro{
-background:linear-gradient(135deg,#3b82f6,#2563eb);
-color:white;
-}
-
-.btn-save{
-background:linear-gradient(135deg,#10b981,#059669);
-color:white;
-}
-
-.btn-danger{
-background:linear-gradient(135deg,#ef4444,#dc2626);
-}
-
-.btn-light{
-background:#fff;
-color:#111;
-}
-
-.variant-card{
-background:var(--card2);
-border:1px solid var(--line);
-border-radius:18px;
-padding:18px;
-margin-bottom:16px;
-}
-
-.attr-row{
-display:grid;
-grid-template-columns:1fr 1fr auto;
-gap:10px;
-margin-bottom:10px;
-}
-
-.badge-stock{
-padding:7px 12px;
-border-radius:40px;
-font-size:.8rem;
-font-weight:700;
-display:inline-block;
-}
-
-.in{
-background:rgba(16,185,129,.15);
-color:#34d399;
-}
-
-.out{
-background:rgba(239,68,68,.15);
-color:#f87171;
-}
-
-.img-box{
-position:relative;
-border-radius:16px;
-overflow:hidden;
-border:1px solid var(--line);
-margin-bottom:15px;
-}
-
-.img-box img{
-width:100%;
-height:200px;
-object-fit:cover;
-}
-
-.img-actions{
-position:absolute;
-right:10px;
-bottom:10px;
-}
-
-.dropzone{
-border:2px dashed #374151;
-border-radius:18px;
-padding:35px;
-text-align:center;
-cursor:pointer;
-transition:.2s;
-}
-
-.dropzone:hover{
-border-color:#3b82f6;
-background:rgba(59,130,246,.05);
-}
-
-.toast-box{
-position:fixed;
-right:20px;
-top:20px;
-z-index:99999;
-padding:14px 18px;
-border-radius:14px;
-font-weight:700;
-display:none;
-min-width:240px;
-}
-
-.toast-success{background:#10b981;color:white;}
-.toast-error{background:#ef4444;color:white;}
-
-.loader{
-display:none;
-width:20px;
-height:20px;
-border:3px solid rgba(255,255,255,.2);
-border-top:3px solid white;
-border-radius:50%;
-animation:spin .8s linear infinite;
-margin-right:8px;
-}
-
-@keyframes spin{
-100%{transform:rotate(360deg)}
-}
-
-@media(max-width:768px){
-.attr-row{
-grid-template-columns:1fr;
-}
-.title{
-font-size:1.45rem;
-}
-}
-</style>
-</head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Editar producto | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
 
 <body>
 
-<div id="toast" class="toast-box"></div>
-
-<div class="wrapper">
-
-<!-- HEADER -->
-<div class="glass header">
-<div>
-<h1 class="title">Editar Producto</h1>
-<div class="sub" th:text="${productoDTO.productName}">Producto</div>
-</div>
-
-<div>
-<button type="button"
-class="btn btn-light"
-onclick="history.back()">
-Volver
-</button>
-</div>
-</div>
-
-<!-- FORM -->
-<form id="formEditar"
-th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
-method="post"
-enctype="multipart/form-data">
-
-<input type="hidden" name="id" th:value="${productoDTO.id}">
-
-<!-- DATOS -->
-<div class="glass section">
-
-<div class="row">
-
-<div class="col-md-6 mb-3">
-<label>Nombre</label>
-<input class="form-control"
-name="productName"
-th:value="${productoDTO.productName}">
-</div>
-
-<div class="col-md-3 mb-3">
-<label>Precio Base</label>
-<input type="number"
-step="0.01"
-class="form-control"
-name="precio"
-th:value="${productoDTO.precio}">
-</div>
-
-<div class="col-md-3 mb-3"
-id="stockSimpleBox"
-th:style="${productoDTO.tieneVariantes}? 'display:none;' : 'display:block;'">
-<label>Stock General</label>
-<input type="number"
-class="form-control"
-name="stockSimple"
-id="stockSimple"
-th:value="${productoDTO.stockSimple}">
-</div>
-
-<div class="col-md-6 mb-3">
-<label>Marca</label>
-<select class="form-control" name="marcaId">
-<option value="">Sin marca</option>
-<option th:each="m : ${marcas}"
-th:value="${m.id}"
-th:text="${m.nombre}"
-th:selected="${m.id == productoDTO.marcaId}">
-</option>
-</select>
-</div>
-
-<div class="col-md-6 mb-3">
-<label>Categoría</label>
-<select class="form-control" name="categoriaId">
-<option value="">Seleccionar</option>
-<option th:each="cat : ${categorias}"
-th:value="${cat.id}"
-th:text="${cat.nombre}"
-th:selected="${cat.id == productoDTO.categoriaId}">
-</option>
-</select>
-</div>
-
-<div class="col-md-3 mb-3">
-<label>Descuento %</label>
-<input type="number"
-class="form-control"
-name="porcentajeDescuento"
-th:value="${productoDTO.porcentajeDescuento}">
-</div>
-
-<div class="col-md-12 mb-3">
-<label>Descripción</label>
-<textarea class="form-control"
-name="description"
-th:text="${productoDTO.description}"></textarea>
-</div>
-
-</div>
-</div>
-
-<!-- VARIANTES -->
-<div class="glass section">
+<th:block th:fragment="content">
+
+    <style>
+        .commerce-header {
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(13, 110, 253, .2),
+                    transparent 35%
+                ),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+        }
+
+        .commerce-header .text-muted {
+            color: rgba(255, 255, 255, .68) !important;
+        }
+
+        .product-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: .85rem;
+            background: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary-text-emphasis);
+            flex-shrink: 0;
+        }
+
+        .variant-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .variant-card + .variant-card {
+            margin-top: 1rem;
+        }
+
+        .attribute-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: .75rem;
+            margin-bottom: .75rem;
+        }
+
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: .45rem .75rem;
+            border-radius: 999px;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .stock-in {
+            background: var(--bs-success-bg-subtle);
+            color: var(--bs-success-text-emphasis);
+        }
+
+        .stock-out {
+            background: var(--bs-danger-bg-subtle);
+            color: var(--bs-danger-text-emphasis);
+        }
+
+        .product-image-card {
+            position: relative;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            overflow: hidden;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .product-image-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .product-image-actions {
+            position: absolute;
+            right: .75rem;
+            bottom: .75rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition:
+                border-color .2s ease,
+                background-color .2s ease;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .dropzone:hover,
+        .dropzone.drag-over {
+            border-color: var(--bs-primary);
+            background: var(--bs-primary-bg-subtle);
+        }
+
+        .preview-image-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: .85rem;
+            overflow: hidden;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .preview-image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .sticky-save {
+            position: sticky;
+            bottom: 1rem;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 1.1rem;
+            height: 1.1rem;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+
+        .is-processing {
+            opacity: .65;
+            pointer-events: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .commerce-header {
+                border-radius: 1rem;
+            }
+
+            .attribute-row {
+                grid-template-columns: 1fr;
+            }
+
+            .sticky-save {
+                position: static;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- CSRF para fetch -->
+        <div id="csrfData"
+             class="d-none"
+             th:if="${_csrf != null}"
+             th:attr="data-token=${_csrf.token},
+                      data-header=${_csrf.headerName}">
+        </div>
+
+        <!-- Encabezado -->
+        <div class="commerce-header shadow-sm mb-4">
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between
+                            align-items-xl-center gap-4">
+
+                    <div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                            <span class="badge text-bg-primary">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Catálogo
+                            </span>
+
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2">
+                            Editar producto
+                        </h1>
+
+                        <p class="text-muted mb-0">
+
+                            Editando
+
+                            <strong th:text="${productoDTO.productName}">
+                                Producto
+                            </strong>
+
+                            <span th:text="' · ID #' + ${productoDTO.id}">
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a th:href="@{/admin/productos}"
+                           class="btn btn-outline-light">
+                            ← Productos
+                        </a>
+
+                        <a th:href="@{/modificar-precios}"
+                           class="btn btn-light">
+                            Precios
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <form id="formEditar"
+              th:action="@{/api/productos/editar/{id}(id=${productoDTO.id})}"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate>
+
+            <th:block th:replace="~{fragments/csrf :: token}">
+            </th:block>
+
+            <input type="hidden"
+                   name="id"
+                   th:value="${productoDTO.id}">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-<h4 class="m-0">Variantes</h4>
+            <div class="row g-4">
 
-<button type="button"
-class="btn btn-pro"
-id="addVariante">
-+ Agregar Variante
-</button>
-</div>
+                <!-- Contenido principal -->
+                <div class="col-xl-8">
 
-<div id="variantesWrap">
+                    <!-- Datos -->
+                    <div class="card product-card mb-4">
+                        <div class="card-body p-4">
+
+                            <div class="section-heading">
+
+                                <div class="section-icon">
+                                    📦
+                                </div>
+
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        Información del producto
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        Datos comerciales, precio y organización.
+                                    </p>
+                                </div>
 
-<div class="variant-card"
-th:each="v,iter : ${productoDTO.variantes}"
-th:attr="data-index=${iter.index}">
+                            </div>
 
-<input type="hidden"
-th:name="|variantes[${iter.index}].id|"
-th:value="${v.id}">
+                            <div class="row g-3">
 
-<div class="row">
+                                <div class="col-md-8">
+
+                                    <label for="productName"
+                                           class="form-label fw-semibold">
+                                        Nombre
+                                    </label>
 
-<div class="col-md-4 mb-2">
-<label>Stock</label>
-<input type="number"
-class="form-control stock-input"
-th:name="|variantes[${iter.index}].stock|"
-th:value="${v.stock}">
-</div>
+                                    <input id="productName"
+                                           class="form-control"
+                                           name="productName"
+                                           th:value="${productoDTO.productName}"
+                                           maxlength="180"
+                                           required>
+
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <label for="basePrice"
+                                           class="form-label fw-semibold">
+                                        Precio base
+                                    </label>
 
-<div class="col-md-4 mb-2">
-<label>Precio</label>
-<input type="number"
-step="0.01"
-class="form-control"
-th:name="|variantes[${iter.index}].precio|"
-th:value="${v.precio}">
-</div>
+                                    <div class="input-group">
 
-<div class="col-md-4 mb-2 d-flex align-items-end">
-<span class="badge-stock"
-th:classappend="${v.stock > 0 ? ' in':' out'}"
-th:text="${v.stock > 0 ? 'Con stock':'Agotado'}">
-</span>
-</div>
+                                        <span class="input-group-text">
+                                            $
+                                        </span>
 
-</div>
+                                        <input id="basePrice"
+                                               type="number"
+                                               step="0.01"
+                                               min="0"
+                                               class="form-control"
+                                               name="precio"
+                                               th:value="${productoDTO.precio}"
+                                               required>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6">
 
-<div class="atributos-container mt-2">
+                                    <label for="brandSelect"
+                                           class="form-label fw-semibold">
+                                        Marca
+                                    </label>
 
-<div class="attr-row"
-th:each="entry,i : ${v.atributos}">
+                                    <select id="brandSelect"
+                                            class="form-select"
+                                            name="marcaId">
+
+                                        <option value="">
+                                            Sin marca
+                                        </option>
+
+                                        <option th:each="marca : ${marcas}"
+                                                th:value="${marca.id}"
+                                                th:text="${marca.nombre}"
+                                                th:selected="${marca.id ==
+                                                    productoDTO.marcaId}">
+                                        </option>
 
-<input type="text"
-class="form-control"
-th:name="|variantes[${iter.index}].atributosKeys[${i.index}]|"
-th:value="${entry.key}"
-placeholder="Nombre">
+                                    </select>
+
+                                </div>
 
-<input type="text"
-class="form-control"
-th:name="|variantes[${iter.index}].atributosValues[${i.index}]|"
-th:value="${entry.value}"
-placeholder="Valor">
+                                <div class="col-md-6">
+
+                                    <label for="categorySelect"
+                                           class="form-label fw-semibold">
+                                        Categoría
+                                    </label>
 
-<button type="button"
-class="btn btn-danger removeAttr">
-X
-</button>
+                                    <select id="categorySelect"
+                                            class="form-select"
+                                            name="categoriaId"
+                                            required>
 
-</div>
+                                        <option value="">
+                                            Selecciona una categoría
+                                        </option>
 
-</div>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.id}"
+                                                th:text="${categoria.nombre}"
+                                                th:selected="${categoria.id ==
+                                                    productoDTO.categoriaId}">
+                                        </option>
 
-<div class="mt-2">
-<button type="button"
-class="btn btn-info btn-sm addAttr">
-+ Atributo
-</button>
+                                    </select>
 
-<button type="button"
-class="btn btn-danger btn-sm removeVariante">
-Eliminar
-</button>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- IMAGENES -->
-<div class="glass section">
-
-<h4 class="mb-3">Imágenes</h4>
-
-<div class="row">
-
-<div class="col-md-4"
-th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
-
-<div class="img-box">
-
-<img th:src="${img}">
-
-<div class="img-actions">
-
-<button type="button"
-class="btn btn-danger btn-sm btnEliminarImagen"
-th:data-id="${productoDTO.imagenesExistentes[iter.index]}"
-th:data-producto="${productoDTO.id}">
-Eliminar
-</button>
+                                </div>
+
+                                <div class="col-md-4">
 
-</div>
-</div>
-</div>
+                                    <label for="discount"
+                                           class="form-label fw-semibold">
+                                        Descuento
+                                    </label>
 
-</div>
+                                    <div class="input-group">
 
-<div class="dropzone mt-3" id="dropzone">
-Haz click o arrastra imágenes aquí
-<input hidden
-multiple
-type="file"
-name="imagenes"
-id="imagenes"
-accept="image/*">
-</div>
+                                        <input id="discount"
+                                               type="number"
+                                               class="form-control"
+                                               name="porcentajeDescuento"
+                                               min="0"
+                                               max="100"
+                                               step="1"
+                                               th:value="${productoDTO.porcentajeDescuento}">
 
-<div class="row mt-3" id="preview"></div>
+                                        <span class="input-group-text">
+                                            %
+                                        </span>
 
-</div>
+                                    </div>
 
-<!-- SAVE -->
-<div class="text-center mb-5">
+                                </div>
 
-<button class="btn btn-save btn-lg px-5"
-type="submit">
+                                <div class="col-md-4"
+                                     id="stockSimpleBox"
+                                     th:classappend="${productoDTO.tieneVariantes}
+                                         ? ' d-none' : ''">
 
-<span id="loader" class="loader"></span>
-<span id="btnText">Guardar Cambios</span>
+                                    <label for="stockSimple"
+                                           class="form-label fw-semibold">
+                                        Stock general
+                                    </label>
 
-</button>
+                                    <input type="number"
+                                           class="form-control"
+                                           name="stockSimple"
+                                           id="stockSimple"
+                                           min="0"
+                                           step="1"
+                                           th:value="${productoDTO.stockSimple}">
 
-</div>
+                                </div>
 
-</form>
-</div>
-
-<script>
-/* ==========================
-TOAST
-========================== */
-function toast(msg,type='success'){
-const t=document.getElementById('toast');
-t.className='toast-box ' + (type==='success' ? 'toast-success':'toast-error');
-t.innerText=msg;
-t.style.display='block';
-setTimeout(()=>t.style.display='none',2500);
-}
+                                <div class="col-12">
 
-/* ==========================
-BADGES
-========================== */
-function actualizarBadgeStock(input){
-const badge=input.closest('.variant-card')
-.querySelector('.badge-stock');
-
-if(Number(input.value)>0){
-badge.innerText='Con stock';
-badge.className='badge-stock in';
-}else{
-badge.innerText='Agotado';
-badge.className='badge-stock out';
-}
-}
+                                    <label for="description"
+                                           class="form-label fw-semibold">
+                                        Descripción
+                                    </label>
 
-function controlarStockSimple(){
-const box=document.getElementById('stockSimpleBox');
-const cards=document.querySelectorAll('.variant-card');
-box.style.display=cards.length===0?'block':'none';
-}
-
-/* ==========================
-REINDEX
-========================== */
-function reindexVariantes(){
-
-document.querySelectorAll('.variant-card')
-.forEach((card,index)=>{
+                                    <textarea id="description"
+                                              class="form-control"
+                                              name="description"
+                                              rows="6"
+                                              maxlength="3000"
+                                              th:text="${productoDTO.description}">
+                                    </textarea>
 
-card.dataset.index=index;
+                                </div>
 
-card.querySelectorAll('input').forEach(input=>{
-if(!input.name)return;
-input.name=input.name.replace(
-/variantes\[\d+]/g,
-`variantes[${index}]`
-);
-});
+                            </div>
 
-card.querySelectorAll('.attr-row')
-.forEach((row,i)=>{
+                        </div>
+                    </div>
 
-const inputs=row.querySelectorAll('input');
+                    <!-- Variantes -->
+                    <div class="card product-card mb-4">
+                        <div class="card-body p-4">
 
-inputs[0].name=
-`variantes[${index}].atributosKeys[${i}]`;
+                            <div class="d-flex flex-column flex-md-row
+                                        justify-content-between
+                                        align-items-md-center gap-3 mb-4">
 
-inputs[1].name=
-`variantes[${index}].atributosValues[${i}]`;
+                                <div class="section-heading mb-0">
 
-});
-});
+                                    <div class="section-icon">
+                                        🧩
+                                    </div>
 
-controlarStockSimple();
-}
+                                    <div>
+                                        <h5 class="fw-bold mb-1">
+                                            Variantes
+                                        </h5>
 
-/* ==========================
-ADD VARIANTE
-========================== */
-document.getElementById('addVariante')
-.addEventListener('click',()=>{
+                                        <p class="text-muted small mb-0">
+                                            Administra precio, stock y atributos.
+                                        </p>
+                                    </div>
 
-const wrap=document.getElementById('variantesWrap');
-const i=document.querySelectorAll('.variant-card').length;
-
-wrap.insertAdjacentHTML('beforeend',`
+                                </div>
 
-<div class="variant-card" data-index="${i}">
+                                <button type="button"
+                                        class="btn btn-outline-primary"
+                                        id="addVariantButton">
+                                    ＋ Agregar variante
+                                </button>
 
-<div class="row">
+                            </div>
 
-<div class="col-md-4 mb-2">
-<label>Stock</label>
-<input type="number"
-class="form-control stock-input"
-name="variantes[${i}].stock"
-value="0">
-</div>
-
-<div class="col-md-4 mb-2">
-<label>Precio</label>
-<input type="number"
-step="0.01"
-class="form-control"
-name="variantes[${i}].precio">
-</div>
+                            <div id="variantsContainer">
 
-<div class="col-md-4 mb-2 d-flex align-items-end">
-<span class="badge-stock out">
-Agotado
-</span>
-</div>
+                                <div class="variant-card"
+                                     th:each="variante, iteration :
+                                              ${productoDTO.variantes}"
+                                     th:attr="data-index=${iteration.index}">
 
-</div>
+                                    <input type="hidden"
+                                           th:name="|variantes[${iteration.index}].id|"
+                                           th:value="${variante.id}">
 
-<div class="atributos-container mt-2"></div>
+                                    <div class="d-flex flex-column flex-md-row
+                                                justify-content-between gap-3 mb-3">
 
-<div class="mt-2">
-<button type="button"
-class="btn btn-info btn-sm addAttr">
-+ Atributo
-</button>
+                                        <div>
 
-<button type="button"
-class="btn btn-danger btn-sm removeVariante">
-Eliminar
-</button>
-</div>
+                                            <h6 class="fw-bold mb-1">
+                                                Variante
+                                                <span th:text="${iteration.index + 1}">
+                                                </span>
+                                            </h6>
 
-</div>
-`);
+                                            <p class="text-muted small mb-0">
+                                                Configuración individual.
+                                            </p>
 
-controlarStockSimple();
+                                        </div>
 
-});
+                                        <button type="button"
+                                                class="btn btn-sm
+                                                       btn-outline-danger
+                                                       remove-variant">
+                                            Eliminar variante
+                                        </button>
 
-/* ==========================
-EVENTOS GLOBALES
-========================== */
-document.addEventListener('click',e=>{
+                                    </div>
 
-if(e.target.classList.contains('removeVariante')){
-e.target.closest('.variant-card').remove();
-reindexVariantes();
-}
+                                    <div class="row g-3">
 
-if(e.target.classList.contains('addAttr')){
+                                        <div class="col-md-4">
 
-const card=e.target.closest('.variant-card');
-const i=card.dataset.index;
-const c=card.querySelector('.atributos-container');
-const n=c.querySelectorAll('.attr-row').length;
+                                            <label class="form-label fw-semibold">
+                                                Stock
+                                            </label>
 
-c.insertAdjacentHTML('beforeend',`
+                                            <input type="number"
+                                                   class="form-control stock-input"
+                                                   min="0"
+                                                   step="1"
+                                                   th:name="|variantes[${iteration.index}].stock|"
+                                                   th:value="${variante.stock}">
 
-<div class="attr-row">
+                                        </div>
 
-<input type="text"
-class="form-control"
-name="variantes[${i}].atributosKeys[${n}]"
-placeholder="Nombre">
+                                        <div class="col-md-4">
 
-<input type="text"
-class="form-control"
-name="variantes[${i}].atributosValues[${n}]"
-placeholder="Valor">
+                                            <label class="form-label fw-semibold">
+                                                Precio
+                                            </label>
 
-<button type="button"
-class="btn btn-danger removeAttr">
-X
-</button>
+                                            <div class="input-group">
 
-</div>
-`);
-}
+                                                <span class="input-group-text">
+                                                    $
+                                                </span>
 
-if(e.target.classList.contains('removeAttr')){
-e.target.closest('.attr-row').remove();
-reindexVariantes();
-}
+                                                <input type="number"
+                                                       step="0.01"
+                                                       min="0"
+                                                       class="form-control variant-price"
+                                                       th:name="|variantes[${iteration.index}].precio|"
+                                                       th:value="${variante.precio}">
 
-if(e.target.classList.contains('btnEliminarImagen')){
-eliminarImagen(e.target);
-}
+                                            </div>
 
-});
+                                        </div>
 
-document.addEventListener('input',e=>{
-if(e.target.classList.contains('stock-input')){
-actualizarBadgeStock(e.target);
-}
-});
+                                        <div class="col-md-4 d-flex align-items-end">
 
-/* ==========================
-DROPZONE
-========================== */
-const dz=document.getElementById('dropzone');
-const file=document.getElementById('imagenes');
-const preview=document.getElementById('preview');
+                                            <span class="stock-badge"
+                                                  th:classappend="${variante.stock > 0
+                                                      ? ' stock-in'
+                                                      : ' stock-out'}"
+                                                  th:text="${variante.stock > 0
+                                                      ? 'Con stock'
+                                                      : 'Agotado'}">
+                                            </span>
 
-dz.onclick=()=>file.click();
+                                        </div>
 
-file.onchange=()=>{
+                                    </div>
 
-preview.innerHTML='';
+                                    <div class="attributes-container mt-4">
 
-[...file.files].forEach(f=>{
+                                        <label class="form-label fw-semibold">
+                                            Atributos
+                                        </label>
 
-const reader=new FileReader();
+                                        <div class="attribute-row"
+                                             th:each="attribute, attributeStatus :
+                                                      ${variante.atributos}">
 
-reader.onload=e=>{
+                                            <input type="text"
+                                                   class="form-control attribute-key"
+                                                   th:name="|variantes[${iteration.index}].atributosKeys[${attributeStatus.index}]|"
+                                                   th:value="${attribute.key}"
+                                                   placeholder="Ej. Color">
 
-preview.insertAdjacentHTML('beforeend',`
+                                            <input type="text"
+                                                   class="form-control attribute-value"
+                                                   th:name="|variantes[${iteration.index}].atributosValues[${attributeStatus.index}]|"
+                                                   th:value="${attribute.value}"
+                                                   placeholder="Ej. Negro">
 
-<div class="col-md-3 mb-3">
-<div class="img-box">
-<img src="${e.target.result}">
-</div>
-</div>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger
+                                                           remove-attribute">
+                                                ×
+                                            </button>
 
-`);
+                                        </div>
 
-};
+                                    </div>
 
-reader.readAsDataURL(f);
+                                    <button type="button"
+                                            class="btn btn-sm
+                                                   btn-outline-secondary
+                                                   add-attribute">
+                                        ＋ Agregar atributo
+                                    </button>
 
-});
-};
+                                </div>
 
-/* ==========================
-DELETE IMG
-========================== */
-async function eliminarImagen(btn){
+                            </div>
 
-if(!confirm('¿Eliminar imagen?')) return;
+                            <div id="emptyVariants"
+                                 class="text-center py-5 border rounded-4 d-none">
 
-const id=btn.dataset.id;
-const producto=btn.dataset.producto;
+                                <div class="display-6 mb-3">
+                                    🧩
+                                </div>
 
-const r=await fetch(
-`/api/productos/${producto}/eliminar-imagen/${id}`,
-{method:'DELETE'}
-);
+                                <h6 class="fw-bold">
+                                    Producto sin variantes
+                                </h6>
 
-if(r.ok){
-btn.closest('.col-md-4').remove();
-toast('Imagen eliminada');
-}else{
-toast('No se pudo eliminar','error');
-}
-}
+                                <p class="text-muted small mb-0">
+                                    Se utilizará el stock general y precio base.
+                                </p>
 
-/* ==========================
-SUBMIT AJAX
-========================== */
-document.getElementById('formEditar')
-.addEventListener('submit',async e=>{
+                            </div>
 
-e.preventDefault();
+                        </div>
+                    </div>
 
-reindexVariantes();
+                </div>
 
-const form=e.target;
-const loader=document.getElementById('loader');
-const text=document.getElementById('btnText');
+                <!-- Columna lateral -->
+                <div class="col-xl-4">
 
-loader.style.display='inline-block';
-text.innerText='Guardando...';
+                    <!-- Imágenes existentes -->
+                    <div class="card product-card mb-4">
+                        <div class="card-body p-4">
 
-try{
+                            <div class="section-heading">
 
-const resp=await fetch(form.action,{
-method:'POST',
-body:new FormData(form)
-});
+                                <div class="section-icon">
+                                    🖼️
+                                </div>
 
-const data=await resp.json();
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        Imágenes
+                                    </h5>
 
-if(resp.ok && data.success){
+                                    <p class="text-muted small mb-0">
+                                        Archivos actuales del producto.
+                                    </p>
+                                </div>
 
-toast('Producto actualizado 🔥');
+                            </div>
 
-setTimeout(()=>{
-location.href='/admin/productos';
-},1200);
+                            <div id="existingImages"
+                                 class="row g-3">
 
-}else{
-toast(data.error || 'Error al guardar','error');
-}
+                                <div class="col-12"
+                                     th:each="imageUrl, iteration :
+                                              ${productoDTO.urlsImagenesExistentes}">
 
-}catch(err){
-toast('Error de conexión','error');
-}
+                                    <div class="product-image-card">
 
-loader.style.display='none';
-text.innerText='Guardar Cambios';
+                                        <img th:src="${imageUrl}"
+                                             th:alt="${productoDTO.productName}">
 
-});
+                                        <div class="product-image-actions">
 
-/* ==========================
-INIT
-========================== */
-controlarStockSimple();
-</script>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger
+                                                           delete-existing-image"
+                                                    th:attr="
+                                                        data-image-id=${productoDTO.imagenesExistentes[iteration.index]},
+                                                        data-product-id=${productoDTO.id}
+                                                    ">
+                                                Eliminar
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div th:if="${productoDTO.urlsImagenesExistentes == null
+                                        or #lists.isEmpty(
+                                            productoDTO.urlsImagenesExistentes
+                                        )}"
+                                 id="noExistingImages"
+                                 class="text-center py-4 text-muted">
+
+                                No hay imágenes registradas.
+
+                            </div>
+
+                            <div class="dropzone mt-4"
+                                 id="imageDropzone">
+
+                                <div class="fs-2 mb-2">
+                                    📷
+                                </div>
+
+                                <div class="fw-semibold">
+                                    Haz clic o arrastra imágenes aquí
+                                </div>
+
+                                <div class="small text-muted mt-1">
+                                    JPG, PNG o WEBP
+                                </div>
+
+                                <input type="file"
+                                       class="d-none"
+                                       multiple
+                                       name="imagenes"
+                                       id="imagesInput"
+                                       accept="image/jpeg,image/png,image/webp">
+
+                            </div>
+
+                            <div class="row g-3 mt-1"
+                                 id="imagePreview">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Guardar -->
+                    <div class="card product-card sticky-save">
+                        <div class="card-body p-3">
+
+                            <button class="btn btn-primary btn-lg w-100"
+                                    id="saveButton"
+                                    type="submit">
+
+                                <span id="saveSpinner"
+                                      class="loading-spinner me-2">
+                                </span>
+
+                                <span id="saveButtonText">
+                                    Guardar cambios
+                                </span>
+
+                            </button>
+
+                            <a th:href="@{/admin/productos}"
+                               class="btn btn-link
+                                      text-decoration-none w-100 mt-2">
+                                Cancelar
+                            </a>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+        <div id="productToast"
+             class="toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="toast-header">
+
+                <strong class="me-auto">
+                    WebEmpresarial Commerce™
+                </strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+
+            </div>
+
+            <div id="productToastBody"
+                 class="toast-body">
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const form =
+                document.getElementById("formEditar");
+
+            const csrfData =
+                document.getElementById("csrfData");
+
+            const csrfToken =
+                csrfData?.dataset.token;
+
+            const csrfHeader =
+                csrfData?.dataset.header;
+
+            const variantsContainer =
+                document.getElementById("variantsContainer");
+
+            const emptyVariants =
+                document.getElementById("emptyVariants");
+
+            const stockSimpleBox =
+                document.getElementById("stockSimpleBox");
+
+            const basePrice =
+                document.getElementById("basePrice");
+
+            const addVariantButton =
+                document.getElementById("addVariantButton");
+
+            const imageDropzone =
+                document.getElementById("imageDropzone");
+
+            const imagesInput =
+                document.getElementById("imagesInput");
+
+            const imagePreview =
+                document.getElementById("imagePreview");
+
+            const saveButton =
+                document.getElementById("saveButton");
+
+            const saveSpinner =
+                document.getElementById("saveSpinner");
+
+            const saveButtonText =
+                document.getElementById("saveButtonText");
+
+            const toastElement =
+                document.getElementById("productToast");
+
+            const toastBody =
+                document.getElementById("productToastBody");
+
+            const toast =
+                toastElement && window.bootstrap
+                    ? bootstrap.Toast.getOrCreateInstance(
+                        toastElement
+                    )
+                    : null;
+
+            function showMessage(message) {
+                if (toast && toastBody) {
+                    toastBody.textContent = message;
+                    toast.show();
+                    return;
+                }
+
+                window.alert(message);
+            }
+
+            function csrfHeaders(extraHeaders = {}) {
+                const headers = {
+                    ...extraHeaders
+                };
+
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                return headers;
+            }
+
+            async function request(url, options = {}) {
+                const response =
+                    await fetch(url, options);
+
+                if (!response.ok) {
+                    const text =
+                        await response.text();
+
+                    throw new Error(
+                        text ||
+                        `Error HTTP ${response.status}`
+                    );
+                }
+
+                return response;
+            }
+
+            async function readJsonSafely(response) {
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    return {};
+                }
+
+                return response.json();
+            }
+
+            function updateStockBadge(input) {
+                const card =
+                    input.closest(".variant-card");
+
+                const badge =
+                    card?.querySelector(".stock-badge");
+
+                if (!badge) {
+                    return;
+                }
+
+                const stock =
+                    Number(input.value || 0);
+
+                if (stock > 0) {
+                    badge.textContent = "Con stock";
+                    badge.className =
+                        "stock-badge stock-in";
+                } else {
+                    badge.textContent = "Agotado";
+                    badge.className =
+                        "stock-badge stock-out";
+                }
+            }
+
+            function updateVariantsState() {
+                const variantCards =
+                    variantsContainer.querySelectorAll(
+                        ".variant-card"
+                    );
+
+                const hasVariants =
+                    variantCards.length > 0;
+
+                stockSimpleBox.classList.toggle(
+                    "d-none",
+                    hasVariants
+                );
+
+                emptyVariants.classList.toggle(
+                    "d-none",
+                    hasVariants
+                );
+            }
+
+            function reindexVariants() {
+                variantsContainer
+                    .querySelectorAll(".variant-card")
+                    .forEach((card, variantIndex) => {
+
+                        card.dataset.index =
+                            String(variantIndex);
+
+                        const title =
+                            card.querySelector("h6 span");
+
+                        if (title) {
+                            title.textContent =
+                                String(variantIndex + 1);
+                        }
+
+                        const hiddenId =
+                            card.querySelector(
+                                'input[type="hidden"][name*=".id"]'
+                            );
+
+                        if (hiddenId) {
+                            hiddenId.name =
+                                `variantes[${variantIndex}].id`;
+                        }
+
+                        const stockInput =
+                            card.querySelector(".stock-input");
+
+                        if (stockInput) {
+                            stockInput.name =
+                                `variantes[${variantIndex}].stock`;
+                        }
+
+                        const priceInput =
+                            card.querySelector(".variant-price");
+
+                        if (priceInput) {
+                            priceInput.name =
+                                `variantes[${variantIndex}].precio`;
+                        }
+
+                        card.querySelectorAll(".attribute-row")
+                            .forEach(
+                                (attributeRow, attributeIndex) => {
+
+                                    const keyInput =
+                                        attributeRow.querySelector(
+                                            ".attribute-key"
+                                        );
+
+                                    const valueInput =
+                                        attributeRow.querySelector(
+                                            ".attribute-value"
+                                        );
+
+                                    if (keyInput) {
+                                        keyInput.name =
+                                            `variantes[${variantIndex}].atributosKeys[${attributeIndex}]`;
+                                    }
+
+                                    if (valueInput) {
+                                        valueInput.name =
+                                            `variantes[${variantIndex}].atributosValues[${attributeIndex}]`;
+                                    }
+                                }
+                            );
+                    });
+
+                updateVariantsState();
+            }
+
+            function createVariant() {
+                const index =
+                    variantsContainer
+                        .querySelectorAll(".variant-card")
+                        .length;
+
+                const defaultPrice =
+                    Number(basePrice.value || 0);
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "variant-card";
+
+                card.dataset.index =
+                    String(index);
+
+                card.innerHTML = `
+                    <div class="d-flex flex-column flex-md-row
+                                justify-content-between gap-3 mb-3">
+
+                        <div>
+                            <h6 class="fw-bold mb-1">
+                                Variante <span>${index + 1}</span>
+                            </h6>
+
+                            <p class="text-muted small mb-0">
+                                Configuración individual.
+                            </p>
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger
+                                       remove-variant">
+                            Eliminar variante
+                        </button>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <label class="form-label fw-semibold">
+                                Stock
+                            </label>
+
+                            <input type="number"
+                                   class="form-control stock-input"
+                                   min="0"
+                                   step="1"
+                                   name="variantes[${index}].stock"
+                                   value="0">
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label class="form-label fw-semibold">
+                                Precio
+                            </label>
+
+                            <div class="input-group">
+
+                                <span class="input-group-text">
+                                    $
+                                </span>
+
+                                <input type="number"
+                                       step="0.01"
+                                       min="0"
+                                       class="form-control variant-price"
+                                       name="variantes[${index}].precio"
+                                       value="${defaultPrice.toFixed(2)}">
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-end">
+
+                            <span class="stock-badge stock-out">
+                                Agotado
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="attributes-container mt-4">
+
+                        <label class="form-label fw-semibold">
+                            Atributos
+                        </label>
+
+                    </div>
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary
+                                   add-attribute">
+                        ＋ Agregar atributo
+                    </button>
+                `;
+
+                variantsContainer.appendChild(card);
+
+                addAttribute(card);
+                reindexVariants();
+            }
+
+            function addAttribute(card) {
+                const container =
+                    card.querySelector(
+                        ".attributes-container"
+                    );
+
+                const row =
+                    document.createElement("div");
+
+                row.className =
+                    "attribute-row";
+
+                row.innerHTML = `
+                    <input type="text"
+                           class="form-control attribute-key"
+                           placeholder="Ej. Color">
+
+                    <input type="text"
+                           class="form-control attribute-value"
+                           placeholder="Ej. Negro">
+
+                    <button type="button"
+                            class="btn btn-outline-danger
+                                   remove-attribute">
+                        ×
+                    </button>
+                `;
+
+                container.appendChild(row);
+                reindexVariants();
+            }
+
+            addVariantButton?.addEventListener(
+                "click",
+                createVariant
+            );
+
+            variantsContainer?.addEventListener(
+                "click",
+                event => {
+
+                    const removeVariantButton =
+                        event.target.closest(
+                            ".remove-variant"
+                        );
+
+                    if (removeVariantButton) {
+                        removeVariantButton
+                            .closest(".variant-card")
+                            ?.remove();
+
+                        reindexVariants();
+                        return;
+                    }
+
+                    const addAttributeButton =
+                        event.target.closest(
+                            ".add-attribute"
+                        );
+
+                    if (addAttributeButton) {
+                        const card =
+                            addAttributeButton.closest(
+                                ".variant-card"
+                            );
+
+                        if (card) {
+                            addAttribute(card);
+                        }
+
+                        return;
+                    }
+
+                    const removeAttributeButton =
+                        event.target.closest(
+                            ".remove-attribute"
+                        );
+
+                    if (removeAttributeButton) {
+                        removeAttributeButton
+                            .closest(".attribute-row")
+                            ?.remove();
+
+                        reindexVariants();
+                    }
+                }
+            );
+
+            variantsContainer?.addEventListener(
+                "input",
+                event => {
+
+                    if (
+                        event.target.classList.contains(
+                            "stock-input"
+                        )
+                    ) {
+                        updateStockBadge(
+                            event.target
+                        );
+                    }
+                }
+            );
+
+            imageDropzone?.addEventListener(
+                "click",
+                () => imagesInput.click()
+            );
+
+            imageDropzone?.addEventListener(
+                "dragover",
+                event => {
+                    event.preventDefault();
+
+                    imageDropzone.classList.add(
+                        "drag-over"
+                    );
+                }
+            );
+
+            imageDropzone?.addEventListener(
+                "dragleave",
+                () => {
+                    imageDropzone.classList.remove(
+                        "drag-over"
+                    );
+                }
+            );
+
+            imageDropzone?.addEventListener(
+                "drop",
+                event => {
+                    event.preventDefault();
+
+                    imageDropzone.classList.remove(
+                        "drag-over"
+                    );
+
+                    if (event.dataTransfer.files.length) {
+                        imagesInput.files =
+                            event.dataTransfer.files;
+
+                        renderImagePreview();
+                    }
+                }
+            );
+
+            imagesInput?.addEventListener(
+                "change",
+                renderImagePreview
+            );
+
+            function renderImagePreview() {
+                imagePreview.innerHTML = "";
+
+                [...imagesInput.files].forEach(file => {
+                    if (!file.type.startsWith("image/")) {
+                        return;
+                    }
+
+                    const reader =
+                        new FileReader();
+
+                    reader.onload = event => {
+                        const column =
+                            document.createElement("div");
+
+                        column.className =
+                            "col-6";
+
+                        column.innerHTML = `
+                            <div class="preview-image-card">
+                                <img src="${event.target.result}"
+                                     alt="Vista previa">
+                            </div>
+                        `;
+
+                        imagePreview.appendChild(column);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            document.addEventListener(
+                "click",
+                async event => {
+
+                    const deleteImageButton =
+                        event.target.closest(
+                            ".delete-existing-image"
+                        );
+
+                    if (!deleteImageButton) {
+                        return;
+                    }
+
+                    const imageId =
+                        deleteImageButton.dataset.imageId;
+
+                    const productId =
+                        deleteImageButton.dataset.productId;
+
+                    const confirmed =
+                        window.confirm(
+                            "¿Eliminar esta imagen del producto?"
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    deleteImageButton.disabled = true;
+                    deleteImageButton.textContent =
+                        "Eliminando...";
+
+                    try {
+                        await request(
+                            `/api/productos/${productId}/eliminar-imagen/${imageId}`,
+                            {
+                                method: "DELETE",
+                                headers: csrfHeaders()
+                            }
+                        );
+
+                        const imageColumn =
+                            deleteImageButton.closest(".col-12");
+
+                        imageColumn?.remove();
+
+                        const remaining =
+                            document.querySelectorAll(
+                                "#existingImages .product-image-card"
+                            );
+
+                        if (remaining.length === 0) {
+                            const noImages =
+                                document.getElementById(
+                                    "noExistingImages"
+                                );
+
+                            if (noImages) {
+                                noImages.classList.remove(
+                                    "d-none"
+                                );
+                            }
+                        }
+
+                        showMessage(
+                            "Imagen eliminada correctamente."
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            "Error eliminando imagen:",
+                            error
+                        );
+
+                        deleteImageButton.disabled = false;
+                        deleteImageButton.textContent =
+                            "Eliminar";
+
+                        showMessage(
+                            "No se pudo eliminar la imagen."
+                        );
+                    }
+                }
+            );
+
+            form?.addEventListener(
+                "submit",
+                async event => {
+
+                    event.preventDefault();
+
+                    reindexVariants();
+
+                    if (!form.checkValidity()) {
+                        form.classList.add(
+                            "was-validated"
+                        );
+
+                        form.querySelector(":invalid")
+                            ?.focus();
+
+                        return;
+                    }
+
+                    saveButton.disabled = true;
+                    saveSpinner.style.display =
+                        "inline-block";
+
+                    saveButtonText.textContent =
+                        "Guardando...";
+
+                    try {
+                        const response =
+                            await request(
+                                form.action,
+                                {
+                                    method: "POST",
+                                    headers: csrfHeaders(),
+                                    body: new FormData(form)
+                                }
+                            );
+
+                        const data =
+                            await readJsonSafely(response);
+
+                        if (
+                            Object.prototype.hasOwnProperty.call(
+                                data,
+                                "success"
+                            ) &&
+                            !data.success
+                        ) {
+                            throw new Error(
+                                data.error ||
+                                "El producto no pudo actualizarse."
+                            );
+                        }
+
+                        showMessage(
+                            "Producto actualizado correctamente."
+                        );
+
+                        window.setTimeout(
+                            () => {
+                                window.location.href =
+                                    "/admin/productos";
+                            },
+                            800
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            "Error actualizando producto:",
+                            error
+                        );
+
+                        showMessage(
+                            error.message ||
+                            "No se pudo guardar el producto."
+                        );
+
+                        saveButton.disabled = false;
+                        saveSpinner.style.display =
+                            "none";
+
+                        saveButtonText.textContent =
+                            "Guardar cambios";
+                    }
+                }
+            );
+
+            reindexVariants();
+
+            document
+                .querySelectorAll(".stock-input")
+                .forEach(updateStockBadge);
+
+        })();
+    </script>
+
+</th:block>
 
 </body>
 </html>

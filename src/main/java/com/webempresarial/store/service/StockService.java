@@ -1,15 +1,16 @@
 package com.webempresarial.store.service;
 
 import com.webempresarial.store.contracts.StockItem;
-import com.webempresarial.store.dto.checkout.CartItemDTO;
 import com.webempresarial.store.exceptions.InsufficientStockException;
 import com.webempresarial.store.exceptions.ResourceNotFoundException;
+import com.webempresarial.store.model.InventoryMovementType;
 import com.webempresarial.store.model.Order;
 import com.webempresarial.store.model.OrderItem;
 import com.webempresarial.store.model.ProductoVariante;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ProductoRepository;
 import com.webempresarial.store.repository.ProductoVarianteRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +21,21 @@ public class StockService {
 
     private final ProductoVarianteRepository varianteRepository;
     private final ProductoRepository productoRepository;
+    private final InventoryMovementService inventoryMovementService;
+    private final InventoryPersistentAlertService
+    persistentAlertService;
+    
 
     public StockService(
             ProductoVarianteRepository varianteRepository,
-            ProductoRepository productoRepository
+            ProductoRepository productoRepository,
+            InventoryMovementService inventoryMovementService,
+            InventoryPersistentAlertService persistentAlertService
     ) {
         this.varianteRepository = varianteRepository;
         this.productoRepository = productoRepository;
+        this.inventoryMovementService = inventoryMovementService;
+        this.persistentAlertService = persistentAlertService;
     }
 
     @Transactional
@@ -34,20 +43,32 @@ public class StockService {
             List<? extends StockItem> items,
             Store store
     ) {
-
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("No hay items en la orden");
+            throw new IllegalArgumentException(
+                    "No hay items en la orden"
+            );
         }
 
         for (StockItem item : items) {
 
+            if (item.getQuantity() == null
+                    || item.getQuantity() <= 0) {
+                throw new IllegalArgumentException(
+                        "La cantidad debe ser mayor a cero"
+                );
+            }
+
             if (item.getVarianteId() != null) {
 
                 ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(item.getVarianteId(), store)
+                        .findByIdForUpdate(
+                                item.getVarianteId(),
+                                store
+                        )
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Variante no encontrada: " + item.getVarianteId()
+                                        "Variante no encontrada: "
+                                                + item.getVarianteId()
                                 )
                         );
 
@@ -59,19 +80,29 @@ public class StockService {
 
             } else {
 
-                CartItemDTO cartItem = (CartItemDTO) item;
+                if (item.getProductId() == null) {
+                    throw new IllegalArgumentException(
+                            "El ID del producto es obligatorio"
+                    );
+                }
 
                 var producto = productoRepository
-                        .findByIdConTodo(cartItem.getProductId(), store)
+                        .findByIdForUpdate(
+                                item.getProductId(),
+                                store
+                        )
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Producto no encontrado: " + cartItem.getProductId()
+                                        "Producto no encontrado: "
+                                                + item.getProductId()
                                 )
                         );
 
-                if (producto.getStockSimple() < item.getQuantity()) {
+                if (producto.getStockSimple()
+                        < item.getQuantity()) {
                     throw new InsufficientStockException(
-                            "Stock insuficiente para producto: " + producto.getProductName()
+                            "Stock insuficiente para producto: "
+                                    + producto.getProductName()
                     );
                 }
             }
@@ -83,50 +114,140 @@ public class StockService {
             Order order,
             Store store
     ) {
+        if (order == null || order.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La orden debe estar persistida antes de descontar stock"
+            );
+        }
 
-        if (order.isStockReduced()) return;
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        if (order.isStockReduced()) {
+            return;
+        }
+
+        if (order.getItems() == null
+                || order.getItems().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "La orden no contiene productos"
+            );
+        }
 
         for (OrderItem item : order.getItems()) {
+
+            if (item.getQuantity() == null
+                    || item.getQuantity() <= 0) {
+                throw new IllegalArgumentException(
+                        "La cantidad del producto debe ser mayor a cero"
+                );
+            }
 
             if (item.getVariante() != null) {
 
                 ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(item.getVariante().getId(), store)
+                        .findByIdForUpdate(
+                                item.getVariante().getId(),
+                                store
+                        )
                         .orElseThrow(() ->
-                                new ResourceNotFoundException("Variante no encontrada")
+                                new ResourceNotFoundException(
+                                        "Variante no encontrada"
+                                )
                         );
 
-                if (variante.getStock() < item.getQuantity()) {
+                int stockBefore = variante.getStock();
+                int quantity = item.getQuantity();
+
+                if (stockBefore < quantity) {
                     throw new InsufficientStockException(
                             "Stock insuficiente para variante"
                     );
                 }
 
-                variante.setStock(
-                        variante.getStock() - item.getQuantity()
-                );
+                int stockAfter =
+                        stockBefore - quantity;
 
+                variante.setStock(stockAfter);
                 varianteRepository.save(variante);
 
+                inventoryMovementService.record(
+                        store,
+                        variante.getProducto(),
+                        variante,
+                        order,
+                        InventoryMovementType.SALE,
+                        quantity,
+                        stockBefore,
+                        stockAfter,
+                        "Salida de inventario por orden #"
+                                + order.getId()
+                );
+
+                persistentAlertService.evaluateVariant(
+                        variante,
+                        store
+                );
+                
             } else {
 
-                var producto = productoRepository
-                        .findByIdConTodo(item.getProducto().getId(), store)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Producto no encontrado")
-                        );
-
-                if (producto.getStockSimple() < item.getQuantity()) {
-                    throw new InsufficientStockException(
-                            "Stock insuficiente para producto: " + producto.getProductName()
+                if (item.getProducto() == null
+                        || item.getProducto().getId() == null) {
+                    throw new ResourceNotFoundException(
+                            "Producto no definido en el item"
                     );
                 }
 
-                producto.setStockSimple(
-                        producto.getStockSimple() - item.getQuantity()
+                var producto = productoRepository
+                        .findByIdForUpdate(
+                                item.getProducto().getId(),
+                                store
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Producto no encontrado"
+                                )
+                        );
+
+                int stockBefore =
+                        producto.getStockSimple();
+
+                int quantity =
+                        item.getQuantity();
+
+                if (stockBefore < quantity) {
+                    throw new InsufficientStockException(
+                            "Stock insuficiente para producto: "
+                                    + producto.getProductName()
+                    );
+                }
+
+                int stockAfter =
+                        stockBefore - quantity;
+
+                producto.setStockSimple(stockAfter);
+                productoRepository.save(producto);
+
+                inventoryMovementService.record(
+                        store,
+                        producto,
+                        null,
+                        order,
+                        InventoryMovementType.SALE,
+                        quantity,
+                        stockBefore,
+                        stockAfter,
+                        "Salida de inventario por orden #"
+                                + order.getId()
                 );
 
-                productoRepository.save(producto);
+                persistentAlertService.evaluateSimpleProduct(
+                        producto,
+                        store
+                );
             }
         }
 
@@ -138,38 +259,132 @@ public class StockService {
             Order order,
             Store store
     ) {
+        if (order == null || order.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La orden debe estar persistida antes de restaurar stock"
+            );
+        }
 
-        if (!order.isStockReduced()) return;
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        if (!order.isStockReduced()) {
+            return;
+        }
+
+        if (order.getItems() == null
+                || order.getItems().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "La orden no contiene productos"
+            );
+        }
 
         for (OrderItem item : order.getItems()) {
+
+            if (item.getQuantity() == null
+                    || item.getQuantity() <= 0) {
+                throw new IllegalArgumentException(
+                        "La cantidad del producto debe ser mayor a cero"
+                );
+            }
 
             if (item.getVariante() != null) {
 
                 ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(item.getVariante().getId(), store)
+                        .findByIdForUpdate(
+                                item.getVariante().getId(),
+                                store
+                        )
                         .orElseThrow(() ->
-                                new ResourceNotFoundException("Variante no encontrada")
+                                new ResourceNotFoundException(
+                                        "Variante no encontrada"
+                                )
                         );
 
-                variante.setStock(
-                        variante.getStock() + item.getQuantity()
+                int stockBefore =
+                        variante.getStock();
+
+                int quantity =
+                        item.getQuantity();
+
+                int stockAfter =
+                        stockBefore + quantity;
+
+                variante.setStock(stockAfter);
+                varianteRepository.save(variante);
+
+                inventoryMovementService.record(
+                        store,
+                        variante.getProducto(),
+                        variante,
+                        order,
+                        InventoryMovementType.RESTORE,
+                        quantity,
+                        stockBefore,
+                        stockAfter,
+                        "Inventario restaurado por cancelación "
+                                + "o expiración de la orden #"
+                                + order.getId()
                 );
 
-                varianteRepository.save(variante);
+                persistentAlertService.evaluateVariant(
+                        variante,
+                        store
+                );
 
             } else {
 
+                if (item.getProducto() == null
+                        || item.getProducto().getId() == null) {
+                    throw new ResourceNotFoundException(
+                            "Producto no definido en el item"
+                    );
+                }
+
                 var producto = productoRepository
-                        .findByIdConTodo(item.getProducto().getId(), store)
+                        .findByIdForUpdate(
+                                item.getProducto().getId(),
+                                store
+                        )
                         .orElseThrow(() ->
-                                new ResourceNotFoundException("Producto no encontrado")
+                                new ResourceNotFoundException(
+                                        "Producto no encontrado"
+                                )
                         );
 
-                producto.setStockSimple(
-                        producto.getStockSimple() + item.getQuantity()
+                int stockBefore =
+                        producto.getStockSimple();
+
+                int quantity =
+                        item.getQuantity();
+
+                int stockAfter =
+                        stockBefore + quantity;
+
+                producto.setStockSimple(stockAfter);
+                productoRepository.save(producto);
+
+                inventoryMovementService.record(
+                        store,
+                        producto,
+                        null,
+                        order,
+                        InventoryMovementType.RESTORE,
+                        quantity,
+                        stockBefore,
+                        stockAfter,
+                        "Inventario restaurado por cancelación "
+                                + "o expiración de la orden #"
+                                + order.getId()
                 );
 
-                productoRepository.save(producto);
+                persistentAlertService.evaluateSimpleProduct(
+                        producto,
+                        store
+                );
             }
         }
 

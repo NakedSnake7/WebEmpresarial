@@ -6,6 +6,7 @@ public enum Feature {
     PRODUCTS,
     CATEGORIES,
     INVENTORY,
+    INVENTORY_KARDEX,
     ORDERS,
     CHECKOUT,
     COUPONS,

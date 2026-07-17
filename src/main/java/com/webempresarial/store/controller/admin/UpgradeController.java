@@ -32,6 +32,14 @@ public class UpgradeController {
 
         return switch (feature) {
 
+            case PRODUCTS,
+                 CATEGORIES,
+                 INVENTORY,
+                 INVENTORY_KARDEX,
+                 ORDERS,
+                 CHECKOUT,
+                 REVIEWS -> StorePlan.BASIC;
+
             case CRM,
                  LEADS,
                  TASKS,
@@ -48,8 +56,6 @@ public class UpgradeController {
                  MULTI_USER,
                  API_ACCESS,
                  WHITE_LABEL_FULL -> StorePlan.PREMIUM;
-
-            default -> StorePlan.PRO;
         };
     }
 }

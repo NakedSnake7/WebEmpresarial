@@ -24,7 +24,8 @@ public class FeatureUsageMetricsService {
         return switch (feature) {
             case PRODUCTS -> "📦";
             case CATEGORIES -> "🏷️";
-            case INVENTORY -> "📊";
+            case INVENTORY -> "📦";
+            case INVENTORY_KARDEX -> "📊";
             case ORDERS -> "🧾";
             case CHECKOUT -> "🛒";
             case CRM -> "📊";
@@ -48,7 +49,7 @@ public class FeatureUsageMetricsService {
 
     private String resolveModule(Feature feature) {
         return switch (feature) {
-            case PRODUCTS, CATEGORIES, INVENTORY, ORDERS, CHECKOUT -> "Ecommerce";
+            case PRODUCTS, CATEGORIES, INVENTORY,INVENTORY_KARDEX, ORDERS, CHECKOUT -> "Ecommerce";
             case CRM, LEADS, TASKS, PROPOSALS, PIPELINE -> "CRM";
             case REVIEWS, COUPONS, EMAIL_MARKETING -> "Marketing";
             case WHATSAPP_AUTOMATION, AUTOMATIONS -> "Automation";

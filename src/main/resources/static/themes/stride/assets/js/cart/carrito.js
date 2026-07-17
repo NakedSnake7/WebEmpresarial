@@ -129,16 +129,29 @@ export function configurarCarrito() {
 
 
 	// FUNCION: agregar al carrito
-	function addToCart(id, name, price, quantityId, originalStock) {
+	function addToCart(
+	    id,
+	    varianteId,
+	    name,
+	    price,
+	    quantityId,
+	    originalStock
+	) {
+
 	    if (!id) return alert("Error: ID del producto no definido");
 
 	    const input = document.getElementById(quantityId);
 	    const qty = parseInt(input?.value) || 0;
-	    if (qty <= 0) return alert('Cantidad inválida');
+
+	    if (qty <= 0)
+	        return alert("Cantidad inválida");
 
 	    const products = cartStore.getState().products;
-	    const existing = products.find(p => p.id === id);
+
+		const existing = products.find(p => p.id === id && p.varianteId === varianteId);
+
 	    const inCartQty = existing ? existing.quantity : 0;
+
 	    const availableStock = originalStock - inCartQty;
 
 	    if (qty > availableStock) {
@@ -147,6 +160,7 @@ export function configurarCarrito() {
 
 	    cartStore.add({
 	        id,
+	        varianteId,
 	        name,
 	        price,
 	        quantity: qty,
@@ -270,8 +284,18 @@ export function configurarCarrito() {
 		//borrar despues
 		console.log("DATA:", btn.dataset, btn.dataset.productId);
 
-	    addToCart(id, name, price, quantityId, stock);
-	});
+		const varianteId = btn.dataset.varianteId
+		    ? Number(btn.dataset.varianteId)
+		    : null;
+
+		addToCart(
+		    id,
+		    varianteId,
+		    name,
+		    price,
+		    quantityId,
+		    stock
+		);	});
 
     // Remover productos del carrito
     if (cartItems) {
@@ -389,23 +413,23 @@ export function configurarCarrito() {
 			const { coupon } = cartStore.getState();
 
 			const orderData = {
-			  customer: {
-			    fullName,
-			    email,
-			    phone,
-			    address
-			  },
-			  cart: products.map(p => ({
-			    productId: p.id,
-			    name: p.name,
-			    price: p.price,
-			    quantity: p.quantity
-			  })),
+			    customer: {
+			        fullName,
+			        email,
+			        phone,
+			        address
+			    },
+
+			    cart: products.map(p => ({
+			        productId: p.id,
+			        varianteId: p.varianteId ?? null,
+			        quantity: p.quantity
+			    })),
+
 			    paymentMethod,
-			    couponCode: coupon ? coupon.code : null,
-			    discount,
-			    total
-			  };
+
+			    couponCode: coupon?.code ?? null
+			};
 
 
 
@@ -419,16 +443,27 @@ export function configurarCarrito() {
   
 				   if (paymentMethod === "TRANSFER") {
 
-				        const res = await fetch('/api/checkout', {
-				            method: 'POST',
-				            headers: { 'Content-Type': 'application/json' },
-				            body: JSON.stringify(orderData)
-				        });
+					const res = await fetch('/api/checkout', {
+					    method: "POST",
+					    headers: {
+					        "Content-Type": "application/json"
+					    },
+					    body: JSON.stringify(orderData)
+					});
 
-				        const data = await res.json();
-				        if (!res.ok) {
-				            throw new Error(data.message || "Error al crear la orden");
-				        }
+					const contentType = res.headers.get("content-type");
+
+					if (!contentType?.includes("application/json")) {
+					    const html = await res.text();
+					    console.error(html);
+					    throw new Error("El servidor respondió HTML en lugar de JSON");
+					}
+
+					const data = await res.json();
+
+					if (!res.ok) {
+					    throw new Error(data.message || "Error creando la orden");
+					}
 
 				        alert("¡Orden creada excitosamente, revisa tu correo!.");
 
@@ -449,7 +484,15 @@ export function configurarCarrito() {
 					        body: JSON.stringify(orderData)
 					    });
 
-					    const order = await res.json();
+						const contentType = res.headers.get("content-type");
+
+						if (!contentType?.includes("application/json")) {
+						    const html = await res.text();
+						    console.error(html);
+						    throw new Error("El servidor respondió HTML");
+						}
+
+						const order = await res.json();
 					    if (!res.ok) {
 							console.error("Respuesta backend:", order);
 
@@ -578,25 +621,37 @@ export function configurarCarrito() {
 }
 
 async function precargarDatosUsuarioCheckout() {
+	const fullName = document.getElementById("fullName");
+	const email = document.getElementById("email");
+	const phone = document.getElementById("phone");
+	const address = document.getElementById("address");
   try {
-    const res = await fetch('/api/user/me', {
-      credentials: 'include'
-    });
-    if (!res.ok) return;
+	const res = await fetch('/api/user/me', {
+	    credentials: 'include'
+		
+	});
+
+	if (res.status === 401) {
+	    return;
+	}
+
+	if (!res.ok) {
+	    throw new Error("Error consultando usuario");
+	}
 
     const user = await res.json();
     if (!user) return;
 
-    if (user.fullName && !fullName.value) {
+    if (user.fullName && fullName && !fullName.value) {
       fullName.value = user.fullName;
     }
-    if (user.email && !email.value) {
+    if (user.email && email &&!email.value) {
       email.value = user.email;
     }
-    if (user.phone && !phone.value) {
+    if (user.phone && phone && !phone.value) {
       phone.value = user.phone;
     }
-    if (user.address && !address.value) {
+    if (user.address && address &&!address.value) {
       address.value = user.address;
     }
   } catch (e) {

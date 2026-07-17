@@ -1,530 +1,1147 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Productos Premium</title>
-
-<link rel="stylesheet"
-href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-<link rel="stylesheet"
-href="/assets/vendors/themify-icons/css/themify-icons.css">
-
-<style>
-:root{
---bg:#0d1117;
---card:#161b22;
---card2:#1f2630;
---line:#2d3748;
---green:#00ffb3;
---blue:#00c3ff;
---gold:#ffc857;
---danger:#ff5c77;
---text:#fff;
---muted:#9ca3af;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
-body{
-background:linear-gradient(135deg,#0b0f14,#111827,#0d1117);
-color:var(--text);
-font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
-min-height:100vh;
-}
-
-.topbar{
-padding:30px;
-text-align:center;
-}
-
-.topbar h1{
-font-size:38px;
-font-weight:900;
-letter-spacing:1px;
-}
-
-.topbar p{
-color:var(--muted);
-margin-top:8px;
-}
-
-.panel{
-max-width:1700px;
-margin:auto;
-padding:25px;
-background:rgba(255,255,255,.03);
-border:1px solid rgba(255,255,255,.05);
-border-radius:20px;
-backdrop-filter:blur(12px);
-box-shadow:0 25px 60px rgba(0,0,0,.35);
-}
-
-.search-box{
-display:flex;
-gap:12px;
-margin-bottom:25px;
-flex-wrap:wrap;
-}
-
-.search-box input{
-flex:1;
-min-width:250px;
-background:#111827;
-border:1px solid #263042;
-color:#fff;
-padding:12px 15px;
-border-radius:12px;
-outline:none;
-}
-
-.btn-premium{
-border:none;
-padding:11px 18px;
-border-radius:12px;
-font-weight:700;
-cursor:pointer;
-color:#fff;
-transition:.25s;
-}
-
-.btn-green{background:var(--green); color:#000;}
-.btn-blue{background:var(--blue);}
-.btn-gold{background:var(--gold); color:#000;}
-.btn-red{background:var(--danger);}
-
-.btn-premium:hover{
-transform:translateY(-2px);
-opacity:.95;
-}
-
-.table-wrap{
-overflow:auto;
-border-radius:16px;
-}
-
-table{
-width:100%;
-min-width:1500px;
-border-collapse:collapse;
-}
-
-thead{
-background:#111827;
-}
-
-th,td{
-padding:14px;
-border-bottom:1px solid var(--line);
-text-align:center;
-vertical-align:middle;
-}
-
-tbody tr:hover{
-background:rgba(255,255,255,.02);
-}
-
-.category-row{
-background:#1c2330 !important;
-font-size:18px;
-font-weight:800;
-cursor:pointer;
-}
-
-.product-img{
-width:60px;
-height:60px;
-border-radius:14px;
-object-fit:cover;
-border:2px solid #2d3748;
-}
-
-.badge-pro{
-padding:6px 12px;
-border-radius:40px;
-font-size:12px;
-font-weight:700;
-display:inline-block;
-margin:2px;
-}
-
-.bg-promo{background:#ff4d67;}
-.bg-var{background:#00c3ff;}
-.bg-stock{background:#00ffb3; color:#000;}
-.bg-out{background:#555;}
-.bg-brand{background:#ffc857; color:#000;}
-
-.variant-box{
-background:#10151d;
-border-radius:14px;
-padding:10px;
-}
-
-.float-btn{
-position:fixed;
-right:25px;
-bottom:25px;
-z-index:999;
-}
-
-@media(max-width:768px){
-.topbar h1{font-size:28px;}
-.panel{margin:10px;padding:15px;}
-.search-box{flex-direction:column;}
-}
-</style>
-</head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Productos | WebEmpresarial Commerce™',
+          ~{::content}
+      )}">
 
 <body>
 
-<div class="topbar">
-<h1>📦 Productos Premium</h1>
-<p>Vista avanzada con marcas + variantes desplegables</p>
-</div>
-
-<div class="panel">
-
-<div class="search-box">
-
-<input type="text"
-id="searchInput"
-placeholder="Buscar producto...">
-
-<button class="btn-premium btn-green"
-onclick="expandirTodo()">
-Expandir Todo
-</button>
-
-<button class="btn-premium btn-blue"
-onclick="colapsarTodo()">
-Colapsar Todo
-</button>
-
-</div>
-
-<div class="table-wrap">
-
-<table class="table table-dark">
-
-<thead>
-<tr>
-<th>ID</th>
-<th>Imagen</th>
-<th>Producto</th>
-<th>Marca</th>
-<th>Precio</th>
-<th>Stock</th>
-<th>Acciones</th>
-<th>Visible</th>
-</tr>
-</thead>
-
-<tbody>
-
-<th:block th:each="categoria : ${categorias}">
-
-<tr class="category-row"
-data-toggle="collapse"
-th:attr="data-target='#cat-'+${categoria.id}">
-<td colspan="8">
-
-📁 <span th:text="${categoria.nombre}"></span>
-
-<span class="badge badge-light ml-3"
-th:text="${#lists.size(categoria.productos)} + ' productos'"></span>
-
-<input type="checkbox"
-class="ml-4 toggle-categoria"
-th:attr="data-categoria-id=${categoria.id}"
-th:checked="${categoria.todosVisibles}">
-
-Visible
-
-</td>
-</tr>
-
-<th:block th:each="producto : ${categoria.productos}">
-
-<tr class="collapse producto-row"
-th:id="'cat-'+${categoria.id}"
-th:attr="data-name=${producto.productName}">
-
-<td th:text="${producto.id}"></td>
-
-<td>
-<img class="product-img"
-th:src="${producto.imageUrl}">
-</td>
-
-<td>
-
-<b th:text="${producto.productName}"></b><br>
-
-<span th:if="${producto.tienePromocion}"
-class="badge-pro bg-promo">
-Promo
-</span>
-
-<span th:if="${producto.tieneVariantes}"
-class="badge-pro bg-var">
-Variantes
-</span>
-
-</td>
-
-<td>
-
-<span th:if="${producto.marcaNombre != null}"
-class="badge-pro bg-brand"
-th:text="${producto.marcaNombre}">
-</span>
-
-<span th:if="${producto.marcaNombre == null}">
-Sin marca
-</span>
-
-</td>
-
-<td>
-
-<div th:if="${producto.tienePromocion}">
-    <small style="text-decoration:line-through">
-$<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
-    </small><br>
-
-    <b style="color:#00ffb3">
-        $<span th:text="${#numbers.formatDecimal(
-            producto.precio - (producto.precio * producto.porcentajeDescuento / 100),
-            1,2)}"></span>
-    </b>
-</div>
-
-<div th:if="${!producto.tienePromocion}">
-
-<span th:if="${producto.tieneVariantes}">
-Desde $
-<span th:text="${producto.precioMinimo}"></span>
-</span>
-
-<span th:if="${!producto.tieneVariantes}">
-$
-<span th:text="${producto.precio}"></span>
-</span>
-
-</div>
-
-</td>
-
-<td>
-
-<span th:if="${producto.stockTotal > 0}"
-      class="badge-pro bg-stock"
-      th:text="${producto.stockTotal}">
-</span>
-
-<span th:if="${producto.stockTotal <= 0}"
-      class="badge-pro bg-out">
-Sin stock
-</span>
-
-</td>
-
-<td>
-
-<a th:href="@{/editar/{id}(id=${producto.id})}"
-class="btn btn-warning btn-sm">
-Editar
-</a>
-
-<button class="btn btn-danger btn-sm delete-product"
-th:attr="data-id=${producto.id}">
-Eliminar
-</button>
-
-<button class="btn btn-success btn-sm"
-th:onclick="'togglePromo('+${producto.id}+');'">
-Promo
-</button>
-
-<button th:if="${producto.tieneVariantes}"
-class="btn btn-info btn-sm"
-data-toggle="collapse"
-th:attr="data-target='#var-'+${producto.id}">
-Ver Variantes
-</button>
-
-</td>
-
-<td>
-
-<input type="checkbox"
-class="toggle-visibility"
-th:attr="data-id=${producto.id}"
-th:checked="${producto.visibleEnMenu}">
-
-</td>
-
-</tr>
-
-<!-- DESGLOSE VARIANTES -->
-<tr class="collapse"
-th:id="'var-'+${producto.id}"
-th:if="${producto.tieneVariantes}">
-
-<td colspan="8">
-
-<div class="variant-box">
-
-<table class="table table-sm table-dark mb-0">
-
-<thead>
-<tr>
-<th>Atributos</th>
-<th>Precio</th>
-<th>Stock</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr th:each="v : ${producto.variantes}">
-
-<td>
-
-<span th:each="a,stat : ${v.atributos.entrySet()}">
-
-<b th:text="${a.key}"></b>:
-<span th:text="${a.value}"></span>
-
-<span th:if="${!stat.last}">
-|
-</span>
-
-</span>
-
-</td>
-
-<td>
-$
-<span th:text="${v.precio}"></span>
-</td>
-
-<td th:text="${v.stock}"></td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</td>
-</tr>
+<th:block th:fragment="content">
+
+    <style>
+        .commerce-header {
+            background:
+                radial-gradient(circle at top right,
+                rgba(13, 110, 253, .16),
+                transparent 34%),
+                linear-gradient(135deg, #111827, #0f172a);
+            color: #fff;
+            border-radius: 1.25rem;
+            overflow: hidden;
+        }
+
+        .commerce-header .text-muted {
+            color: rgba(255, 255, 255, .66) !important;
+        }
+
+        .commerce-stat {
+            min-width: 140px;
+            padding: .8rem 1rem;
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: .9rem;
+        }
+
+        .products-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: var(--bs-body-bg);
+        }
+
+        .products-table {
+            min-width: 1180px;
+        }
+
+        .products-table th {
+            white-space: nowrap;
+            font-size: .76rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--bs-secondary-color);
+        }
+
+        .products-table td {
+            vertical-align: middle;
+        }
+
+        .category-row {
+            cursor: pointer;
+            background: var(--bs-tertiary-bg);
+        }
+
+        .category-row:hover {
+            background: var(--bs-secondary-bg);
+        }
+
+        .category-toggle-icon {
+            display: inline-block;
+            transition: transform .2s ease;
+        }
+
+        .category-row[aria-expanded="true"] .category-toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .product-image {
+            width: 58px;
+            height: 58px;
+            border-radius: .8rem;
+            object-fit: cover;
+            border: 1px solid var(--bs-border-color);
+            background: var(--bs-tertiary-bg);
+        }
+
+        .product-image-placeholder {
+            width: 58px;
+            height: 58px;
+            display: grid;
+            place-items: center;
+            border-radius: .8rem;
+            background: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            font-size: 1.35rem;
+        }
+
+        .product-name {
+            max-width: 270px;
+        }
+
+        .product-name strong {
+            display: block;
+            line-height: 1.25;
+        }
+
+        .variant-container {
+            padding: 1rem;
+            border-radius: .9rem;
+            background: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+        }
+
+        .variant-table th {
+            font-size: .7rem;
+        }
+
+        .action-buttons {
+            min-width: 260px;
+        }
+
+        .action-buttons .btn {
+            white-space: nowrap;
+        }
+
+        .visibility-switch {
+            display: flex;
+            justify-content: center;
+        }
+
+        .empty-products {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 767.98px) {
+            .commerce-header {
+                border-radius: 1rem;
+            }
+
+            .commerce-stat {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+
+    <section class="container-fluid px-0">
+
+        <!-- Datos CSRF para peticiones fetch -->
+        <div id="csrfData"
+             class="d-none"
+             th:if="${_csrf != null}"
+             th:attr="data-token=${_csrf.token},
+                      data-header=${_csrf.headerName}">
+        </div>
+
+        <!-- Encabezado -->
+        <div class="commerce-header shadow-sm mb-4">
+            <div class="p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-xl-row
+                            justify-content-between align-items-xl-center gap-4">
+
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge text-bg-primary">
+                                WebEmpresarial Commerce™
+                            </span>
+
+                            <span class="badge bg-light text-dark">
+                                Catálogo
+                            </span>
+                        </div>
+
+                        <h1 class="display-6 fw-bold mb-2">
+                            Productos
+                        </h1>
+
+                        <p class="text-muted mb-0">
+                            Administra productos, marcas, stock, promociones,
+                            visibilidad y variantes desde un solo lugar.
+                        </p>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+
+                        <div class="commerce-stat">
+                            <div class="small text-muted">
+                                Categorías
+                            </div>
+
+                            <div class="fs-4 fw-bold"
+                                 th:text="${categorias != null
+                                     ? #lists.size(categorias)
+                                     : 0}">
+                                0
+                            </div>
+                        </div>
+
+                        <div class="commerce-stat">
+                            <div class="small text-muted">
+                                Productos
+                            </div>
+
+                            <div class="fs-4 fw-bold"
+                                 th:text="${categorias != null
+                                     ? #aggregates.sum(
+                                         categorias.![productos != null
+                                             ? #lists.size(productos)
+                                             : 0]
+                                       )
+                                     : 0}">
+                                0
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-3 p-lg-4">
+
+                <div class="row g-3 align-items-center">
+
+                    <div class="col-lg">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                🔎
+                            </span>
+
+                            <input type="search"
+                                   id="searchInput"
+                                   class="form-control"
+                                   placeholder="Buscar por nombre, marca o ID..."
+                                   autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-auto">
+                        <button type="button"
+                                class="btn btn-outline-secondary w-100"
+                                onclick="expandirCategorias()">
+                            Expandir categorías
+                        </button>
+                    </div>
+
+                    <div class="col-sm-auto">
+                        <button type="button"
+                                class="btn btn-outline-secondary w-100"
+                                onclick="colapsarTodo()">
+                            Colapsar todo
+                        </button>
+                    </div>
+
+                    <div class="col-sm-auto">
+                        <a th:href="@{/modificar-precios}"
+                           class="btn btn-outline-primary w-100">
+                            💲 Precios
+                        </a>
+                    </div>
+
+                    <div class="col-sm-auto">
+                        <a th:href="@{/nuevo}"
+                           class="btn btn-primary w-100">
+                            ＋ Nuevo producto
+                        </a>
+                    </div>
+
+                </div>
+
+                <div id="searchSummary"
+                     class="small text-muted mt-3 d-none">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card border-0 shadow-sm overflow-hidden">
+
+            <div class="card-header bg-body border-bottom p-3 p-lg-4">
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between align-items-md-center gap-2">
+
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            Catálogo de productos
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Selecciona una categoría para mostrar sus productos.
+                        </p>
+                    </div>
+
+                    <div class="small text-muted">
+                        Los cambios de visibilidad se guardan automáticamente.
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${categorias != null and !#lists.isEmpty(categorias)}">
+
+                <table class="table products-table
+                              align-middle mb-0">
+
+                    <thead>
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Marca</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                        <th class="text-center pe-4">
+                            Visible
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <th:block th:each="categoria : ${categorias}">
+
+                        <!-- Categoría -->
+                        <tr class="category-row"
+                            role="button"
+                            data-bs-toggle="collapse"
+                            th:attr="data-bs-target='.category-' + ${categoria.id},
+                                     aria-controls='category-' + ${categoria.id}"
+                            aria-expanded="false">
+
+                            <td colspan="8" class="px-4 py-3">
+
+                                <div class="d-flex flex-column flex-md-row
+                                            justify-content-between
+                                            align-items-md-center gap-3">
+
+                                    <div class="d-flex align-items-center gap-3">
+
+                                        <span class="category-toggle-icon">
+                                            ▶
+                                        </span>
+
+                                        <span class="fs-5">
+                                            📁
+                                        </span>
+
+                                        <div>
+                                            <div class="fw-bold"
+                                                 th:text="${categoria.nombre}">
+                                                Categoría
+                                            </div>
+
+                                            <div class="small text-muted">
+                                                <span th:text="${categoria.productos != null
+                                                    ? #lists.size(categoria.productos)
+                                                    : 0}">
+                                                    0
+                                                </span>
+                                                productos
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="form-check form-switch m-0"
+                                         onclick="event.stopPropagation()">
+
+                                        <input class="form-check-input
+                                                      toggle-categoria"
+                                               type="checkbox"
+                                               role="switch"
+                                               th:id="'category-visible-' + ${categoria.id}"
+                                               th:attr="data-categoria-id=${categoria.id}"
+                                               th:checked="${categoria.todosVisibles}">
+
+                                        <label class="form-check-label small"
+                                               th:for="'category-visible-' + ${categoria.id}">
+                                            Todos visibles
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <!-- Productos -->
+                        <th:block th:if="${categoria.productos != null}"
+                                  th:each="producto : ${categoria.productos}">
+
+                            <tr class="collapse product-row"
+                                th:classappend="' category-' + ${categoria.id}"
+                                th:attr="data-product-id=${producto.id},
+                                         data-search=|${producto.id}
+                                             ${producto.productName}
+                                             ${producto.marcaNombre != null
+                                                 ? producto.marcaNombre
+                                                 : ''}|">
+
+                                <td class="ps-4 fw-semibold"
+                                    th:text="${producto.id}">
+                                </td>
+
+                                <td>
+                                    <img th:if="${producto.imageUrl != null
+                                                and !#strings.isEmpty(producto.imageUrl)}"
+                                         class="product-image"
+                                         th:src="${producto.imageUrl}"
+                                         th:alt="${producto.productName}">
+
+                                    <div th:unless="${producto.imageUrl != null
+                                                   and !#strings.isEmpty(producto.imageUrl)}"
+                                         class="product-image-placeholder"
+                                         title="Producto sin imagen">
+                                        📦
+                                    </div>
+                                </td>
+
+                                <td class="product-name">
+
+                                    <strong th:text="${producto.productName}">
+                                        Producto
+                                    </strong>
+
+                                    <div class="d-flex flex-wrap gap-1 mt-2">
+
+                                        <span th:if="${producto.tienePromocion}"
+                                              class="badge text-bg-danger">
+                                            Promoción
+                                        </span>
+
+                                        <span th:if="${producto.tieneVariantes}"
+                                              class="badge text-bg-info">
+                                            Variantes
+                                        </span>
+
+                                        <span th:unless="${producto.visibleEnMenu}"
+                                              class="badge text-bg-secondary">
+                                            Oculto
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    <span th:if="${producto.marcaNombre != null
+                                                 and !#strings.isEmpty(producto.marcaNombre)}"
+                                          class="badge text-bg-warning"
+                                          th:text="${producto.marcaNombre}">
+                                    </span>
+
+                                    <span th:unless="${producto.marcaNombre != null
+                                                     and !#strings.isEmpty(producto.marcaNombre)}"
+                                          class="text-muted small">
+                                        Sin marca
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div th:if="${producto.tienePromocion}">
+
+                                        <div class="small text-muted
+                                                    text-decoration-line-through">
+                                            $
+                                            <span th:text="${#numbers.formatDecimal(
+                                                producto.precio, 1, 2)}">
+                                            </span>
+                                        </div>
+
+                                        <div class="fw-bold text-success">
+                                            $
+                                            <span th:text="${#numbers.formatDecimal(
+                                                producto.precio -
+                                                (
+                                                    producto.precio *
+                                                    producto.porcentajeDescuento /
+                                                    100
+                                                ),
+                                                1,
+                                                2
+                                            )}">
+                                            </span>
+                                        </div>
+
+                                        <div class="small text-danger">
+                                            -
+                                            <span th:text="${producto.porcentajeDescuento}">
+                                            </span>%
+                                        </div>
+
+                                    </div>
+
+                                    <div th:unless="${producto.tienePromocion}">
+
+                                        <span th:if="${producto.tieneVariantes}">
+                                            <span class="small text-muted">
+                                                Desde
+                                            </span>
+
+                                            <div class="fw-semibold">
+                                                $
+                                                <span th:text="${#numbers.formatDecimal(
+                                                    producto.precioMinimo,
+                                                    1,
+                                                    2
+                                                )}">
+                                                </span>
+                                            </div>
+                                        </span>
+
+                                        <span th:unless="${producto.tieneVariantes}">
+                                            <span class="fw-semibold">
+                                                $
+                                                <span th:text="${#numbers.formatDecimal(
+                                                    producto.precio,
+                                                    1,
+                                                    2
+                                                )}">
+                                                </span>
+                                            </span>
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    <span th:if="${producto.stockTotal > 0}"
+                                          class="badge text-bg-success"
+                                          th:text="${producto.stockTotal + ' disponibles'}">
+                                    </span>
+
+                                    <span th:unless="${producto.stockTotal > 0}"
+                                          class="badge text-bg-secondary">
+                                        Sin stock
+                                    </span>
+
+                                </td>
+
+                                <td class="action-buttons">
+
+                                    <div class="d-flex flex-wrap gap-2">
+
+                                        <a th:href="@{/editar/{id}(id=${producto.id})}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Editar
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn btn-sm
+                                                       btn-outline-success
+                                                       toggle-promotion"
+                                                th:attr="data-id=${producto.id}">
+                                            <span th:text="${producto.tienePromocion
+                                                ? 'Quitar promo'
+                                                : 'Promoción'}">
+                                            </span>
+                                        </button>
+
+                                        <button th:if="${producto.tieneVariantes}"
+                                                type="button"
+                                                class="btn btn-sm
+                                                       btn-outline-info"
+                                                data-bs-toggle="collapse"
+                                                th:attr="data-bs-target='#variants-' + ${producto.id},
+                                                         aria-controls='variants-' + ${producto.id}">
+                                            Variantes
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-sm
+                                                       btn-outline-danger
+                                                       delete-product"
+                                                th:attr="data-id=${producto.id},
+                                                         data-name=${producto.productName}">
+                                            Eliminar
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                                <td class="pe-4">
+
+                                    <div class="visibility-switch">
+
+                                        <div class="form-check form-switch m-0">
+
+                                            <input class="form-check-input
+                                                          toggle-visibility"
+                                                   type="checkbox"
+                                                   role="switch"
+                                                   th:id="'visible-' + ${producto.id}"
+                                                   th:attr="data-id=${producto.id}"
+                                                   th:checked="${producto.visibleEnMenu}">
+
+                                            <label class="visually-hidden"
+                                                   th:for="'visible-' + ${producto.id}">
+                                                Cambiar visibilidad
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            <!-- Variantes -->
+                            <tr th:if="${producto.tieneVariantes}"
+                                class="collapse product-variant-row"
+                                th:classappend="' category-' + ${categoria.id}"
+                                th:id="'variants-' + ${producto.id}"
+                                th:attr="data-parent-product=${producto.id}">
+
+                                <td colspan="8" class="px-4 py-3">
+
+                                    <div class="variant-container">
+
+                                        <div class="d-flex justify-content-between
+                                                    align-items-center mb-3">
+
+                                            <div>
+                                                <h6 class="fw-bold mb-1">
+                                                    Variantes de
+                                                    <span th:text="${producto.productName}">
+                                                    </span>
+                                                </h6>
+
+                                                <p class="small text-muted mb-0">
+                                                    Precios y existencias por combinación.
+                                                </p>
+                                            </div>
+
+                                            <span class="badge text-bg-info"
+                                                  th:text="${producto.variantes != null
+                                                      ? #lists.size(producto.variantes)
+                                                        + ' variantes'
+                                                      : '0 variantes'}">
+                                            </span>
+
+                                        </div>
+
+                                        <div class="table-responsive">
+
+                                            <table class="table table-sm
+                                                          variant-table
+                                                          align-middle mb-0">
+
+                                                <thead>
+                                                <tr>
+                                                    <th>Atributos</th>
+                                                    <th>Precio</th>
+                                                    <th>Stock</th>
+                                                </tr>
+                                                </thead>
+
+                                                <tbody>
+
+                                                <tr th:each="variante : ${producto.variantes}">
+
+                                                    <td>
+
+                                                        <span th:each="atributo, status
+                                                                       : ${variante.atributos.entrySet()}">
+
+                                                            <span class="badge text-bg-light
+                                                                         border me-1 mb-1">
+
+                                                                <strong th:text="${atributo.key}">
+                                                                </strong>:
+
+                                                                <span th:text="${atributo.value}">
+                                                                </span>
+
+                                                            </span>
+
+                                                        </span>
+
+                                                    </td>
+
+                                                    <td class="fw-semibold">
+                                                        $
+                                                        <span th:text="${#numbers.formatDecimal(
+                                                            variante.precio,
+                                                            1,
+                                                            2
+                                                        )}">
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <span th:class="${variante.stock > 0
+                                                            ? 'badge text-bg-success'
+                                                            : 'badge text-bg-secondary'}"
+                                                              th:text="${variante.stock}">
+                                                        </span>
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr th:if="${producto.variantes == null
+                                                           or #lists.isEmpty(producto.variantes)}">
+                                                    <td colspan="3"
+                                                        class="text-center text-muted py-4">
+                                                        No hay variantes registradas.
+                                                    </td>
+                                                </tr>
+
+                                                </tbody>
+
+                                            </table>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        </th:block>
+
+                    </th:block>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Estado vacío -->
+            <div th:if="${categorias == null or #lists.isEmpty(categorias)}"
+                 class="empty-products">
+
+                <div class="display-5 mb-3">
+                    📦
+                </div>
+
+                <h4 class="fw-bold">
+                    Tu catálogo está vacío
+                </h4>
+
+                <p class="text-muted mx-auto"
+                   style="max-width: 540px;">
+                    Agrega tu primer producto para comenzar a construir
+                    el catálogo de esta tienda.
+                </p>
+
+                <a th:href="@{/nuevo}"
+                   class="btn btn-primary">
+                    Crear primer producto
+                </a>
+
+            </div>
+
+            <!-- Sin resultados -->
+            <div id="noSearchResults"
+                 class="empty-products d-none">
+
+                <div class="display-6 mb-3">
+                    🔎
+                </div>
+
+                <h5 class="fw-bold">
+                    No encontramos productos
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Intenta con otro nombre, marca o identificador.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed
+                bottom-0 end-0 p-3">
+
+        <div id="commerceToast"
+             class="toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="toast-header">
+                <strong class="me-auto">
+                    WebEmpresarial Commerce™
+                </strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+
+            <div id="commerceToastBody"
+                 class="toast-body">
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const searchInput =
+                document.getElementById("searchInput");
+
+            const searchSummary =
+                document.getElementById("searchSummary");
+
+            const noSearchResults =
+                document.getElementById("noSearchResults");
+
+            const csrfData =
+                document.getElementById("csrfData");
+
+            const csrfToken =
+                csrfData?.dataset.token;
+
+            const csrfHeader =
+                csrfData?.dataset.header;
+
+            const toastElement =
+                document.getElementById("commerceToast");
+
+            const toastBody =
+                document.getElementById("commerceToastBody");
+
+            const toast =
+                toastElement && window.bootstrap
+                    ? bootstrap.Toast.getOrCreateInstance(toastElement)
+                    : null;
+
+            function showMessage(message) {
+                if (!toast || !toastBody) {
+                    return;
+                }
+
+                toastBody.textContent = message;
+                toast.show();
+            }
+
+            function requestHeaders(contentType = null) {
+                const headers = {};
+
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                if (contentType) {
+                    headers["Content-Type"] = contentType;
+                }
+
+                return headers;
+            }
+
+            async function request(url, options = {}) {
+                const response = await fetch(url, options);
+
+                if (!response.ok) {
+                    const text = await response.text();
+
+                    throw new Error(
+                        text || `Error HTTP ${response.status}`
+                    );
+                }
+
+                return response;
+            }
+
+            window.expandirCategorias = function () {
+                document
+                    .querySelectorAll(".product-row")
+                    .forEach(row => {
+                        bootstrap.Collapse.getOrCreateInstance(
+                            row,
+                            {toggle: false}
+                        ).show();
+                    });
+            };
+
+            window.colapsarTodo = function () {
+                document
+                    .querySelectorAll(
+                        ".product-row, .product-variant-row"
+                    )
+                    .forEach(row => {
+                        bootstrap.Collapse.getOrCreateInstance(
+                            row,
+                            {toggle: false}
+                        ).hide();
+                    });
+            };
+
+            searchInput?.addEventListener("input", function () {
+                const term =
+                    this.value
+                        .trim()
+                        .toLocaleLowerCase("es-MX");
+
+                const productRows =
+                    [...document.querySelectorAll(".product-row")];
+
+                let visibleCount = 0;
+
+                productRows.forEach(row => {
+                    const searchable =
+                        (row.dataset.search || "")
+                            .toLocaleLowerCase("es-MX");
+
+                    const matches =
+                        !term || searchable.includes(term);
+
+                    row.classList.toggle("d-none", !matches);
+
+                    const productId =
+                        row.dataset.productId;
+
+                    const variantRow =
+                        document.querySelector(
+                            `[data-parent-product="${productId}"]`
+                        );
+
+                    if (!matches && variantRow) {
+                        variantRow.classList.add("d-none");
+                    } else if (variantRow) {
+                        variantRow.classList.remove("d-none");
+                    }
+
+                    if (matches) {
+                        visibleCount += 1;
+
+                        if (term) {
+                            bootstrap.Collapse.getOrCreateInstance(
+                                row,
+                                {toggle: false}
+                            ).show();
+                        }
+                    }
+                });
+
+                if (term) {
+                    searchSummary.classList.remove("d-none");
+                    searchSummary.textContent =
+                        `${visibleCount} producto(s) encontrado(s).`;
+                } else {
+                    searchSummary.classList.add("d-none");
+                    searchSummary.textContent = "";
+                }
+
+                noSearchResults?.classList.toggle(
+                    "d-none",
+                    visibleCount !== 0 || !term
+                );
+            });
+
+            document
+                .querySelectorAll(".delete-product")
+                .forEach(button => {
+
+                    button.addEventListener("click", async function () {
+                        const productId =
+                            this.dataset.id;
+
+                        const productName =
+                            this.dataset.name || "este producto";
+
+                        const confirmed =
+                            window.confirm(
+                                `¿Eliminar definitivamente "${productName}"?`
+                            );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        this.disabled = true;
+
+                        try {
+                            await request(
+                                `/api/productos/${productId}`,
+                                {
+                                    method: "DELETE",
+                                    headers: requestHeaders()
+                                }
+                            );
+
+                            window.location.reload();
+
+                        } catch (error) {
+                            console.error(error);
+                            this.disabled = false;
+
+                            showMessage(
+                                "No se pudo eliminar el producto."
+                            );
+                        }
+                    });
+                });
+
+            document
+                .querySelectorAll(".toggle-visibility")
+                .forEach(input => {
+
+                    input.addEventListener("change", async function () {
+                        const previousState =
+                            !this.checked;
+
+                        this.disabled = true;
+
+                        try {
+                            await request(
+                                "/api/productos/toggleVisibility",
+                                {
+                                    method: "POST",
+                                    headers: requestHeaders(
+                                        "application/x-www-form-urlencoded"
+                                    ),
+                                    body: new URLSearchParams({
+                                        productoId: this.dataset.id
+                                    })
+                                }
+                            );
+
+                            showMessage(
+                                this.checked
+                                    ? "Producto visible en la tienda."
+                                    : "Producto oculto de la tienda."
+                            );
+
+                        } catch (error) {
+                            console.error(error);
+                            this.checked = previousState;
+
+                            showMessage(
+                                "No se pudo cambiar la visibilidad."
+                            );
+
+                        } finally {
+                            this.disabled = false;
+                        }
+                    });
+                });
+
+            document
+                .querySelectorAll(".toggle-categoria")
+                .forEach(input => {
+
+                    input.addEventListener("change", async function () {
+                        const previousState =
+                            !this.checked;
+
+                        this.disabled = true;
+
+                        try {
+                            await request(
+                                "/api/productos/toggleCategoria",
+                                {
+                                    method: "POST",
+                                    headers: requestHeaders(
+                                        "application/x-www-form-urlencoded"
+                                    ),
+                                    body: new URLSearchParams({
+                                        categoriaId:
+                                            this.dataset.categoriaId
+                                    })
+                                }
+                            );
+
+                            window.location.reload();
+
+                        } catch (error) {
+                            console.error(error);
+                            this.checked = previousState;
+                            this.disabled = false;
+
+                            showMessage(
+                                "No se pudo actualizar la categoría."
+                            );
+                        }
+                    });
+                });
+
+            document
+                .querySelectorAll(".toggle-promotion")
+                .forEach(button => {
+
+                    button.addEventListener("click", async function () {
+                        this.disabled = true;
+
+                        try {
+                            await request(
+                                "/api/productos/togglePromocion",
+                                {
+                                    method: "POST",
+                                    headers: requestHeaders(
+                                        "application/x-www-form-urlencoded"
+                                    ),
+                                    body: new URLSearchParams({
+                                        productoId: this.dataset.id
+                                    })
+                                }
+                            );
+
+                            window.location.reload();
+
+                        } catch (error) {
+                            console.error(error);
+                            this.disabled = false;
+
+                            showMessage(
+                                "No se pudo actualizar la promoción."
+                            );
+                        }
+                    });
+                });
+
+        })();
+    </script>
 
 </th:block>
-</th:block>
-
-</tbody>
-</table>
-
-</div>
-</div>
-
-
-
-
-<div>
-    <button type="button"
-       class="btn btn-success float-btn"
-            onclick="history.back()">
-     ⬅ Volver
-    </button>
-</div>
-
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<script>
-document.getElementById("searchInput")
-.addEventListener("keyup",function(){
-
-let val=this.value.toLowerCase();
-
-document.querySelectorAll(".producto-row")
-.forEach(row=>{
-
-let name=row.dataset.name.toLowerCase();
-
-row.style.display=
-name.includes(val)?"":"none";
-
-});
-});
-
-function expandirTodo(){
-$('.collapse').collapse('show');
-}
-
-function colapsarTodo(){
-$('.collapse').collapse('hide');
-}
-
-document.querySelectorAll('.delete-product')
-.forEach(btn=>{
-
-btn.onclick=function(){
-
-if(confirm("¿Eliminar producto?")){
-
-fetch('/api/productos/'+this.dataset.id,{
-method:'DELETE'
-})
-.then(()=>location.reload());
-
-}
-
-};
-
-});
-
-document.querySelectorAll('.toggle-visibility')
-.forEach(chk=>{
-
-chk.onchange=function(){
-
-fetch('/api/productos/toggleVisibility',{
-method:'POST',
-headers:{
-'Content-Type':'application/x-www-form-urlencoded'
-},
-body:'productoId='+this.dataset.id
-});
-
-};
-
-});
-
-function togglePromo(id){
-
-fetch('/api/productos/togglePromocion',{
-method:'POST',
-headers:{
-'Content-Type':'application/x-www-form-urlencoded'
-},
-body:'productoId='+id
-})
-.then(()=>location.reload());
-
-}
-</script>
 
 </body>
 </html>

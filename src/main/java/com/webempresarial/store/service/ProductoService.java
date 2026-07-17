@@ -16,6 +16,7 @@ import com.webempresarial.store.dto.producto.shared.ProductoVarianteDTO;
 import com.webempresarial.store.exception.ImageUploadException;
 import com.webempresarial.store.mapper.ProductoAdminListMapper;
 import com.webempresarial.store.mapper.ProductoMapper;
+import com.webempresarial.store.model.Categoria;
 import com.webempresarial.store.model.ImagenProducto;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.ProductoVariante;
@@ -71,7 +72,7 @@ public class ProductoService {
         this.productoVarianteRepository = productoVarianteRepository;
     }
 
-    
+
     
     
     public List<Producto> obtenerProductosVisiblesConTodo(
@@ -87,6 +88,13 @@ public class ProductoService {
         return productoRepository
                 .obtenerNombresCategoriasVisibles(store);
     }
+    @Transactional(readOnly = true)
+    public List<Categoria> obtenerCategoriasAdmin(
+            Store store
+    ) {
+        return categoriaService.obtenerTodas(store);
+    }   
+    
 
     @Transactional
     public Producto obtenerProducto(
@@ -306,25 +314,60 @@ public class ProductoService {
          // 4. VARIANTES
          // SOLO SI EL FORM LAS ENVÍA
          // =====================================================
-         if (variantesDTO != null) {
+      // =====================================================
+      // 4. VARIANTES Y STOCK
+      // =====================================================
 
-             if (!variantesDTO.isEmpty()) {
+      if (variantesDTO != null && !variantesDTO.isEmpty()) {
 
-                 actualizarVariantes(producto, variantesDTO);
-                 producto.setStockSimple(0);
+          // Producto administrado mediante variantes
+          actualizarVariantes(
+                  producto,
+                  variantesDTO
+          );
 
-             } else {
+          producto.setStockSimple(0);
 
-                 // producto simple
-                 producto.getVariantes().clear();
+          log.info(
+                  "Producto con variantes id={}, cantidadVariantes={}",
+                  producto.getId(),
+                  variantesDTO.size()
+          );
 
-                 producto.setStockSimple(
-                         datos.getStockSimple() != null
-                                 ? datos.getStockSimple()
-                                 : 0
-                 );
-             }
-         }
+      } else {
+
+          // Producto simple sin variantes
+          Integer stockAnterior =
+                  producto.getStockSimple();
+
+          Integer nuevoStock =
+                  datos.getStockSimple() != null
+                          ? datos.getStockSimple()
+                          : 0;
+
+          if (nuevoStock < 0) {
+              throw new IllegalArgumentException(
+                      "El stock no puede ser negativo"
+              );
+          }
+
+          /*
+           * Si anteriormente tenía variantes y ahora el formulario
+           * ya no envía ninguna, se convierte en producto simple.
+           */
+          producto.getVariantes().clear();
+
+          producto.setStockSimple(
+                  nuevoStock
+          );
+
+          log.info(
+                  "Producto simple id={}, stockAnterior={}, stockNuevo={}",
+                  producto.getId(),
+                  stockAnterior,
+                  nuevoStock
+          );
+      }
 
          // =====================================================
          // 5. VALIDACIÓN
@@ -692,8 +735,25 @@ public class ProductoService {
             }
         }
         
-        if (producto.getVariantes() == null || producto.getVariantes().isEmpty()) {
-            log.warn("Producto sin variantes id={}", producto.getId());
+        if (
+                producto.getVariantes() == null ||
+                producto.getVariantes().isEmpty()
+        ) {
+
+            if (
+                    producto.getStockSimple() == null ||
+                    producto.getStockSimple() < 0
+            ) {
+                throw new IllegalArgumentException(
+                        "Stock simple inválido"
+                );
+            }
+
+            log.info(
+                    "Producto simple validado id={}, stock={}",
+                    producto.getId(),
+                    producto.getStockSimple()
+            );
         }
     }
 
@@ -796,6 +856,46 @@ public class ProductoService {
                 )
         );
     }
+    
+    private BigDecimal calcularPrecioAjustado(
+            BigDecimal precioActual,
+            BigDecimal valor,
+            String modo
+    ) {
+        BigDecimal nuevoPrecio;
+
+        if ("MONTO".equalsIgnoreCase(modo)) {
+
+            nuevoPrecio =
+                    precioActual.add(valor);
+
+        } else {
+
+            BigDecimal porcentaje =
+                    valor.divide(
+                            BigDecimal.valueOf(100),
+                            8,
+                            RoundingMode.HALF_UP
+                    );
+
+            nuevoPrecio =
+                    precioActual.add(
+                            precioActual.multiply(porcentaje)
+                    );
+        }
+
+        BigDecimal minimo =
+                new BigDecimal("0.01");
+
+        if (nuevoPrecio.compareTo(minimo) < 0) {
+            nuevoPrecio = minimo;
+        }
+
+        return nuevoPrecio.setScale(
+                2,
+                RoundingMode.HALF_UP
+        );
+    }
     @Transactional
     public void ajustarPrecioCategoria(
             Long categoriaId,
@@ -803,46 +903,96 @@ public class ProductoService {
             String modo,
             Store store
     ) {
+        if (categoriaId == null) {
+            throw new IllegalArgumentException(
+                    "La categoría es obligatoria"
+            );
+        }
+
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IllegalArgumentException(
+                    "El valor debe ser distinto de cero"
+            );
+        }
+
+        if (!"MONTO".equalsIgnoreCase(modo) &&
+                !"PORCENTAJE".equalsIgnoreCase(modo)) {
+
+            throw new IllegalArgumentException(
+                    "Modo de ajuste inválido"
+            );
+        }
+
+        categoriaService.obtenerPorId(
+                categoriaId,
+                store
+        );
 
         List<Producto> productos =
-        		productoRepository.findByCategoriaIdAndStore(
-        		        categoriaId,
-        		        store
-        		);
+                productoRepository.findByCategoriaIdAndStore(
+                        categoriaId,
+                        store
+                );
+
         if (productos.isEmpty()) {
-            throw new RuntimeException("No hay productos en la categoría");
+            throw new IllegalStateException(
+                    "No hay productos en la categoría seleccionada"
+            );
         }
 
-        for (Producto p : productos) {
+        int productosActualizados = 0;
+        int variantesActualizadas = 0;
 
-            BigDecimal precioActual = p.getPrice();
-            BigDecimal nuevoPrecio;
+        for (Producto producto : productos) {
 
-            if ("MONTO".equalsIgnoreCase(modo)) {
+            if (producto.getPrice() != null) {
+                producto.setPrice(
+                        calcularPrecioAjustado(
+                                producto.getPrice(),
+                                valor,
+                                modo
+                        )
+                );
 
-                nuevoPrecio = precioActual.add(valor);
-
-            } else if ("PORCENTAJE".equalsIgnoreCase(modo)) {
-
-                BigDecimal ajuste = precioActual
-                        .multiply(valor)
-                        .divide(BigDecimal.valueOf(100));
-
-                nuevoPrecio = precioActual.add(ajuste);
-
-            } else {
-                throw new IllegalArgumentException("Modo inválido");
+                productosActualizados++;
             }
 
-            if (nuevoPrecio.compareTo(BigDecimal.ZERO) < 0) {
-                nuevoPrecio = BigDecimal.ZERO;
-            }
+            if (producto.getVariantes() != null) {
 
-            if (!p.tieneVariantes() && p.getPrice() != null) {
-                p.setPrice(nuevoPrecio.setScale(2, RoundingMode.HALF_UP));
+                for (ProductoVariante variante
+                        : producto.getVariantes()) {
+
+                    if (variante.getPrecio() == null) {
+                        continue;
+                    }
+
+                    variante.setPrecio(
+                            calcularPrecioAjustado(
+                                    variante.getPrecio(),
+                                    valor,
+                                    modo
+                            )
+                    );
+
+                    variantesActualizadas++;
+                }
             }
         }
+
+        productoRepository.saveAll(productos);
+
+        log.info(
+                "Ajuste masivo aplicado: storeId={}, categoriaId={}, " +
+                "modo={}, valor={}, productos={}, variantes={}",
+                store.getId(),
+                categoriaId,
+                modo,
+                valor,
+                productosActualizados,
+                variantesActualizadas
+        );
     }
+    
     
     @Transactional
     public Producto crearProducto(
