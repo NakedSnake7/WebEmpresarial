@@ -42,33 +42,47 @@
 <th:block th:each="section : ${sidebarSections}">
 
     <div class="sidebar-section sidebar-text">
-        <span th:text="${section.icon}">📁</span>
-        <span th:text="${section.title}">Sección</span>
+        <span th:text="${section.icon}">
+            📁
+        </span>
+
+        <span th:text="${section.title}">
+            Sección
+        </span>
     </div>
 
-<a th:each="item : ${section.items}"
-   th:href="${item.url}"
-   class="sidebar-link"
-   th:classappend="${
-       currentPath == item.url
-       or (
-           item.url != '/'
-           and currentPath.startsWith(item.url + '/')
-       )
-   } ? ' active' : ''">
+    <a th:each="item : ${section.items}"
+       th:href="${item.url}"
+       class="sidebar-link"
+       th:classappend="${
+           currentPath == item.url
+           or (
+               item.url != '/'
+               and currentPath.startsWith(item.url + '/')
+           )
+       } ? ' active' : ''">
 
         <span class="sidebar-icon"
               th:text="${item.icon}">
             📦
         </span>
 
-        <span class="sidebar-text"
+        <span class="sidebar-text flex-grow-1"
               th:text="${item.title}">
             Módulo
         </span>
 
-        <span class="badge bg-warning ms-auto"
-              th:if="${item.locked}"
+        <span th:if="${!item.locked
+                      and sidebarBadges != null
+                      and sidebarBadges.containsKey(item.url)
+                      and sidebarBadges.get(item.url) > 0}"
+              class="badge rounded-pill bg-danger ms-auto"
+              th:text="${sidebarBadges.get(item.url)}">
+            0
+        </span>
+
+        <span th:if="${item.locked}"
+              class="badge bg-warning ms-auto"
               th:text="${item.badge}">
             Upgrade
         </span>

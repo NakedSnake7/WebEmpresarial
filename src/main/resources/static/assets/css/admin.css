@@ -33,7 +33,13 @@ body {
     width: 86px;
     min-width: 86px;
 }
+.sidebar-link .badge {
+    flex-shrink: 0;
+}
 
+.sidebar-link .sidebar-text {
+    min-width: 0;
+}
 /* =========================
    BRAND
 ========================= */

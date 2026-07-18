@@ -152,14 +152,14 @@ public class InventoryAlert {
         boolean changed =
                 level != newLevel
                 || currentStock == null
-                || currentStock != newStock;
+                || currentStock.intValue() != newStock;
 
         this.level = newLevel;
         this.currentStock = newStock;
         this.stockThreshold = threshold;
-        this.lastDetectedAt = LocalDateTime.now();
 
         if (changed) {
+            this.lastDetectedAt = LocalDateTime.now();
             this.occurrenceCount =
                     occurrenceCount == null
                             ? 1

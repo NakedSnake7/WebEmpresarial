@@ -57,12 +57,7 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "/admin/inventory",
 	                                    Feature.INVENTORY
 	                            )
-	                            .item(
-	                                    "Alertas de inventario",
-	                                    "🚨",
-	                                    "/admin/inventory/alerts",
-	                                    Feature.INVENTORY
-	                            )
+
 	                            
 	                            .item(
 	                                    "Kardex de inventario",
@@ -70,6 +65,14 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "/admin/inventory/movements",
 	                                    Feature.INVENTORY_KARDEX
 	                            )
+	                            
+	                            .item(
+	                                    "Alertas de inventario",
+	                                    "🚨",
+	                                    "/admin/inventory/alerts",
+	                                    Feature.INVENTORY
+	                            )
+	                            
 	                            .item(
 	                                    "Pedidos",
 	                                    "🧾",
