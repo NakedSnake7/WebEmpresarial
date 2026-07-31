@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
  *
  * <p>Todos los filtros, excepto storeId, son opcionales.</p>
  */
+
+
 public record KnowledgeQueryCriteria(
 
         Long storeId,

@@ -35,10 +35,16 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
+    public SecurityFilterChain adminSecurity(
+            HttpSecurity http
+    ) throws Exception {
 
         http
-            .securityMatcher("/admin/**", "/api/admin/**")
+            .securityMatcher(
+                "/admin/**",
+                "/api/admin/**",
+                "/api/knowledge/**"
+            )
 
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(
@@ -47,21 +53,35 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin/login").permitAll()
+                .requestMatchers("/admin/login")
+                .permitAll()
 
                 .requestMatchers(
                     "/admin/stores/**",
                     "/admin/subscriptions/**",
                     "/admin/saas/**"
-                ).hasRole("SUPER_ADMIN")
+                )
+                .hasRole("SUPER_ADMIN")
 
                 .requestMatchers(
                     "/admin/billing/**",
                     "/admin/store/settings/**",
                     "/api/admin/stripe/connect/**"
-                ).hasAnyRole("SUPER_ADMIN", "STORE_ADMIN")
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN"
+                )
 
-                .anyRequest().hasAnyRole(
+                .requestMatchers("/api/knowledge/**")
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
+                .anyRequest()
+                .hasAnyRole(
                     "SUPER_ADMIN",
                     "STORE_ADMIN",
                     "STORE_STAFF"
@@ -71,7 +91,10 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl("/admin/dashboard", true)
+                .defaultSuccessUrl(
+                    "/admin/dashboard",
+                    true
+                )
                 .permitAll()
             )
 

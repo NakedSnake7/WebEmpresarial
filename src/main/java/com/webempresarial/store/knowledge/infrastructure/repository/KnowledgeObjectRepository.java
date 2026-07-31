@@ -6,6 +6,7 @@ import com.webempresarial.store.knowledge.domain.enums.KnowledgeStatus;
 import com.webempresarial.store.knowledge.domain.model.KnowledgeObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,12 +17,27 @@ import java.util.Optional;
 public interface KnowledgeObjectRepository
         extends JpaRepository<KnowledgeObject, Long>,
         JpaSpecificationExecutor<KnowledgeObject> {
+	
+	
+	@Override
+	@EntityGraph(attributePaths = {
+	        "store",
+	        "currentVersion"
+	})
+	Page<KnowledgeObject> findAll(
+	        Specification<KnowledgeObject> specification,
+	        Pageable pageable
+	);
 
     Optional<KnowledgeObject> findByIdAndStoreId(
             Long id,
             Long storeId
     );
 
+    @EntityGraph(attributePaths = {
+            "store",
+            "currentVersion"
+    })
     Optional<KnowledgeObject> findByStoreIdAndCodeValue(
             Long storeId,
             String code
@@ -31,6 +47,8 @@ public interface KnowledgeObjectRepository
             Long storeId,
             String code
     );
+
+
 
     Page<KnowledgeObject> findByStoreIdOrderByCreatedAtDesc(
             Long storeId,
