@@ -14,7 +14,7 @@ public record KnowledgeCreatedResponse(
 
         KnowledgeStatus status,
 
-        Long currentVersionId,
+        Long initialVersionId,
 
         String semanticVersion,
 
@@ -22,7 +22,8 @@ public record KnowledgeCreatedResponse(
 ) {
 
     public static KnowledgeCreatedResponse from(
-            KnowledgeObject knowledgeObject
+            KnowledgeObject knowledgeObject,
+            KnowledgeObjectVersion initialVersion
     ) {
         if (knowledgeObject == null) {
             throw new IllegalArgumentException(
@@ -30,29 +31,18 @@ public record KnowledgeCreatedResponse(
             );
         }
 
-        KnowledgeObjectVersion currentVersion =
-                knowledgeObject.getCurrentVersion();
+        if (initialVersion == null) {
+            throw new IllegalArgumentException(
+                    "La versión inicial es obligatoria"
+            );
+        }
 
         return new KnowledgeCreatedResponse(
                 knowledgeObject.getId(),
-
-                knowledgeObject.getCode() != null
-                        ? knowledgeObject.getCode().getValue()
-                        : null,
-
+                knowledgeObject.getCode().getValue(),
                 knowledgeObject.getStatus(),
-
-                currentVersion != null
-                        ? currentVersion.getId()
-                        : null,
-
-                currentVersion != null
-                        && currentVersion.getSemanticVersion() != null
-                        ? currentVersion
-                                .getSemanticVersion()
-                                .toString()
-                        : null,
-
+                initialVersion.getId(),
+                initialVersion.getSemanticVersion().toString(),
                 knowledgeObject.getCreatedAt()
         );
     }

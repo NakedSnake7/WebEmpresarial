@@ -34,17 +34,16 @@ public class KnowledgeSearchApiService {
             Long storeId,
             KnowledgeSearchRequest request
     ) {
-        if (storeId == null) {
+        if (storeId == null || storeId <= 0) {
             throw new IllegalArgumentException(
-                    "El storeId es obligatorio"
+                    "El storeId debe ser válido"
             );
         }
 
-        if (request == null) {
-            throw new IllegalArgumentException(
-                    "KnowledgeSearchRequest es obligatorio"
-            );
-        }
+        Objects.requireNonNull(
+                request,
+                "KnowledgeSearchRequest es obligatorio"
+        );
 
         KnowledgeQueryCriteria criteria =
                 request.toCriteria(storeId);

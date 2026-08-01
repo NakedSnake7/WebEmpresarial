@@ -67,9 +67,12 @@ public record CreateKnowledgeRequest(
         )
         String title,
 
+        @NotBlank(
+                message = "El resumen de la versión inicial es obligatorio"
+        )
         @Size(
-                max = 2000,
-                message = "El resumen no puede superar 2000 caracteres"
+                max = 1000,
+                message = "El resumen no puede superar 1000 caracteres"
         )
         String summary,
 

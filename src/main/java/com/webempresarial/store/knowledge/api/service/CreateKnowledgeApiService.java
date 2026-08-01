@@ -4,7 +4,13 @@ import com.webempresarial.store.knowledge.api.dto.CreateKnowledgeRequest;
 import com.webempresarial.store.knowledge.api.dto.KnowledgeCreatedResponse;
 import com.webempresarial.store.knowledge.api.exception.DuplicateKnowledgeCodeException;
 import com.webempresarial.store.knowledge.domain.model.KnowledgeObject;
+import com.webempresarial.store.knowledge.domain.model.KnowledgeObjectVersion;
+import com.webempresarial.store.knowledge.domain.value.KnowledgeCode;
+import com.webempresarial.store.knowledge.domain.value.KnowledgeConfidence;
+import com.webempresarial.store.knowledge.domain.value.KnowledgeContextRoot;
+import com.webempresarial.store.knowledge.domain.value.SemanticVersion;
 import com.webempresarial.store.knowledge.infrastructure.repository.KnowledgeObjectRepository;
+import com.webempresarial.store.knowledge.infrastructure.repository.KnowledgeObjectVersionRepository;
 import com.webempresarial.store.model.Store;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +22,22 @@ import java.util.Objects;
 public class CreateKnowledgeApiService {
 
     private final KnowledgeObjectRepository knowledgeObjectRepository;
+    private final KnowledgeObjectVersionRepository versionRepository;
 
     public CreateKnowledgeApiService(
-            KnowledgeObjectRepository knowledgeObjectRepository
+            KnowledgeObjectRepository knowledgeObjectRepository,
+            KnowledgeObjectVersionRepository versionRepository
     ) {
         this.knowledgeObjectRepository =
                 Objects.requireNonNull(
                         knowledgeObjectRepository,
                         "KnowledgeObjectRepository es obligatorio"
+                );
+
+        this.versionRepository =
+                Objects.requireNonNull(
+                        versionRepository,
+                        "KnowledgeObjectVersionRepository es obligatorio"
                 );
     }
 
@@ -39,10 +53,14 @@ public class CreateKnowledgeApiService {
                 "CreateKnowledgeRequest es obligatorio"
         );
 
+        validateActor(actor);
+
+        String normalizedActor =
+                actor.trim();
+
         String normalizedCode =
                 request.normalizedCode();
 
-        validateActor(actor);
         ensureCodeIsAvailable(
                 store.getId(),
                 normalizedCode
@@ -52,16 +70,89 @@ public class CreateKnowledgeApiService {
                 createAggregate(
                         store,
                         request,
-                        actor.trim()
+                        normalizedActor
                 );
 
         KnowledgeObject savedKnowledgeObject =
-                knowledgeObjectRepository.save(
+                knowledgeObjectRepository.saveAndFlush(
                         knowledgeObject
                 );
 
+        KnowledgeObjectVersion initialVersion =
+                createInitialVersion(
+                        savedKnowledgeObject,
+                        request,
+                        normalizedActor
+                );
+
+        KnowledgeObjectVersion savedVersion =
+                versionRepository.saveAndFlush(
+                        initialVersion
+                );
+
         return KnowledgeCreatedResponse.from(
-                savedKnowledgeObject
+                savedKnowledgeObject,
+                savedVersion
+        );
+    }
+
+    private KnowledgeObject createAggregate(
+            Store store,
+            CreateKnowledgeRequest request,
+            String actor
+    ) {
+        KnowledgeContextRoot contextRoot =
+                createContextRoot(
+                        request,
+                        store
+                );
+
+        return KnowledgeObject.create(
+                store,
+                KnowledgeCode.of(
+                        request.normalizedCode()
+                ),
+                request.typeCode(),
+                request.domain(),
+                request.classification(),
+                request.riskLevel(),
+                contextRoot,
+                actor
+        );
+    }
+
+    private KnowledgeObjectVersion createInitialVersion(
+            KnowledgeObject knowledgeObject,
+            CreateKnowledgeRequest request,
+            String actor
+    ) {
+        return knowledgeObject.createVersion(
+                SemanticVersion.of(1, 0, 0),
+                request.normalizedTitle(),
+                request.normalizedSummary(),
+                request.content().trim(),
+                request.normalizedContentFormat(),
+                KnowledgeConfidence.of(
+                        request.confidence()
+                ),
+                request.normalizedSourceReference(),
+                actor
+        );
+    }
+
+    private KnowledgeContextRoot createContextRoot(
+            CreateKnowledgeRequest request,
+            Store store
+    ) {
+        if (request.contextType() == null) {
+            return KnowledgeContextRoot.store(
+                    store.getId()
+            );
+        }
+
+        return KnowledgeContextRoot.of(
+                request.contextType(),
+                request.normalizedContextReference()
         );
     }
 
@@ -69,6 +160,12 @@ public class CreateKnowledgeApiService {
             Long storeId,
             String code
     ) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El código del conocimiento es obligatorio"
+            );
+        }
+
         boolean alreadyExists =
                 knowledgeObjectRepository
                         .existsByStoreIdAndCodeValue(
@@ -81,29 +178,6 @@ public class CreateKnowledgeApiService {
                     code
             );
         }
-    }
-
-    private KnowledgeObject createAggregate(
-            Store store,
-            CreateKnowledgeRequest request,
-            String actor
-    ) {
-        /*
-         * Aquí conectaremos exclusivamente las fábricas reales:
-         *
-         * KnowledgeCode
-         * KnowledgeContextRoot
-         * KnowledgeConfidence
-         * SemanticVersion
-         * KnowledgeObject
-         * KnowledgeObjectVersion
-         *
-         * No debemos construir estas reglas por duplicado desde la API.
-         */
-
-        throw new UnsupportedOperationException(
-                "Pendiente conectar la fábrica real de KnowledgeObject"
-        );
     }
 
     private void validateStore(
