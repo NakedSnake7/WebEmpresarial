@@ -1,6 +1,6 @@
 package com.webempresarial.store.knowledge.api.dto;
 
-import com.webempresarial.store.knowledge.domain.enums.KnowledgeClassification;
+import com.webempresarial.store.knowledge.domain.enums.KnowledgeClassification; 
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeContextType;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeDomain;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeRiskLevel;
@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public record CreateKnowledgeRequest(
 
@@ -54,9 +53,7 @@ public record CreateKnowledgeRequest(
         )
         String contextReference,
 
-        LocalDateTime validFrom,
 
-        LocalDateTime validUntil,
 
         @NotBlank(
                 message = "El título de la versión inicial es obligatorio"
@@ -127,13 +124,7 @@ public record CreateKnowledgeRequest(
     @AssertTrue(
             message = "La fecha final de vigencia debe ser posterior a la fecha inicial"
     )
-    public boolean isValidityPeriodValid() {
-        if (validFrom == null || validUntil == null) {
-            return true;
-        }
 
-        return validUntil.isAfter(validFrom);
-    }
 
     public String normalizedCode() {
         if (code == null) {

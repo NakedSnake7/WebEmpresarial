@@ -1,6 +1,6 @@
 package com.webempresarial.store.knowledge.api.service;
 
-import com.webempresarial.store.knowledge.api.dto.CreateKnowledgeRequest;
+import com.webempresarial.store.knowledge.api.dto.CreateKnowledgeRequest; 
 import com.webempresarial.store.knowledge.api.dto.KnowledgeCreatedResponse;
 import com.webempresarial.store.knowledge.api.exception.DuplicateKnowledgeCodeException;
 import com.webempresarial.store.knowledge.domain.model.KnowledgeObject;

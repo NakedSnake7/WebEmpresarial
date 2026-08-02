@@ -16,6 +16,35 @@ import java.util.List;
         basePackages = "com.webempresarial.store.knowledge.api"
 )
 public class KnowledgeApiExceptionHandler {
+	
+	@ExceptionHandler(
+	        DuplicateKnowledgeVersionException.class
+	)
+	public ResponseEntity<KnowledgeApiErrorResponse>
+	handleDuplicateKnowledgeVersion(
+	        DuplicateKnowledgeVersionException exception,
+	        HttpServletRequest request
+	) {
+	    return buildResponse(
+	            HttpStatus.CONFLICT,
+	            exception.getMessage(),
+	            request
+	    );
+	}
+	@ExceptionHandler(
+	        KnowledgeVersionNotFoundException.class
+	)
+	public ResponseEntity<KnowledgeApiErrorResponse>
+	handleKnowledgeVersionNotFound(
+	        KnowledgeVersionNotFoundException exception,
+	        HttpServletRequest request
+	) {
+	    return buildResponse(
+	            HttpStatus.NOT_FOUND,
+	            exception.getMessage(),
+	            request
+	    );
+	}
 
 	@ExceptionHandler(
 	        DuplicateKnowledgeCodeException.class
