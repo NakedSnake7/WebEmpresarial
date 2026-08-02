@@ -8,6 +8,7 @@ import com.webempresarial.store.knowledge.api.dto.KnowledgeVersionCreatedRespons
 import com.webempresarial.store.knowledge.api.dto.PublishKnowledgeRequest;
 import com.webempresarial.store.knowledge.api.exception.KnowledgeTenantNotResolvedException;
 import com.webempresarial.store.knowledge.api.service.ApproveKnowledgeApiService;
+import com.webempresarial.store.knowledge.api.service.ArchiveKnowledgeApiService;
 import com.webempresarial.store.knowledge.api.service.CreateKnowledgeApiService;
 import com.webempresarial.store.knowledge.api.service.CreateKnowledgeVersionApiService;
 import com.webempresarial.store.knowledge.api.service.PublishKnowledgeApiService;
@@ -38,6 +39,7 @@ public class KnowledgeCommandController {
     private final SubmitKnowledgeForReviewApiService  submitKnowledgeForReviewApiService;
     private final ApproveKnowledgeApiService approveKnowledgeApiService;
     private final PublishKnowledgeApiService publishKnowledgeApiService;
+    private final ArchiveKnowledgeApiService archiveKnowledgeApiService;
 
     public KnowledgeCommandController(
             CreateKnowledgeApiService createKnowledgeApiService,
@@ -45,6 +47,7 @@ public class KnowledgeCommandController {
             SubmitKnowledgeForReviewApiService submitKnowledgeForReviewApiService,
             ApproveKnowledgeApiService approveKnowledgeApiService,
             PublishKnowledgeApiService publishKnowledgeApiService,
+            ArchiveKnowledgeApiService archiveKnowledgeApiService,
             StoreResolver storeResolver
     ) {
         this.createKnowledgeApiService =
@@ -77,12 +80,43 @@ public class KnowledgeCommandController {
                         "PublishKnowledgeApiService es obligatorio"
                 );
 
+        this.archiveKnowledgeApiService =
+                Objects.requireNonNull(
+                        archiveKnowledgeApiService,
+                        "ArchiveKnowledgeApiService es obligatorio"
+                );
+
         this.storeResolver =
                 Objects.requireNonNull(
                         storeResolver,
                         "StoreResolver es obligatorio"
                 );
     }
+    
+    @PostMapping("/{knowledgeObjectId}/archive")
+    public ResponseEntity<KnowledgeLifecycleResponse> archive(
+            @PathVariable
+            Long knowledgeObjectId,
+            HttpServletRequest httpRequest,
+            Authentication authentication
+    ) {
+        Store store =
+                resolveStore(httpRequest);
+
+        String actor =
+                resolveActor(authentication);
+
+        KnowledgeLifecycleResponse response =
+                archiveKnowledgeApiService.archive(
+                        store.getId(),
+                        knowledgeObjectId,
+                        actor
+                );
+
+        return ResponseEntity.ok(response);
+    }
+    
+    
     @PostMapping("/{knowledgeObjectId}/publish")
     public ResponseEntity<KnowledgeLifecycleResponse> publish(
             @PathVariable
@@ -90,7 +124,7 @@ public class KnowledgeCommandController {
 
             @Valid
             @RequestBody
-            PublishKnowl	edgeRequest request,
+            PublishKnowledgeRequest request,
 
             HttpServletRequest httpRequest,
             Authentication authentication

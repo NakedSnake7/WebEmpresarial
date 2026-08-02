@@ -1,6 +1,6 @@
 package com.webempresarial.store.controller.advice;
 
-import org.slf4j.Logger; 
+import org.slf4j.Logger;  
 import org.slf4j.LoggerFactory;
 
 import org.springframework.core.Ordered;
@@ -19,7 +19,7 @@ import com.webempresarial.store.service.ProductoService;
 import java.io.IOException;
 import java.util.Map;
 
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.LOWEST_PRECEDENCE)
 @RestControllerAdvice
 public class RestExceptionHandler {
 

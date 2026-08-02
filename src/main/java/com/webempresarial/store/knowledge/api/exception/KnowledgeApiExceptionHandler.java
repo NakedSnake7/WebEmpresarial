@@ -1,8 +1,11 @@
 package com.webempresarial.store.knowledge.api.exception;
 
-import com.webempresarial.store.knowledge.api.dto.KnowledgeApiErrorResponse;
+import com.webempresarial.store.knowledge.api.dto.KnowledgeApiErrorResponse; 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -12,10 +15,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(
         basePackages = "com.webempresarial.store.knowledge.api"
 )
 public class KnowledgeApiExceptionHandler {
+	
+	
 	
 	@ExceptionHandler(
 	        DuplicateKnowledgeVersionException.class

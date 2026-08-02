@@ -1,5 +1,6 @@
 package com.webempresarial.store.knowledge.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeClassification; 
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeContextType;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeDomain;
@@ -107,10 +108,11 @@ public record CreateKnowledgeRequest(
         String sourceReference
 ) {
 
-    @AssertTrue(
-            message = "El tipo y la referencia de contexto deben proporcionarse juntos"
-    )
-    public boolean isContextValid() {
+	@JsonIgnore
+	@AssertTrue(
+	        message = "El tipo y la referencia de contexto deben proporcionarse juntos"
+	)
+	public boolean isContextValid() {
         boolean hasType =
                 contextType != null;
 
