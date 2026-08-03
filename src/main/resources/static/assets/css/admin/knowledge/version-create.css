@@ -1,0 +1,339 @@
+:root {
+    --editor-bg: #f5f7fb;
+    --editor-panel: #ffffff;
+    --editor-border: #dfe4ec;
+    --editor-text: #162033;
+    --editor-muted: #667085;
+    --editor-primary: #2563eb;
+    --editor-primary-soft: #eff6ff;
+    --editor-danger: #b42318;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    background: var(--editor-bg);
+    color: var(--editor-text);
+    font-family: Inter, Arial, sans-serif;
+}
+
+.version-editor-page {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 28px;
+}
+
+.version-editor-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.version-back-link {
+    color: var(--editor-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.version-eyebrow {
+    margin: 18px 0 5px;
+    color: var(--editor-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.version-editor-header h1 {
+    margin: 0;
+    font-size: clamp(30px, 4vw, 48px);
+}
+
+.version-editor-header p {
+    color: var(--editor-muted);
+}
+
+.version-header-actions,
+.version-editor-footer,
+.version-suggestions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.version-editor {
+    display: grid;
+    gap: 22px;
+}
+
+.version-settings-panel,
+.version-metadata-panel,
+.version-editor-pane,
+.version-preview-pane {
+    border: 1px solid var(--editor-border);
+    border-radius: 16px;
+    background: var(--editor-panel);
+}
+
+.version-settings-panel {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 20px;
+}
+
+.version-field-group {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+}
+
+.version-field {
+    display: grid;
+    gap: 7px;
+}
+
+.version-field-full {
+    grid-column: 1 / -1;
+}
+
+.version-field label {
+    color: var(--editor-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.version-field input,
+.version-field textarea,
+.version-field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd2dc;
+    border-radius: 9px;
+    background: white;
+    color: var(--editor-text);
+    font: inherit;
+}
+
+.version-field-group input {
+    width: 82px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.version-separator {
+    padding-bottom: 11px;
+    color: var(--editor-muted);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.version-suggestion {
+    padding: 7px 11px;
+    border: 1px solid var(--editor-border);
+    border-radius: 999px;
+    background: white;
+    cursor: pointer;
+}
+
+.semantic-version-preview {
+    margin-left: auto;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: var(--editor-primary-soft);
+    color: var(--editor-primary);
+    font-size: 18px;
+}
+
+.version-metadata-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    padding: 22px;
+}
+
+.version-editor-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    min-height: 720px;
+}
+
+.version-editor-pane,
+.version-preview-pane {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+}
+
+.version-pane-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--editor-border);
+    background: #fafbfc;
+}
+
+.version-pane-header span {
+    color: var(--editor-muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.version-pane-header strong {
+    display: block;
+    margin-top: 3px;
+}
+
+.version-source-editor {
+    width: 100%;
+    min-height: 680px;
+    padding: 24px;
+    resize: vertical;
+    border: 0;
+    outline: 0;
+    background: #101828;
+    color: #f8fafc;
+    font: 14px/1.7 "JetBrains Mono", Consolas, monospace;
+    tab-size: 4;
+}
+
+.version-preview-content {
+    overflow: auto;
+    padding: clamp(24px, 4vw, 50px);
+    color: #263247;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.version-preview-content h1,
+.version-preview-content h2,
+.version-preview-content h3,
+.version-preview-content h4 {
+    margin-top: 1.6em;
+    margin-bottom: .6em;
+    color: var(--editor-text);
+    line-height: 1.3;
+}
+
+.version-preview-content h1 {
+    font-size: 2rem;
+}
+
+.version-preview-content h2 {
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--editor-border);
+    font-size: 1.5rem;
+}
+
+.version-preview-content pre {
+    overflow-x: auto;
+    padding: 16px;
+    border-radius: 10px;
+    background: #101828;
+    color: #f8fafc;
+    white-space: pre-wrap;
+}
+
+.version-preview-warning {
+    padding: 12px;
+    border-radius: 9px;
+    background: #fff7e8;
+    color: #b54708;
+}
+
+.version-editor-footer {
+    justify-content: flex-end;
+}
+
+.version-editor-state {
+    padding: 60px;
+    text-align: center;
+}
+
+.version-alert {
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border-radius: 10px;
+}
+
+.version-alert-error {
+    background: #fff1f1;
+    color: var(--editor-danger);
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button-primary {
+    background: var(--editor-primary);
+    color: white;
+}
+
+.button-secondary {
+    border-color: var(--editor-border);
+    background: white;
+    color: var(--editor-text);
+}
+
+.button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .version-editor-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .version-metadata-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .version-field-full {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 680px) {
+    .version-editor-page {
+        padding: 18px;
+    }
+
+    .version-editor-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .semantic-version-preview {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+    }
+}

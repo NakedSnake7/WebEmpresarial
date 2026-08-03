@@ -24,6 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -222,6 +223,7 @@ class CreateKnowledgeVersionServiceTest {
         Store store = activeStore();
         KnowledgeObject knowledgeObject =
                 draftKnowledgeObject(store);
+        
 
         when(
                 knowledgeObjectRepository.findByIdAndStoreId(
@@ -508,19 +510,28 @@ class CreateKnowledgeVersionServiceTest {
     private static KnowledgeObject draftKnowledgeObject(
             Store store
     ) {
-        return KnowledgeObject.create(
-                store,
-                KnowledgeCode.of("KS-100"),
-                firstTypeCode(),
-                firstDomain(),
-                firstClassification(),
-                firstRiskLevel(),
-                KnowledgeContextRoot.of(
-                        KnowledgeContextType.PROJECT,
-                        "ROBERT-SLINGERLAND"
-                ),
-                ACTOR
+        KnowledgeObject knowledgeObject =
+                KnowledgeObject.create(
+                        store,
+                        KnowledgeCode.of("KS-100"),
+                        firstTypeCode(),
+                        firstDomain(),
+                        firstClassification(),
+                        firstRiskLevel(),
+                        KnowledgeContextRoot.of(
+                                KnowledgeContextType.PROJECT,
+                                "ROBERT-SLINGERLAND"
+                        ),
+                        ACTOR
+                );
+
+        ReflectionTestUtils.setField(
+                knowledgeObject,
+                "id",
+                KNOWLEDGE_OBJECT_ID
         );
+
+        return knowledgeObject;
     }
 
     private static Store activeStore() {

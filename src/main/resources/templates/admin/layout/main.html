@@ -29,31 +29,31 @@
 
     <!-- ADMIN -->
     <link rel="stylesheet"
-          th:href="@{/assets/css/admin.css}">
+          th:href="@{/assets/css/admin/admin.css}">
 
     <!-- CRM -->
     <th:block th:if="${crmPage}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-core.css}">
+              th:href="@{/assets/css/admin/crm/crm-core.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-components.css}">
+              th:href="@{/assets/css/admin/crm/crm-components.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-dashboard.css}">
+              th:href="@{/assets/css/admin/crm/crm-dashboard.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-pipeline.css}">
+              th:href="@{/assets/css/admin/crm/crm-pipeline.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-drawer.css}">
+              th:href="@{/assets/css/admin/crm/crm-drawer.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-tasks.css}">
+              th:href="@{/assets/css/admin/crm/crm-tasks.css}">
 
         <link rel="stylesheet"
-              th:href="@{/assets/css/crm/crm-responsive.css}">
+              th:href="@{/assets/css/admin/crm/crm-responsive.css}">
 
     </th:block>
 
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <!-- CRM APP -->
 <script type="module"
-        th:src="@{/assets/js/crm/crm-app.js}"
+        th:src="@{/assets/js/admin/crm/crm-app.js}"
         th:if="${crmPage}">
 </script>
 

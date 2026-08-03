@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Knowledge Workspace
+    </title>
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/detail.css}">
+</head>
+
+<body>
+
+<main class="knowledge-workspace"
+      th:attr="data-knowledge-id=${knowledgeObjectId}">
+
+    <header class="workspace-navigation">
+
+        <a class="workspace-back-link"
+           th:href="@{/admin/knowledge}">
+            ← Volver al Knowledge Engine
+        </a>
+
+        <div class="workspace-navigation-actions">
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="refreshKnowledgeDetailButton">
+                Actualizar
+            </button>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="createKnowledgeVersionButton"
+                    hidden>
+                Nueva versión
+            </button>
+
+        </div>
+
+    </header>
+
+    <div id="knowledgeDetailLoading"
+         class="workspace-state">
+        Cargando conocimiento…
+    </div>
+
+    <div id="knowledgeDetailError"
+         class="workspace-state workspace-state-error"
+         hidden>
+    </div>
+
+    <div id="knowledgeDetailContent"
+         hidden>
+
+        <section class="workspace-hero">
+
+            <div class="workspace-hero-main">
+
+                <div class="workspace-identity-line">
+
+                    <span class="knowledge-code"
+                          id="knowledgeCode">
+                        —
+                    </span>
+
+                    <span class="knowledge-status"
+                          id="knowledgeStatus">
+                        —
+                    </span>
+
+                </div>
+
+                <h1 id="knowledgeTitle">
+                    Sin título
+                </h1>
+
+                <p class="workspace-summary"
+                   id="knowledgeSummary">
+                    Sin resumen
+                </p>
+
+            </div>
+
+            <aside class="workspace-confidence-card">
+
+                <span>Confianza</span>
+
+                <strong id="knowledgeConfidence">
+                    —
+                </strong>
+
+                <div class="confidence-progress"
+                     aria-hidden="true">
+
+                    <div class="confidence-progress-value"
+                         id="knowledgeConfidenceProgress">
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+<section class="workspace-toolbar">
+
+    <div class="workspace-toolbar-primary"
+         id="knowledgeLifecycleActions">
+
+        <button type="button"
+                class="button button-primary"
+                id="submitReviewButton"
+                hidden>
+            Enviar a revisión
+        </button>
+
+        <button type="button"
+                class="button button-primary"
+                id="approveKnowledgeButton"
+                hidden>
+            Aprobar
+        </button>
+
+        <button type="button"
+                class="button button-primary"
+                id="publishKnowledgeButton"
+                hidden>
+            Publicar
+        </button>
+
+        <button type="button"
+                class="button button-danger"
+                id="archiveKnowledgeButton"
+                hidden>
+            Archivar
+        </button>
+
+    </div>
+
+    <div class="workspace-toolbar-secondary">
+
+        <button type="button"
+                class="button button-secondary"
+                id="searchInsideDocumentButton">
+            Buscar en documento
+        </button>
+
+        <button type="button"
+                class="button button-secondary"
+                id="toggleTableOfContentsButton">
+            Índice
+        </button>
+
+    </div>
+
+</section>
+
+        <section class="workspace-grid">
+
+            <article class="workspace-panel workspace-panel-main">
+
+                <header class="workspace-panel-header">
+                    <div>
+                        <span class="panel-eyebrow">
+                            Contenido
+                        </span>
+
+                        <h2>Knowledge Document</h2>
+                    </div>
+
+                    <span class="version-pill"
+                          id="knowledgeSemanticVersion">
+                        —
+                    </span>
+                </header>
+
+                <div class="knowledge-content"
+                     id="knowledgeContent">
+                </div>
+
+            </article>
+
+            <aside class="workspace-sidebar">
+
+                <article class="workspace-panel">
+                
+                <article class="workspace-panel workspace-toc-panel"
+         id="knowledgeTableOfContentsPanel">
+
+    <header class="workspace-panel-header">
+        <div>
+            <span class="panel-eyebrow">
+                Navegación
+            </span>
+
+            <h2>Contenido</h2>
+        </div>
+    </header>
+
+    <nav id="knowledgeTableOfContents"
+         class="knowledge-toc"
+         aria-label="Índice del documento">
+
+        <p class="knowledge-toc-empty">
+            Este documento todavía no contiene encabezados.
+        </p>
+
+    </nav>
+
+</article>
+<article class="workspace-panel">
+
+    <header class="workspace-panel-header">
+
+        <div>
+            <span class="panel-eyebrow">
+                Historial editorial
+            </span>
+
+            <h2>Versiones</h2>
+        </div>
+
+        <span class="version-count"
+              id="knowledgeVersionCount">
+            0
+        </span>
+
+    </header>
+
+    <div id="knowledgeVersionsLoading"
+         class="version-history-state">
+        Cargando versiones…
+    </div>
+
+    <div id="knowledgeVersionsError"
+         class="version-history-state version-history-error"
+         hidden>
+    </div>
+
+    <ol id="knowledgeVersionHistory"
+        class="version-history"
+        hidden>
+    </ol>
+
+</article>
+                    <header class="workspace-panel-header">
+                        <div>
+                            <span class="panel-eyebrow">
+                                Gobernanza
+                            </span>
+
+                            <h2>Metadatos</h2>
+                        </div>
+                    </header>
+
+                    <dl class="metadata-list">
+
+                        <div>
+                            <dt>Tipo</dt>
+                            <dd id="knowledgeType">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Dominio</dt>
+                            <dd id="knowledgeDomain">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Clasificación</dt>
+                            <dd id="knowledgeClassification">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Riesgo</dt>
+                            <dd id="knowledgeRiskLevel">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Contexto</dt>
+                            <dd id="knowledgeContext">—</dd>
+                        </div>
+
+                    </dl>
+
+                </article>
+
+                <article class="workspace-panel">
+
+                    <header class="workspace-panel-header">
+                        <div>
+                            <span class="panel-eyebrow">
+                                Vigencia
+                            </span>
+
+                            <h2>Lifecycle</h2>
+                        </div>
+                    </header>
+
+                    <div class="lifecycle-timeline">
+
+                        <div class="lifecycle-step"
+                             data-status="DRAFT">
+                            <span></span>
+                            <div>
+                                <strong>Borrador</strong>
+                                <small>Contenido editorial creado</small>
+                            </div>
+                        </div>
+
+                        <div class="lifecycle-step"
+                             data-status="IN_REVIEW">
+                            <span></span>
+                            <div>
+                                <strong>En revisión</strong>
+                                <small>Pendiente de validación</small>
+                            </div>
+                        </div>
+
+                        <div class="lifecycle-step"
+                             data-status="APPROVED">
+                            <span></span>
+                            <div>
+                                <strong>Aprobado</strong>
+                                <small>Listo para publicación</small>
+                            </div>
+                        </div>
+
+                        <div class="lifecycle-step"
+                             data-status="PUBLISHED">
+                            <span></span>
+                            <div>
+                                <strong>Publicado</strong>
+                                <small>Conocimiento vigente</small>
+                            </div>
+                        </div>
+
+                        <div class="lifecycle-step"
+                             data-status="ARCHIVED">
+                            <span></span>
+                            <div>
+                                <strong>Archivado</strong>
+                                <small>Retirado del Query Engine</small>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </article>
+
+                <article class="workspace-panel">
+
+                    <header class="workspace-panel-header">
+                        <div>
+                            <span class="panel-eyebrow">
+                                Auditoría
+                            </span>
+
+                            <h2>Información editorial</h2>
+                        </div>
+                    </header>
+
+                    <dl class="metadata-list">
+
+                        <div>
+                            <dt>Creado</dt>
+                            <dd id="knowledgeCreatedAt">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Actualizado</dt>
+                            <dd id="knowledgeUpdatedAt">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Válido desde</dt>
+                            <dd id="knowledgeValidFrom">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Válido hasta</dt>
+                            <dd id="knowledgeValidUntil">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Creado por</dt>
+                            <dd id="knowledgeCreatedBy">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Fuente</dt>
+                            <dd id="knowledgeSourceReference">—</dd>
+                        </div>
+
+                    </dl>
+
+                </article>
+
+            </aside>
+
+        </section>
+
+    </div>
+
+    <dialog id="publishKnowledgeDialog"
+            class="knowledge-dialog">
+
+        <form method="dialog"
+              id="publishKnowledgeForm">
+
+            <header>
+                <h2>Publicar conocimiento</h2>
+
+                <p>
+                    Define la ventana de vigencia de la versión seleccionada.
+                </p>
+            </header>
+
+            <div class="dialog-field">
+                <label for="publishValidFrom">
+                    Válido desde
+                </label>
+
+                <input type="datetime-local"
+                       id="publishValidFrom"
+                       required>
+            </div>
+
+            <div class="dialog-field">
+                <label for="publishValidUntil">
+                    Válido hasta
+                </label>
+
+                <input type="datetime-local"
+                       id="publishValidUntil">
+            </div>
+
+            <footer>
+                <button type="button"
+                        class="button button-secondary"
+                        id="cancelPublishButton">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                        class="button button-primary">
+                    Publicar
+                </button>
+            </footer>
+
+        </form>
+
+    </dialog>
+<dialog id="documentSearchDialog"
+        class="knowledge-dialog">
+
+    <form method="dialog"
+          id="documentSearchForm">
+
+        <header>
+            <h2>Buscar en el documento</h2>
+
+            <p>
+                Localiza contenido dentro de la versión visible.
+            </p>
+        </header>
+
+        <div class="dialog-field">
+
+            <label for="documentSearchInput">
+                Texto
+            </label>
+
+            <input type="search"
+                   id="documentSearchInput"
+                   maxlength="150"
+                   autocomplete="off"
+                   placeholder="Escribe una palabra o frase">
+
+        </div>
+
+        <p id="documentSearchResult"
+           class="document-search-result">
+        </p>
+
+        <footer>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="closeDocumentSearchButton">
+                Cerrar
+            </button>
+
+            <button type="submit"
+                    class="button button-primary">
+                Buscar
+            </button>
+
+        </footer>
+
+    </form>
+
+</dialog>
+</main>
+
+<script defer
+        th:src="@{/assets/js/admin/knowledge/detail.js}">
+</script>
+
+</body>
+</html>

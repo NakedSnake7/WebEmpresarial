@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Nueva versión
+    </title>
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/version-create.css}">
+</head>
+
+<body>
+
+<main class="version-editor-page"
+      th:attr="data-knowledge-id=${knowledgeObjectId}">
+
+    <header class="version-editor-header">
+
+        <div>
+            <a class="version-back-link"
+               th:href="@{|/admin/knowledge/${knowledgeObjectId}|}">
+                ← Volver al workspace
+            </a>
+
+            <p class="version-eyebrow">
+                WebEmpresarial™ Knowledge Engine
+            </p>
+
+            <h1>Nueva versión editorial</h1>
+
+            <p id="versionKnowledgeIdentity">
+                Cargando conocimiento…
+            </p>
+        </div>
+
+        <div class="version-header-actions">
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="resetVersionButton">
+                Restablecer
+            </button>
+
+            <button type="submit"
+                    form="knowledgeVersionForm"
+                    class="button button-primary"
+                    id="saveVersionButton">
+                Crear versión
+            </button>
+
+        </div>
+
+    </header>
+
+    <div id="versionEditorLoading"
+         class="version-editor-state">
+        Cargando última versión…
+    </div>
+
+    <div id="versionEditorError"
+         class="version-alert version-alert-error"
+         hidden>
+    </div>
+
+    <form id="knowledgeVersionForm"
+          class="version-editor"
+          hidden>
+
+        <section class="version-settings-panel">
+
+            <div class="version-field-group">
+
+                <div class="version-field">
+                    <label for="versionMajor">
+                        Major
+                    </label>
+
+                    <input type="number"
+                           id="versionMajor"
+                           min="0"
+                           max="9999"
+                           required>
+                </div>
+
+                <span class="version-separator">.</span>
+
+                <div class="version-field">
+                    <label for="versionMinor">
+                        Minor
+                    </label>
+
+                    <input type="number"
+                           id="versionMinor"
+                           min="0"
+                           max="9999"
+                           required>
+                </div>
+
+                <span class="version-separator">.</span>
+
+                <div class="version-field">
+                    <label for="versionPatch">
+                        Patch
+                    </label>
+
+                    <input type="number"
+                           id="versionPatch"
+                           min="0"
+                           max="9999"
+                           required>
+                </div>
+
+            </div>
+
+            <div class="version-suggestions">
+
+                <span>Sugerencias:</span>
+
+                <button type="button"
+                        class="version-suggestion"
+                        data-version-bump="patch">
+                    Patch
+                </button>
+
+                <button type="button"
+                        class="version-suggestion"
+                        data-version-bump="minor">
+                    Minor
+                </button>
+
+                <button type="button"
+                        class="version-suggestion"
+                        data-version-bump="major">
+                    Major
+                </button>
+
+            </div>
+
+            <strong id="semanticVersionPreview"
+                    class="semantic-version-preview">
+                1.0.1
+            </strong>
+
+        </section>
+
+        <section class="version-metadata-panel">
+
+            <div class="version-field version-field-full">
+                <label for="versionTitle">
+                    Título
+                </label>
+
+                <input type="text"
+                       id="versionTitle"
+                       maxlength="200"
+                       required>
+            </div>
+
+            <div class="version-field version-field-full">
+                <label for="versionSummary">
+                    Resumen
+                </label>
+
+                <textarea id="versionSummary"
+                          maxlength="1000"
+                          rows="3"
+                          required>
+                </textarea>
+            </div>
+
+            <div class="version-field">
+                <label for="versionContentFormat">
+                    Formato
+                </label>
+
+                <select id="versionContentFormat"
+                        required>
+
+                    <option value="MARKDOWN">
+                        Markdown
+                    </option>
+
+                    <option value="PLAIN_TEXT">
+                        Texto plano
+                    </option>
+
+                    <option value="HTML">
+                        HTML
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="version-field">
+                <label for="versionConfidence">
+                    Confianza
+                </label>
+
+                <input type="number"
+                       id="versionConfidence"
+                       min="0"
+                       max="1"
+                       step="0.0001"
+                       required>
+            </div>
+
+            <div class="version-field version-field-full">
+                <label for="versionSourceReference">
+                    Fuente o referencia
+                </label>
+
+                <input type="text"
+                       id="versionSourceReference"
+                       maxlength="500">
+            </div>
+
+        </section>
+
+        <section class="version-editor-workspace">
+
+            <article class="version-editor-pane">
+
+                <header class="version-pane-header">
+                    <div>
+                        <span>Fuente</span>
+                        <strong id="sourceFormatLabel">
+                            Markdown
+                        </strong>
+                    </div>
+
+                    <span id="versionCharacterCount">
+                        0 caracteres
+                    </span>
+                </header>
+
+                <textarea id="versionContent"
+                          class="version-source-editor"
+                          spellcheck="true"
+                          required>
+                </textarea>
+
+            </article>
+
+            <article class="version-preview-pane">
+
+                <header class="version-pane-header">
+                    <div>
+                        <span>Vista previa</span>
+                        <strong>Documento editorial</strong>
+                    </div>
+                </header>
+
+                <div id="versionPreview"
+                     class="version-preview-content">
+                </div>
+
+            </article>
+
+        </section>
+
+        <footer class="version-editor-footer">
+
+            <a class="button button-secondary"
+               th:href="@{|/admin/knowledge/${knowledgeObjectId}|}">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="button button-primary">
+                Crear versión
+            </button>
+
+        </footer>
+
+    </form>
+
+</main>
+
+<script defer
+        th:src="@{/assets/js/admin/knowledge/version-create.js}">
+</script>
+
+</body>
+</html>

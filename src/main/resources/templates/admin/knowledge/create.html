@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Nuevo conocimiento
+    </title>
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/create.css}">
+</head>
+
+<body>
+
+<main class="knowledge-create-page">
+
+    <header class="knowledge-create-header">
+
+        <div>
+            <a class="knowledge-back-link"
+               th:href="@{/admin/knowledge}">
+                ← Volver al Knowledge Engine
+            </a>
+
+            <p class="knowledge-eyebrow">
+                WebEmpresarial™
+            </p>
+
+            <h1 th:text="${pageTitle}">
+                Nuevo conocimiento
+            </h1>
+
+            <p th:text="${pageDescription}">
+                Registrar un nuevo objeto de conocimiento
+            </p>
+        </div>
+
+    </header>
+
+    <div id="knowledgeCreateError"
+         class="knowledge-alert knowledge-alert-error"
+         hidden>
+    </div>
+
+    <form id="knowledgeCreateForm"
+          class="knowledge-form">
+
+        <section class="knowledge-form-section">
+
+            <div class="knowledge-section-header">
+                <div>
+                    <span class="knowledge-section-step">
+                        01
+                    </span>
+
+                    <h2>Identidad del conocimiento</h2>
+
+                    <p>
+                        Define cómo será identificado y clasificado
+                        dentro del Knowledge Engine.
+                    </p>
+                </div>
+            </div>
+
+            <div class="knowledge-form-grid">
+
+                <div class="knowledge-field">
+                    <label for="knowledgeCode">
+                        Código
+                    </label>
+
+                    <input type="text"
+                           id="knowledgeCode"
+                           name="code"
+                           maxlength="16"
+                           placeholder="KS-100"
+                           autocomplete="off"
+                           required>
+
+                    <small>
+                        Formato PREFIX-000. Ejemplos: KS-100, CRM-015.
+                    </small>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeTypeCode">
+                        Tipo
+                    </label>
+
+                    <select id="knowledgeTypeCode"
+                            name="typeCode"
+                            required>
+
+                        <option value="">
+                            Selecciona un tipo
+                        </option>
+
+                        <option th:each="type : ${knowledgeTypes}"
+                                th:value="${type}"
+                                th:text="${type}">
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeDomain">
+                        Dominio
+                    </label>
+
+                    <select id="knowledgeDomain"
+                            name="domain"
+                            required>
+
+                        <option value="">
+                            Selecciona un dominio
+                        </option>
+
+                        <option th:each="domain : ${knowledgeDomains}"
+                                th:value="${domain}"
+                                th:text="${domain}">
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeClassification">
+                        Clasificación
+                    </label>
+
+                    <select id="knowledgeClassification"
+                            name="classification"
+                            required>
+
+                        <option value="">
+                            Selecciona una clasificación
+                        </option>
+
+                        <option th:each="classification : ${knowledgeClassifications}"
+                                th:value="${classification}"
+                                th:text="${classification}">
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeRiskLevel">
+                        Nivel de riesgo
+                    </label>
+
+                    <select id="knowledgeRiskLevel"
+                            name="riskLevel"
+                            required>
+
+                        <option value="">
+                            Selecciona un nivel
+                        </option>
+
+                        <option th:each="risk : ${knowledgeRiskLevels}"
+                                th:value="${risk}"
+                                th:text="${risk}">
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="knowledge-form-section">
+
+            <div class="knowledge-section-header">
+                <div>
+                    <span class="knowledge-section-step">
+                        02
+                    </span>
+
+                    <h2>Contexto funcional</h2>
+
+                    <p>
+                        Indica dónde aplica este conocimiento dentro
+                        de la organización.
+                    </p>
+                </div>
+            </div>
+
+            <div class="knowledge-form-grid">
+
+                <div class="knowledge-field">
+                    <label for="knowledgeContextType">
+                        Tipo de contexto
+                    </label>
+
+                    <select id="knowledgeContextType"
+                            name="contextType">
+
+                        <option value="">
+                            Contexto natural de la tienda
+                        </option>
+
+                        <option th:each="contextType : ${knowledgeContextTypes}"
+                                th:value="${contextType}"
+                                th:text="${contextType}">
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeContextReference">
+                        Referencia
+                    </label>
+
+                    <input type="text"
+                           id="knowledgeContextReference"
+                           name="contextReference"
+                           maxlength="120"
+                           placeholder="CRM-ENGINE">
+
+                    <small>
+                        Obligatoria cuando seleccionas un tipo de contexto.
+                    </small>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="knowledge-form-section">
+
+            <div class="knowledge-section-header">
+                <div>
+                    <span class="knowledge-section-step">
+                        03
+                    </span>
+
+                    <h2>Versión inicial 1.0.0</h2>
+
+                    <p>
+                        Esta información formará la primera versión
+                        editorial del conocimiento.
+                    </p>
+                </div>
+            </div>
+
+            <div class="knowledge-form-grid">
+
+                <div class="knowledge-field knowledge-field-full">
+                    <label for="knowledgeTitle">
+                        Título
+                    </label>
+
+                    <input type="text"
+                           id="knowledgeTitle"
+                           name="title"
+                           maxlength="200"
+                           placeholder="Architecture Vision"
+                           required>
+                </div>
+
+                <div class="knowledge-field knowledge-field-full">
+                    <label for="knowledgeSummary">
+                        Resumen
+                    </label>
+
+                    <textarea id="knowledgeSummary"
+                              name="summary"
+                              maxlength="1000"
+                              rows="4"
+                              placeholder="Describe el propósito principal del conocimiento."
+                              required>
+                    </textarea>
+                </div>
+
+                <div class="knowledge-field knowledge-field-full">
+                    <label for="knowledgeContent">
+                        Contenido
+                    </label>
+
+                    <textarea id="knowledgeContent"
+                              name="content"
+                              rows="16"
+                              placeholder="# Título&#10;&#10;Contenido del conocimiento..."
+                              required>
+                    </textarea>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeContentFormat">
+                        Formato
+                    </label>
+
+                    <select id="knowledgeContentFormat"
+                            name="contentFormat"
+                            required>
+
+                        <option value="MARKDOWN">
+                            Markdown
+                        </option>
+
+                        <option value="PLAIN_TEXT">
+                            Texto plano
+                        </option>
+
+                        <option value="HTML">
+                            HTML
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="knowledge-field">
+                    <label for="knowledgeConfidence">
+                        Confianza
+                    </label>
+
+                    <input type="number"
+                           id="knowledgeConfidence"
+                           name="confidence"
+                           min="0"
+                           max="1"
+                           step="0.0001"
+                           value="0.9500"
+                           required>
+
+                    <small>
+                        Valor entre 0 y 1.
+                    </small>
+                </div>
+
+                <div class="knowledge-field knowledge-field-full">
+                    <label for="knowledgeSourceReference">
+                        Fuente o referencia
+                    </label>
+
+                    <input type="text"
+                           id="knowledgeSourceReference"
+                           name="sourceReference"
+                           maxlength="500"
+                           placeholder="KS-000, documento, URL o referencia interna">
+                </div>
+
+            </div>
+
+        </section>
+
+        <footer class="knowledge-form-actions">
+
+            <a class="button button-secondary"
+               th:href="@{/admin/knowledge}">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="button button-primary"
+                    id="saveKnowledgeButton">
+                Crear conocimiento
+            </button>
+
+        </footer>
+
+    </form>
+
+</main>
+
+<script defer
+        th:src="@{/assets/js/admin/knowledge/create.js}">
+</script>
+
+</body>
+</html>

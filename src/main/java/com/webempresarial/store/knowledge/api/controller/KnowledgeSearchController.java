@@ -1,11 +1,13 @@
 package com.webempresarial.store.knowledge.api.controller;
 
-import com.webempresarial.store.knowledge.api.dto.KnowledgeDetailResponse;
+import com.webempresarial.store.knowledge.api.dto.KnowledgeDetailResponse; 
 import com.webempresarial.store.knowledge.api.dto.KnowledgePageResponse;
 import com.webempresarial.store.knowledge.api.dto.KnowledgeSearchRequest;
 import com.webempresarial.store.knowledge.api.dto.KnowledgeSummaryResponse;
+import com.webempresarial.store.knowledge.api.dto.KnowledgeVersionSummaryResponse;
 import com.webempresarial.store.knowledge.api.service.KnowledgeDetailApiService;
 import com.webempresarial.store.knowledge.api.service.KnowledgeSearchApiService;
+import com.webempresarial.store.knowledge.api.service.KnowledgeVersionQueryApiService;
 import com.webempresarial.store.knowledge.api.exception.KnowledgeTenantNotResolvedException;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.theme.StoreResolver;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -27,11 +30,13 @@ public class KnowledgeSearchController {
 
     private final KnowledgeSearchApiService knowledgeSearchApiService;
     private final KnowledgeDetailApiService knowledgeDetailApiService;
+    private final KnowledgeVersionQueryApiService knowledgeVersionQueryApiService;
     private final StoreResolver storeResolver;
 
     public KnowledgeSearchController(
             KnowledgeSearchApiService knowledgeSearchApiService,
             KnowledgeDetailApiService knowledgeDetailApiService,
+            KnowledgeVersionQueryApiService knowledgeVersionQueryApiService,
             StoreResolver storeResolver
     ) {
         this.knowledgeSearchApiService =
@@ -44,6 +49,11 @@ public class KnowledgeSearchController {
                 Objects.requireNonNull(
                         knowledgeDetailApiService,
                         "KnowledgeDetailApiService es obligatorio"
+                );
+        this.knowledgeVersionQueryApiService =
+                Objects.requireNonNull(
+                		knowledgeVersionQueryApiService,
+                        "knowledgeVersionQueryApiService es obligatorio"
                 );
 
         this.storeResolver =
@@ -71,6 +81,8 @@ public class KnowledgeSearchController {
         return ResponseEntity.ok(response);
     }
     
+    
+    
     @GetMapping("/{knowledgeObjectId}")
     public ResponseEntity<KnowledgeDetailResponse> findById(
             @PathVariable
@@ -82,6 +94,24 @@ public class KnowledgeSearchController {
 
         KnowledgeDetailResponse response =
                 knowledgeDetailApiService.findById(
+                        store.getId(),
+                        knowledgeObjectId
+                );
+
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/{knowledgeObjectId}/versions")
+    public ResponseEntity<List<KnowledgeVersionSummaryResponse>>
+    findVersions(
+            @PathVariable Long knowledgeObjectId,
+            HttpServletRequest request
+    ) {
+        Store store =
+                resolveStore(request);
+
+        List<KnowledgeVersionSummaryResponse> response =
+                knowledgeVersionQueryApiService.findAll(
                         store.getId(),
                         knowledgeObjectId
                 );

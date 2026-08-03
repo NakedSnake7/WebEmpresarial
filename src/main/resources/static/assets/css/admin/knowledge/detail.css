@@ -1,0 +1,669 @@
+[hidden] {
+    display: none !important;
+}
+:root {
+    --knowledge-bg: #f5f7fb;
+    --knowledge-panel: #ffffff;
+    --knowledge-border: #dfe4ec;
+    --knowledge-text: #162033;
+    --knowledge-muted: #667085;
+    --knowledge-primary: #2563eb;
+    --knowledge-primary-soft: #eff6ff;
+    --knowledge-danger: #b42318;
+    --knowledge-radius: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--knowledge-bg);
+    color: var(--knowledge-text);
+    font-family: Inter, Arial, sans-serif;
+}
+
+.knowledge-workspace {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.workspace-navigation,
+.workspace-actions,
+.workspace-hero,
+.workspace-panel-header,
+.knowledge-dialog footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.workspace-navigation {
+    margin-bottom: 24px;
+}
+
+.workspace-navigation-actions,
+.workspace-actions {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.workspace-back-link {
+    color: var(--knowledge-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.workspace-hero {
+    align-items: stretch;
+    padding: 30px;
+    border: 1px solid var(--knowledge-border);
+    border-radius: var(--knowledge-radius);
+    background: var(--knowledge-panel);
+}
+
+.workspace-hero-main {
+    flex: 1;
+}
+
+.workspace-identity-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.knowledge-code,
+.version-pill {
+    display: inline-flex;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #eef2f6;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.knowledge-status {
+    display: inline-flex;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.knowledge-status-draft {
+    background: #f2f4f7;
+    color: #475467;
+}
+
+.knowledge-status-in_review {
+    background: #fff7e8;
+    color: #b54708;
+}
+
+.knowledge-status-approved {
+    background: #ecfdf3;
+    color: #027a48;
+}
+
+.knowledge-status-published {
+    background: #eff6ff;
+    color: #175cd3;
+}
+
+.knowledge-status-archived {
+    background: #fdf2fa;
+    color: #c11574;
+}
+
+.workspace-hero h1 {
+    margin: 0;
+    font-size: clamp(30px, 4vw, 50px);
+}
+
+.workspace-summary {
+    max-width: 850px;
+    margin: 18px 0 0;
+    color: var(--knowledge-muted);
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.workspace-confidence-card {
+    width: 230px;
+    padding: 22px;
+    border-radius: 16px;
+    background: var(--knowledge-primary-soft);
+}
+
+.workspace-confidence-card span {
+    color: var(--knowledge-muted);
+}
+
+.workspace-confidence-card strong {
+    display: block;
+    margin: 10px 0 16px;
+    font-size: 32px;
+}
+
+.confidence-progress {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #dbeafe;
+}
+
+.confidence-progress-value {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: var(--knowledge-primary);
+    transition: width 250ms ease;
+}
+
+.workspace-actions {
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.workspace-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 2.65fr)
+        minmax(300px, .85fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.workspace-sidebar {
+    position: sticky;
+    top: 20px;
+    display: grid;
+    align-content: start;
+    gap: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.workspace-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 20px 0;
+    padding: 12px;
+    border: 1px solid var(--knowledge-border);
+    border-radius: 14px;
+    background: rgb(245 247 251 / 92%);
+    backdrop-filter: blur(14px);
+}
+
+.workspace-toolbar-primary,
+.workspace-toolbar-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.knowledge-toc {
+    font-size: 14px;
+}
+
+.knowledge-toc-list {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.knowledge-toc-list a {
+    display: block;
+    padding: 7px 10px;
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+    color: var(--knowledge-muted);
+    text-decoration: none;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        border-color 150ms ease;
+}
+
+.knowledge-toc-list a:hover {
+    background: #f5f7fb;
+    color: var(--knowledge-text);
+}
+
+.knowledge-toc-list a.is-active {
+    border-left-color: var(--knowledge-primary);
+    background: var(--knowledge-primary-soft);
+    color: var(--knowledge-primary);
+    font-weight: 750;
+}
+
+.knowledge-toc-level-2 a {
+    padding-left: 20px;
+}
+
+.knowledge-toc-level-3 a {
+    padding-left: 32px;
+    font-size: 13px;
+}
+
+.knowledge-toc-level-4 a {
+    padding-left: 44px;
+    font-size: 12px;
+}
+
+.knowledge-toc-empty {
+    margin: 0;
+    color: var(--knowledge-muted);
+    line-height: 1.5;
+}
+.knowledge-search-highlight {
+    border-radius: 6px;
+    outline: 4px solid rgb(37 99 235 / 20%);
+    background: rgb(219 234 254 / 65%);
+    transition:
+        outline 200ms ease,
+        background 200ms ease;
+}
+
+.document-search-result {
+    min-height: 22px;
+    margin: 0;
+    color: var(--knowledge-muted);
+}
+
+.workspace-panel-main {
+    min-height: 720px;
+    padding: clamp(24px, 4vw, 56px);
+}
+
+.knowledge-content {
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.knowledge-content h1,
+.knowledge-content h2,
+.knowledge-content h3,
+.knowledge-content h4 {
+    scroll-margin-top: 110px;
+}
+
+.workspace-panel {
+    padding: 24px;
+    border: 1px solid var(--knowledge-border);
+    border-radius: var(--knowledge-radius);
+    background: var(--knowledge-panel);
+}
+
+.workspace-panel-main {
+    min-height: 620px;
+}
+
+.workspace-panel-header {
+    margin-bottom: 24px;
+}
+
+.workspace-panel-header h2 {
+    margin: 5px 0 0;
+}
+
+.panel-eyebrow {
+    color: var(--knowledge-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.knowledge-content pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.metadata-list {
+    margin: 0;
+}
+
+.metadata-list div {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.metadata-list div:last-child {
+    border-bottom: 0;
+}
+
+.metadata-list dt {
+    color: var(--knowledge-muted);
+}
+
+.metadata-list dd {
+    margin: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.lifecycle-timeline {
+    display: grid;
+    gap: 4px;
+}
+
+.lifecycle-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    color: #98a2b3;
+}
+
+.lifecycle-step > span {
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+    border: 3px solid #d0d5dd;
+    border-radius: 50%;
+    background: white;
+}
+
+.lifecycle-step.is-complete,
+.lifecycle-step.is-current {
+    color: var(--knowledge-text);
+}
+
+.lifecycle-step.is-complete > span {
+    border-color: #12b76a;
+    background: #12b76a;
+}
+
+.lifecycle-step.is-current > span {
+    border-color: var(--knowledge-primary);
+    background: var(--knowledge-primary);
+}
+
+.lifecycle-step small {
+    display: block;
+    margin-top: 3px;
+    color: var(--knowledge-muted);
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.button-primary {
+    background: var(--knowledge-primary);
+    color: white;
+}
+
+.button-secondary {
+    border-color: var(--knowledge-border);
+    background: white;
+    color: var(--knowledge-text);
+}
+
+.button-danger {
+    background: var(--knowledge-danger);
+    color: white;
+}
+
+.button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.workspace-state {
+    padding: 50px;
+    text-align: center;
+}
+
+.workspace-state-error {
+    color: var(--knowledge-danger);
+}
+
+.knowledge-dialog {
+    width: min(520px, calc(100vw - 32px));
+    padding: 0;
+    border: 0;
+    border-radius: 18px;
+}
+
+.knowledge-dialog::backdrop {
+    background: rgb(15 23 42 / 55%);
+}
+
+.knowledge-dialog form {
+    display: grid;
+    gap: 20px;
+    padding: 26px;
+}
+
+.knowledge-dialog h2 {
+    margin: 0;
+}
+
+.dialog-field {
+    display: grid;
+    gap: 8px;
+}
+
+.dialog-field input {
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--knowledge-border);
+    border-radius: 10px;
+}
+
+.version-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--knowledge-primary-soft);
+    color: var(--knowledge-primary);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.version-history {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.version-history-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 0 18px;
+}
+
+.version-history-item:not(:last-child)::after {
+    position: absolute;
+    top: 25px;
+    bottom: -1px;
+    left: 6px;
+    width: 2px;
+    background: #e4e7ec;
+    content: "";
+}
+
+.version-history-marker {
+    position: relative;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+    border: 3px solid #d0d5dd;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.version-history-item.is-latest
+.version-history-marker {
+    border-color: var(--knowledge-primary);
+    background: var(--knowledge-primary);
+}
+
+.version-history-item.is-current
+.version-history-marker {
+    border-color: #12b76a;
+    background: #12b76a;
+}
+
+.version-history-body {
+    min-width: 0;
+}
+
+.version-history-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.version-history-item-header strong {
+    font-family:
+        "JetBrains Mono",
+        Consolas,
+        monospace;
+    font-size: 13px;
+}
+
+.version-history-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.version-history-badge {
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.version-history-badge-current {
+    background: #ecfdf3;
+    color: #027a48;
+}
+
+.version-history-badge-latest {
+    background: var(--knowledge-primary-soft);
+    color: var(--knowledge-primary);
+}
+
+.version-history-title {
+    margin: 5px 0 3px;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.version-history-body small {
+    display: block;
+    color: var(--knowledge-muted);
+    font-size: 11px;
+}
+
+.version-history-actions {
+    margin-top: 7px;
+}
+
+.version-history-action {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--knowledge-primary);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.version-history-state,
+.version-history-empty {
+    padding: 12px 0;
+    color: var(--knowledge-muted);
+    font-size: 13px;
+}
+
+.version-history-error {
+    color: var(--knowledge-danger);
+}
+
+@media (max-width: 900px) {
+    .workspace-grid {
+        grid-template-columns: 1fr;
+    }
+    
+        .workspace-sidebar {
+        position: static;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .workspace-toolbar {
+        position: static;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .workspace-hero {
+        flex-direction: column;
+    }
+
+    .workspace-confidence-card {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .knowledge-workspace {
+        padding: 18px;
+    }
+
+    .workspace-navigation {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .metadata-list div {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+}

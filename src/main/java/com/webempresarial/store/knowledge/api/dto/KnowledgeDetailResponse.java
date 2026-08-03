@@ -40,11 +40,15 @@ public record KnowledgeDetailResponse(
 
         LocalDateTime updatedAt,
 
-        VersionDetail currentVersion
+        VersionDetail currentVersion,
+
+        VersionDetail latestVersion
 ) {
 
     public static KnowledgeDetailResponse from(
-            KnowledgeObject knowledgeObject
+            KnowledgeObject knowledgeObject,
+            VersionDetail currentVersion,
+            VersionDetail latestVersion
     ) {
         if (knowledgeObject == null) {
             throw new IllegalArgumentException(
@@ -77,7 +81,53 @@ public record KnowledgeDetailResponse(
                 knowledgeObject.getValidUntil(),
                 knowledgeObject.getCreatedAt(),
                 knowledgeObject.getUpdatedAt(),
+                currentVersion,
+                latestVersion
+        );
+    }
 
+    /**
+     * Fábrica de compatibilidad para código que todavía
+     * no requiere contenido renderizado.
+     */
+    public static KnowledgeDetailResponse from(
+            KnowledgeObject knowledgeObject,
+            KnowledgeObjectVersion latestVersion
+    ) {
+        if (knowledgeObject == null) {
+            throw new IllegalArgumentException(
+                    "KnowledgeObject es obligatorio"
+            );
+        }
+
+        return from(
+                knowledgeObject,
+                VersionDetail.from(
+                        knowledgeObject.getCurrentVersion()
+                ),
+                VersionDetail.from(
+                        latestVersion
+                )
+        );
+    }
+
+    /**
+     * Fábrica de compatibilidad para el contrato anterior.
+     */
+    public static KnowledgeDetailResponse from(
+            KnowledgeObject knowledgeObject
+    ) {
+        if (knowledgeObject == null) {
+            throw new IllegalArgumentException(
+                    "KnowledgeObject es obligatorio"
+            );
+        }
+
+        return from(
+                knowledgeObject,
+                VersionDetail.from(
+                        knowledgeObject.getCurrentVersion()
+                ),
                 VersionDetail.from(
                         knowledgeObject.getCurrentVersion()
                 )
@@ -97,6 +147,10 @@ public record KnowledgeDetailResponse(
             String content,
 
             String contentFormat,
+
+            String renderedContent,
+
+            String renderedContentFormat,
 
             BigDecimal confidence,
 
@@ -118,6 +172,22 @@ public record KnowledgeDetailResponse(
                 return null;
             }
 
+            return from(
+                    version,
+                    null,
+                    version.getContentFormat()
+            );
+        }
+
+        public static VersionDetail from(
+                KnowledgeObjectVersion version,
+                String renderedContent,
+                String renderedContentFormat
+        ) {
+            if (version == null) {
+                return null;
+            }
+
             return new VersionDetail(
                     version.getId(),
 
@@ -131,6 +201,8 @@ public record KnowledgeDetailResponse(
                     version.getSummary(),
                     version.getContent(),
                     version.getContentFormat(),
+                    renderedContent,
+                    renderedContentFormat,
 
                     version.getConfidence() != null
                             ? version

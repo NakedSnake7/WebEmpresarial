@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Knowledge Engine
+    </title>
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+<link rel="stylesheet"
+      th:href="@{/assets/css/admin/knowledge/index.css}">
+</head>
+
+<body>
+
+<main class="knowledge-page">
+
+    <header class="knowledge-header">
+
+        <div>
+            <p class="knowledge-eyebrow">
+                WebEmpresarial™
+            </p>
+
+            <h1 th:text="${pageTitle}">
+                Knowledge Engine
+            </h1>
+
+            <p th:text="${pageDescription}">
+                Administración del conocimiento empresarial
+            </p>
+        </div>
+
+        <div class="knowledge-header-actions">
+            <button type="button"
+                    class="button button-secondary"
+                    id="refreshKnowledgeButton">
+                Actualizar
+            </button>
+
+            <button type="button"
+                    class="button button-primary"
+                    id="createKnowledgeButton">
+                Nuevo conocimiento
+            </button>
+        </div>
+
+    </header>
+
+    <section class="knowledge-metrics"
+             aria-label="Resumen de conocimiento">
+
+        <article class="metric-card">
+            <span>Total</span>
+            <strong id="totalKnowledgeMetric">0</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Borradores</span>
+            <strong id="draftKnowledgeMetric">—</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>En revisión</span>
+            <strong id="reviewKnowledgeMetric">—</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Publicados</span>
+            <strong id="publishedKnowledgeMetric">—</strong>
+        </article>
+
+    </section>
+
+    <section class="knowledge-panel">
+
+        <form id="knowledgeSearchForm"
+              class="knowledge-filters">
+
+            <div class="filter-field filter-field-wide">
+                <label for="knowledgeText">
+                    Buscar
+                </label>
+
+                <input type="search"
+                       id="knowledgeText"
+                       name="text"
+                       maxlength="250"
+                       placeholder="Código, título o resumen">
+            </div>
+
+            <div class="filter-field">
+                <label for="knowledgeStatus">
+                    Estado
+                </label>
+
+                <select id="knowledgeStatus"
+                        name="status">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option th:each="status : ${knowledgeStatuses}"
+                            th:value="${status}"
+                            th:text="${status}">
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="knowledgeDomain">
+                    Dominio
+                </label>
+
+                <select id="knowledgeDomain"
+                        name="domain">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option th:each="domain : ${knowledgeDomains}"
+                            th:value="${domain}"
+                            th:text="${domain}">
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="knowledgeType">
+                    Tipo
+                </label>
+
+                <select id="knowledgeType"
+                        name="typeCode">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option th:each="type : ${knowledgeTypes}"
+                            th:value="${type}"
+                            th:text="${type}">
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="knowledgeClassification">
+                    Clasificación
+                </label>
+
+                <select id="knowledgeClassification"
+                        name="classification">
+
+                    <option value="">
+                        Todas
+                    </option>
+
+                    <option th:each="classification : ${knowledgeClassifications}"
+                            th:value="${classification}"
+                            th:text="${classification}">
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="knowledgeRiskLevel">
+                    Riesgo
+                </label>
+
+                <select id="knowledgeRiskLevel"
+                        name="riskLevel">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option th:each="riskLevel : ${knowledgeRiskLevels}"
+                            th:value="${riskLevel}"
+                            th:text="${riskLevel}">
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="button"
+                        class="button button-ghost"
+                        id="clearKnowledgeFiltersButton">
+                    Limpiar
+                </button>
+
+                <button type="submit"
+                        class="button button-primary">
+                    Buscar
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+    <section class="knowledge-panel">
+
+        <div class="knowledge-table-header">
+            <div>
+                <h2>Objetos de conocimiento</h2>
+
+                <p id="knowledgeResultSummary"
+   aria-live="polite">
+    Cargando conocimiento…
+</p>
+            </div>
+        </div>
+
+        <div id="knowledgeLoadingState"
+             class="knowledge-state">
+            Cargando…
+        </div>
+
+        <div id="knowledgeErrorState"
+     class="knowledge-state knowledge-state-error"
+     role="alert"
+     hidden>
+</div>
+
+<div id="knowledgeEmptyState"
+     class="knowledge-state knowledge-empty-state"
+     hidden>
+
+    <strong id="knowledgeEmptyTitle">
+        No se encontraron resultados
+    </strong>
+
+    <p id="knowledgeEmptyDescription">
+        Ajusta los filtros o crea un nuevo objeto de conocimiento.
+    </p>
+
+    <button type="button"
+            class="button button-primary"
+            id="createKnowledgeEmptyButton">
+        Crear conocimiento
+    </button>
+
+</div>
+
+        
+        
+
+        <div class="knowledge-table-wrapper"
+             id="knowledgeTableWrapper"
+             hidden>
+
+            <table class="knowledge-table">
+
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Conocimiento</th>
+                    <th>Estado</th>
+                    <th>Dominio</th>
+                    <th>Confianza</th>
+                    <th>Actualización</th>
+                    <th aria-label="Acciones"></th>
+                </tr>
+                </thead>
+
+                <tbody id="knowledgeTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <nav class="knowledge-pagination"
+             id="knowledgePagination"
+             aria-label="Paginación"
+             hidden>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="previousKnowledgePageButton">
+                Anterior
+            </button>
+
+            <span id="knowledgePageIndicator">
+                Página 1
+            </span>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="nextKnowledgePageButton">
+                Siguiente
+            </button>
+
+        </nav>
+
+    </section>
+
+</main>
+
+<script defer
+        th:src="@{/assets/js/admin/knowledge/index.js}">
+</script>
+</body>
+</html>
