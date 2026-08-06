@@ -8,9 +8,9 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title th:text="${pageTitle}">
-        Knowledge Engine
-    </title>
+<title th:text="${pageTitle}">
+    Biblioteca de conocimiento
+</title>
 
     <meta name="_csrf"
           th:if="${_csrf != null}"
@@ -28,37 +28,44 @@
 
 <main class="knowledge-page">
 
-    <header class="knowledge-header">
+<header class="knowledge-header">
 
-        <div>
-            <p class="knowledge-eyebrow">
-                WebEmpresarial™
-            </p>
+    <div>
+        <p class="knowledge-eyebrow">
+            WebEmpresarial™ Knowledge Engine
+        </p>
 
-            <h1 th:text="${pageTitle}">
-                Knowledge Engine
-            </h1>
+        <h1 th:text="${pageTitle}">
+            Biblioteca de conocimiento
+        </h1>
 
-            <p th:text="${pageDescription}">
-                Administración del conocimiento empresarial
-            </p>
-        </div>
+        <p th:text="${pageDescription}">
+            Consulta y administra el patrimonio intelectual
+            de la organización.
+        </p>
+    </div>
 
-        <div class="knowledge-header-actions">
-            <button type="button"
-                    class="button button-secondary"
-                    id="refreshKnowledgeButton">
-                Actualizar
-            </button>
+    <div class="knowledge-header-actions">
 
-            <button type="button"
-                    class="button button-primary"
-                    id="createKnowledgeButton">
-                Nuevo conocimiento
-            </button>
-        </div>
+        <a th:href="@{/admin/knowledge}"
+           class="button button-ghost">
+            Dashboard
+        </a>
 
-    </header>
+        <button type="button"
+                class="button button-secondary"
+                id="refreshKnowledgeButton">
+            Actualizar
+        </button>
+
+        <a th:href="@{/admin/knowledge/new}"
+           class="button button-primary">
+            Nuevo conocimiento
+        </a>
+
+    </div>
+
+</header>
 
     <section class="knowledge-metrics"
              aria-label="Resumen de conocimiento">
@@ -114,10 +121,12 @@
                         Todos
                     </option>
 
-                    <option th:each="status : ${knowledgeStatuses}"
-                            th:value="${status}"
-                            th:text="${status}">
-                    </option>
+<option th:each="status : ${knowledgeStatuses}"
+        th:value="${status}"
+        th:text="${status}"
+        th:selected="${initialStatus != null
+                      and initialStatus == status}">
+</option>
 
                 </select>
             </div>

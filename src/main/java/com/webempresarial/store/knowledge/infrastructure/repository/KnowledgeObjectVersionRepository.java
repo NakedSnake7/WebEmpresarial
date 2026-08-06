@@ -18,6 +18,13 @@ public interface KnowledgeObjectVersionRepository
             Long storeId
     );
     
+    Optional<KnowledgeObjectVersion>
+    findByIdAndKnowledgeObjectIdAndKnowledgeObjectStoreId(
+            Long versionId,
+            Long knowledgeObjectId,
+            Long storeId
+    );
+    
     List<KnowledgeObjectVersion>
     findByKnowledgeObjectIdAndKnowledgeObjectStoreIdOrderBySemanticVersionMajorDescSemanticVersionMinorDescSemanticVersionPatchDesc(
             Long knowledgeObjectId,

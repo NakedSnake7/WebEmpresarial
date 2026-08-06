@@ -35,6 +35,9 @@
            th:href="@{/admin/knowledge}">
             ← Volver al Knowledge Engine
         </a>
+        <a th:href="@{/admin/knowledge/library}">
+    ← Volver a la biblioteca
+</a>
 
         <div class="workspace-navigation-actions">
 
@@ -117,7 +120,216 @@
             </aside>
 
         </section>
+<div class="knowledge-reader-state"
+     id="knowledgeReaderState"
+     hidden>
 
+    <div>
+
+        <span class="knowledge-reader-eyebrow">
+            Vista histórica
+        </span>
+
+        <strong id="knowledgeReaderVersion">
+            v—
+        </strong>
+
+        <span>
+            Esta versión se muestra en modo de solo lectura.
+        </span>
+
+    </div>
+
+    <button type="button"
+            class="button button-secondary"
+            id="restorePrimaryVersionButton">
+        Volver a versión principal
+    </button>
+
+</div>
+
+<section class="knowledge-diff-panel"
+         id="knowledgeDiffPanel"
+         hidden>
+
+    <header class="knowledge-diff-header">
+
+        <div>
+            <span class="panel-eyebrow">
+                Knowledge Diff Engine™
+            </span>
+
+            <h2>Comparación de versiones</h2>
+
+            <p>
+                Revisa cómo evolucionó el contenido editorial.
+            </p>
+        </div>
+
+        <div class="knowledge-diff-header-actions">
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="swapDiffVersionsButton">
+                Intercambiar
+            </button>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="closeDiffButton">
+                Cerrar comparación
+            </button>
+
+        </div>
+
+    </header>
+
+    <div id="knowledgeDiffLoading"
+         class="knowledge-diff-state">
+        Preparando comparación…
+    </div>
+
+    <div id="knowledgeDiffError"
+         class="knowledge-diff-state knowledge-diff-error"
+         role="alert"
+         hidden>
+    </div>
+
+    <div id="knowledgeDiffContent"
+         hidden>
+
+        <div class="knowledge-diff-versions">
+
+            <article class="knowledge-diff-version-card">
+
+                <span>Versión base</span>
+
+                <strong id="diffBaseVersion">
+                    v—
+                </strong>
+
+                <p id="diffBaseTitle">
+                    Sin título
+                </p>
+
+            </article>
+
+            <div class="knowledge-diff-direction"
+                 aria-hidden="true">
+                →
+            </div>
+
+            <article class="knowledge-diff-version-card">
+
+                <span>Versión objetivo</span>
+
+                <strong id="diffTargetVersion">
+                    v—
+                </strong>
+
+                <p id="diffTargetTitle">
+                    Sin título
+                </p>
+
+            </article>
+
+        </div>
+
+        <div class="knowledge-diff-summary">
+
+            <span class="knowledge-diff-summary-added">
+                <strong id="diffAddedCount">+0</strong>
+                líneas agregadas
+            </span>
+
+            <span class="knowledge-diff-summary-removed">
+                <strong id="diffRemovedCount">−0</strong>
+                líneas eliminadas
+            </span>
+
+            <span>
+                <strong id="diffUnchangedCount">0</strong>
+                sin cambios
+            </span>
+
+        </div>
+
+        <section class="knowledge-diff-metadata">
+
+            <header>
+                <span class="panel-eyebrow">
+                    Metadatos
+                </span>
+
+                <h3>Cambios editoriales</h3>
+            </header>
+
+            <div id="diffMetadataChanges"
+                 class="knowledge-diff-metadata-grid">
+            </div>
+
+        </section>
+
+        <div class="knowledge-diff-toolbar">
+
+            <strong>Contenido</strong>
+
+            <div class="knowledge-diff-mode-switch">
+
+                <button type="button"
+                        class="knowledge-diff-mode-button is-active"
+                        data-diff-mode="unified"
+                        aria-pressed="true">
+                    Unificado
+                </button>
+
+                <button type="button"
+                        class="knowledge-diff-mode-button"
+                        data-diff-mode="side-by-side"
+                        aria-pressed="false">
+                    Lado a lado
+                </button>
+
+            </div>
+
+        </div>
+
+        <section id="knowledgeDiffUnifiedView"
+                 class="knowledge-diff-code">
+
+            <header class="knowledge-diff-code-header">
+                <span>Línea base</span>
+                <span>Línea objetivo</span>
+                <strong>Cambio</strong>
+            </header>
+
+            <div id="knowledgeDiffUnifiedBody">
+            </div>
+
+        </section>
+
+        <section id="knowledgeDiffSideBySideView"
+                 class="knowledge-diff-side-by-side"
+                 hidden>
+
+            <header>
+                <strong id="diffSideBaseLabel">
+                    Versión base
+                </strong>
+
+                <strong id="diffSideTargetLabel">
+                    Versión objetivo
+                </strong>
+            </header>
+
+            <div id="knowledgeDiffSideBySideBody">
+            </div>
+
+        </section>
+
+    </div>
+
+</section>
 <section class="workspace-toolbar">
 
     <div class="workspace-toolbar-primary"
@@ -518,9 +730,8 @@
 </dialog>
 </main>
 
-<script defer
+<script type="module"
         th:src="@{/assets/js/admin/knowledge/detail.js}">
 </script>
-
 </body>
 </html>

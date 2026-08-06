@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Knowledge Engine
+    </title>
+
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/dashboard.css}">
+</head>
+
+<body>
+
+<main class="knowledge-dashboard">
+
+    <header class="knowledge-dashboard-header">
+
+        <div>
+            <p class="dashboard-eyebrow">
+                WebEmpresarial™
+            </p>
+
+            <h1 th:text="${pageTitle}">
+                Knowledge Engine
+            </h1>
+
+            <p th:text="${pageDescription}">
+                Gobernanza y administración del conocimiento
+            </p>
+        </div>
+
+        <div class="dashboard-actions">
+
+            <a href="/admin/knowledge/library"
+               class="button button-secondary">
+                Abrir biblioteca
+            </a>
+
+            <a href="/admin/knowledge/new"
+               class="button button-primary">
+                Nuevo conocimiento
+            </a>
+
+        </div>
+
+    </header>
+
+    <section class="dashboard-metrics"
+             aria-label="Métricas de conocimiento">
+
+        <article class="dashboard-metric">
+            <span>Objetos</span>
+            <strong id="knowledgeDashboardTotal">—</strong>
+            <small>Conocimiento registrado</small>
+        </article>
+
+        <article class="dashboard-metric">
+            <span>Borradores</span>
+            <strong id="knowledgeDashboardDraft">—</strong>
+            <small>En preparación</small>
+        </article>
+
+        <article class="dashboard-metric">
+            <span>En revisión</span>
+            <strong id="knowledgeDashboardReview">—</strong>
+            <small>Pendientes de validación</small>
+        </article>
+
+        <article class="dashboard-metric">
+            <span>Publicados</span>
+            <strong id="knowledgeDashboardPublished">—</strong>
+            <small>Conocimiento vigente</small>
+        </article>
+
+    </section>
+
+    <section class="dashboard-grid">
+
+        <article class="dashboard-panel">
+
+            <header class="dashboard-panel-header">
+                <div>
+                    <span>Acciones rápidas</span>
+                    <h2>Administrar conocimiento</h2>
+                </div>
+            </header>
+
+            <div class="dashboard-quick-actions">
+
+                <a href="/admin/knowledge/new"
+                   class="dashboard-action-card">
+                    <strong>Nuevo conocimiento</strong>
+                    <span>
+                        Registra un objeto y su versión inicial.
+                    </span>
+                </a>
+
+                <a href="/admin/knowledge/library"
+                   class="dashboard-action-card">
+                    <strong>Biblioteca</strong>
+                    <span>
+                        Busca, filtra y consulta conocimiento.
+                    </span>
+                </a>
+
+                <a href="/admin/knowledge/library?status=IN_REVIEW"
+                   class="dashboard-action-card">
+                    <strong>Revisiones</strong>
+                    <span>
+                        Consulta contenido pendiente de aprobación.
+                    </span>
+                </a>
+
+                <a href="/admin/knowledge/library?status=PUBLISHED"
+                   class="dashboard-action-card">
+                    <strong>Publicados</strong>
+                    <span>
+                        Consulta el conocimiento vigente.
+                    </span>
+                </a>
+
+            </div>
+
+        </article>
+
+        <article class="dashboard-panel">
+
+            <header class="dashboard-panel-header">
+                <div>
+                    <span>Knowledge Engine™</span>
+                    <h2>Capacidades activas</h2>
+                </div>
+            </header>
+
+            <ul class="dashboard-capabilities">
+                <li>Knowledge Library</li>
+                <li>Semantic Versioning</li>
+                <li>Knowledge Reader</li>
+                <li>Historical Version Viewer</li>
+                <li>Knowledge Diff Engine</li>
+                <li>Editorial Lifecycle</li>
+            </ul>
+
+        </article>
+
+    </section>
+
+</main>
+
+<script type="module"
+        th:src="@{/assets/js/admin/knowledge/dashboard.js}">
+</script>
+
+</body>
+</html>

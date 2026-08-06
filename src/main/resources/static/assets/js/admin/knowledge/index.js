@@ -85,23 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	        }
 	);
 	
-    function getCsrfHeaders() {
-        const tokenElement =
-                document.querySelector('meta[name="_csrf"]');
-
-        const headerElement =
-                document.querySelector(
-                        'meta[name="_csrf_header"]'
-                );
-
-        if (!tokenElement || !headerElement) {
-            return {};
-        }
-
-        return {
-            [headerElement.content]: tokenElement.content
-        };
-    }
 
     function normalizeOptional(value) {
         if (value === null || value === undefined) {
@@ -115,94 +98,127 @@ document.addEventListener("DOMContentLoaded", () => {
                 : null;
     }
 
-    function buildSearchRequest() {
-        return {
-            code: null,
-            typeCode:
-                    normalizeOptional(
-                            elements.typeCode?.value
-                    ),
-            domain:
-                    normalizeOptional(
-                            elements.domain?.value
-                    ),
-            classification:
-                    normalizeOptional(
-                            elements.classification?.value
-                    ),
-            riskLevel:
-                    normalizeOptional(
-                            elements.riskLevel?.value
-                    ),
-            status:
-                    normalizeOptional(
-                            elements.status?.value
-                    ),
-            contextType: null,
-            contextReference: null,
-            minimumConfidence: null,
-            effectiveAt: null,
-            text:
-                    normalizeOptional(
-                            elements.text?.value
-                    ),
-            page: state.page,
-            size: state.size
-        };
-    }
+	function buildSearchParams() {
 
-    async function searchKnowledge() {
-        if (state.loading) {
-            return;
-        }
+	    const params =
+	            new URLSearchParams();
 
-        state.loading = true;
-        showLoading();
+	    const values = {
+	        text:
+	                normalizeOptional(
+	                        elements.text?.value
+	                ),
 
-        try {
-            const response = await fetch(
-                    "/api/knowledge/search",
-                    {
-                        method: "POST",
-                        credentials: "same-origin",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                            ...getCsrfHeaders()
-                        },
-                        body: JSON.stringify(
-                                buildSearchRequest()
-                        )
-                    }
-            );
+	        status:
+	                normalizeOptional(
+	                        elements.status?.value
+	                ),
 
-            const payload = await parseResponse(response);
+	        domain:
+	                normalizeOptional(
+	                        elements.domain?.value
+	                ),
 
-            if (!response.ok) {
-                throw new Error(
-                        payload?.message
-                        || payload?.error
-                        || "No fue posible consultar el conocimiento"
-                );
-            }
+	        typeCode:
+	                normalizeOptional(
+	                        elements.typeCode?.value
+	                ),
 
-            renderPage(payload);
+	        classification:
+	                normalizeOptional(
+	                        elements.classification?.value
+	                ),
 
-        } catch (error) {
-            console.error(
-                    "Knowledge search failed",
-                    error
-            );
+	        riskLevel:
+	                normalizeOptional(
+	                        elements.riskLevel?.value
+	                ),
 
-            showError(
-                    error.message
-                    || "Ocurrió un error inesperado"
-            );
+	        page:
+	                state.page,
 
-        } finally {
-            state.loading = false;
-        }
-    }
+	        size:
+	                state.size
+	    };
+
+	    Object.entries(values)
+	            .forEach(([key, value]) => {
+
+	                if (value !== null
+	                        && value !== undefined
+	                        && value !== "") {
+
+	                    params.append(
+	                            key,
+	                            value
+	                    );
+	                }
+	            });
+
+	    return params;
+	}
+
+	async function searchKnowledge() {
+
+	    if (state.loading) {
+	        return;
+	    }
+
+	    state.loading = true;
+
+	    showLoading();
+
+	    try {
+
+	        const response =
+	                await fetch(
+
+	                        `/api/knowledge?${
+	                                buildSearchParams()
+	                                        .toString()
+	                        }`,
+
+	                        {
+	                            method: "GET",
+	                            credentials: "same-origin",
+	                            headers: {
+	                                "Accept":
+	                                        "application/json"
+	                            }
+	                        }
+	                );
+
+	        const payload =
+	                await parseResponse(response);
+
+	        if (!response.ok) {
+
+	            throw new Error(
+	                    payload?.message
+	                    || payload?.error
+	                    || "No fue posible consultar el conocimiento"
+	            );
+	        }
+
+	        renderPage(payload);
+
+	    } catch (error) {
+
+	        console.error(
+	                "Knowledge search failed",
+	                error
+	        );
+
+	        showError(
+	                error.message
+	                || "Ocurrió un error inesperado"
+	        );
+
+	    } finally {
+
+	        state.loading = false;
+	    }
+	}
 
     async function parseResponse(response) {
         const contentType =

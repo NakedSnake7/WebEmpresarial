@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle}">
+        Versión histórica
+    </title>
+
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/version-detail.css}">
+</head>
+
+<body>
+
+<main class="version-detail-page"
+      th:attr="
+        data-knowledge-id=${knowledgeObjectId},
+        data-version-id=${versionId}">
+
+    <header class="version-detail-navigation">
+
+        <a class="version-detail-back"
+           th:href="@{|/admin/knowledge/${knowledgeObjectId}|}">
+            ← Volver al workspace
+        </a>
+
+        <div class="version-detail-actions">
+
+            <a class="button button-secondary"
+               th:href="@{|/admin/knowledge/${knowledgeObjectId}/versions/new|}">
+                Nueva versión
+            </a>
+
+        </div>
+
+    </header>
+
+    <div id="versionDetailLoading"
+         class="version-detail-state">
+        Cargando versión…
+    </div>
+
+    <div id="versionDetailError"
+         class="version-detail-state version-detail-error"
+         role="alert"
+         hidden>
+    </div>
+
+    <div id="versionDetailContent"
+         hidden>
+
+        <section class="version-detail-hero">
+
+            <div>
+
+                <div class="version-detail-badges">
+
+                    <span class="version-code"
+                          id="versionSemanticVersion">
+                        —
+                    </span>
+
+                    <span class="version-badge version-badge-current"
+                          id="versionCurrentBadge"
+                          hidden>
+                        Vigente
+                    </span>
+
+                    <span class="version-badge version-badge-latest"
+                          id="versionLatestBadge"
+                          hidden>
+                        Última
+                    </span>
+
+                    <span class="version-badge version-badge-history"
+                          id="versionHistoricalBadge"
+                          hidden>
+                        Histórica
+                    </span>
+
+                </div>
+
+                <h1 id="versionTitle">
+                    Sin título
+                </h1>
+
+                <p id="versionSummary">
+                    Sin resumen
+                </p>
+
+            </div>
+
+            <aside class="version-confidence">
+
+                <span>Confianza</span>
+
+                <strong id="versionConfidence">
+                    —
+                </strong>
+
+            </aside>
+
+        </section>
+
+        <section class="version-detail-grid">
+
+            <article class="version-document-panel">
+
+                <header class="version-panel-header">
+
+                    <div>
+                        <span>Contenido</span>
+                        <h2>Documento de versión</h2>
+                    </div>
+
+                    <span id="versionContentFormat">
+                        —
+                    </span>
+
+                </header>
+
+                <div id="versionRenderedContent"
+                     class="version-rendered-content">
+                </div>
+
+            </article>
+
+            <aside class="version-detail-sidebar">
+
+                <article class="version-metadata-panel">
+
+                    <header class="version-panel-header">
+
+                        <div>
+                            <span>Auditoría</span>
+                            <h2>Información editorial</h2>
+                        </div>
+
+                    </header>
+
+                    <dl class="version-metadata">
+
+                        <div>
+                            <dt>Creada</dt>
+                            <dd id="versionCreatedAt">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Actualizada</dt>
+                            <dd id="versionUpdatedAt">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Creada por</dt>
+                            <dd id="versionCreatedBy">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Actualizada por</dt>
+                            <dd id="versionUpdatedBy">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Fuente</dt>
+                            <dd id="versionSourceReference">—</dd>
+                        </div>
+
+                    </dl>
+
+                </article>
+
+                <article class="version-warning-panel">
+
+                    <strong>Vista de solo lectura</strong>
+
+                    <p>
+                        Esta pantalla representa una versión editorial
+                        específica y no modifica la versión vigente.
+                    </p>
+
+                </article>
+
+            </aside>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script type="module"
+        th:src="@{/assets/js/admin/knowledge/version-detail.js}">
+</script>
+
+</body>
+</html>

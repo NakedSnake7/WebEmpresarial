@@ -38,6 +38,114 @@
             <span class="sidebar-icon">💼</span>
             <span class="sidebar-text">Billing</span>
         </a>
+        
+  <!-- ======================================================
+     KNOWLEDGE ENGINE
+     ====================================================== -->
+
+<div class="sidebar-section sidebar-text">
+    <span>🧠</span>
+    <span>Knowledge Engine</span>
+</div>
+
+<a href="/admin/knowledge"
+   class="sidebar-link"
+   th:classappend="${
+        currentPath != null
+        and currentPath == '/admin/knowledge'
+   } ? ' active' : ''">
+
+    <span class="sidebar-icon">◫</span>
+
+    <span class="sidebar-text flex-grow-1">
+        Dashboard
+    </span>
+</a>
+
+<a href="/admin/knowledge/library"
+   class="sidebar-link"
+   th:classappend="${
+        currentPath != null
+        and (
+            currentPath == '/admin/knowledge/library'
+            or (
+                currentPath.startsWith('/admin/knowledge/')
+                and !currentPath.endsWith('/new')
+                and !currentPath.contains('/versions/')
+            )
+        )
+   } ? ' active' : ''">
+
+    <span class="sidebar-icon">📚</span>
+
+    <span class="sidebar-text flex-grow-1">
+        Biblioteca
+    </span>
+</a>
+
+<a href="/admin/knowledge/new"
+   class="sidebar-link"
+   th:classappend="${
+        currentPath != null
+        and currentPath == '/admin/knowledge/new'
+   } ? ' active' : ''">
+
+    <span class="sidebar-icon">✚</span>
+
+    <span class="sidebar-text flex-grow-1">
+        Nuevo conocimiento
+    </span>
+</a>
+
+<a href="/admin/knowledge/library?status=IN_REVIEW"
+   class="sidebar-link"
+   th:classappend="${
+        currentPath != null
+        and currentPath == '/admin/knowledge/library'
+        and param.status != null
+        and param.status[0] == 'IN_REVIEW'
+   } ? ' active' : ''">
+
+    <span class="sidebar-icon">🔎</span>
+
+    <span class="sidebar-text flex-grow-1">
+        Revisiones
+    </span>
+
+    <span th:if="${
+              sidebarBadges != null
+              and sidebarBadges.containsKey(
+                  '/admin/knowledge/review'
+              )
+              and sidebarBadges.get(
+                  '/admin/knowledge/review'
+              ) > 0
+          }"
+          class="badge rounded-pill bg-danger ms-auto"
+          th:text="${
+              sidebarBadges.get(
+                  '/admin/knowledge/review'
+              )
+          }">
+        0
+    </span>
+</a>
+
+<a href="/admin/knowledge/library?status=PUBLISHED"
+   class="sidebar-link"
+   th:classappend="${
+        currentPath != null
+        and currentPath == '/admin/knowledge/library'
+        and param.status != null
+        and param.status[0] == 'PUBLISHED'
+   } ? ' active' : ''">
+
+    <span class="sidebar-icon">✓</span>
+
+    <span class="sidebar-text flex-grow-1">
+        Publicados
+    </span>
+</a>      
 
 <th:block th:each="section : ${sidebarSections}">
 

@@ -1,6 +1,6 @@
 package com.webempresarial.store.knowledge.api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;   
 import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.knowledge.api.dto.KnowledgeDetailResponse;
@@ -11,6 +11,8 @@ import com.webempresarial.store.knowledge.api.exception.KnowledgeApiExceptionHan
 import com.webempresarial.store.knowledge.api.exception.KnowledgeObjectNotFoundException;
 import com.webempresarial.store.knowledge.api.service.KnowledgeDetailApiService;
 import com.webempresarial.store.knowledge.api.service.KnowledgeSearchApiService;
+import com.webempresarial.store.knowledge.api.service.KnowledgeVersionDetailApiService;
+import com.webempresarial.store.knowledge.api.service.KnowledgeVersionQueryApiService;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeClassification;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeContextType;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeDomain;
@@ -30,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -43,16 +44,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
-        controllers = KnowledgeSearchController.class
+        controllers = KnowledgeQueryController.class
 )
 @Import({
         SecurityConfig.class,
@@ -74,6 +73,12 @@ class KnowledgeQueryControllerMockMvcTest {
 
     @MockitoBean
     private KnowledgeDetailApiService knowledgeDetailApiService;
+
+    @MockitoBean
+    private KnowledgeVersionQueryApiService knowledgeVersionQueryApiService;
+
+    @MockitoBean
+    private KnowledgeVersionDetailApiService knowledgeVersionDetailApiService;
 
     @MockitoBean
     private StoreResolver storeResolver;
@@ -142,74 +147,84 @@ class KnowledgeQueryControllerMockMvcTest {
         ).thenReturn(serviceResponse);
 
         mockMvc.perform(
-                        post("/api/knowledge/search")
-                                .with(
-                                        user(ACTOR)
-                                                .roles("STORE_ADMIN")
-                                )
-                                .with(csrf())
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper.writeValueAsString(
-                                                request
-                                        )
-                                )
-                )
-                .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.content")
-                                .isArray()
-                )
-                .andExpect(
-                        jsonPath("$.content.length()")
-                                .value(1)
-                )
-                .andExpect(
-                        jsonPath("$.content[0].id")
-                                .value(101)
-                )
-                .andExpect(
-                        jsonPath("$.content[0].code")
-                                .value("KS-901")
-                )
-                .andExpect(
-                        jsonPath("$.content[0].status")
-                                .value("PUBLISHED")
-                )
-                .andExpect(
-                        jsonPath("$.content[0].semanticVersion")
-                                .value("1.0.0")
-                )
-                .andExpect(
-                        jsonPath("$.page")
-                                .value(0)
-                )
-                .andExpect(
-                        jsonPath("$.size")
-                                .value(20)
-                )
-                .andExpect(
-                        jsonPath("$.totalElements")
-                                .value(1)
-                )
-                .andExpect(
-                        jsonPath("$.totalPages")
-                                .value(1)
-                )
-                .andExpect(
-                        jsonPath("$.first")
-                                .value(true)
-                )
-                .andExpect(
-                        jsonPath("$.last")
-                                .value(true)
-                )
-                .andExpect(
-                        jsonPath("$.empty")
-                                .value(false)
-                );
+                get("/api/knowledge")
+                        .with(
+                                user(ACTOR)
+                                        .roles("STORE_ADMIN")
+                        )
+                        .param(
+                                "domain",
+                                request.domain().name()
+                        )
+                        .param(
+                                "status",
+                                request.status().name()
+                        )
+                        .param(
+                                "minimumConfidence",
+                                request.minimumConfidence()
+                                        .toPlainString()
+                        )
+                        .param(
+                                "effectiveAt",
+                                request.effectiveAt()
+                                        .toString()
+                        )
+                        .param(
+                                "text",
+                                request.text()
+                        )
+                        .param(
+                                "page",
+                                String.valueOf(request.page())
+                        )
+                        .param(
+                                "size",
+                                String.valueOf(request.size())
+                        )
+        )
+        .andExpect(status().isOk())
+        .andExpect(
+                jsonPath("$.content").isArray()
+        )
+        .andExpect(
+                jsonPath("$.content.length()").value(1)
+        )
+        .andExpect(
+                jsonPath("$.content[0].id").value(101)
+        )
+        .andExpect(
+                jsonPath("$.content[0].code").value("KS-901")
+        )
+        .andExpect(
+                jsonPath("$.content[0].status")
+                        .value("PUBLISHED")
+        )
+        .andExpect(
+                jsonPath("$.content[0].semanticVersion")
+                        .value("1.0.0")
+        )
+        .andExpect(
+                jsonPath("$.page").value(0)
+        )
+        .andExpect(
+                jsonPath("$.size").value(20)
+        )
+        .andExpect(
+                jsonPath("$.totalElements").value(1)
+        )
+        .andExpect(
+                jsonPath("$.totalPages").value(1)
+        )
+        .andExpect(
+                jsonPath("$.first").value(true)
+        )
+        .andExpect(
+                jsonPath("$.last").value(true)
+        )
+        .andExpect(
+                jsonPath("$.empty").value(false)
+        );
 
         verify(knowledgeSearchApiService)
                 .search(
@@ -221,43 +236,22 @@ class KnowledgeQueryControllerMockMvcTest {
     void shouldReturn400WhenSearchRequestIsInvalid()
             throws Exception {
 
-        KnowledgeSearchRequest invalidRequest =
-                new KnowledgeSearchRequest(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        new BigDecimal("1.5000"),
-                        null,
-                        null,
-                        -1,
-                        101
-                );
-
         mockMvc.perform(
-                        post("/api/knowledge/search")
+                        get("/api/knowledge")
                                 .with(
                                         user(ACTOR)
                                                 .roles("STORE_ADMIN")
                                 )
-                                .with(csrf())
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
+                                .param(
+                                        "minimumConfidence",
+                                        "1.5000"
                                 )
-                                .content(
-                                        objectMapper.writeValueAsString(
-                                                invalidRequest
-                                        )
-                                )
+                                .param("page", "-1")
+                                .param("size", "101")
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(
-                        jsonPath("$.status")
-                                .value(400)
+                        jsonPath("$.status").value(400)
                 )
                 .andExpect(
                         jsonPath("$.error")
@@ -271,63 +265,75 @@ class KnowledgeQueryControllerMockMvcTest {
                 )
                 .andExpect(
                         jsonPath("$.path")
-                                .value("/api/knowledge/search")
+                                .value("/api/knowledge")
                 )
                 .andExpect(
-                        jsonPath("$.violations")
-                                .isArray()
+                        jsonPath("$.violations").isArray()
                 )
                 .andExpect(
-                        jsonPath("$.violations")
-                                .isNotEmpty()
+                        jsonPath("$.violations").isNotEmpty()
                 );
     }
     
     @Test
-    void shouldRejectKnowledgeSearchWithoutCsrf()
+    void shouldAllowAuthenticatedKnowledgeSearchWithoutCsrf()
             throws Exception {
 
+        Store store = createStore();
+
+        KnowledgePageResponse<KnowledgeSummaryResponse> response =
+                new KnowledgePageResponse<>(
+                        List.of(),
+                        0,
+                        20,
+                        0L,
+                        0,
+                        true,
+                        true,
+                        true
+                );
+
+        when(storeResolver.getCurrentStore(any()))
+                .thenReturn(store);
+
+        when(
+                knowledgeSearchApiService.search(
+                        eq(store.getId()),
+                        any(KnowledgeSearchRequest.class)
+                )
+        ).thenReturn(response);
+
         mockMvc.perform(
-                        post("/api/knowledge/search")
+                        get("/api/knowledge")
                                 .with(
                                         user(ACTOR)
                                                 .roles("STORE_ADMIN")
                                 )
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper.writeValueAsString(
-                                                createSearchRequest()
-                                        )
-                                )
+                                .param("page", "0")
+                                .param("size", "20")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.content").isArray()
+                );
     }
     
     @Test
     void shouldRejectUnauthenticatedKnowledgeSearch()
             throws Exception {
 
-        mockMvc.perform(
-                        post("/api/knowledge/search")
-                                .with(csrf())
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper.writeValueAsString(
-                                                createSearchRequest()
-                                        )
-                                )
+    	mockMvc.perform(
+                get("/api/knowledge")
+                        .param("page", "0")
+                        .param("size", "20")
+        )
+        .andExpect(status().is3xxRedirection())
+        .andExpect(
+                header().string(
+                        "Location",
+                        "http://localhost/admin/login"
                 )
-                .andExpect(status().is3xxRedirection())
-                .andExpect(
-                        header().string(
-                                "Location",
-                                "http://localhost/admin/login"
-                        )
-                );
+        );
     }
     
     @Test
