@@ -31,7 +31,7 @@ import com.webempresarial.store.knowledge.domain.enums.KnowledgeTypeCode;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
-import com.webempresarial.store.service.InventoryPersistentAlertService;
+import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
 import com.webempresarial.store.service.SubscriptionAccessService;

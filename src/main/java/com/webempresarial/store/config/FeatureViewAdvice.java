@@ -3,7 +3,7 @@ package com.webempresarial.store.config;
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.model.Store;
-import com.webempresarial.store.service.InventoryPersistentAlertService;
+import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;

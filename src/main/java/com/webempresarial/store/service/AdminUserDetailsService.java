@@ -1,6 +1,6 @@
 package com.webempresarial.store.service;
 
-import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.AdminUser; 
 import com.webempresarial.store.repository.AdminUserRepository;
 
 import org.springframework.security.core.userdetails.User;

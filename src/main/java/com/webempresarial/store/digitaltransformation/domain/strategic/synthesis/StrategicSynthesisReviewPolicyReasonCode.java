@@ -1,0 +1,24 @@
+package com.webempresarial.store.digitaltransformation.domain.strategic.synthesis;
+
+public enum StrategicSynthesisReviewPolicyReasonCode {
+
+    REVIEW_AUTHORIZED,
+
+    SYNTHESIS_NOT_REVIEWABLE,
+
+    AI_SYNTHESIS_REQUIRES_HUMAN,
+
+    SYSTEM_CANNOT_APPROVE_AI_SYNTHESIS,
+
+    SYSTEM_CANNOT_REJECT_AI_SYNTHESIS,
+
+    HUMAN_CONSULTANT_AUTHORIZED,
+
+    PROJECT_OWNER_AUTHORIZED,
+
+    SYSTEM_AUTHORIZED_FOR_DETERMINISTIC_SYNTHESIS,
+
+    LOW_CONFIDENCE_REQUIRES_HUMAN,
+
+    INVALID_REVIEWER
+}

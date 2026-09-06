@@ -1,9 +1,9 @@
 package com.webempresarial.store.controller;
 
-import com.webempresarial.store.model.Order;
+import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.Cliente;
-import com.webempresarial.store.service.OrderService;
+import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.service.UserService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;

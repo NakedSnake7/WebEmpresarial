@@ -1,0 +1,28 @@
+package com.webempresarial.store.digitaltransformation.domain.strategic.synthesis;
+
+public enum StrategicSynthesisGateReasonCode {
+
+    STRATEGIC_CHAIN_COMPLETE,
+
+    STRATEGIC_CHAIN_INCOMPLETE,
+
+    STRATEGIC_CHAIN_AMBIGUOUS,
+
+    STRATEGIC_CHAIN_INVALID,
+
+    EVIDENCE_FULLY_SUPPORTED,
+
+    EVIDENCE_MOSTLY_SUPPORTED,
+
+    EVIDENCE_PARTIALLY_SUPPORTED,
+
+    EVIDENCE_WEAKLY_SUPPORTED,
+
+    EVIDENCE_UNSUPPORTED,
+
+    ARTIFACT_REQUIRES_REVIEW,
+
+    ARTIFACT_NOT_VERIFIED,
+
+    AUTO_SYNTHESIS_ALLOWED
+}

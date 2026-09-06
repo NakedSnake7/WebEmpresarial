@@ -2,10 +2,10 @@ package com.webempresarial.store.service;
 
 import java.math.BigDecimal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.webempresarial.store.model.ProductoVariante;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ProductoVarianteRepository;
 
 import jakarta.transaction.Transactional;
@@ -13,15 +13,29 @@ import jakarta.transaction.Transactional;
 @Service
 public class ProductoVarianteService {
 
-    @Autowired
-    private ProductoVarianteRepository repository;
+    private final ProductoVarianteRepository repository;
+
+    public ProductoVarianteService(
+            ProductoVarianteRepository repository
+    ) {
+        this.repository = repository;
+    }
 
     @Transactional
-    public void actualizarPrecio(Long id, BigDecimal precio) {
+    public void actualizarPrecio(
+            Long id,
+            BigDecimal precio,
+            Store store
+    ) {
 
-        ProductoVariante v = repository.findById(id)
-                .orElseThrow();
+        ProductoVariante variante =
+                repository.findByIdAndStore(id, store)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Variante no encontrada"
+                                )
+                        );
 
-        v.setPrecio(precio);
+        variante.setPrecio(precio);
     }
 }

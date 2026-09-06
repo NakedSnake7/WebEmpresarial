@@ -239,6 +239,12 @@ public class TraceabilityNode {
             String reason,
             String reviewedBy
     ) {
+        if (status == TraceabilityNodeStatus.REJECTED) {
+            throw new IllegalStateException(
+                    "El nodo ya se encuentra rechazado"
+            );
+        }
+
         if (status == TraceabilityNodeStatus.ARCHIVED
                 || status == TraceabilityNodeStatus.SUPERSEDED) {
             throw new IllegalStateException(
@@ -275,6 +281,12 @@ public class TraceabilityNode {
     }
 
     public void archive() {
+        if (status == TraceabilityNodeStatus.ARCHIVED) {
+            throw new IllegalStateException(
+                    "El nodo ya se encuentra archivado"
+            );
+        }
+
         this.status = TraceabilityNodeStatus.ARCHIVED;
         this.requiresReview = false;
     }
@@ -377,6 +389,36 @@ public class TraceabilityNode {
         if (status == null) {
             this.status = TraceabilityNodeStatus.DRAFT;
         }
+    }
+    
+    public void requireReview() {
+        if (status == TraceabilityNodeStatus.REJECTED
+                || status == TraceabilityNodeStatus.SUPERSEDED
+                || status == TraceabilityNodeStatus.ARCHIVED) {
+            throw new IllegalStateException(
+                    "El nodo no puede enviarse a revisión desde el estado " +
+                    status
+            );
+        }
+
+        this.requiresReview = true;
+
+        if (status == TraceabilityNodeStatus.VERIFIED) {
+            this.status = TraceabilityNodeStatus.ACTIVE;
+        }
+    }
+    
+    public void markSupersededFromSource() {
+        if (status != TraceabilityNodeStatus.DRAFT
+                && status != TraceabilityNodeStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "Solo un nodo DRAFT o ACTIVE puede ser sustituido " +
+                    "directamente por sincronización de fuente"
+            );
+        }
+
+        this.status = TraceabilityNodeStatus.SUPERSEDED;
+        this.requiresReview = false;
     }
 
     public Long getId() {

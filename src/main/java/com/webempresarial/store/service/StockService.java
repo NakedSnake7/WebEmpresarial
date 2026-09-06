@@ -1,39 +1,38 @@
 package com.webempresarial.store.service;
 
-import com.webempresarial.store.contracts.StockItem;
+import com.webempresarial.store.contracts.StockItem;   
 import com.webempresarial.store.exceptions.InsufficientStockException;
 import com.webempresarial.store.exceptions.ResourceNotFoundException;
-import com.webempresarial.store.model.InventoryMovementType;
-import com.webempresarial.store.model.Order;
-import com.webempresarial.store.model.OrderItem;
+import com.webempresarial.store.commerce.domain.inventory.InventoryMovementType;
+import com.webempresarial.store.commerce.application.inventory.InventoryMovementService;
+import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
+import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.OrderItem;
 import com.webempresarial.store.model.ProductoVariante;
 import com.webempresarial.store.model.Store;
-import com.webempresarial.store.repository.ProductoRepository;
-import com.webempresarial.store.repository.ProductoVarianteRepository;
+
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.webempresarial.store.commerce.application.inventory.InventoryStockGateway;
 
 import java.util.List;
 
 @Service
 public class StockService {
 
-    private final ProductoVarianteRepository varianteRepository;
-    private final ProductoRepository productoRepository;
+	private final InventoryStockGateway inventoryStockGateway;
     private final InventoryMovementService inventoryMovementService;
     private final InventoryPersistentAlertService
     persistentAlertService;
     
 
     public StockService(
-            ProductoVarianteRepository varianteRepository,
-            ProductoRepository productoRepository,
+            InventoryStockGateway inventoryStockGateway,
             InventoryMovementService inventoryMovementService,
             InventoryPersistentAlertService persistentAlertService
     ) {
-        this.varianteRepository = varianteRepository;
-        this.productoRepository = productoRepository;
+        this.inventoryStockGateway = inventoryStockGateway;
         this.inventoryMovementService = inventoryMovementService;
         this.persistentAlertService = persistentAlertService;
     }
@@ -60,17 +59,11 @@ public class StockService {
 
             if (item.getVarianteId() != null) {
 
-                ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(
-                                item.getVarianteId(),
-                                store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Variante no encontrada: "
-                                                + item.getVarianteId()
-                                )
-                        );
+            	ProductoVariante variante =
+            	        inventoryStockGateway.getVariantForUpdate(
+            	                item.getVarianteId(),
+            	                store
+            	        );
 
                 if (variante.getStock() < item.getQuantity()) {
                     throw new InsufficientStockException(
@@ -86,16 +79,10 @@ public class StockService {
                     );
                 }
 
-                var producto = productoRepository
-                        .findByIdForUpdate(
+                var producto =
+                        inventoryStockGateway.getProductForUpdate(
                                 item.getProductId(),
                                 store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Producto no encontrado: "
-                                                + item.getProductId()
-                                )
                         );
 
                 if (producto.getStockSimple()
@@ -148,16 +135,11 @@ public class StockService {
 
             if (item.getVariante() != null) {
 
-                ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(
-                                item.getVariante().getId(),
-                                store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Variante no encontrada"
-                                )
-                        );
+            	ProductoVariante variante =
+            	        inventoryStockGateway.getVariantForUpdate(
+            	                item.getVariante().getId(),
+            	                store
+            	        );
 
                 int stockBefore = variante.getStock();
                 int quantity = item.getQuantity();
@@ -172,7 +154,7 @@ public class StockService {
                         stockBefore - quantity;
 
                 variante.setStock(stockAfter);
-                varianteRepository.save(variante);
+                inventoryStockGateway.saveVariant(variante);
 
                 inventoryMovementService.record(
                         store,
@@ -201,15 +183,10 @@ public class StockService {
                     );
                 }
 
-                var producto = productoRepository
-                        .findByIdForUpdate(
+                var producto =
+                        inventoryStockGateway.getProductForUpdate(
                                 item.getProducto().getId(),
                                 store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Producto no encontrado"
-                                )
                         );
 
                 int stockBefore =
@@ -229,7 +206,7 @@ public class StockService {
                         stockBefore - quantity;
 
                 producto.setStockSimple(stockAfter);
-                productoRepository.save(producto);
+                inventoryStockGateway.saveProduct(producto);
 
                 inventoryMovementService.record(
                         store,
@@ -293,16 +270,11 @@ public class StockService {
 
             if (item.getVariante() != null) {
 
-                ProductoVariante variante = varianteRepository
-                        .findByIdForUpdate(
-                                item.getVariante().getId(),
-                                store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Variante no encontrada"
-                                )
-                        );
+            	ProductoVariante variante =
+            	        inventoryStockGateway.getVariantForUpdate(
+            	                item.getVariante().getId(),
+            	                store
+            	        );
 
                 int stockBefore =
                         variante.getStock();
@@ -314,7 +286,7 @@ public class StockService {
                         stockBefore + quantity;
 
                 variante.setStock(stockAfter);
-                varianteRepository.save(variante);
+                inventoryStockGateway.saveVariant(variante);
 
                 inventoryMovementService.record(
                         store,
@@ -344,15 +316,10 @@ public class StockService {
                     );
                 }
 
-                var producto = productoRepository
-                        .findByIdForUpdate(
+                var producto =
+                        inventoryStockGateway.getProductForUpdate(
                                 item.getProducto().getId(),
                                 store
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Producto no encontrado"
-                                )
                         );
 
                 int stockBefore =
@@ -365,7 +332,7 @@ public class StockService {
                         stockBefore + quantity;
 
                 producto.setStockSimple(stockAfter);
-                productoRepository.save(producto);
+                inventoryStockGateway.saveProduct(producto);
 
                 inventoryMovementService.record(
                         store,

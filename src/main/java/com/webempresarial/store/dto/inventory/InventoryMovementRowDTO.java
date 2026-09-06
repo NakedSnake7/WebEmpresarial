@@ -2,7 +2,7 @@ package com.webempresarial.store.dto.inventory;
 
 import java.time.LocalDateTime;
 
-import com.webempresarial.store.model.InventoryMovementType;
+import com.webempresarial.store.commerce.domain.inventory.InventoryMovementType;
 
 public record InventoryMovementRowDTO(
         Long id,

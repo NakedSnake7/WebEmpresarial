@@ -8,6 +8,9 @@ public enum ProvenanceAction {
     GENERATED,
     DERIVED,
     INFERRED,
+
+    SUBMITTED_FOR_REVIEW,
+
     REVIEWED,
     VERIFIED,
     REJECTED,

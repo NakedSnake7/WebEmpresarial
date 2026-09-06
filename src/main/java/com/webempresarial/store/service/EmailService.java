@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webempresarial.store.config.MailerSendConfig;
 import com.webempresarial.store.feature.runtime.TraceType;
 import com.webempresarial.store.feature.runtime.annotations.Trace;
-import com.webempresarial.store.model.Order;
-import com.webempresarial.store.model.OrderItem;
+import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.OrderItem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,0 +1,13 @@
+package com.webempresarial.store.digitaltransformation.domain.strategic.synthesis;
+
+public enum StrategicInterpretationConstraint {
+
+    PRESERVE_FACTUAL_MEANING,
+    PRESERVE_BUSINESS_PROBLEM,
+    PRESERVE_BUSINESS_OBJECTIVE,
+    PRESERVE_STRATEGIC_OPPORTUNITY,
+    DO_NOT_INTRODUCE_NEW_FACTS,
+    DO_NOT_INTRODUCE_NEW_OBJECTIVES,
+    DO_NOT_INTRODUCE_NEW_OPPORTUNITIES,
+    REQUIRE_SOURCE_ALIGNMENT
+}

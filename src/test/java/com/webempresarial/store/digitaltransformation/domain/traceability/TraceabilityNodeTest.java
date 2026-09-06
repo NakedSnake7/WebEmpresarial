@@ -92,4 +92,64 @@ class TraceabilityNodeTest {
                 false
         );
     }
+    @Test
+    void shouldReturnVerifiedNodeToActiveWhenReviewIsRequired() {
+        TransformationProject project =
+                TestSources.validProject();
+
+        TraceabilityNode node =
+                TraceabilityNode.create(
+                        project,
+                        "NODE-001",
+                        TraceabilityNodeType.OTHER,
+                        TraceabilityOrigin.MANUAL,
+                        "Nodo",
+                        null,
+                        "REF-001",
+                        "Test",
+                        false
+                );
+
+        node.verify("Jovani Amacende");
+
+        assertThat(node.getStatus())
+                .isEqualTo(
+                        TraceabilityNodeStatus.VERIFIED
+                );
+
+        node.requireReview();
+
+        assertThat(node.getStatus())
+                .isEqualTo(
+                        TraceabilityNodeStatus.ACTIVE
+                );
+
+        assertThat(node.isRequiresReview())
+                .isTrue();
+    }
+    @Test
+    void shouldSupersedeDraftNodeFromSource() {
+        TransformationProject project =
+                TestSources.validProject();
+
+        TraceabilityNode node =
+                TraceabilityNode.create(
+                        project,
+                        "NODE-001",
+                        TraceabilityNodeType.OTHER,
+                        TraceabilityOrigin.MANUAL,
+                        "Nodo",
+                        null,
+                        "REF-001",
+                        "Test",
+                        false
+                );
+
+        node.markSupersededFromSource();
+
+        assertThat(node.getStatus())
+                .isEqualTo(
+                        TraceabilityNodeStatus.SUPERSEDED
+                );
+    }
 }

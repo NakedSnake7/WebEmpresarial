@@ -1,6 +1,6 @@
 package com.webempresarial.store.dto.inventory;
 
-import com.webempresarial.store.model.InventoryMovementType;
+import com.webempresarial.store.commerce.domain.inventory.InventoryMovementType;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

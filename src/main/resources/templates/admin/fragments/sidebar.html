@@ -39,6 +39,37 @@
             <span class="sidebar-text">Billing</span>
         </a>
         
+        <!-- ======================================================
+     DIGITAL TRANSFORMATION
+     ====================================================== -->
+
+<div class="sidebar-section sidebar-text">
+
+    <span>🧭</span>
+
+    <span>
+        Digital Transformation
+    </span>
+
+</div>
+
+<a href="/admin/digital-transformation/projects"
+   class="sidebar-link"
+   th:classappend="${currentPath != null
+       and currentPath.startsWith('/admin/digital-transformation')}
+       ? ' active'
+       : ''">
+
+    <span class="sidebar-icon">
+        ◈
+    </span>
+
+    <span class="sidebar-text flex-grow-1">
+        Projects
+    </span>
+
+</a>
+        
   <!-- ======================================================
      KNOWLEDGE ENGINE
      ====================================================== -->

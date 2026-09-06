@@ -467,6 +467,41 @@ public class SourceEvidence {
         return normalized;
     }
 
+    public void ensureBelongsToProject(
+            TransformationProject expectedProject
+    ) {
+        Objects.requireNonNull(
+                expectedProject,
+                "El proyecto esperado es obligatorio"
+        );
+
+        TransformationProject evidenceProject =
+                this.project;
+
+        boolean sameProject;
+
+        if (evidenceProject != null
+                && evidenceProject.getId() != null
+                && expectedProject.getId() != null) {
+
+            sameProject =
+                    evidenceProject.getId()
+                            .equals(expectedProject.getId());
+
+        } else {
+            sameProject =
+                    evidenceProject == expectedProject;
+        }
+
+        if (!sameProject) {
+            throw new IllegalArgumentException(
+                    "La evidencia no pertenece al proyecto indicado"
+            );
+        }
+    }
+    
+    
+    
     @PrePersist
     void onCreate() {
         this.extractedAt = Instant.now();

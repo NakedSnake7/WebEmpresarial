@@ -56,4 +56,17 @@ public interface TraceabilityLinkRepository
     findAllByProjectIdAndRequiresReviewTrueOrderByCreatedAtAsc(
             Long projectId
     );
+    Optional<TraceabilityLink>
+    findByProjectIdAndSourceNodeIdAndTargetNodeIdAndRelationType(
+            Long projectId,
+            Long sourceNodeId,
+            Long targetNodeId,
+            TraceabilityRelationType relationType
+    );
+    List<TraceabilityLink>
+    findAllByProjectIdAndSourceNodeIdAndRelationType(
+            Long projectId,
+            Long sourceNodeId,
+            TraceabilityRelationType relationType
+    );
 }

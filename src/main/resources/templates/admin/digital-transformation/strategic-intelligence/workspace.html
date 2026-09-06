@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+          'Strategic Intelligence | WebEmpresarial',
+          ~{::content}
+      )}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="container-fluid strategic-intelligence-workspace">
+
+    <!-- ======================================================
+         HEADER
+         ====================================================== -->
+
+    <div class="si-page-header mb-4">
+
+        <div class="d-flex flex-column flex-lg-row
+                    justify-content-between
+                    align-items-lg-start
+                    gap-3">
+
+            <div>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                    <span class="badge rounded-pill
+                                 text-bg-dark
+                                 si-engine-badge">
+                        Digital Transformation Engine™
+                    </span>
+
+                    <span class="badge rounded-pill
+                                 text-bg-success">
+                        Strategic Intelligence
+                    </span>
+
+                </div>
+
+                <h1 class="fw-bold mb-2">
+                    Strategic Intelligence
+                </h1>
+
+                <p class="text-muted mb-0"
+                   th:text="${pageDescription}">
+                    Análisis, síntesis, evidencia y gobernanza estratégica
+                </p>
+
+            </div>
+
+
+            <div class="si-context-card">
+
+                <div class="si-context-item">
+
+                    <span>
+                        Project
+                    </span>
+
+                    <strong th:text="${projectId}">
+                        20
+                    </strong>
+
+                </div>
+
+                <div class="si-context-divider"></div>
+
+                <div class="si-context-item">
+
+                    <span>
+                        Finding
+                    </span>
+
+<strong th:text="${findingArtifactId != null
+        ? findingArtifactId
+        : '—'}">
+    —
+</strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    
+<div class="alert alert-success alert-dismissible fade show mb-4"
+     role="alert"
+     th:if="${successMessage != null}">
+
+    <div>
+        <strong>Success.</strong>
+
+        <span th:text="${successMessage}">
+            Operación completada correctamente.
+        </span>
+    </div>
+
+    <div class="small mt-1"
+         th:if="${generatedSynthesisId != null}">
+        Deterministic snapshot #
+        <strong th:text="${generatedSynthesisId}">
+            41
+        </strong>
+    </div>
+
+    <div class="small mt-1"
+         th:if="${generatedAiSynthesisId != null}">
+        AI snapshot #
+        <strong th:text="${generatedAiSynthesisId}">
+            42
+        </strong>
+    </div>
+
+    
+<div class="small mt-1"
+     th:if="${submittedSynthesisId != null}">
+    Review snapshot #
+    <strong th:text="${submittedSynthesisId}">
+        43
+    </strong>
+</div>
+
+<div class="small mt-1"
+     th:if="${reviewResultingStatus != null}">
+    Governance status:
+    <strong th:text="${reviewResultingStatus}">
+        APPROVED
+    </strong>
+</div>
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close">
+    </button>
+
+</div>
+    <!-- ======================================================
+         FINDING NAVIGATION
+         ====================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4"
+         th:if="${hasFindings}">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex
+                        flex-column
+                        flex-lg-row
+                        justify-content-between
+                        align-items-lg-end
+                        gap-3">
+
+                <div>
+                    <div class="si-section-kicker">
+                        Strategic Context
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Select finding
+                    </h4>
+
+                    <p class="text-muted small mb-0">
+                        Selecciona el hallazgo estratégico que deseas analizar.
+                    </p>
+                </div>
+
+                <form method="get"
+                      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence|}"
+                      class="si-finding-selector">
+
+                    <label for="findingArtifactId"
+                           class="form-label small text-muted">
+                        Finding
+                    </label>
+
+                    <div class="d-flex gap-2">
+
+                        <select id="findingArtifactId"
+                                name="findingArtifactId"
+                                class="form-select"
+                                required>
+
+                            <option value=""
+                                    th:selected="${findingArtifactId == null}">
+                                Selecciona un finding
+                            </option>
+
+                            <option th:each="finding : ${findings}"
+                                    th:value="${finding.id}"
+                                    th:selected="${findingArtifactId != null
+                                        and finding.id == findingArtifactId}"
+                                    th:text="${finding.code + ' — ' + finding.statement}">
+                                FND-001 — Strategic finding
+                            </option>
+
+                        </select>
+
+                        <button type="submit"
+                                class="btn btn-dark">
+                            Analyze
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         EMPTY PROJECT
+         ====================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4"
+         th:if="${!hasFindings}">
+
+        <div class="card-body p-5 text-center">
+
+            <div class="fs-1 mb-3">
+                🔎
+            </div>
+
+            <h4 class="fw-bold mb-2">
+                No strategic findings yet
+            </h4>
+
+            <p class="text-muted mb-0">
+                Este proyecto todavía no contiene findings
+                estratégicos disponibles.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         FINDING SELECTION REQUIRED
+         ====================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4"
+         th:if="${requiresFindingSelection}">
+
+        <div class="card-body p-5 text-center">
+
+            <div class="fs-1 mb-3">
+                🧭
+            </div>
+
+            <h4 class="fw-bold mb-2">
+                Select a finding to continue
+            </h4>
+
+            <p class="text-muted mb-0">
+                Este proyecto contiene varios findings.
+                Selecciona uno para cargar su cadena estratégica,
+                evidencia, síntesis y governance.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         STRATEGIC INTELLIGENCE STATE
+         ====================================================== -->
+
+    <th:block th:if="${strategicIntelligence != null}">
+    <!-- ======================================================
+         STRATEGIC CHAIN
+         ====================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex
+                        flex-column
+                        flex-md-row
+                        justify-content-between
+                        align-items-md-center
+                        gap-2
+                        mb-4">
+
+                <div>
+
+                    <div class="si-section-kicker">
+                        Strategic Chain
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Strategic reasoning path
+                    </h4>
+
+                    <p class="text-muted small mb-0">
+                        Trazabilidad desde el hallazgo hasta
+                        la oportunidad estratégica.
+                    </p>
+
+                </div>
+
+
+                <span class="badge rounded-pill si-status-badge"
+                      th:classappend="${strategicIntelligence.chain.complete}
+                            ? ' text-bg-success'
+                            : (${strategicIntelligence.chain.ambiguous}
+                                ? ' text-bg-warning'
+                                : ' text-bg-secondary')"
+                      th:text="${strategicIntelligence.chain.traversalStatus}">
+                    COMPLETE
+                </span>
+
+            </div>
+
+
+            <div class="si-chain">
+
+                <!-- FINDING -->
+
+                <article class="si-chain-node"
+                         th:classappend="${strategicIntelligence.chain.finding == null}
+                              ? ' si-chain-node-empty'
+                              : ''">
+
+                    <div class="si-chain-node-icon">
+                        🔎
+                    </div>
+
+                    <div class="si-chain-node-type">
+                        Finding
+                    </div>
+
+                    <div class="si-chain-node-code"
+                         th:text="${strategicIntelligence.chain.finding != null
+                            ? strategicIntelligence.chain.finding.code
+                            : 'Not available'}">
+                        FND-001
+                    </div>
+
+                    <p th:if="${strategicIntelligence.chain.finding != null}"
+                       th:text="${strategicIntelligence.chain.finding.statement}">
+                        Finding statement
+                    </p>
+
+                    <div class="si-artifact-meta"
+                         th:if="${strategicIntelligence.chain.finding != null}">
+
+                        <span th:text="${strategicIntelligence.chain.finding.confidence}">
+                            STRONGLY_SUPPORTED
+                        </span>
+
+                        <span th:text="${strategicIntelligence.chain.finding.status}">
+                            VERIFIED
+                        </span>
+
+                    </div>
+
+                </article>
+
+
+                <div class="si-chain-connector">
+                    →
+                </div>
+
+
+                <!-- PROBLEM -->
+
+                <article class="si-chain-node"
+                         th:classappend="${strategicIntelligence.chain.businessProblem == null}
+                              ? ' si-chain-node-empty'
+                              : ''">
+
+                    <div class="si-chain-node-icon">
+                        ⚠️
+                    </div>
+
+                    <div class="si-chain-node-type">
+                        Business Problem
+                    </div>
+
+                    <div class="si-chain-node-code"
+                         th:text="${strategicIntelligence.chain.businessProblem != null
+                            ? strategicIntelligence.chain.businessProblem.code
+                            : 'Not available'}">
+                        PRB-001
+                    </div>
+
+                    <p th:if="${strategicIntelligence.chain.businessProblem != null}"
+                       th:text="${strategicIntelligence.chain.businessProblem.statement}">
+                        Business problem
+                    </p>
+
+                    <div class="si-artifact-meta"
+                         th:if="${strategicIntelligence.chain.businessProblem != null}">
+
+                        <span th:text="${strategicIntelligence.chain.businessProblem.confidence}">
+                            STRONGLY_SUPPORTED
+                        </span>
+
+                        <span th:text="${strategicIntelligence.chain.businessProblem.status}">
+                            VERIFIED
+                        </span>
+
+                    </div>
+
+                </article>
+
+
+                <div class="si-chain-connector">
+                    →
+                </div>
+
+
+                <!-- OBJECTIVE -->
+
+                <article class="si-chain-node"
+                         th:classappend="${strategicIntelligence.chain.businessObjective == null}
+                              ? ' si-chain-node-empty'
+                              : ''">
+
+                    <div class="si-chain-node-icon">
+                        🎯
+                    </div>
+
+                    <div class="si-chain-node-type">
+                        Business Objective
+                    </div>
+
+                    <div class="si-chain-node-code"
+                         th:text="${strategicIntelligence.chain.businessObjective != null
+                            ? strategicIntelligence.chain.businessObjective.code
+                            : 'Not available'}">
+                        OBJ-001
+                    </div>
+
+                    <p th:if="${strategicIntelligence.chain.businessObjective != null}"
+                       th:text="${strategicIntelligence.chain.businessObjective.statement}">
+                        Business objective
+                    </p>
+
+                    <div class="si-artifact-meta"
+                         th:if="${strategicIntelligence.chain.businessObjective != null}">
+
+                        <span th:text="${strategicIntelligence.chain.businessObjective.confidence}">
+                            STRONGLY_SUPPORTED
+                        </span>
+
+                        <span th:text="${strategicIntelligence.chain.businessObjective.status}">
+                            VERIFIED
+                        </span>
+
+                    </div>
+
+                </article>
+
+
+                <div class="si-chain-connector">
+                    →
+                </div>
+
+
+                <!-- OPPORTUNITY -->
+
+                <article class="si-chain-node"
+                         th:classappend="${strategicIntelligence.chain.strategicOpportunity == null}
+                              ? ' si-chain-node-empty'
+                              : ''">
+
+                    <div class="si-chain-node-icon">
+                        💡
+                    </div>
+
+                    <div class="si-chain-node-type">
+                        Strategic Opportunity
+                    </div>
+
+                    <div class="si-chain-node-code"
+                         th:text="${strategicIntelligence.chain.strategicOpportunity != null
+                            ? strategicIntelligence.chain.strategicOpportunity.code
+                            : 'Not available'}">
+                        OPP-001
+                    </div>
+
+                    <p th:if="${strategicIntelligence.chain.strategicOpportunity != null}"
+                       th:text="${strategicIntelligence.chain.strategicOpportunity.statement}">
+                        Strategic opportunity
+                    </p>
+
+                    <div class="si-artifact-meta"
+                         th:if="${strategicIntelligence.chain.strategicOpportunity != null}">
+
+                        <span th:text="${strategicIntelligence.chain.strategicOpportunity.confidence}">
+                            STRONGLY_SUPPORTED
+                        </span>
+
+                        <span th:text="${strategicIntelligence.chain.strategicOpportunity.status}">
+                            VERIFIED
+                        </span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <!-- GAPS -->
+
+            <div class="alert alert-warning mt-4 mb-0"
+                 th:if="${!strategicIntelligence.chain.gaps.isEmpty()}">
+
+                <h6 class="fw-bold mb-2">
+                    Strategic gaps
+                </h6>
+
+                <div th:each="gap : ${strategicIntelligence.chain.gaps}"
+                     class="small mb-1">
+
+                    <strong th:text="${gap.type}">
+                        GAP
+                    </strong>
+
+                    <span class="ms-1"
+                          th:text="${gap.description}">
+                        Gap description
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- AMBIGUITIES -->
+
+            <div class="alert alert-danger mt-4 mb-0"
+                 th:if="${!strategicIntelligence.chain.ambiguities.isEmpty()}">
+
+                <h6 class="fw-bold mb-2">
+                    Strategic ambiguities
+                </h6>
+
+                <div th:each="ambiguity : ${strategicIntelligence.chain.ambiguities}"
+                     class="mb-3">
+
+                    <strong th:text="${ambiguity.type}">
+                        AMBIGUITY
+                    </strong>
+
+                    <div class="small"
+                         th:text="${ambiguity.description}">
+                        Description
+                    </div>
+
+                    <div class="small text-muted mt-1">
+
+                        Source:
+
+                        <span th:text="${ambiguity.sourceArtifactCode}">
+                            FND-001
+                        </span>
+
+                    </div>
+
+                    <div class="small text-muted">
+
+                        Candidates:
+
+                        <span th:text="${#strings.listJoin(
+                            ambiguity.candidateArtifactCodes,
+                            ', '
+                        )}">
+                            PRB-001, PRB-002
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         EVIDENCE + CAPABILITIES
+         ====================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- COVERAGE -->
+
+        <div class="col-xl-7">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3
+                                mb-4">
+
+                        <div>
+
+                            <div class="si-section-kicker">
+                                Evidence
+                            </div>
+
+                            <h4 class="fw-bold mb-1">
+                                Evidence Coverage
+                            </h4>
+
+                            <p class="text-muted small mb-0">
+                                Fuerza documental de la cadena estratégica.
+                            </p>
+
+                        </div>
+
+                        <span th:if="${strategicIntelligence.evidenceCoverage != null}"
+                              class="badge rounded-pill text-bg-success"
+                              th:text="${strategicIntelligence.evidenceCoverage.status}">
+                            FULLY_SUPPORTED
+                        </span>
+
+                    </div>
+
+
+                    <div th:if="${strategicIntelligence.evidenceCoverage != null}">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-end
+                                    mb-2">
+
+                            <span class="text-muted small">
+                                Coverage
+                            </span>
+
+                            <strong class="si-coverage-value"
+                                    th:text="${strategicIntelligence.evidenceCoverage.coveragePercentage + '%'}">
+                                100%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="progress si-coverage-progress mb-4">
+
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 th:style="'width: '
+                                    + ${strategicIntelligence.evidenceCoverage.coveragePercentage}
+                                    + '%'"
+                                 th:attr="aria-valuenow=${strategicIntelligence.evidenceCoverage.coveragePercentage}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            <div class="col-6 col-md-3">
+
+                                <div class="si-metric">
+
+                                    <strong th:text="${strategicIntelligence.evidenceCoverage.supportedArtifacts}">
+                                        4
+                                    </strong>
+
+                                    <span>
+                                        Supported
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-6 col-md-3">
+
+                                <div class="si-metric">
+
+                                    <strong th:text="${strategicIntelligence.evidenceCoverage.directArtifacts}">
+                                        2
+                                    </strong>
+
+                                    <span>
+                                        Direct
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-6 col-md-3">
+
+                                <div class="si-metric">
+
+                                    <strong th:text="${strategicIntelligence.evidenceCoverage.weakArtifacts}">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Weak
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-6 col-md-3">
+
+                                <div class="si-metric">
+
+                                    <strong th:text="${strategicIntelligence.evidenceCoverage.unsupportedArtifacts}">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Unsupported
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="si-empty-state"
+                         th:if="${strategicIntelligence.evidenceCoverage == null}">
+
+                        Evidence coverage is not available for
+                        the current strategic path.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CAPABILITIES -->
+
+        <div class="col-xl-5">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="si-section-kicker">
+                        Intelligence Engine
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Available capabilities
+                    </h4>
+
+                    <p class="text-muted small mb-4">
+                        Acciones habilitadas por el estado actual.
+                    </p>
+
+
+                    <div class="si-capability-list">
+
+                        <div class="si-capability">
+
+                            <span>
+                                Deterministic synthesis
+                            </span>
+
+                            <span class="badge"
+                                  th:classappend="${strategicIntelligence.capabilities.canGenerateDeterministicSynthesis}
+                                        ? ' text-bg-success'
+                                        : ' text-bg-secondary'"
+                                  th:text="${strategicIntelligence.capabilities.canGenerateDeterministicSynthesis
+                                        ? 'Available'
+                                        : 'Unavailable'}">
+                                Available
+                            </span>
+
+                        </div>
+
+
+                        <div class="si-capability">
+
+                            <span>
+                                AI interpretation
+                            </span>
+
+                            <span class="badge"
+                                  th:classappend="${strategicIntelligence.capabilities.canRequestAiInterpretation}
+                                        ? ' text-bg-success'
+                                        : ' text-bg-secondary'"
+                                  th:text="${strategicIntelligence.capabilities.canRequestAiInterpretation
+                                        ? 'Available'
+                                        : 'Unavailable'}">
+                                Available
+                            </span>
+
+                        </div>
+
+
+                        <div class="si-capability">
+
+                            <span>
+                                Submit for review
+                            </span>
+
+                            <span class="badge"
+                                  th:classappend="${strategicIntelligence.capabilities.canSubmitForReview}
+                                        ? ' text-bg-warning'
+                                        : ' text-bg-secondary'"
+                                  th:text="${strategicIntelligence.capabilities.canSubmitForReview
+                                        ? 'Available'
+                                        : 'Unavailable'}">
+                                Available
+                            </span>
+
+                        </div>
+
+
+                        <div class="si-capability">
+
+                            <span>
+                                Governance decision
+                            </span>
+
+                            <span class="badge"
+                                  th:classappend="${strategicIntelligence.capabilities.canApprove
+                                        or strategicIntelligence.capabilities.canReject}
+                                        ? ' text-bg-warning'
+                                        : ' text-bg-secondary'"
+                                  th:text="${strategicIntelligence.capabilities.canApprove
+                                        or strategicIntelligence.capabilities.canReject
+                                        ? 'Review required'
+                                        : 'Not required'}">
+                                Review required
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <div class="d-flex justify-content-between">
+
+                        <span class="text-muted small">
+                            AI provider
+                        </span>
+
+                        <strong th:text="${strategicIntelligence.capabilities.aiAvailable
+                                ? 'Available'
+                                : 'Unavailable'}">
+                            Available
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         SYNTHESIS
+         ====================================================== -->
+
+    <div class="mb-3">
+
+        <div class="si-section-kicker">
+            Strategic Synthesis
+        </div>
+
+        <h4 class="fw-bold mb-1">
+            Strategic interpretations
+        </h4>
+
+        <p class="text-muted small">
+            Comparación entre la síntesis determinista
+            y la interpretación asistida por IA.
+        </p>
+
+    </div>
+
+
+    <div class="row g-4 mb-4">
+
+        <!-- DETERMINISTIC -->
+
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100 si-synthesis-card">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3
+                                mb-3">
+
+                        <div>
+
+                            <span class="badge text-bg-dark mb-2">
+                                DETERMINISTIC
+                            </span>
+
+                            <h5 class="fw-bold mb-0">
+                                System Synthesis
+                            </h5>
+
+                        </div>
+
+                        <span th:if="${strategicIntelligence.deterministicSynthesis != null}"
+                              class="badge rounded-pill text-bg-success"
+                              th:text="${strategicIntelligence.deterministicSynthesis.status}">
+                            READY
+                        </span>
+
+                    </div>
+
+
+                    <div th:if="${strategicIntelligence.deterministicSynthesis != null}">
+
+                        <blockquote class="si-thesis"
+                                    th:text="${strategicIntelligence.deterministicSynthesis.thesis}">
+                            Strategic thesis
+                        </blockquote>
+
+
+                        <div class="si-synthesis-meta">
+
+                            <div>
+                                <span>ID</span>
+
+                                <strong th:text="${strategicIntelligence.deterministicSynthesis.id}">
+                                    41
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Confidence</span>
+
+                                <strong th:text="${strategicIntelligence.deterministicSynthesis.confidence}">
+                                    HIGH
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Created</span>
+
+                                <strong th:text="${#temporals.format(
+                                    strategicIntelligence.deterministicSynthesis.createdAt,
+                                    'dd/MM/yyyy HH:mm'
+                                )}">
+                                    18/08/2026
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="si-empty-state"
+                         th:if="${strategicIntelligence.deterministicSynthesis == null}">
+
+                        No deterministic synthesis has been generated.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI -->
+
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100 si-synthesis-card">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3
+                                mb-3">
+
+                        <div>
+
+                            <span class="badge si-ai-badge mb-2">
+                                AI ASSISTED
+                            </span>
+
+                            <h5 class="fw-bold mb-0">
+                                Strategic Interpretation
+                            </h5>
+
+                        </div>
+
+                        <span th:if="${strategicIntelligence.aiSynthesis != null}"
+                              class="badge rounded-pill text-bg-warning"
+                              th:text="${strategicIntelligence.aiSynthesis.status}">
+                            REQUIRES_REVIEW
+                        </span>
+
+                    </div>
+
+
+                    <div th:if="${strategicIntelligence.aiSynthesis != null}">
+
+                        <blockquote class="si-thesis"
+                                    th:text="${strategicIntelligence.aiSynthesis.thesis}">
+                            AI strategic thesis
+                        </blockquote>
+
+
+                        <div class="si-synthesis-meta">
+
+                            <div>
+                                <span>ID</span>
+
+                                <strong th:text="${strategicIntelligence.aiSynthesis.id}">
+                                    42
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Confidence</span>
+
+                                <strong th:text="${strategicIntelligence.aiSynthesis.confidence}">
+                                    HIGH
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Created</span>
+
+                                <strong th:text="${#temporals.format(
+                                    strategicIntelligence.aiSynthesis.createdAt,
+                                    'dd/MM/yyyy HH:mm'
+                                )}">
+                                    18/08/2026
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="si-empty-state"
+                         th:if="${strategicIntelligence.aiSynthesis == null}">
+
+                        No AI-assisted interpretation exists yet.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         GOVERNANCE
+         ====================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex
+                        justify-content-between
+                        align-items-center
+                        gap-3
+                        mb-4">
+
+                <div>
+
+                    <div class="si-section-kicker">
+                        Governance
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Review history
+                    </h4>
+
+                    <p class="text-muted small mb-0">
+                        Historial inmutable de decisiones estratégicas.
+                    </p>
+
+                </div>
+
+
+                <span class="badge rounded-pill text-bg-dark"
+                      th:text="${strategicIntelligence.reviews.size()}">
+                    0
+                </span>
+
+            </div>
+
+
+            <div th:if="${!strategicIntelligence.reviews.isEmpty()}"
+                 class="si-review-timeline">
+
+                <article class="si-review-item"
+                         th:each="review : ${strategicIntelligence.reviews}">
+
+                    <div class="si-review-marker"></div>
+
+
+                    <div class="si-review-content">
+
+                        <div class="d-flex
+                                    flex-column
+                                    flex-md-row
+                                    justify-content-between
+                                    gap-2">
+
+                            <div>
+
+                                <strong th:text="${review.reviewer}">
+                                    Reviewer
+                                </strong>
+
+                                <div class="small text-muted"
+                                     th:text="${review.reviewerType}">
+                                    HUMAN_CONSULTANT
+                                </div>
+
+                            </div>
+
+
+                            <span class="badge align-self-start"
+                                  th:classappend="${review.decision.name() == 'APPROVE'}
+                                        ? ' text-bg-success'
+                                        : ' text-bg-danger'"
+                                  th:text="${review.decision}">
+                                APPROVE
+                            </span>
+
+                        </div>
+
+
+                        <p class="my-3"
+                           th:text="${review.reason}">
+                            Review reason
+                        </p>
+
+
+                        <div class="si-review-transition">
+
+                            <span th:text="${review.previousStatus}">
+                                REQUIRES_REVIEW
+                            </span>
+
+                            <span>
+                                →
+                            </span>
+
+                            <strong th:text="${review.resultingStatus}">
+                                APPROVED
+                            </strong>
+
+                        </div>
+
+
+                        <div class="small text-muted mt-2"
+                             th:text="${#temporals.format(
+                                 review.reviewedAt,
+                                 'dd/MM/yyyy HH:mm'
+                             )}">
+                            18/08/2026
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <div class="si-empty-state"
+                 th:if="${strategicIntelligence.reviews.isEmpty()}">
+
+                No governance reviews have been recorded.
+
+            </div>
+
+        </div>
+
+    </div>
+
+<!-- ======================================================
+     STRATEGIC ACTIONS
+     ====================================================== -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex
+                        flex-column
+                        flex-lg-row
+                        justify-content-between
+                        gap-4">
+
+                <div>
+
+                    <div class="si-section-kicker">
+                        Governance Actions
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Strategic operations
+                    </h4>
+
+<p class="text-muted small mb-0">
+    Genera, interpreta y gobierna la síntesis estratégica
+    según el estado actual del proyecto.
+</p>
+
+    <div class="small text-muted mt-2"
+         th:if="${strategicIntelligence.reviewableSynthesisId != null}">
+
+        Reviewable snapshot #
+
+        <strong th:text="${strategicIntelligence.reviewableSynthesisId}">
+            42
+        </strong>
+
+    </div>
+
+                </div>
+
+
+                <div class="d-flex flex-wrap gap-2">
+
+<form method="post"
+      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence/generate|}"
+      class="d-inline">
+
+    <input type="hidden"
+           name="findingArtifactId"
+           th:value="${findingArtifactId}">
+
+    <input type="hidden"
+           th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <button type="submit"
+            class="btn btn-dark"
+            th:disabled="${!strategicIntelligence.capabilities.canGenerateDeterministicSynthesis}">
+        Generate Synthesis
+    </button>
+
+</form>
+
+<form method="post"
+      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence/interpret|}"
+      class="d-inline">
+
+    <input type="hidden"
+           name="findingArtifactId"
+           th:value="${findingArtifactId}">
+
+    <input type="hidden"
+           name="mode"
+           value="REFINE_THESIS">
+
+    <input type="hidden"
+           th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <button type="submit"
+            class="btn btn-outline-primary"
+            th:disabled="${!strategicIntelligence.capabilities.canRequestAiInterpretation}">
+        AI Interpretation
+    </button>
+
+</form>
+
+<form method="post"
+      th:if="${strategicIntelligence.deterministicSynthesis != null}"
+      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence/syntheses/${strategicIntelligence.deterministicSynthesis.id}/submit-review|}"
+      class="d-inline">
+
+    <input type="hidden"
+           name="findingArtifactId"
+           th:value="${findingArtifactId}">
+
+    <input type="hidden"
+           th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <button type="submit"
+            class="btn btn-outline-warning"
+            th:disabled="${!strategicIntelligence.capabilities.canSubmitForReview}">
+        Submit Review
+    </button>
+
+</form>
+
+<button type="button"
+        class="btn btn-outline-success"
+        data-bs-toggle="modal"
+        data-bs-target="#approveSynthesisModal"
+        th:disabled="${!strategicIntelligence.capabilities.canApprove
+        or strategicIntelligence.reviewableSynthesisId == null}">
+    Approve
+</button>
+
+<button type="button"
+        class="btn btn-outline-danger"
+        data-bs-toggle="modal"
+        data-bs-target="#rejectSynthesisModal"
+        th:disabled="${!strategicIntelligence.capabilities.canReject
+        or strategicIntelligence.reviewableSynthesisId == null}">
+    Reject
+</button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    <div class="modal fade"
+     id="approveSynthesisModal"
+     tabindex="-1"
+     aria-labelledby="approveSynthesisModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 shadow">
+
+<form method="post"
+      th:if="${strategicIntelligence.reviewableSynthesisId != null}"
+      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence/syntheses/${strategicIntelligence.reviewableSynthesisId}/approve|}">
+      
+                <div class="modal-header">
+
+                    <div>
+                        <div class="si-section-kicker">
+                            Governance Decision
+                        </div>
+
+                        <h5 class="modal-title fw-bold"
+                            id="approveSynthesisModalLabel">
+                            Approve strategic synthesis
+                        </h5>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           name="findingArtifactId"
+                           th:value="${findingArtifactId}">
+
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+
+                    <p class="text-muted small">
+                        Esta decisión generará un nuevo snapshot
+                        de governance y quedará registrada en
+                        traceability y provenance.
+                    </p>
+
+                    <label for="approveReason"
+                           class="form-label fw-semibold">
+                        Review reason
+                    </label>
+
+                    <textarea id="approveReason"
+                              name="reason"
+                              class="form-control"
+                              rows="4"
+                              maxlength="2000"
+                              required
+                              placeholder="Describe por qué esta síntesis puede ser aprobada."></textarea>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Approve Synthesis
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="modal fade"
+     id="rejectSynthesisModal"
+     tabindex="-1"
+     aria-labelledby="rejectSynthesisModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 shadow">
+
+<form method="post"
+      th:if="${strategicIntelligence.reviewableSynthesisId != null}"
+      th:action="@{|/admin/digital-transformation/projects/${projectId}/strategic-intelligence/syntheses/${strategicIntelligence.reviewableSynthesisId}/reject|}">
+      
+                <div class="modal-header">
+
+                    <div>
+                        <div class="si-section-kicker">
+                            Governance Decision
+                        </div>
+
+                        <h5 class="modal-title fw-bold"
+                            id="rejectSynthesisModalLabel">
+                            Reject strategic synthesis
+                        </h5>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           name="findingArtifactId"
+                           th:value="${findingArtifactId}">
+
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+
+                    <p class="text-muted small">
+                        El rechazo conservará el snapshot anterior
+                        y generará un nuevo estado de governance.
+                    </p>
+
+                    <label for="rejectReason"
+                           class="form-label fw-semibold">
+                        Rejection reason
+                    </label>
+
+                    <textarea id="rejectReason"
+                              name="reason"
+                              class="form-control"
+                              rows="4"
+                              maxlength="2000"
+                              required
+                              placeholder="Describe qué debe corregirse o por qué la síntesis no puede ser aprobada."></textarea>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Reject Synthesis
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+    
+       </th:block> 
+
+</section>
+
+</th:block>
+
+</body>
+</html>

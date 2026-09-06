@@ -7,7 +7,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.webempresarial.store.dto.producto.reportes.ProductoVentaDTO;
 import com.webempresarial.store.model.Store;
-import com.webempresarial.store.service.OrderService;
+import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

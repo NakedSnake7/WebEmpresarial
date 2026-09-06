@@ -28,6 +28,13 @@ public interface TraceabilityNodeRepository
             Long id,
             Long storeId
     );
+    
+    Optional<TraceabilityNode>
+    findByProjectIdAndNodeTypeAndExternalReference(
+            Long projectId,
+            TraceabilityNodeType nodeType,
+            String externalReference
+    );
 
     Optional<TraceabilityNode>
     findByProjectIdAndNodeCodeIgnoreCase(

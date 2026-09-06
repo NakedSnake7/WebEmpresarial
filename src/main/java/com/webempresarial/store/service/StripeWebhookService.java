@@ -1,7 +1,6 @@
 package com.webempresarial.store.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+
 import java.util.Map; 
 
 import org.springframework.stereotype.Service;
@@ -12,39 +11,50 @@ import com.stripe.model.Invoice;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.entity.StripeWebhookEvent;
-import com.webempresarial.store.model.Order;
-import com.webempresarial.store.model.PaymentStatus;
+
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.model.StripeWebhookEventStatus;
-import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.repository.StripeWebhookEventRepository;
+import com.webempresarial.store.repository.StoreRepository;
+import com.webempresarial.store.commerce.infrastructure.checkout.payment.StripeCommercePaymentHandler;
 
 @Service
 public class StripeWebhookService {
 
-    private final OrderService orderService;
-    private final StoreRepository storeRepository;
-    private final ProvisioningService provisioningService;
-    private final SubscriptionService subscriptionService;
-    private final StripeWebhookEventRepository webhookEventRepository;
-    private final StripePlanMapper stripePlanMapper;
+	private final StripeCommercePaymentHandler stripeCommercePaymentHandler;
+	private final StoreRepository storeRepository;
+	private final ProvisioningService provisioningService;
+	private final SubscriptionService subscriptionService;
+	private final StripeWebhookEventRepository webhookEventRepository;
+	private final StripePlanMapper stripePlanMapper;
 
-    public StripeWebhookService(
-            OrderService orderService,
-            StoreRepository storeRepository,
-            ProvisioningService provisioningService,
-            SubscriptionService subscriptionService,
-            StripeWebhookEventRepository webhookEventRepository,
-            StripePlanMapper stripePlanMapper
-    ) {
-        this.orderService = orderService;
-        this.storeRepository = storeRepository;
-        this.provisioningService = provisioningService;
-        this.subscriptionService = subscriptionService;
-        this.webhookEventRepository = webhookEventRepository;
-        this.stripePlanMapper = stripePlanMapper;
-    }
+	public StripeWebhookService(
+	        StripeCommercePaymentHandler stripeCommercePaymentHandler,
+	        StoreRepository storeRepository,
+	        ProvisioningService provisioningService,
+	        SubscriptionService subscriptionService,
+	        StripeWebhookEventRepository webhookEventRepository,
+	        StripePlanMapper stripePlanMapper
+	) {
+	    this.stripeCommercePaymentHandler =
+	            stripeCommercePaymentHandler;
+
+	    this.storeRepository =
+	            storeRepository;
+
+	    this.provisioningService =
+	            provisioningService;
+
+	    this.subscriptionService =
+	            subscriptionService;
+
+	    this.webhookEventRepository =
+	            webhookEventRepository;
+
+	    this.stripePlanMapper =
+	            stripePlanMapper;
+	}
     
     private void handleSubscriptionScheduleFinished(Event event) {
 
@@ -241,7 +251,11 @@ public class StripeWebhookService {
                     procesarUpgradeSaas(session, metadata);
 
             case "ECOMMERCE_ORDER" ->
-                    procesarEcommerceOrder(session, metadata);
+            stripeCommercePaymentHandler
+                    .handlePaidCheckout(
+                            session,
+                            metadata
+                    );
 
             default -> {
                 // checkout desconocido
@@ -319,75 +333,7 @@ public class StripeWebhookService {
                 stripePriceId
         );
     }
-    private void procesarEcommerceOrder(
-            Session session,
-            Map<String, String> metadata
-    ) {
-        if (!"paid".equalsIgnoreCase(session.getPaymentStatus())) {
-            return;
-        }
 
-        String orderIdMeta = metadata.get("order_id");
-        String storeIdMeta = metadata.get("store_id");
-
-        if (orderIdMeta == null || storeIdMeta == null) {
-            throw new IllegalStateException(
-                    "Stripe session sin order_id o store_id"
-            );
-        }
-
-        Long orderId = Long.valueOf(orderIdMeta);
-        Long storeId = Long.valueOf(storeIdMeta);
-
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Store no encontrada"
-                        )
-                );
-
-        Order order = orderService.getById(
-                orderId,
-                store
-        );
-
-        if (order.getPaymentStatus() == PaymentStatus.PAID) {
-            return;
-        }
-
-        if (order.getTotal() == null) {
-            throw new IllegalStateException(
-                    "La orden no tiene un total válido"
-            );
-        }
-
-        Long expected = order.getTotal()
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(0, RoundingMode.HALF_UP)
-                .longValueExact();
-
-        Long amountTotal = session.getAmountTotal();
-
-        if (amountTotal == null
-                || !amountTotal.equals(expected)) {
-            throw new IllegalStateException(
-                    "El monto pagado no coincide con la orden. "
-                            + "Esperado=" + expected
-                            + ", recibido=" + amountTotal
-            );
-        }
-
-        orderService.marcarOrdenComoPagada(
-                orderId,
-                session.getPaymentIntent(),
-                store
-        );
-
-        orderService.procesarPostPago(
-                orderId,
-                store
-        );
-    }
     private <T> T deserializeEventObject(
             Event event,
             Class<T> clazz

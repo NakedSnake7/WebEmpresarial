@@ -1,12 +1,17 @@
 package com.webempresarial.store.digitaltransformation.support;
 
-import com.webempresarial.store.digitaltransformation.domain.project.TransformationProject;
+import com.webempresarial.store.digitaltransformation.domain.project.TransformationProject; 
 import com.webempresarial.store.digitaltransformation.domain.project.TransformationProjectType;
 import com.webempresarial.store.digitaltransformation.domain.source.SourceContentExtractionMethod;
 import com.webempresarial.store.digitaltransformation.domain.source.SourceDocumentContent;
 import com.webempresarial.store.digitaltransformation.domain.source.TransformationSourceDocument;
 import com.webempresarial.store.digitaltransformation.domain.source.TransformationSourceRole;
 import com.webempresarial.store.digitaltransformation.domain.source.TransformationSourceType;
+import com.webempresarial.store.digitaltransformation.domain.evidence.EvidenceClassification;
+import com.webempresarial.store.digitaltransformation.domain.evidence.EvidenceConfidence;
+import com.webempresarial.store.digitaltransformation.domain.evidence.EvidenceExtractionOrigin;
+import com.webempresarial.store.digitaltransformation.domain.evidence.EvidenceLocator;
+import com.webempresarial.store.digitaltransformation.domain.evidence.SourceEvidence;
 import com.webempresarial.store.model.Store;
 
 import static org.mockito.Mockito.mock;
@@ -80,5 +85,24 @@ public final class TestSources {
         content.markCurrent();
 
         return content;
+    }
+    public static SourceEvidence validEvidence() {
+        TransformationSourceDocument source =
+                validSource();
+
+        return SourceEvidence.extract(
+                source.getProject(),
+                source,
+                null,
+                "EVD-AUDIT-001",
+                EvidenceClassification.STRATEGIC_FINDING,
+                EvidenceConfidence.EXPLICIT,
+                EvidenceExtractionOrigin.MANUAL,
+                "Existe una brecha entre la marca y su plataforma digital.",
+                "La marca de Robert es hoy más fuerte que su plataforma digital.",
+                "La experiencia digital debe evolucionar para representar " +
+                "adecuadamente el posicionamiento de la marca.",
+                EvidenceLocator.page(2)
+        );
     }
 }

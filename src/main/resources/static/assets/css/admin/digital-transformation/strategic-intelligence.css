@@ -1,0 +1,471 @@
+/* ============================================================
+   STRATEGIC INTELLIGENCE WORKSPACE
+   ============================================================ */
+
+.strategic-intelligence-workspace {
+    max-width: 1800px;
+}
+
+
+/* HEADER */
+
+.si-page-header {
+    position: relative;
+}
+
+.si-engine-badge {
+    letter-spacing: .04em;
+}
+
+.si-context-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+
+    background: #fff;
+
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 1rem;
+
+    padding: .9rem 1.2rem;
+
+    box-shadow: 0 .125rem .5rem rgba(0, 0, 0, .04);
+}
+
+.si-context-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.si-context-item span {
+    font-size: .72rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.si-context-item strong {
+    font-size: 1rem;
+}
+
+.si-context-divider {
+    width: 1px;
+    height: 2.25rem;
+    background: #dee2e6;
+}
+
+
+/* SECTION */
+
+.si-section-kicker {
+    font-size: .72rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: .12em;
+
+    color: #6c757d;
+
+    margin-bottom: .25rem;
+}
+
+
+/* ============================================================
+   STRATEGIC CHAIN
+   ============================================================ */
+
+.si-chain {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr);
+
+    align-items: stretch;
+
+    gap: .75rem;
+}
+
+.si-chain-node {
+    min-width: 0;
+
+    border: 1px solid #e9ecef;
+    border-radius: 1rem;
+
+    background: #fff;
+
+    padding: 1.1rem;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        border-color .15s ease;
+}
+
+.si-chain-node:hover {
+    transform: translateY(-2px);
+
+    border-color: #ced4da;
+
+    box-shadow: 0 .5rem 1.25rem rgba(0, 0, 0, .06);
+}
+
+.si-chain-node-empty {
+    border-style: dashed;
+    background: #f8f9fa;
+}
+
+.si-chain-node-icon {
+    font-size: 1.4rem;
+    margin-bottom: .75rem;
+}
+
+.si-chain-node-type {
+    color: #6c757d;
+
+    font-size: .72rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: .07em;
+
+    margin-bottom: .25rem;
+}
+
+.si-chain-node-code {
+    font-weight: 700;
+    margin-bottom: .6rem;
+}
+
+.si-chain-node p {
+    font-size: .88rem;
+
+    color: #495057;
+
+    margin-bottom: .8rem;
+}
+
+.si-chain-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #adb5bd;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.si-artifact-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: .35rem;
+}
+
+.si-artifact-meta span {
+    background: #f1f3f5;
+
+    color: #495057;
+
+    border-radius: 999px;
+
+    padding: .22rem .5rem;
+
+    font-size: .67rem;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   COVERAGE
+   ============================================================ */
+
+.si-coverage-value {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.si-coverage-progress {
+    height: .7rem;
+    border-radius: 999px;
+}
+
+.si-metric {
+    display: flex;
+    flex-direction: column;
+
+    padding: .8rem;
+
+    border-radius: .8rem;
+
+    background: #f8f9fa;
+}
+
+.si-metric strong {
+    font-size: 1.4rem;
+}
+
+.si-metric span {
+    color: #6c757d;
+    font-size: .75rem;
+}
+
+
+/* ============================================================
+   CAPABILITIES
+   ============================================================ */
+
+.si-capability-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.si-capability {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: .8rem 0;
+
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.si-capability:last-child {
+    border-bottom: none;
+}
+
+
+/* ============================================================
+   SYNTHESIS
+   ============================================================ */
+
+.si-synthesis-card {
+    overflow: hidden;
+}
+
+.si-ai-badge {
+    background: #e9e5ff;
+    color: #5f3dc4;
+}
+
+.si-thesis {
+    margin: 1.25rem 0;
+
+    padding: 1rem 1.1rem;
+
+    border-left: 4px solid #212529;
+
+    background: #f8f9fa;
+
+    border-radius: 0 .75rem .75rem 0;
+
+    font-size: 1rem;
+}
+
+.si-synthesis-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 1.5rem;
+
+    padding-top: 1rem;
+
+    border-top: 1px solid #f1f3f5;
+}
+
+.si-synthesis-meta div {
+    display: flex;
+    flex-direction: column;
+}
+
+.si-synthesis-meta span {
+    color: #6c757d;
+
+    font-size: .68rem;
+
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.si-synthesis-meta strong {
+    font-size: .84rem;
+}
+
+
+/* ============================================================
+   GOVERNANCE
+   ============================================================ */
+
+.si-review-timeline {
+    position: relative;
+
+    margin-left: .3rem;
+}
+
+.si-review-item {
+    display: grid;
+
+    grid-template-columns: 1rem 1fr;
+
+    gap: 1rem;
+
+    position: relative;
+
+    padding-bottom: 1.5rem;
+}
+
+.si-review-item:not(:last-child)::before {
+    content: "";
+
+    position: absolute;
+
+    top: 1rem;
+    bottom: 0;
+
+    left: .43rem;
+
+    width: 2px;
+
+    background: #dee2e6;
+}
+
+.si-review-marker {
+    position: relative;
+
+    z-index: 1;
+
+    width: .9rem;
+    height: .9rem;
+
+    margin-top: .25rem;
+
+    border-radius: 50%;
+
+    background: #212529;
+
+    box-shadow: 0 0 0 4px #fff;
+}
+
+.si-review-content {
+    border: 1px solid #e9ecef;
+
+    border-radius: .9rem;
+
+    padding: 1rem;
+}
+
+.si-review-transition {
+    display: flex;
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: .65rem;
+
+    font-size: .8rem;
+}
+
+.si-review-transition span,
+.si-review-transition strong {
+    background: #f1f3f5;
+
+    border-radius: 999px;
+
+    padding: .3rem .6rem;
+}
+
+.si-finding-selector {
+    width: min(100%, 560px);
+}
+
+.si-finding-selector .form-select {
+    min-width: 340px;
+}
+
+@media (max-width: 767.98px) {
+
+    .si-finding-selector {
+        width: 100%;
+    }
+
+    .si-finding-selector .d-flex {
+        flex-direction: column;
+    }
+
+    .si-finding-selector .form-select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .si-finding-selector .btn {
+        width: 100%;
+    }
+}
+/* ============================================================
+   EMPTY STATES
+   ============================================================ */
+
+.si-empty-state {
+    padding: 1.5rem;
+
+    border: 1px dashed #ced4da;
+
+    border-radius: .8rem;
+
+    text-align: center;
+
+    color: #6c757d;
+
+    background: #f8f9fa;
+
+    font-size: .88rem;
+}
+
+
+/* ============================================================
+   FUTURE ACTIONS
+   ============================================================ */
+
+.si-action-available:disabled {
+    opacity: .75;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1399.98px) {
+
+    .si-chain {
+        grid-template-columns: 1fr;
+    }
+
+    .si-chain-connector {
+        transform: rotate(90deg);
+        min-height: 1.5rem;
+    }
+}
+
+
+@media (max-width: 767.98px) {
+
+    .si-context-card {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .si-synthesis-meta {
+        flex-direction: column;
+        gap: .7rem;
+    }
+
+}

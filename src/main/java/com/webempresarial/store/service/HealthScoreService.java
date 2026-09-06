@@ -1,13 +1,13 @@
 package com.webempresarial.store.service;
 
-import com.webempresarial.store.dto.saas.StoreHealthDTO;
+import com.webempresarial.store.dto.saas.StoreHealthDTO; 
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.SubscriptionStatus;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.repository.FeatureUsageRepository;
 import com.webempresarial.store.repository.LeadRepository;
-import com.webempresarial.store.repository.OrderRepository;
+import com.webempresarial.store.commerce.application.order.OrderMetricsQueryService;
 import com.webempresarial.store.repository.ProductoRepository;
 import com.webempresarial.store.repository.StoreRepository;
 
@@ -22,20 +22,20 @@ public class HealthScoreService {
 
     private final StoreRepository storeRepository;
     private final ProductoRepository productoRepository;
-    private final OrderRepository orderRepository;
+    private final OrderMetricsQueryService orderMetricsQueryService;
     private final LeadRepository leadRepository;
     private final FeatureUsageRepository featureUsageRepository;
 
     public HealthScoreService(
             StoreRepository storeRepository,
             ProductoRepository productoRepository,
-            OrderRepository orderRepository,
+            OrderMetricsQueryService orderMetricsQueryService,
             LeadRepository leadRepository,
             FeatureUsageRepository featureUsageRepository
     ) {
         this.storeRepository = storeRepository;
         this.productoRepository = productoRepository;
-        this.orderRepository = orderRepository;
+        this.orderMetricsQueryService = orderMetricsQueryService;
         this.leadRepository = leadRepository;
         this.featureUsageRepository = featureUsageRepository;
     }
@@ -52,7 +52,10 @@ public class HealthScoreService {
 
         long totalProducts = productoRepository.countByStoreId(store.getId());
         long visibleProducts = productoRepository.countByStoreIdAndVisibleEnMenuTrue(store.getId());
-        long orders = orderRepository.countByStoreId(store.getId());
+        long orders =
+                orderMetricsQueryService.countOrdersByStore(
+                        store.getId()
+                );
 
         if (totalProducts > 0) {
             score += 6;
