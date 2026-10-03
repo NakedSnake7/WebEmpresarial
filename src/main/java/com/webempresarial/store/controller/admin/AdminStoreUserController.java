@@ -40,7 +40,7 @@ public class AdminStoreUserController {
                 adminUserService.listarPorTienda(storeId)
         );
 
-        return "admin/stores/admins/list";
+        return "admin/store/admins/list";
     }
 
     @GetMapping("/nuevo")
@@ -64,7 +64,7 @@ public class AdminStoreUserController {
                 AdminRole.values()
         );
 
-        return "admin/stores/admins/form";
+        return "admin/store/admins/form";
     }
 
     @PostMapping("/guardar")
