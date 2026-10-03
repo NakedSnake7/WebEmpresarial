@@ -78,9 +78,33 @@ public class StoreSettingsController {
         settings.setFontFamily(form.getFontFamily());
         settings.setHeroImageUrl(form.getHeroImageUrl());
         settings.setSlogan(form.getSlogan());
+        /*
+         * Contenido del storefront.
+         */
+        settings.setHeroEyebrow(form.getHeroEyebrow());
+        settings.setHeroTitle(form.getHeroTitle());
+        settings.setHeroSubtitle(form.getHeroSubtitle());
+        settings.setHeroButtonText(form.getHeroButtonText());
+        settings.setHeroButtonUrl(form.getHeroButtonUrl());
+
+        settings.setAboutTitle(form.getAboutTitle());
+        settings.setAboutText(form.getAboutText());
+
+        settings.setCtaTitle(form.getCtaTitle());
+        settings.setCtaText(form.getCtaText());
+
+        settings.setWhatsappMessage(form.getWhatsappMessage());
+
+        settings.setFacebookUrl(form.getFacebookUrl());
+        settings.setInstagramUrl(form.getInstagramUrl());
+        settings.setTiktokUrl(form.getTiktokUrl());
+
+        settings.setFooterText(form.getFooterText());
         
-        settings.setCustomCss(form.getCustomCss());
-        settings.setCustomJs(form.getCustomJs());
+        if (features.canUse(store, "WHITE_LABEL")) {
+            settings.setCustomCss(form.getCustomCss());
+            settings.setCustomJs(form.getCustomJs());
+        }
         
         settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
         settings.setMetaPixelId(form.getMetaPixelId());

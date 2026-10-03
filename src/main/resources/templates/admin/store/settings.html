@@ -173,6 +173,170 @@
            placeholder="Ej. Tecnología para vender más">
 </div>
 
+<div class="col-12">
+    <hr>
+    <h5 class="fw-bold mb-0">Contenido de la tienda</h5>
+    <p class="text-muted small mb-0">
+        Personaliza los textos principales que verá el cliente
+        en el storefront.
+    </p>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Texto superior del Hero
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{heroEyebrow}"
+           placeholder="Ej. Nueva colección">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Título principal
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{heroTitle}"
+           placeholder="Título principal de la tienda">
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">
+        Subtítulo del Hero
+    </label>
+    <textarea class="form-control"
+              rows="3"
+              th:field="*{heroSubtitle}"
+              placeholder="Describe brevemente tu propuesta de valor"></textarea>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Texto del botón principal
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{heroButtonText}"
+           placeholder="Ej. Ver productos">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Enlace del botón principal
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{heroButtonUrl}"
+           placeholder="/#productos">
+</div>
+
+<div class="col-12">
+    <hr>
+    <h5 class="fw-bold mb-0">Acerca de la tienda</h5>
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">
+        Título
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{aboutTitle}"
+           placeholder="Sobre nosotros">
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">
+        Descripción
+    </label>
+    <textarea class="form-control"
+              rows="4"
+              th:field="*{aboutText}"
+              placeholder="Cuenta brevemente la historia o propósito de tu negocio"></textarea>
+</div>
+
+<div class="col-12">
+    <hr>
+    <h5 class="fw-bold mb-0">Llamada a la acción</h5>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Título CTA
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{ctaTitle}"
+           placeholder="¿Listo para comenzar?">
+</div>
+
+<div class="col-md-6">
+    <label class="form-label fw-semibold">
+        Texto CTA
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{ctaText}"
+           placeholder="Contáctanos para más información">
+</div>
+
+<div class="col-12">
+    <hr>
+    <h5 class="fw-bold mb-0">Contacto y redes sociales</h5>
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">
+        Mensaje predeterminado de WhatsApp
+    </label>
+    <textarea class="form-control"
+              rows="3"
+              th:field="*{whatsappMessage}"
+              placeholder="Hola, me gustaría obtener más información."></textarea>
+</div>
+
+<div class="col-md-4">
+    <label class="form-label fw-semibold">
+        Facebook
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{facebookUrl}"
+           placeholder="https://facebook.com/...">
+</div>
+
+<div class="col-md-4">
+    <label class="form-label fw-semibold">
+        Instagram
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{instagramUrl}"
+           placeholder="https://instagram.com/...">
+</div>
+
+<div class="col-md-4">
+    <label class="form-label fw-semibold">
+        TikTok
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{tiktokUrl}"
+           placeholder="https://tiktok.com/@...">
+</div>
+
+<div class="col-12">
+    <label class="form-label fw-semibold">
+        Texto del footer
+    </label>
+    <input type="text"
+           class="form-control"
+           th:field="*{footerText}"
+           placeholder="© Mi empresa. Todos los derechos reservados.">
+</div>
+
 
 <div class="col-12">
     <hr>
