@@ -112,7 +112,7 @@ gtag('js', new Date());
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUseWhiteLabel(store)
+        th:if="${features.canUse(store, 'WHITE_LABEL')
             and settings != null
             and settings.googleAnalyticsId != null
             and !settings.googleAnalyticsId.isBlank()}">
@@ -148,7 +148,7 @@ s.parentNode.insertBefore(t,s);
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUseWhiteLabel(store)
+        th:if="${features.canUse(store, 'WHITE_LABEL')
             and settings != null
             and settings.metaPixelId != null
             and !settings.metaPixelId.isBlank()}">
@@ -177,7 +177,7 @@ s.parentNode.insertBefore(t,s);
 </th:block>
 
 <!-- TikTok Pixel Premium -->
-<th:block th:if="${features.canUseWhiteLabel(store)
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL')
     and settings != null
     and settings.tiktokPixelId != null
     and !settings.tiktokPixelId.isBlank()}">
@@ -195,7 +195,7 @@ s.parentNode.insertBefore(t,s);
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUseWhiteLabel(store)
+        th:if="${features.canUse(store, 'WHITE_LABEL')
             and settings != null
             and settings.tiktokPixelId != null
             and !settings.tiktokPixelId.isBlank()}">
@@ -232,13 +232,13 @@ s.parentNode.insertBefore(t,s);
 </th:block>
 
 <!-- Hotjar Premium -->
-<th:block th:if="${features.canUseWhiteLabel(store)
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL')
     and settings != null
     and settings.hotjarId != null		
     and !settings.hotjarId.isBlank()}">
 
 <script th:inline="javascript"
-        th:if="${features.canUseWhiteLabel(store)
+        th:if="${features.canUse(store, 'WHITE_LABEL')
             and settings != null
             and settings.hotjarId != null
             and !settings.hotjarId.isBlank()}">
@@ -263,27 +263,27 @@ s.parentNode.insertBefore(t,s);
 
 <!-- NAVBAR -->
 
-<div th:replace="~{themes/__${theme}__/fragments/navbar :: navbar}">
+<div th:replace="~{themes/shared/fragments/navbar :: navbar}">
 </div>
 
 <!-- CART -->
 
 <th:block th:if="${showCart}">
-    <div th:replace="~{themes/__${theme}__/fragments/cart :: cart}">
+    <div th:replace="~{themes/shared/fragments/cart :: cart}">
     </div>
 </th:block>
 
 <!-- CHECKOUT -->
 
 <th:block th:if="${showCheckout}">
-    <div th:replace="~{themes/__${theme}__/fragments/checkout :: checkout}">
+    <div th:replace="~{themes/shared/fragments/checkout :: checkout}">
     </div>
 </th:block>
 
 <!-- AUTH -->
 
 <th:block th:if="${showAuth}">
-    <div th:replace="~{themes/__${theme}__/fragments/auth :: auth}">
+    <div th:replace="~{themes/shared/fragments/auth :: auth}">
     </div>
 </th:block>
 
@@ -298,13 +298,13 @@ s.parentNode.insertBefore(t,s);
 
 <!-- FOOTER -->
 
-<footer th:replace="~{themes/__${theme}__/fragments/footer :: footer}">
+<footer th:replace="~{themes/shared/fragments/footer :: footer}">
 </footer>
 
-<!-- THEME SCRIPTS -->
+<!-- SHARED SCRIPTS -->
 
 <div th:if="${showScripts}"
-     th:replace="~{themes/__${theme}__/fragments/scripts :: scripts}">
+     th:replace="~{themes/shared/fragments/scripts :: scripts}">
 </div>
 
 <script>

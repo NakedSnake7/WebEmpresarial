@@ -165,7 +165,7 @@ th:href="@{'https://wa.me/'
                     01
                 </span>
 
-                <h3 th:text="${categoria.nombre}">
+                <h3 th:text="${categoria}">
                     Categoría
                 </h3>
 
@@ -184,12 +184,12 @@ th:href="@{'https://wa.me/'
 </section>
 
 <section id="destacado" class="premium-featured"
-         th:if="${productos != null and !productos.isEmpty()}">
+         th:if="${products != null and !products.isEmpty()}">
 
     <div class="container">
 
         <div class="premium-featured-card"
-             th:with="featured=${productos[0]}">
+             th:with="featured=${products[0]}">
 
             <div class="premium-featured-image">
                 <img th:src="${featured.imageUrl}"
@@ -203,9 +203,13 @@ th:href="@{'https://wa.me/'
                     Producto destacado
                 </h2>
 
-                <p th:text="${featured.description ?: 'Una pieza seleccionada para representar la esencia de la marca.'}">
-                    Una pieza seleccionada para representar la esencia de la marca.
-                </p>
+ <p th:text="${featured.categoriaNombre != null and !featured.categoriaNombre.isBlank()
+        ? featured.categoriaNombre
+        : (featured.marcaNombre != null and !featured.marcaNombre.isBlank()
+            ? featured.marcaNombre
+            : 'Una pieza seleccionada para representar la esencia de la marca.')}">
+    Una pieza seleccionada para representar la esencia de la marca.
+</p>
 
                 <strong th:text="${#numbers.formatCurrency(featured.precioConDescuento)}">
                     $0.00
@@ -213,7 +217,7 @@ th:href="@{'https://wa.me/'
 
                 <button type="button"
                         class="premium-btn premium-btn-primary premium-add-cart"
-                        th:disabled="${!featured.tieneStock()}"
+                        th:disabled="${featured.sinStock}"
                         th:attr="
                             data-id=${featured.id},
                             data-nombre=${featured.productName},
@@ -239,10 +243,10 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="premium-product-grid"
-             th:if="${productos != null and !productos.isEmpty()}">
+             th:if="${products != null and !products.isEmpty()}">
 
             <article class="premium-product-card"
-                     th:each="producto : ${productos}">
+                     th:each="producto : ${products}">
 
                 <div class="premium-product-image">
                     <img th:src="${producto.imageUrl}"
@@ -263,27 +267,31 @@ th:href="@{'https://wa.me/'
                         Producto
                     </h3>
 
-                    <p th:text="${producto.description ?: 'Producto disponible en tienda.'}">
-                        Producto disponible en tienda.
-                    </p>
+<p th:text="${producto.categoriaNombre != null and !producto.categoriaNombre.isBlank()
+        ? producto.categoriaNombre
+        : (producto.marcaNombre != null and !producto.marcaNombre.isBlank()
+            ? producto.marcaNombre
+            : 'Producto disponible en tienda.')}">
+    Producto disponible en tienda.
+</p>
 
                     <div class="premium-product-meta">
                         <strong th:text="${#numbers.formatCurrency(producto.precioConDescuento)}">
                             $0.00
                         </strong>
 
-                        <small th:if="${producto.tieneStock()}">
-                            Disponible
-                        </small>
+<small th:unless="${producto.sinStock}">
+    Disponible
+</small>
 
-                        <small th:unless="${producto.tieneStock()}">
-                            Agotado
-                        </small>
+<small th:if="${producto.sinStock}">
+    Agotado
+</small>
                     </div>
 
                     <button type="button"
                             class="premium-btn premium-btn-primary premium-add-cart"
-                            th:disabled="${!producto.tieneStock()}"
+                            th:disabled="${producto.sinStock}"
                             th:attr="
                                 data-id=${producto.id},
                                 data-nombre=${producto.productName},
@@ -298,7 +306,7 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="premium-empty"
-             th:if="${productos == null or productos.isEmpty()}">
+             th:if="${products == null or products.isEmpty()}">
             Aún no hay productos publicados.
         </div>
 
@@ -353,10 +361,10 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="premium-testimonial-grid"
-             th:if="${reviews != null and !reviews.isEmpty()}">
+             th:if="${resenasIniciales != null and !resenasIniciales.isEmpty()}">
 
             <article class="premium-testimonial-card"
-                     th:each="review : ${reviews}">
+                     th:each="review : ${resenasIniciales}">
 
                 <blockquote th:text="${review.comentario}">
                     Excelente experiencia.
@@ -371,7 +379,7 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="premium-empty"
-             th:if="${reviews == null or reviews.isEmpty()}">
+             th:if="${resenasIniciales == null or resenasIniciales.isEmpty()}">
             Aún no hay reseñas publicadas.
         </div>
 

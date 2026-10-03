@@ -1,0 +1,114 @@
+<section id="footer"
+         th:fragment="footer"
+         xmlns:th="http://www.thymeleaf.org">
+
+    <footer class="store-footer">
+
+        <div class="container">
+
+            <div class="footer-brand">
+
+                <img th:if="${settings != null
+                    and settings.logoUrl != null
+                    and !settings.logoUrl.isBlank()}"
+                     th:src="${settings.logoUrl}"
+                     th:alt="${store != null ? store.nombre : 'Logo'}">
+
+                <strong th:if="${settings == null
+                    or settings.logoUrl == null
+                    or settings.logoUrl.isBlank()}"
+                        th:text="${store != null ? store.nombre : 'Tienda'}">
+                    Tienda
+                </strong>
+
+                <p th:if="${settings != null
+                    and settings.footerText != null
+                    and !settings.footerText.isBlank()}"
+                   th:text="${settings.footerText}">
+                </p>
+
+                <p th:if="${settings != null
+                    and settings.companyAddress != null
+                    and !settings.companyAddress.isBlank()}"
+                   th:text="${settings.companyAddress}">
+                </p>
+
+            </div>
+
+            <div class="footer-contact">
+
+                <a th:if="${settings != null
+                    and settings.companyEmail != null
+                    and !settings.companyEmail.isBlank()}"
+                   th:href="'mailto:' + ${settings.companyEmail}"
+                   th:text="${settings.companyEmail}">
+                </a>
+
+                <a th:if="${settings != null
+                    and settings.companyPhone != null
+                    and !settings.companyPhone.isBlank()}"
+                   th:href="'tel:' + ${settings.companyPhone}"
+                   th:text="${settings.companyPhone}">
+                </a>
+
+                <a th:if="${settings != null
+                    and settings.companyWebsite != null
+                    and !settings.companyWebsite.isBlank()}"
+                   th:href="${settings.companyWebsite}"
+                   th:text="${settings.companyWebsite}"
+                   target="_blank"
+                   rel="noopener">
+                </a>
+
+            </div>
+
+            <div class="footer-social">
+
+                <a th:if="${settings != null
+                    and settings.instagramUrl != null
+                    and !settings.instagramUrl.isBlank()}"
+                   th:href="${settings.instagramUrl}"
+                   target="_blank"
+                   rel="noopener">
+                    Instagram
+                </a>
+
+                <a th:if="${settings != null
+                    and settings.facebookUrl != null
+                    and !settings.facebookUrl.isBlank()}"
+                   th:href="${settings.facebookUrl}"
+                   target="_blank"
+                   rel="noopener">
+                    Facebook
+                </a>
+
+                <a th:if="${settings != null
+                    and settings.tiktokUrl != null
+                    and !settings.tiktokUrl.isBlank()}"
+                   th:href="${settings.tiktokUrl}"
+                   target="_blank"
+                   rel="noopener">
+                    TikTok
+                </a>
+
+            </div>
+
+            <div class="footer-bottom">
+
+                <span>©</span>
+
+                <span th:text="${#dates.year(#dates.createNow())}">
+                    2026
+                </span>
+
+                <span th:text="${store != null ? store.nombre : 'Tienda'}">
+                    Tienda
+                </span>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+</section>

@@ -128,7 +128,7 @@ th:href="@{'https://wa.me/'
                th:href="@{|/#productos|}"
                class="basic-category-card">
 
-                <span th:text="${categoria.nombre}">
+                <span th:text="${categoria}">
                     Categoría
                 </span>
 
@@ -153,10 +153,10 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="basic-product-grid"
-             th:if="${productos != null and !productos.isEmpty()}">
+             th:if="${products != null and !products.isEmpty()}">
 
             <article class="basic-product-card"
-                     th:each="producto : ${productos}">
+                     th:each="producto : ${products}">
 
                 <div class="basic-product-image">
                     <img th:src="${producto.imageUrl}"
@@ -169,9 +169,13 @@ th:href="@{'https://wa.me/'
                         Producto
                     </h3>
 
-                    <p th:text="${producto.description ?: 'Producto disponible en tienda.'}">
-                        Producto disponible en tienda.
-                    </p>
+<p th:text="${producto.categoriaNombre != null and !producto.categoriaNombre.isBlank()
+        ? producto.categoriaNombre
+        : (producto.marcaNombre != null and !producto.marcaNombre.isBlank()
+            ? producto.marcaNombre
+            : 'Producto disponible en tienda.')}">
+    Producto disponible en tienda.
+</p>
 
                     <div class="basic-product-footer">
 
@@ -179,21 +183,21 @@ th:href="@{'https://wa.me/'
                             $0.00
                         </strong>
 
-                        <span th:if="${producto.tieneStock()}"
-                              class="basic-stock ok">
-                            Disponible
-                        </span>
+<span th:unless="${producto.sinStock}"
+      class="basic-stock ok">
+    Disponible
+</span>
 
-                        <span th:unless="${producto.tieneStock()}"
-                              class="basic-stock out">
-                            Agotado
-                        </span>
+<span th:if="${producto.sinStock}"
+      class="basic-stock out">
+    Agotado
+</span>
 
                     </div>
 
                     <button type="button"
                             class="basic-btn basic-btn-primary basic-add-cart"
-                            th:disabled="${!producto.tieneStock()}"
+                            th:disabled="${producto.sinStock}"
                             th:attr="
                                 data-id=${producto.id},
                                 data-nombre=${producto.productName},
@@ -209,7 +213,7 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="basic-empty"
-             th:if="${productos == null or productos.isEmpty()}">
+             th:if="${products == null or products.isEmpty()}">
             Aún no hay productos publicados.
         </div>
 
@@ -249,10 +253,10 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="basic-review-grid"
-             th:if="${reviews != null and !reviews.isEmpty()}">
+             th:if="${resenasIniciales != null and !resenasIniciales.isEmpty()}">
 
             <article class="basic-review-card"
-                     th:each="review : ${reviews}">
+                     th:each="review : ${resenasIniciales}">
 
                 <p th:text="${review.comentario}">
                     Excelente servicio.
@@ -267,7 +271,7 @@ th:href="@{'https://wa.me/'
         </div>
 
         <div class="basic-empty"
-             th:if="${reviews == null or reviews.isEmpty()}">
+             th:if="${resenasIniciales == null or resenasIniciales.isEmpty()}">
             Aún no hay reseñas publicadas.
         </div>
 

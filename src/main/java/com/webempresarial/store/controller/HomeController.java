@@ -53,15 +53,22 @@ public class HomeController {
         model.addAttribute("products", productos);
     }
 
-    private void aplicarLayout(Model model, HttpServletRequest request) {
+    private void aplicarLayout(
+            Model model,
+            HttpServletRequest request
+    ) {
 
-        Store store = storeResolver.getCurrentStore(request);
-        String theme = store.getTheme();
+        Store store =
+                storeResolver.getCurrentStore(request);
+
+        String theme =
+                storeThemeResolver.resolveTheme(store);
 
         model.addAttribute("store", store);
         model.addAttribute("theme", theme);
 
-        boolean esTienda = !theme.equals("WebEmpresarial");
+        boolean esTienda =
+                !"WebEmpresarial".equals(theme);
 
         model.addAttribute("showCart", esTienda);
         model.addAttribute("showCheckout", esTienda);
@@ -75,9 +82,10 @@ public class HomeController {
         Store store = storeResolver.getCurrentStore(request);
         aplicarLayout(model, request);
 
-        String theme = store.getTheme();
+        String theme =
+                storeThemeResolver.resolveTheme(store);
 
-        if (theme.equals("WebEmpresarial")) {
+        if ("WebEmpresarial".equals(theme)) {
 
             model.addAttribute(
                     "title",

@@ -1,0 +1,88 @@
+<section id="navbar"
+         th:fragment="navbar"
+         xmlns:th="http://www.thymeleaf.org"
+         xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <nav class="store-navbar">
+        <div class="container">
+
+            <a th:href="@{/}" class="nav-logo">
+
+                <img th:if="${settings != null
+                    and settings.logoUrl != null
+                    and !settings.logoUrl.isBlank()}"
+                     th:src="${settings.logoUrl}"
+                     th:alt="${store != null ? store.nombre : 'Logo'}"
+                     class="nav-logo-img">
+
+                <span th:if="${settings == null
+                    or settings.logoUrl == null
+                    or settings.logoUrl.isBlank()}"
+                      th:text="${store != null ? store.nombre : 'Tienda'}">
+                    Tienda
+                </span>
+
+            </a>
+
+            <ul class="nav-links">
+                <li>
+                    <a th:href="@{/#hero}">Inicio</a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#productos}">Productos</a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#footer}">Contacto</a>
+                </li>
+
+                <li>
+                    <a th:href="@{/privacy}">Privacidad</a>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+
+                <button type="button"
+                        class="cart-btn"
+                        id="cart-btn"
+                        aria-label="Ver carrito"
+                        aria-expanded="false">
+                    Carrito
+                    <span class="cart-badge"
+                          id="cart-badge">0</span>
+                </button>
+
+                <div sec:authorize="isAuthenticated()">
+                    <a th:href="@{/cuenta}">
+                        Mi cuenta
+                    </a>
+
+                    <a th:href="@{/pedidos}">
+                        Mis pedidos
+                    </a>
+
+                    <a th:href="@{/logout}">
+                        Cerrar sesión
+                    </a>
+                </div>
+
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}">
+                        Login
+                    </a>
+
+                    <button type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#registroModal">
+                        Registro
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </nav>
+
+</section>

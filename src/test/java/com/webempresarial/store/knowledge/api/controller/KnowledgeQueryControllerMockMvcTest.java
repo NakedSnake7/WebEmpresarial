@@ -24,6 +24,7 @@ import com.webempresarial.store.model.Store;
 import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
@@ -119,6 +120,9 @@ class KnowledgeQueryControllerMockMvcTest {
 
     @MockitoBean
     private StoreThemeResolver storeThemeResolver;
+
+    @MockitoBean
+    private FeatureAccessService featureAccessService;
     
     @Test
     void shouldSearchKnowledgeAndReturn200()

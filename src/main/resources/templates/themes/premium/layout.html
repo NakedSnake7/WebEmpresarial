@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(title, content)"
       th:replace="~{themes/shared/layout :: layout(
             ${title},
             ${content}
