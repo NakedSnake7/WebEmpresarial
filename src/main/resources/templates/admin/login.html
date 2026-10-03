@@ -190,6 +190,14 @@
 <body>
 <div id="particles-js"></div>
 
+<div
+    th:if="${param.activated != null}"
+    class="alert alert-success">
+
+    Tu cuenta fue activada correctamente.
+    Ya puedes iniciar sesión.
+
+</div>
 
 
     <div class="login-container">
@@ -205,6 +213,8 @@
 
     <button type="submit">Iniciar sesión</button>
 </form>
+
+
     </div>
 <!-- LOADER tipo app -->
 <div id="app-loader">
