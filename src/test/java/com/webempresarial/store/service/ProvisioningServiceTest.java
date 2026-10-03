@@ -54,6 +54,9 @@ class ProvisioningServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private StoreSettingsService storeSettingsService;
+
     private ProvisioningService provisioningService;
 
     @BeforeEach
@@ -66,6 +69,7 @@ class ProvisioningServiceTest {
                         adminUserRepository,
                         passwordEncoder,
                         adminAccountActivationService,
+                        storeSettingsService,
                         eventPublisher
                 );
     }
@@ -151,6 +155,8 @@ class ProvisioningServiceTest {
         Store savedStore =
                 storeCaptor.getValue();
 
+        verify(storeSettingsService)
+                .createDefaults(savedStore);
 
         assertThat(result)
                 .isSameAs(savedStore);
@@ -409,6 +415,9 @@ assertThat(event.activationToken())
                 .isEqualTo(
                         "stride.web-empresarial.com"
                 );
+
+        verify(storeSettingsService)
+                .createDefaults(store);
     }
 
     @Test
@@ -466,6 +475,7 @@ assertThat(event.activationToken())
         verifyNoInteractions(
                 adminAccountActivationService
         );
+        verifyNoInteractions(storeSettingsService);
         verifyNoInteractions(eventPublisher);
     }
 
@@ -511,6 +521,7 @@ assertThat(event.activationToken())
         verify(adminUserRepository, never())
                 .save(any(AdminUser.class));
 
+        verifyNoInteractions(storeSettingsService);
         verifyNoInteractions(passwordEncoder);
         verifyNoInteractions(adminAccountActivationService);
         verifyNoInteractions(eventPublisher);

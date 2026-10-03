@@ -30,6 +30,7 @@ public class ProvisioningService {
     private final AdminUserRepository adminUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final AdminAccountActivationService adminAccountActivationService;
+    private final StoreSettingsService storeSettingsService;
     private final ApplicationEventPublisher eventPublisher;
 
     public ProvisioningService(
@@ -38,6 +39,7 @@ public class ProvisioningService {
             AdminUserRepository adminUserRepository,
             PasswordEncoder passwordEncoder,
             AdminAccountActivationService adminAccountActivationService,
+            StoreSettingsService storeSettingsService,
             ApplicationEventPublisher eventPublisher
     ) {
         this.storeRepository = storeRepository;
@@ -45,6 +47,7 @@ public class ProvisioningService {
         this.adminUserRepository = adminUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminAccountActivationService = adminAccountActivationService;
+        this.storeSettingsService = storeSettingsService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -91,6 +94,8 @@ public class ProvisioningService {
         store.setCurrency("MXN");
 
         Store savedStore = storeRepository.save(store);
+
+        storeSettingsService.createDefaults(savedStore);
 
         Subscription subscription = new Subscription();
         subscription.setStore(savedStore);
