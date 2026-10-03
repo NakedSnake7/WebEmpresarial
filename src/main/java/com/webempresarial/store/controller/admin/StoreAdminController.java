@@ -19,13 +19,13 @@ public class StoreAdminController {
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("stores", storeAdminService.listarTiendas());
-        return "admin/stores/list";
+        return "admin/store/list";
     }
 
     @GetMapping("/nuevo")
     public String nuevo(Model model) {
         model.addAttribute("store", new Store());
-        return "admin/stores/form";
+        return "admin/store/form";
     }
 
     @PostMapping("/guardar")
@@ -40,7 +40,7 @@ public class StoreAdminController {
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Long id, Model model) {
         model.addAttribute("store", storeAdminService.buscarPorId(id));
-        return "admin/stores/form";
+        return "admin/store/form";
     }
 
     @PostMapping("/estado/{id}")
