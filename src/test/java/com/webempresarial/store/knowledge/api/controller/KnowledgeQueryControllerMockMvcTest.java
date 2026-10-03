@@ -2,6 +2,7 @@ package com.webempresarial.store.knowledge.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;   
 import com.webempresarial.store.config.SecurityConfig;
+import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.knowledge.api.dto.KnowledgeDetailResponse;
 import com.webempresarial.store.knowledge.api.dto.KnowledgePageResponse;
@@ -20,6 +21,7 @@ import com.webempresarial.store.knowledge.domain.enums.KnowledgeRiskLevel;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeStatus;
 import com.webempresarial.store.knowledge.domain.enums.KnowledgeTypeCode;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
@@ -87,6 +89,12 @@ class KnowledgeQueryControllerMockMvcTest {
      * Dependencias requeridas por SecurityConfig
      * y componentes MVC globales.
      */
+    @MockitoBean
+    private AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler;
+
+    @MockitoBean
+    private AdminTenantAccessInterceptor adminTenantAccessInterceptor;
+
     @MockitoBean
     private AdminUserDetailsService adminUserDetailsService;
 

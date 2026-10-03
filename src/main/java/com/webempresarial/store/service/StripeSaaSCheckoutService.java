@@ -105,7 +105,7 @@ public class StripeSaaSCheckoutService {
                                         + "/billing/success?session_id={CHECKOUT_SESSION_ID}"
                         )
                         .setCancelUrl(
-                                baseUrl + "/pricing"
+                                baseUrl + "/#saas-checkout"
                         )
                         .setCustomerEmail(
                                 dto.getEmail()

@@ -16,6 +16,10 @@ import com.webempresarial.store.repository.AdminUserRepository;
 import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.repository.SubscriptionRepository;
 
+import com.webempresarial.store.entity.AdminAccountActivationToken;
+import com.webempresarial.store.event.AdminAccountCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -25,17 +29,23 @@ public class ProvisioningService {
     private final SubscriptionRepository subscriptionRepository;
     private final AdminUserRepository adminUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminAccountActivationService adminAccountActivationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ProvisioningService(
             StoreRepository storeRepository,
             SubscriptionRepository subscriptionRepository,
             AdminUserRepository adminUserRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AdminAccountActivationService adminAccountActivationService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.storeRepository = storeRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.adminUserRepository = adminUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.adminAccountActivationService = adminAccountActivationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -50,47 +60,56 @@ public class ProvisioningService {
             String stripePriceId
     ) {
 
-    	String normalizedDomain = normalizeDomain(domain);
-    	String finalDomain = normalizedDomain + ".web-empresarial.com";
+        String normalizedDomain = normalizeDomain(domain);
+        String finalDomain = normalizedDomain + ".web-empresarial.com";
 
-    	var existingStore = storeRepository.findByDominio(finalDomain);
+        var existingStore = storeRepository.findByDominio(finalDomain);
 
-    	if (existingStore.isPresent()) {
-    	    return existingStore.get();
-    	}
+        if (existingStore.isPresent()) {
+            return existingStore.get();
+        }
 
-    	LocalDateTime now = LocalDateTime.now();
+        String normalizedEmail =
+                normalizeEmail(email);
 
-    	Store store = new Store();
-    	store.setNombre(companyName);
-    	store.setTheme("default");
-    	store.setDominio(finalDomain);
-    	store.setActiva(true);
-    	store.setPlan(plan);
-    	store.setContactName(ownerName);
-    	store.setCompanyEmail(email);
-    	store.setCurrency("MXN");
+        if (adminUserRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalStateException(
+                    "Ya existe una cuenta administrativa con este correo"
+            );
+        }
 
-    	Store savedStore = storeRepository.save(store);
+        LocalDateTime now = LocalDateTime.now();
 
-    	Subscription subscription = new Subscription();
-    	subscription.setStore(savedStore);
-    	subscription.setPlan(plan);
-    	subscription.setStatus(SubscriptionStatus.ACTIVE);
-    	subscription.setStripeCustomerId(stripeCustomerId);
-    	subscription.setStripeSubscriptionId(stripeSubscriptionId);
-    	subscription.setStripePriceId(stripePriceId);
-    	subscription.setStartsAt(now);
-    	subscription.setEndsAt(null);
-    	subscription.setCurrentPeriodStart(now);
-    	subscription.setCurrentPeriodEnd(now.plusMonths(1));
-    	subscription.setNextBillingDate(now.plusMonths(1));
+        Store store = new Store();
+        store.setNombre(companyName);
+        store.setTheme("default");
+        store.setDominio(finalDomain);
+        store.setActiva(true);
+        store.setPlan(plan);
+        store.setContactName(ownerName);
+        store.setCompanyEmail(normalizedEmail);
+        store.setCurrency("MXN");
 
-    	subscriptionRepository.save(subscription);
+        Store savedStore = storeRepository.save(store);
 
-    	createStoreAdmin(savedStore, ownerName, email);
+        Subscription subscription = new Subscription();
+        subscription.setStore(savedStore);
+        subscription.setPlan(plan);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setStripeCustomerId(stripeCustomerId);
+        subscription.setStripeSubscriptionId(stripeSubscriptionId);
+        subscription.setStripePriceId(stripePriceId);
+        subscription.setStartsAt(now);
+        subscription.setEndsAt(null);
+        subscription.setCurrentPeriodStart(now);
+        subscription.setCurrentPeriodEnd(now.plusMonths(1));
+        subscription.setNextBillingDate(now.plusMonths(1));
 
-    	return savedStore;
+        subscriptionRepository.save(subscription);
+
+        createStoreAdmin(savedStore, ownerName, normalizedEmail);
+
+        return savedStore;
     }
 
     private void createStoreAdmin(
@@ -98,23 +117,51 @@ public class ProvisioningService {
             String ownerName,
             String email
     ) {
-        if (adminUserRepository.existsByEmail(email)) {
-            return;
-        }
+
+
 
         AdminUser admin = new AdminUser();
 
         admin.setFullName(ownerName);
         admin.setEmail(email);
-        admin.setPassword(passwordEncoder.encode(generateTemporaryPassword()));
-        admin.setEnabled(true);
-        admin.setStore(store);
 
-                
+        /*
+         * Placeholder inaccesible.
+         * El propietario establecerá su contraseña
+         * mediante el flujo de activación.
+         */
+        admin.setPassword(
+                passwordEncoder.encode(
+                        generateTemporaryPassword()
+                )
+        );
+
+        /*
+         * No puede autenticarse hasta activar
+         * personalmente la cuenta.
+         */
+        admin.setEnabled(false);
+
+        admin.setStore(store);
         admin.setRole(AdminRole.STORE_ADMIN);
-        
-        
-        adminUserRepository.save(admin);
+
+        AdminUser savedAdmin =
+                adminUserRepository.save(admin);
+
+        AdminAccountActivationToken activationToken =
+                adminAccountActivationService
+                        .createToken(savedAdmin);
+
+        eventPublisher.publishEvent(
+                new AdminAccountCreatedEvent(
+                        savedAdmin.getId(),
+                        savedAdmin.getEmail(),
+                        savedAdmin.getFullName(),
+                        store.getNombre(),
+                        store.getDominio(),
+                        activationToken.getToken()
+                )
+        );
     }
 
     private String generateTemporaryPassword() {
@@ -137,5 +184,18 @@ public class ProvisioningService {
                 .replace(".web-empresarial.com", "")
                 .replace("/", "")
                 .replace(" ", "-");
+    }
+
+    private String normalizeEmail(String email) {
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El correo no puede estar vacío"
+            );
+        }
+
+        return email
+                .trim()
+                .toLowerCase();
     }
 }

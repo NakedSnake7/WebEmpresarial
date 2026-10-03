@@ -17,7 +17,7 @@ public class MailerSendConfig {
     @Value("${mailersend.from.email}")
     private String fromEmail;
 
-    @Value("${mailersend.from.name:WeedTlan Shops}")
+    @Value("${mailersend.from.name:WebEmpresarial}")
     private String fromName;
 
     @Value("${mailersend.reply.to}")

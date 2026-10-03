@@ -17,13 +17,16 @@ public class SecurityConfig {
 
     private final AuthUserDetailsService authUserDetailsService;
     private final AdminUserDetailsService adminUserDetailsService;
+    private final AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler;
 
     public SecurityConfig(
             AuthUserDetailsService authUserDetailsService,
-            AdminUserDetailsService adminUserDetailsService
+            AdminUserDetailsService adminUserDetailsService,
+            AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler
     ) {
         this.authUserDetailsService = authUserDetailsService;
         this.adminUserDetailsService = adminUserDetailsService;
+        this.adminAuthenticationSuccessHandler = adminAuthenticationSuccessHandler;
     }
 
     @Bean
@@ -53,19 +56,27 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin/login")
+                .requestMatchers(
+                    "/admin/login",
+                    "/admin/activate",
+                    "/admin/activate/**"
+                )
                 .permitAll()
 
                 .requestMatchers(
                     "/admin/stores/**",
                     "/admin/subscriptions/**",
-                    "/admin/saas/**"
+                    "/admin/saas/**",
+                    "/admin/platform/**",
+                    "/api/admin/platform/**"
                 )
                 .hasRole("SUPER_ADMIN")
 
                 .requestMatchers(
+                    "/admin/users/**",
                     "/admin/billing/**",
                     "/admin/store/settings/**",
+                    "/admin/stripe/connect/**",
                     "/api/admin/stripe/connect/**"
                 )
                 .hasAnyRole(
@@ -91,9 +102,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl(
-                    "/admin/dashboard",
-                    true
+                .successHandler(
+                    adminAuthenticationSuccessHandler
                 )
                 .permitAll()
             )
