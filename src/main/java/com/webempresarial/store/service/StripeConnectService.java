@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.stripe.Stripe;
 import com.stripe.model.Account;
 import com.stripe.model.AccountLink;
@@ -24,8 +27,6 @@ public class StripeConnectService {
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
-    @Value("${app.environment:prod}")
-    private String environment;
 
     public StripeConnectService(StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
@@ -36,8 +37,16 @@ public class StripeConnectService {
         Stripe.apiKey = stripeSecretKey;
     }
 
+    private static final Logger log =
+            LoggerFactory.getLogger(
+                    StripeConnectService.class
+            );
+
     @Transactional
-    public String createOnboardingLink(Store store) {
+    public String createOnboardingLink(
+            Store store,
+            String baseUrl
+    )    {
         try {
             String accountId = store.getStripeConnectedAccountId();
 
@@ -60,8 +69,14 @@ public class StripeConnectService {
             AccountLinkCreateParams linkParams =
                     AccountLinkCreateParams.builder()
                             .setAccount(accountId)
-                            .setRefreshUrl(resolveBaseUrl() + "/admin/stripe/connect/refresh")
-                            .setReturnUrl(resolveBaseUrl() + "/admin/stripe/connect/return")
+                            .setRefreshUrl(
+                                    baseUrl
+                                            + "/admin/stripe/connect/refresh"
+                            )
+                            .setReturnUrl(
+                                    baseUrl
+                                            + "/admin/stripe/connect/return"
+                            )
                             .setType(AccountLinkCreateParams.Type.ACCOUNT_ONBOARDING)
                             .build();
 
@@ -70,27 +85,82 @@ public class StripeConnectService {
             return accountLink.getUrl();
 
         } catch (Exception e) {
-        	e.printStackTrace();
-        	throw new RuntimeException("No se pudo iniciar Stripe Connect onboarding: " + e.getMessage(), e);
+
+            log.error(
+                    "No se pudo iniciar Stripe Connect onboarding "
+                            + "para storeId={}",
+                    store != null ? store.getId() : null,
+                    e
+            );
+
+            throw new RuntimeException(
+                    "No se pudo iniciar Stripe Connect onboarding",
+                    e
+            );
         }
     }
 
     @Transactional
-    public void markConnected(Long storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+    public boolean syncConnectionStatus(
+            Store store
+    ) {
 
-        store.setStripeConnected(true);
-        store.setStripeConnectedAt(LocalDateTime.now());
+        String accountId =
+                store.getStripeConnectedAccountId();
 
-        storeRepository.save(store);
-    }
+        if (accountId == null
+                || accountId.isBlank()) {
 
-    private String resolveBaseUrl() {
-        if ("dev".equalsIgnoreCase(environment) || "local".equalsIgnoreCase(environment)) {
-            return "http://localhost:8080";
+            store.setStripeConnected(false);
+            store.setStripeConnectedAt(null);
+
+            storeRepository.save(store);
+
+            return false;
         }
 
-        return "https://web-empresarial.com";
+        try {
+
+            Account account =
+                    Account.retrieve(accountId);
+
+            boolean connected =
+                    Boolean.TRUE.equals(
+                            account.getChargesEnabled()
+                    );
+
+            store.setStripeConnected(connected);
+
+            if (connected) {
+
+                if (store.getStripeConnectedAt() == null) {
+                    store.setStripeConnectedAt(
+                            LocalDateTime.now()
+                    );
+                }
+
+            } else {
+
+                store.setStripeConnectedAt(null);
+            }
+
+            storeRepository.save(store);
+
+            return connected;
+
+        } catch (Exception e) {
+
+            store.setStripeConnected(false);
+            store.setStripeConnectedAt(null);
+
+            storeRepository.save(store);
+
+            throw new RuntimeException(
+                    "No se pudo verificar el estado de Stripe Connect",
+                    e
+            );
+        }
     }
+
+
 }
