@@ -8,6 +8,7 @@ import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.health.checks.KernelHealthCheck;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -32,7 +33,14 @@ public class PlatformFeatures implements PlatformModule {
                         SidebarSectionDefinition.builder("Plataforma", "🧩")
                                 .item("Analytics", "📈", "/crm/reports", Feature.ANALYTICS)
                                 .item("Dominio", "🌐", "/admin/domains", Feature.CUSTOM_DOMAIN)
-                                .item("Usuarios", "👥", "/admin/users", Feature.MULTI_USER)
+                                .item(
+                                        "Usuarios",
+                                        "👥",
+                                        "/admin/users",
+                                        Feature.MULTI_USER,
+                                        AdminRole.SUPER_ADMIN,
+                                        AdminRole.STORE_ADMIN
+                                )
                                 .build()
                 )
 

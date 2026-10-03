@@ -49,7 +49,38 @@ public final class SidebarSectionDefinition {
                 com.webempresarial.store.model.Feature feature
         ) {
             this.items.add(
-                    new SidebarItemDefinition(title, icon, url, feature)
+                    new SidebarItemDefinition(
+                            title,
+                            icon,
+                            url,
+                            feature
+                    )
+            );
+
+            return this;
+        }
+
+        /*
+         * Variante con autorización explícita por rol.
+         *
+         * Se utiliza para elementos administrativos
+         * sensibles, por ejemplo gestión de usuarios.
+         */
+        public Builder item(
+                String title,
+                String icon,
+                String url,
+                com.webempresarial.store.model.Feature feature,
+                com.webempresarial.store.model.AdminRole... allowedRoles
+        ) {
+            this.items.add(
+                    new SidebarItemDefinition(
+                            title,
+                            icon,
+                            url,
+                            feature,
+                            java.util.Set.of(allowedRoles)
+                    )
             );
 
             return this;

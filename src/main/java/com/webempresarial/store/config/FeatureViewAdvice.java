@@ -2,12 +2,15 @@ package com.webempresarial.store.config;
 
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -51,7 +54,17 @@ public class FeatureViewAdvice {
             return List.of();
         }
 
-        return sidebarRegistry.sections(store);
+        AdminRole role = currentAdminRole();
+
+        if (role == null) {
+            return List.of();
+        }
+
+        return sidebarRegistry.sections(
+                store,
+                role
+        );
+
     }
 
     @ModelAttribute("sidebarBadges")
@@ -105,5 +118,46 @@ public class FeatureViewAdvice {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private AdminRole currentAdminRole() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        if (hasRole(authentication, "ROLE_SUPER_ADMIN")) {
+            return AdminRole.SUPER_ADMIN;
+        }
+
+        if (hasRole(authentication, "ROLE_STORE_ADMIN")) {
+            return AdminRole.STORE_ADMIN;
+        }
+
+        if (hasRole(authentication, "ROLE_STORE_STAFF")) {
+            return AdminRole.STORE_STAFF;
+        }
+
+        return null;
+    }
+
+    private boolean hasRole(
+            Authentication authentication,
+            String role
+    ) {
+        return authentication
+                .getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        role.equals(
+                                authority.getAuthority()
+                        )
+                );
     }
 }

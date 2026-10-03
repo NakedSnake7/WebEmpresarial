@@ -1,11 +1,12 @@
 package com.webempresarial.store.feature.registry;
 
-import com.webempresarial.store.dto.sidebar.SidebarItemDTO; 
+import com.webempresarial.store.dto.sidebar.SidebarItemDTO;
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarItemDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Store;
 
 import org.springframework.stereotype.Component;
@@ -31,20 +32,25 @@ public class SidebarRegistry {
         sections.addAll(module.getSidebarSections());
     }
 
-    public List<SidebarSectionDTO> sections(Store store) {
+    public List<SidebarSectionDTO> sections(
+            Store store,
+            AdminRole role
+    ) {
         return sections.stream()
-                .map(section -> toDto(section, store))
+                .map(section -> toDto(section, store, role))
                 .filter(section -> !section.items().isEmpty())
                 .toList();
     }
 
     private SidebarSectionDTO toDto(
             SidebarSectionDefinition section,
-            Store store
+            Store store,
+            AdminRole role
     ) {
         List<SidebarItemDTO> visibleItems =
                 section.getItems()
                         .stream()
+                        .filter(item -> item.allows(role))
                         .map(item -> toDto(item, store))
                         .toList();
 
