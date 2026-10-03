@@ -137,42 +137,63 @@ export function configurarCarrito() {
 
 	// FUNCION: agregar al carrito
 	function addToCart(
-	   id,
-	   varianteId,
-	   name,
-	   price,
-	   quantityId,
-	   originalStock
-	) {	    if (!id) return alert("Error: ID del producto no definido");
+	    id,
+	    varianteId,
+	    name,
+	    price,
+	    quantityId,
+	    originalStock
+	) {
+	    if (!id) {
+	        return alert("Error: ID del producto no definido");
+	    }
 
 	    const input = document.getElementById(quantityId);
 	    const qty = parseInt(input?.value) || 0;
-	    if (qty <= 0) return alert('Cantidad inválida');
 
-	    const products = cartStore.getState().products;
-		const existing = products.find(p =>p.id === id &&(p.varianteId ?? null) === (varianteId ?? null));	    
-		const inCartQtyObj = products.find(p =>p.id === productId && (p.varianteId ?? null) === (varianteId ?? null));
-	    const availableStock = originalStock - inCartQty;
-
-	    if (qty > availableStock) {
-	        return alert(`Solo hay ${availableStock} unidades disponibles`);
+	    if (qty <= 0) {
+	        return alert("Cantidad inválida");
 	    }
 
-		cartStore.add({
-		    id,
-		    varianteId,
-		    name,
-		    price,
-		    quantity: qty,
-		    quantityId
-		});
+	    const products = cartStore.getState().products;
 
-		// 🔥 ABRIR CARRITO AUTOMÁTICO
-		if (cartDropdown) {
-		    cartDropdown.classList.add("open");
-		}
+	    const existing = products.find(
+	        p =>
+	            Number(p.productId ?? p.id) === Number(id) &&
+	            (p.varianteId ?? null) === (varianteId ?? null)
+	    );
 
-		actualizarStockSiExiste(id);
+	    const inCartQty = existing
+	        ? existing.quantity
+	        : 0;
+
+	    const availableStock =
+	        originalStock - inCartQty;
+
+	    if (qty > availableStock) {
+	        return alert(
+	            `Solo hay ${availableStock} unidades disponibles`
+	        );
+	    }
+
+	    cartStore.add({
+	        id,
+	        varianteId: varianteId ?? null,
+	        name,
+	        price,
+	        quantity: qty,
+	        quantityId,
+	        originalStock
+	    });
+
+	    if (cartDropdown) {
+	        cartDropdown.classList.add("open");
+	    }
+
+	    actualizarStockSiExiste(
+	        id,
+	        varianteId
+	    );
 	}
 	function initCouponUI() {
 	  const couponInput = document.getElementById("couponInput");
@@ -208,29 +229,54 @@ export function configurarCarrito() {
 
 	
 	
-	function actualizarStockSiExiste(productId) {
-	    const btn = document.querySelector(
-	        `.add-to-cart[data-product-id="${productId}"]`
-	    );
-	    if (!btn) return; // 👈 no existe = no hay error
+	function actualizarStockSiExiste(
+	    productId,
+	    varianteId = null
+	) {
+	    const selector = varianteId != null
+	        ? `.add-to-cart[data-product-id="${productId}"][data-variante-id="${varianteId}"]`
+	        : `.add-to-cart[data-product-id="${productId}"]:not([data-variante-id]), ` +
+	          `.add-to-cart[data-product-id="${productId}"][data-variante-id=""]`;
 
-	    const quantityId = btn.dataset.quantityId;
-		const originalStock =
-		    Number(btn.dataset.originalStock) ||
-		    Number(
-		        cartStore.getState().products.find(p =>
-		            p.id === productId &&
-		            (p.varianteId ?? null) === varianteId
-		        )?.originalStock || 0
-		    );
-            updateStockBadge(quantityId, originalStock, varianteId);
+	    const btn =
+	        document.querySelector(selector);
+
+	    if (!btn) return;
+
+	    const quantityId =
+	        btn.dataset.quantityId;
+
+	    const originalStock =
+	        Number(btn.dataset.originalStock) ||
+	        Number(
+	            cartStore.getState().products.find(
+	                p =>
+	                    Number(p.productId ?? p.id) === Number(productId) &&
+	                    (p.varianteId ?? null) ===
+	                        (varianteId ?? null)
+	            )?.originalStock || 0
+	        );
+
+	    updateStockBadge(
+	        quantityId,
+	        originalStock,
+	        varianteId
+	    );
 	}
 
 
 	// FUNCION: eliminar del carrito
 	function removeFromCart(productId, varianteId, qty) {
-	    cartStore.remove(productId, varianteId, qty);
-	    actualizarStockSiExiste(productId);
+	    cartStore.remove(
+	        productId,
+	        varianteId,
+	        qty
+	    );
+
+	    actualizarStockSiExiste(
+	        productId,
+	        varianteId
+	    );
 	}
 
 
@@ -241,14 +287,23 @@ export function configurarCarrito() {
 
 	    const productId = Number(input.dataset.productId);
 
-	    const btn = document.querySelector(
-	        `.add-to-cart[data-product-id="${productId}"]`
-	    );
+		const selector = varianteId != null
+		    ? `.add-to-cart[data-product-id="${productId}"][data-variante-id="${varianteId}"]`
+		    : `.add-to-cart[data-product-id="${productId}"]:not([data-variante-id]), ` +
+		      `.add-to-cart[data-product-id="${productId}"][data-variante-id=""]`;
+
+		const btn = document.querySelector(selector);
+
 	    if (!btn) return;
 
 	    // Cantidad actual en carrito (POR ID)
 		const products = cartStore.getState().products;
-		const inCartQtyObj = products.find(p => p.id === productId);
+		const inCartQtyObj = products.find(
+		    p =>
+		        Number(p.productId ?? p.id) === Number(productId) &&
+		        (p.varianteId ?? null) ===
+		            (varianteId ?? null)
+		);
 	    const inCartQty = inCartQtyObj ? inCartQtyObj.quantity : 0;
 
 	    const availableStock = originalStock - inCartQty;
@@ -322,6 +377,10 @@ export function configurarCarrito() {
 	        console.log("Eliminar:", { productId, varianteId, qty });
 
 	        cartStore.remove(productId, varianteId, qty);
+			actualizarStockSiExiste(
+			    productId,
+			    varianteId
+			);
 	    });
 	}
 
