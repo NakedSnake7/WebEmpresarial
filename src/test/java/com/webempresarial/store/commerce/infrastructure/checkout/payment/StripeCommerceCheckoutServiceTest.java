@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,7 @@ class StripeCommerceCheckoutServiceTest {
     @BeforeEach
     void setUp() {
 
-    	service = new StripeCommerceCheckoutService();
+        service = new StripeCommerceCheckoutService();
 
         ReflectionTestUtils.setField(
                 service,
@@ -76,7 +77,10 @@ class StripeCommerceCheckoutServiceTest {
                 .thenReturn(" USD ");
 
         when(store.isStripeConnected())
-                .thenReturn(false);
+        .thenReturn(true);
+
+when(store.getStripeConnectedAccountId())
+        .thenReturn("acct_currency_test");
 
         Session stripeSession =
                 mock(Session.class);
@@ -116,8 +120,7 @@ class StripeCommerceCheckoutServiceTest {
     }
     
     @Test
-    void createSession_shouldNotUseStripeAccountWhenConnectedAccountIsBlank()
-            throws Exception {
+    void createSession_shouldRejectConnectedStoreWhenAccountIdIsBlank() {
 
         Order order = mock(Order.class);
         Store store = mock(Store.class);
@@ -125,29 +128,8 @@ class StripeCommerceCheckoutServiceTest {
         when(order.getTotal())
                 .thenReturn(new BigDecimal("100.00"));
 
-        when(order.getId())
-                .thenReturn(92L);
-
         when(order.getStore())
                 .thenReturn(store);
-
-        when(order.getCustomerEmail())
-                .thenReturn("cliente@test.com");
-
-        when(store.getId())
-                .thenReturn(13L);
-
-        when(store.getDominio())
-                .thenReturn("tenant.test.com");
-
-        when(store.getNombre())
-                .thenReturn("Tenant");
-
-        when(store.getTheme())
-                .thenReturn("WebEmpresarial");
-
-        when(store.getCurrency())
-                .thenReturn("mxn");
 
         when(store.isStripeConnected())
                 .thenReturn(true);
@@ -155,39 +137,54 @@ class StripeCommerceCheckoutServiceTest {
         when(store.getStripeConnectedAccountId())
                 .thenReturn("   ");
 
-        Session stripeSession =
-                mock(Session.class);
-
-        AtomicReference<RequestOptions> captured =
-                new AtomicReference<>();
-
-        try (MockedStatic<Session> mocked =
-                mockStatic(Session.class)) {
-
-            mocked.when(() ->
-                    Session.create(
-                            any(SessionCreateParams.class),
-                            any(RequestOptions.class)
-                    )
-            ).thenAnswer(invocation -> {
-
-                captured.set(
-                        invocation.getArgument(1)
+        assertThatThrownBy(() ->
+                service.createSession(order)
+        )
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "La tienda debe conectar Stripe antes de aceptar pagos con tarjeta"
                 );
+    }
 
-                return stripeSession;
-            });
+    @Test
+    void createSession_shouldRejectStoreWithoutStripeConnect() {
 
-            service.createSession(order);
-        }
+        Order order = mock(Order.class);
+        Store store = mock(Store.class);
 
-        assertThat(captured.get().getStripeAccount())
-                .isNull();
+        when(order.getTotal())
+                .thenReturn(new BigDecimal("100.00"));
+
+        when(order.getStore())
+                .thenReturn(store);
+
+        when(store.isStripeConnected())
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                service.createSession(order)
+        )
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "La tienda debe conectar Stripe antes de aceptar pagos con tarjeta"
+                );
     }
     
     @Test
     void getSessionUrl_shouldReturnStripeSessionUrl()
             throws Exception {
+
+        Store store = mock(Store.class);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
 
         Session stripeSession =
                 mock(Session.class);
@@ -201,11 +198,19 @@ class StripeCommerceCheckoutServiceTest {
                 mockStatic(Session.class)) {
 
             mocked.when(() ->
-                    Session.retrieve("cs_test")
+                    Session.retrieve(
+                            "cs_test",
+                            RequestOptions.builder()
+                                    .setStripeAccount("acct_test")
+                                    .build()
+                    )
             ).thenReturn(stripeSession);
 
             String result =
-                    service.getSessionUrl("cs_test");
+                    service.getSessionUrl(
+                            "cs_test",
+                            store
+                    );
 
             assertThat(result)
                     .isEqualTo(
@@ -218,6 +223,14 @@ class StripeCommerceCheckoutServiceTest {
     void getSessionUrl_shouldRejectSessionWithoutUrl()
             throws Exception {
 
+        Store store = mock(Store.class);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
+
         Session stripeSession =
                 mock(Session.class);
 
@@ -228,11 +241,17 @@ class StripeCommerceCheckoutServiceTest {
                 mockStatic(Session.class)) {
 
             mocked.when(() ->
-                    Session.retrieve("cs_invalid")
+                    Session.retrieve(
+                            eq("cs_invalid"),
+                            any(RequestOptions.class)
+                    )
             ).thenReturn(stripeSession);
 
             assertThatThrownBy(() ->
-                    service.getSessionUrl("cs_invalid")
+                    service.getSessionUrl(
+                            "cs_invalid",
+                            store
+                    )
             )
                     .isInstanceOf(
                             IllegalStateException.class
@@ -242,9 +261,18 @@ class StripeCommerceCheckoutServiceTest {
                     );
         }
     }
+
     @Test
     void isSessionExpired_shouldReturnTrueWhenStripeSessionIsExpired()
             throws Exception {
+
+        Store store = mock(Store.class);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
 
         Session stripeSession =
                 mock(Session.class);
@@ -256,12 +284,16 @@ class StripeCommerceCheckoutServiceTest {
                 mockStatic(Session.class)) {
 
             mocked.when(() ->
-                    Session.retrieve("cs_expired")
+                    Session.retrieve(
+                            eq("cs_expired"),
+                            any(RequestOptions.class)
+                    )
             ).thenReturn(stripeSession);
 
             boolean result =
                     service.isSessionExpired(
-                            "cs_expired"
+                            "cs_expired",
+                            store
                     );
 
             assertThat(result)
@@ -273,6 +305,14 @@ class StripeCommerceCheckoutServiceTest {
     void isSessionExpired_shouldReturnFalseWhenStripeSessionIsActive()
             throws Exception {
 
+        Store store = mock(Store.class);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
+
         Session stripeSession =
                 mock(Session.class);
 
@@ -283,12 +323,16 @@ class StripeCommerceCheckoutServiceTest {
                 mockStatic(Session.class)) {
 
             mocked.when(() ->
-                    Session.retrieve("cs_active")
+                    Session.retrieve(
+                            eq("cs_active"),
+                            any(RequestOptions.class)
+                    )
             ).thenReturn(stripeSession);
 
             boolean result =
                     service.isSessionExpired(
-                            "cs_active"
+                            "cs_active",
+                            store
                     );
 
             assertThat(result)
@@ -300,11 +344,22 @@ class StripeCommerceCheckoutServiceTest {
     void isSessionExpired_shouldReturnTrueWhenStripeLookupFails()
             throws Exception {
 
+        Store store = mock(Store.class);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
+
         try (MockedStatic<Session> mocked =
                 mockStatic(Session.class)) {
 
             mocked.when(() ->
-                    Session.retrieve("cs_error")
+                    Session.retrieve(
+                            eq("cs_error"),
+                            any(RequestOptions.class)
+                    )
             ).thenThrow(
                     new RuntimeException(
                             "Stripe unavailable"
@@ -313,7 +368,8 @@ class StripeCommerceCheckoutServiceTest {
 
             boolean result =
                     service.isSessionExpired(
-                            "cs_error"
+                            "cs_error",
+                            store
                     );
 
             assertThat(result)
@@ -358,7 +414,10 @@ class StripeCommerceCheckoutServiceTest {
                 .thenReturn(null);
 
         when(store.isStripeConnected())
-                .thenReturn(false);
+        .thenReturn(true);
+
+when(store.getStripeConnectedAccountId())
+        .thenReturn("acct_contract_test");
 
         Session stripeSession =
                 mock(Session.class);
@@ -496,7 +555,7 @@ class StripeCommerceCheckoutServiceTest {
                 );
 
         assertThat(options.getStripeAccount())
-                .isNull();
+        .isEqualTo("acct_contract_test");
     }
     
     @Test

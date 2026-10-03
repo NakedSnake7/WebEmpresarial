@@ -50,6 +50,7 @@ class StripeCheckoutControllerTest {
 
     @BeforeEach
     void setUp() {
+
         controller = new StripeCheckoutController(
                 orderService,
                 stripeCheckoutService,
@@ -60,11 +61,89 @@ class StripeCheckoutControllerTest {
                 .thenReturn(store);
     }
 
+    private void givenStripeConnectedStore() {
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
+    }
+
+    @Test
+    void createStripeSession_shouldRejectStoreWithoutStripeConnect() {
+
+        when(store.isStripeConnected())
+                .thenReturn(false);
+
+        when(orderService.getByIdForStripe(100L, store))
+                .thenReturn(order);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
+
+        assertThat(response.getBody())
+                .isEqualTo(
+                        Map.of(
+                                "error",
+                                "La tienda debe conectar Stripe antes de aceptar pagos con tarjeta"
+                        )
+                );
+
+        verify(orderService)
+                .getByIdForStripe(100L, store);
+
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+    @Test
+    void createStripeSession_shouldRejectStoreWithBlankStripeAccountId() {
+
+        when(orderService.getByIdForStripe(100L, store))
+                .thenReturn(order);
+
+        when(store.isStripeConnected())
+                .thenReturn(true);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("   ");
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
+
+        assertThat(response.getBody())
+                .isEqualTo(
+                        Map.of(
+                                "error",
+                                "La tienda debe conectar Stripe antes de aceptar pagos con tarjeta"
+                        )
+                );
+
+        verify(orderService)
+                .getByIdForStripe(100L, store);
+
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+
     @Test
     void createStripeSession_shouldRejectPaidOrder() {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PAID);
@@ -89,14 +168,16 @@ class StripeCheckoutControllerTest {
         verifyNoInteractions(stripeCheckoutService);
         verify(orderService, never())
                 .save(any(), any());
+
     }
 
     @Test
     void createStripeSession_shouldReuseExistingActiveSession()
             throws Exception {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PENDING);
@@ -105,11 +186,13 @@ class StripeCheckoutControllerTest {
                 .thenReturn("cs_existing");
 
         when(stripeCheckoutService.isSessionExpired(
-                "cs_existing"
+                "cs_existing",
+                store
         )).thenReturn(false);
 
         when(stripeCheckoutService.getSessionUrl(
-                "cs_existing"
+                "cs_existing",
+                store
         )).thenReturn(
                 "https://checkout.stripe.com/existing"
         );
@@ -136,14 +219,16 @@ class StripeCheckoutControllerTest {
 
         verify(orderService, never())
                 .save(any(), any());
+
     }
 
     @Test
     void createStripeSession_shouldReplaceExpiredSession()
             throws Exception {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PENDING);
@@ -152,7 +237,8 @@ class StripeCheckoutControllerTest {
                 .thenReturn("cs_expired");
 
         when(stripeCheckoutService.isSessionExpired(
-                "cs_expired"
+                "cs_expired",
+                store
         )).thenReturn(true);
 
         when(stripeCheckoutService.createSession(order))
@@ -194,14 +280,16 @@ class StripeCheckoutControllerTest {
          */
         verify(orderService, times(2))
                 .save(order, store);
+
     }
 
     @Test
     void createStripeSession_shouldCreateNewSessionWhenNoneExists()
             throws Exception {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PENDING);
@@ -244,14 +332,16 @@ class StripeCheckoutControllerTest {
 
         verify(stripeCheckoutService)
                 .createSession(order);
+
     }
 
     @Test
     void createStripeSession_shouldReturn500WhenStripeFails()
             throws Exception {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PENDING);
@@ -285,14 +375,16 @@ class StripeCheckoutControllerTest {
 
         verify(orderService, never())
                 .save(order, store);
+
     }
 
     @Test
     void createStripeSession_shouldLoadOrderUsingCurrentStore()
             throws Exception {
+        givenStripeConnectedStore();
 
-        when(orderService.getById(100L, store))
-                .thenReturn(order);
+        when(orderService.getByIdForStripe(100L, store))
+        .thenReturn(order);
 
         when(order.getPaymentStatus())
                 .thenReturn(PaymentStatus.PENDING);
@@ -320,6 +412,7 @@ class StripeCheckoutControllerTest {
                 .getCurrentStore(request);
 
         verify(orderService)
-                .getById(100L, store);
+        .getByIdForStripe(100L, store);
+
     }
 }

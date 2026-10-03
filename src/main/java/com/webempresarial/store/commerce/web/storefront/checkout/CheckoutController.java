@@ -129,7 +129,7 @@ public class CheckoutController {
     ) {
         if (userDetails == null) {
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .noContent()
                     .build();
         }
 

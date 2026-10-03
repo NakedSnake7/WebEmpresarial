@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
@@ -68,6 +69,16 @@ public class StripeCommercePaymentHandler {
 
         if (order.getPaymentStatus()
                 == PaymentStatus.PAID) {
+
+            if (order.getOrderStatus()
+                    == OrderStatus.PAID_PENDING_STOCK) {
+
+                orderService.procesarPostPago(
+                        orderId,
+                        store
+                );
+            }
+
             return;
         }
 

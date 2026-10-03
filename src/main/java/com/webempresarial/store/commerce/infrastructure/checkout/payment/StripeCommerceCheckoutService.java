@@ -12,6 +12,7 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.model.Store;
 
 import jakarta.annotation.PostConstruct;
 
@@ -29,8 +30,9 @@ public class StripeCommerceCheckoutService {
         Stripe.apiKey = stripeSecretKey;
     }
 
-    public Session createSession(Order order)
-            throws StripeException {
+    public Session createSession(
+            Order order
+    ) throws StripeException {
 
         if (order == null || order.getTotal() == null) {
             throw new IllegalArgumentException(
@@ -44,141 +46,187 @@ public class StripeCommerceCheckoutService {
             );
         }
 
-        long amountInCents = order.getTotal()
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(0, RoundingMode.HALF_UP)
-                .longValueExact();
+        Store store = requireStripeConnectedStore(
+                order.getStore()
+        );
+
+        if (order.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La orden debe estar persistida"
+            );
+        }
+
+        long amountInCents =
+                order.getTotal()
+                        .multiply(
+                                BigDecimal.valueOf(100)
+                        )
+                        .setScale(
+                                0,
+                                RoundingMode.HALF_UP
+                        )
+                        .longValueExact();
 
         String baseUrl =
-                "https://" + order.getStore().getDominio();
+                "https://" + store.getDominio();
 
         SessionCreateParams params =
                 SessionCreateParams.builder()
+
                         .setMode(
                                 SessionCreateParams.Mode.PAYMENT
                         )
+
                         .setSuccessUrl(
                                 baseUrl
-                                        + "/gracias?session_id={CHECKOUT_SESSION_ID}"
+                                        + "/gracias"
+                                        + "?session_id={CHECKOUT_SESSION_ID}"
                                         + "&order_id="
                                         + order.getId()
                         )
+
                         .setCancelUrl(
                                 baseUrl
-                                        + "/checkout-cancel?order_id="
+                                        + "/checkout-cancel"
+                                        + "?order_id="
                                         + order.getId()
                         )
+
                         .setCustomerEmail(
                                 order.getCustomerEmail()
                         )
+
                         .putMetadata(
                                 "checkout_type",
                                 "ECOMMERCE_ORDER"
                         )
+
                         .putMetadata(
                                 "order_id",
                                 order.getId().toString()
                         )
+
                         .putMetadata(
                                 "store_id",
-                                order.getStore()
-                                        .getId()
-                                        .toString()
+                                store.getId().toString()
                         )
+
                         .putMetadata(
                                 "payment_method",
                                 "STRIPE"
                         )
+
                         .putMetadata(
                                 "store",
-                                order.getStore().getNombre()
+                                store.getNombre()
                         )
+
                         .putMetadata(
                                 "theme",
-                                order.getStore().getTheme()
+                                store.getTheme() != null
+                                        ? store.getTheme()
+                                        : ""
                         )
+
                         .putMetadata(
                                 "env",
                                 environment
                         )
+
                         .setClientReferenceId(
                                 "ORDER-" + order.getId()
                         )
+
                         .addLineItem(
                                 SessionCreateParams.LineItem
                                         .builder()
+
                                         .setQuantity(1L)
+
                                         .setPriceData(
                                                 SessionCreateParams
                                                         .LineItem
                                                         .PriceData
                                                         .builder()
+
                                                         .setCurrency(
                                                                 resolveCurrency(
-                                                                        order.getStore()
-                                                                                .getCurrency()
+                                                                        store.getCurrency()
                                                                 )
                                                         )
+
                                                         .setUnitAmount(
                                                                 amountInCents
                                                         )
+
                                                         .setProductData(
                                                                 SessionCreateParams
                                                                         .LineItem
                                                                         .PriceData
                                                                         .ProductData
                                                                         .builder()
+
                                                                         .setName(
                                                                                 "Orden #"
                                                                                         + order.getId()
                                                                                         + " – "
-                                                                                        + order.getStore()
-                                                                                                .getNombre()
+                                                                                        + store.getNombre()
                                                                         )
+
                                                                         .build()
                                                         )
+
                                                         .build()
                                         )
+
                                         .build()
                         )
+
                         .build();
 
-        RequestOptions.RequestOptionsBuilder optionsBuilder =
+        RequestOptions options =
                 RequestOptions.builder()
+
                         .setIdempotencyKey(
                                 "store_"
-                                        + order.getStore().getId()
+                                        + store.getId()
                                         + "_order_"
                                         + order.getId()
-                        );
+                        )
 
-        if (order.getStore().isStripeConnected()
-                && order.getStore()
-                        .getStripeConnectedAccountId() != null
-                && !order.getStore()
-                        .getStripeConnectedAccountId()
-                        .isBlank()) {
+                        .setStripeAccount(
+                                store.getStripeConnectedAccountId()
+                        )
 
-            optionsBuilder.setStripeAccount(
-                    order.getStore()
-                            .getStripeConnectedAccountId()
-            );
-        }
+                        .build();
 
         return Session.create(
                 params,
-                optionsBuilder.build()
+                options
         );
     }
 
-    public String getSessionUrl(String sessionId)
-            throws StripeException {
+    public String getSessionUrl(
+            String sessionId,
+            Store store
+    ) throws StripeException {
+
+        validateSessionId(sessionId);
+
+        Store connectedStore =
+                requireStripeConnectedStore(store);
 
         Session session =
-                Session.retrieve(sessionId);
+                Session.retrieve(
+                        sessionId,
+                        requestOptionsForStore(
+                                connectedStore
+                        )
+                );
 
         if (session == null
-                || session.getUrl() == null) {
+                || session.getUrl() == null
+                || session.getUrl().isBlank()) {
 
             throw new IllegalStateException(
                     "Sesión Stripe no válida o expirada"
@@ -189,19 +237,84 @@ public class StripeCommerceCheckoutService {
     }
 
     public boolean isSessionExpired(
+            String sessionId,
+            Store store
+    ) {
+
+        validateSessionId(sessionId);
+
+        Store connectedStore =
+                requireStripeConnectedStore(store);
+
+        try {
+
+            Session session =
+                    Session.retrieve(
+                            sessionId,
+                            requestOptionsForStore(
+                                    connectedStore
+                            )
+                    );
+
+            return session == null
+                    || "expired".equalsIgnoreCase(
+                            session.getStatus()
+                    );
+
+        } catch (Exception ex) {
+
+            /*
+             * Si Stripe ya no puede recuperar la sesión,
+             * permitimos que el flujo genere una nueva.
+             */
+            return true;
+        }
+    }
+
+    private Store requireStripeConnectedStore(
+            Store store
+    ) {
+
+        if (store == null) {
+            throw new IllegalStateException(
+                    "La orden no tiene una tienda asociada"
+            );
+        }
+
+        if (!store.isStripeConnected()
+                || store.getStripeConnectedAccountId() == null
+                || store.getStripeConnectedAccountId().isBlank()) {
+
+            throw new IllegalStateException(
+                    "La tienda debe conectar Stripe antes "
+                            + "de aceptar pagos con tarjeta"
+            );
+        }
+
+        return store;
+    }
+
+    private RequestOptions requestOptionsForStore(
+            Store store
+    ) {
+
+        return RequestOptions.builder()
+                .setStripeAccount(
+                        store.getStripeConnectedAccountId()
+                )
+                .build();
+    }
+
+    private void validateSessionId(
             String sessionId
     ) {
 
-        try {
-            Session session =
-                    Session.retrieve(sessionId);
+        if (sessionId == null
+                || sessionId.isBlank()) {
 
-            return "expired".equals(
-                    session.getStatus()
+            throw new IllegalArgumentException(
+                    "El sessionId es obligatorio"
             );
-
-        } catch (Exception e) {
-            return true;
         }
     }
 
@@ -211,6 +324,7 @@ public class StripeCommerceCheckoutService {
 
         if (currency == null
                 || currency.isBlank()) {
+
             return "mxn";
         }
 

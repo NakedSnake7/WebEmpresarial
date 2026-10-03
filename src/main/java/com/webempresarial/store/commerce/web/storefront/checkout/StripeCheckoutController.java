@@ -44,7 +44,24 @@ public class StripeCheckoutController {
 
         Store store = storeResolver.getCurrentStore(request);
 
-        Order order = orderService.getById(orderId, store);
+        Order order =
+                orderService.getByIdForStripe(
+                        orderId,
+                        store
+                );
+        if (!store.isStripeConnected()
+                || store.getStripeConnectedAccountId() == null
+                || store.getStripeConnectedAccountId().isBlank()) {
+
+            return ResponseEntity.badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    "La tienda debe conectar Stripe "
+                                            + "antes de aceptar pagos con tarjeta"
+                            )
+                    );
+        }
 
         if (order.getPaymentStatus() == PaymentStatus.PAID) {
             return ResponseEntity.badRequest()
@@ -57,7 +74,8 @@ public class StripeCheckoutController {
 
                 boolean expired =
                         stripeCheckoutService.isSessionExpired(
-                                order.getStripeSessionId()
+                                order.getStripeSessionId(),
+                                store
                         );
 
                 if (!expired) {
@@ -65,7 +83,8 @@ public class StripeCheckoutController {
                             Map.of(
                                     "url",
                                     stripeCheckoutService.getSessionUrl(
-                                            order.getStripeSessionId()
+                                            order.getStripeSessionId(),
+                                            store
                                     )
                             )
                     );
@@ -88,7 +107,7 @@ public class StripeCheckoutController {
 
         } catch (Exception e) {
 
-        	logger.error("Error al crear sesión Stripe para orderId={}", orderId, e);
+                logger.error("Error al crear sesión Stripe para orderId={}", orderId, e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Error al crear sesión de pago"));
         }

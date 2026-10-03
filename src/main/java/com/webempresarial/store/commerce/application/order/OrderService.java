@@ -1,6 +1,6 @@
 package com.webempresarial.store.commerce.application.order;
 
-import org.slf4j.Logger;   
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.transaction.annotation.Propagation;
@@ -47,7 +47,9 @@ public class OrderService {
     private final OrderStateMachine orderStateMachine;
     private final OrderOutboxRepository orderOutboxRepository;
     private final InventoryMovementService inventoryMovementService;
-    
+    private final OrderPostPaymentTransactionService
+    postPaymentTransactionService;
+
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(
@@ -56,8 +58,9 @@ public class OrderService {
             NotificationService notificationService,
             OrderStateMachine orderStateMachine,
             OrderOutboxRepository orderOutboxRepository,
-            InventoryMovementService inventoryMovementService
-            ) {
+            InventoryMovementService inventoryMovementService,
+            OrderPostPaymentTransactionService postPaymentTransactionService
+    ) {
         this.orderRepository = orderRepository;
         this.stockService = stockService;
         this.notificationService = notificationService;
@@ -65,6 +68,8 @@ public class OrderService {
         this.orderOutboxRepository = orderOutboxRepository;
         this.inventoryMovementService =
                 inventoryMovementService;
+        this.postPaymentTransactionService =
+                postPaymentTransactionService;
     }
 
     public Optional<Order> findByStripeSessionId(String stripeSessionId, Store store) {
@@ -91,18 +96,18 @@ public class OrderService {
     public List<Order> findAllOrders(Store store) {
         return orderRepository.findAllWithCliente(store);
     }
-    
+
 
     public Order getById(Long id, Store store) {
         return orderRepository.findByIdAndStore(id, store)
                 .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
     }
 
- 
- 
-    
+
+
+
     /* =====================================================
-    reclamar ordenes 
+    reclamar ordenes
 ===================================================== */
     @Transactional
     public void claimGuestOrders(Cliente cliente, Store store) {
@@ -136,12 +141,12 @@ public class OrderService {
         order.setStore(store);
         return orderRepository.save(order);
     }
-    
-    
+
+
  /* =====================================================
 guardar orden por transferencia
 ===================================================== */
- 
+
     @Transactional
     public Order saveOrderTransferencia(Order order, Store store) {
 
@@ -189,73 +194,82 @@ guardar orden por transferencia
                 )
         );
     }
- /* =====================================================
-    POST-PAGO – PASO 2 (PUEDE FALLAR)
-    👉 STOCK / LOGÍSTICA
- ===================================================== */
+    /* =====================================================
+    POST-PAGO – PASO 2
+    👉 ORQUESTACIÓN FUERA DE LA TX DE STOCK
+  ===================================================== */
 
-    @Transactional
-    public void procesarPostPago(
-            Long orderId,
-            Store store
-    ) {
-        Order order =
-                getFullOrderByIdForUpdate(
-                        orderId,
-                        store
-                );
+ public void procesarPostPago(
+         Long orderId,
+         Store store
+ ) {
 
-        if (!order.isPaid()) {
-            throw new IllegalStateException(
-                    "No puedes procesar una orden no pagada"
-            );
-        }
+     try {
 
-        if (order.isStockReduced()) {
+         postPaymentTransactionService
+                 .processStock(
+                         orderId,
+                         store
+                 );
 
-            orderStateMachine.transition(
-                    order,
-                    OrderTransition.STOCK_CONFIRMED,
-                    OrderTransitionContext.empty()
-            );
+     } catch (Exception ex) {
 
-            notificationService
-                    .sendPaymentConfirmation(order);
+         /*
+          * La transacción donde falló el stock ya terminó
+          * con rollback.
+          *
+          * Ahora registramos el estado de compensación
+          * en una transacción independiente.
+          */
+         postPaymentTransactionService
+                 .markStockFailed(
+                         orderId,
+                         store
+                 );
 
-            return;
-        }
+         log.error(
+                 "Stock falló en orden {}",
+                 orderId,
+                 ex
+         );
 
-        try {
-            stockService.descontarStock(
-                    order,
-                    store
-            );
+         return;
+     }
 
-            orderStateMachine.transition(
-                    order,
-                    OrderTransition.STOCK_CONFIRMED,
-                    OrderTransitionContext.empty()
-            );
+     /*
+      * Llegar aquí significa que la TX de stock
+      * terminó correctamente.
+      */
+     Order processedOrder =
+             postPaymentTransactionService
+                     .getProcessedOrder(
+                             orderId,
+                             store
+                     );
 
-            notificationService
-                    .sendPaymentConfirmation(order);
+     try {
 
-        } catch (Exception ex) {
+         notificationService
+                 .sendPaymentConfirmation(
+                         processedOrder
+                 );
 
-            orderStateMachine.transition(
-                    order,
-                    OrderTransition.STOCK_FAILED,
-                    OrderTransitionContext.empty()
-            );
+     } catch (Exception ex) {
 
-            log.error(
-                    "Stock falló en orden {}",
-                    orderId,
-                    ex
-            );
-        }
-    }
- 
+         /*
+          * Un fallo de notificación no debe convertir
+          * una operación de inventario correcta en
+          * STOCK_FAILED.
+          */
+         log.error(
+                 "No fue posible enviar/registrar la "
+                         + "confirmación de pago para orden {}",
+                 orderId,
+                 ex
+         );
+     }
+ }
+
  public List<Order> findOrdersForExport(
 	        OrderStatus status,
 	        PaymentStatus payment,
@@ -271,7 +285,7 @@ guardar orden por transferencia
 	            store
 	    );
 	}
- 
+
  @Transactional
  public void confirmarPagoTransferencia(
          Long orderId,
@@ -320,7 +334,7 @@ guardar orden por transferencia
  public Order updateOrderStatus(
          Long orderId,
          String newStatus,
-         Store store						
+         Store store
  ) {
      Order order =
              getFullOrderByIdForUpdate(
@@ -405,12 +419,12 @@ guardar orden por transferencia
                  "No se puede eliminar una orden pagada"
          );
      }
-     
-     if (inventoryMovementService.hasMovementsForOrder(orderId)) {	
-    	    throw new IllegalStateException(
-    	            "No se puede eliminar una orden con movimientos de inventario"
-    	    );
-    	}
+
+     if (inventoryMovementService.hasMovementsForOrder(orderId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar una orden con movimientos de inventario"
+            );
+        }
 
      if (orderOutboxRepository.existsByOrderId(orderId)) {
          throw new IllegalStateException(
@@ -437,7 +451,7 @@ guardar orden por transferencia
 
      orderRepository.delete(order);
  }
- 
+
  @Transactional
  public Order cancelOrder(
          Long orderId,
@@ -474,21 +488,21 @@ guardar orden por transferencia
 
      return order;
  }
- 
+
  public Order getOrderById(Long id, Store store) {
 	    return getById(id, store);
 	}
- 
- 
+
+
     public Order save(Order order, Store store) {
         order.setStore(store);
         return orderRepository.save(order);
     }
     @Retryable(
-    	    value = { PessimisticLockingFailureException.class, CannotAcquireLockException.class },
-    	    maxAttempts = 3,
-    	    backoff = @Backoff(delay = 200)
-    	)    
+            value = { PessimisticLockingFailureException.class, CannotAcquireLockException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 200)
+        )
     @Transactional
     public void validarStockOrden(OrderRequestDTO request, Store store) {
         stockService.validarStock(request.getItems(), store);
@@ -585,7 +599,7 @@ guardar orden por transferencia
                 store
         );
     }
- 
+
     public String obtenerUltimaDireccion(Cliente cliente, Store store) {
         return orderRepository
                 .findTopByClienteAndStoreOrderByOrderDateDesc(cliente, store)
@@ -618,4 +632,22 @@ guardar orden por transferencia
  public List<Order> findPendingOrders(Store store) {
 	    return orderRepository.findPendingOrdersWithItems(store);
 	}
+
+ @Transactional(readOnly = true)
+ public Order getByIdForStripe(
+         Long id,
+         Store store
+ ) {
+     return orderRepository
+             .findByIdWithStoreForStripe(
+                     id,
+                     store
+             )
+             .orElseThrow(() ->
+                     new OrderNotFoundException(
+                             "Orden no encontrada"
+                     )
+             );
+ }
+
 }

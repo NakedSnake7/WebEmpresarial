@@ -1,6 +1,6 @@
 package com.webempresarial.store.commerce.infrastructure.order.persistence;
 
-import com.webempresarial.store.dto.producto.reportes.ProductoVentaDTO; 
+import com.webempresarial.store.dto.producto.reportes.ProductoVentaDTO;
 import com.webempresarial.store.model.*;
 
 import jakarta.persistence.LockModeType;
@@ -29,38 +29,38 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-    	    SELECT o 
-    	    FROM Order o 
-    	    LEFT JOIN FETCH o.cliente 
-    	    WHERE o.id = :id
-    	    AND o.store = :store
-    	""")
+           SELECT o
+           FROM Order o
+           LEFT JOIN FETCH o.cliente
+            WHERE o.id = :id
+            AND o.store = :store
+        """)
     Optional<Order> findByIdWithClienteAndStore(
             @Param("id") Long id,
             @Param("store") Store store
     );
 
     @Query("""
-    	    SELECT DISTINCT o
-    	    FROM Order o
-    	    LEFT JOIN FETCH o.cliente
-    	    LEFT JOIN FETCH o.items i
-    	    LEFT JOIN FETCH i.producto
-    	    LEFT JOIN FETCH i.variante
-    	    WHERE o.id = :id
-    	    AND o.store = :store
-    	""")
-    	Optional<Order> findByIdWithClienteAndItemsAndStore(
-    	        @Param("id") Long id,
-    	        @Param("store") Store store
-    	);
+            SELECT DISTINCT o
+            FROM Order o
+            LEFT JOIN FETCH o.cliente
+            LEFT JOIN FETCH o.items i
+            LEFT JOIN FETCH i.producto
+            LEFT JOIN FETCH i.variante
+            WHERE o.id = :id
+            AND o.store = :store
+        """)
+        Optional<Order> findByIdWithClienteAndItemsAndStore(
+                @Param("id") Long id,
+                @Param("store") Store store
+        );
 
     @Query("""
-    	    SELECT o
-    	    FROM Order o
-    	    LEFT JOIN FETCH o.cliente
-    	    WHERE o.store = :store
-    	""")
+            SELECT o
+            FROM Order o
+            LEFT JOIN FETCH o.cliente
+            WHERE o.store = :store
+        """)
     List<Order> findAllWithCliente(
             @Param("store") Store store
     );
@@ -80,15 +80,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-    	    SELECT DISTINCT o
-    	    FROM Order o
-    	    LEFT JOIN FETCH o.cliente
-    	    WHERE (:status IS NULL OR o.orderStatus = :status)
-    	    AND (:payment IS NULL OR o.paymentStatus = :payment)
-    	    AND (:from IS NULL OR o.orderDate >= :from)
-    	    AND (:to IS NULL OR o.orderDate <= :to)
-    	    AND o.store = :store
-    	""")
+            SELECT DISTINCT o
+            FROM Order o
+            LEFT JOIN FETCH o.cliente
+            WHERE (:status IS NULL OR o.orderStatus = :status)
+            AND (:payment IS NULL OR o.paymentStatus = :payment)
+            AND (:from IS NULL OR o.orderDate >= :from)
+            AND (:to IS NULL OR o.orderDate <= :to)
+            AND o.store = :store
+        """)
     List<Order> findFilteredWithCliente(
             @Param("status") OrderStatus status,
             @Param("payment") PaymentStatus payment,
@@ -151,20 +151,20 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-    	    SELECT DISTINCT o
-    	    FROM Order o
-    	    LEFT JOIN FETCH o.cliente
-    	    LEFT JOIN FETCH o.items i
-    	    LEFT JOIN FETCH i.producto
-    	    LEFT JOIN FETCH i.variante
-    	    WHERE o.id = :id
-    	    AND o.store = :store
-    	""")
-    	Optional<Order> findByIdFullAndStore(
-    	        @Param("id") Long id,
-    	        @Param("store") Store store
-    	);
-    
+            SELECT DISTINCT o
+            FROM Order o
+            LEFT JOIN FETCH o.cliente
+            LEFT JOIN FETCH o.items i
+            LEFT JOIN FETCH i.producto
+            LEFT JOIN FETCH i.variante
+            WHERE o.id = :id
+            AND o.store = :store
+        """)
+        Optional<Order> findByIdFullAndStore(
+                @Param("id") Long id,
+                @Param("store") Store store
+        );
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT o
@@ -193,5 +193,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("store") Store store
     );
     long countByStoreId(Long storeId);
-    
+
+    @Query("""
+           SELECT o
+           FROM Order o
+           JOIN FETCH o.store s
+           WHERE o.id = :id
+            AND s = :store
+        """)
+        Optional<Order> findByIdWithStoreForStripe(
+                @Param("id") Long id,
+                @Param("store") Store store
+        );
+
 }

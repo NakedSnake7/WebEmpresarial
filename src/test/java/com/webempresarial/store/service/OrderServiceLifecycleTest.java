@@ -1,8 +1,9 @@
 package com.webempresarial.store.service;
 
-import static org.assertj.core.api.Assertions.assertThat; 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -15,26 +16,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.webempresarial.store.commerce.infrastructure.inventory.persistence.InventoryMovementRepository;
+import com.webempresarial.store.commerce.application.inventory.InventoryMovementService;
+import com.webempresarial.store.commerce.application.order.OrderPostPaymentTransactionService;
+import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.commerce.application.order.OrderStateMachine;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.OrderTransition;
 import com.webempresarial.store.commerce.domain.order.OrderTransitionContext;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
-import com.webempresarial.store.model.Store;
+import com.webempresarial.store.commerce.infrastructure.order.notification.NotificationService;
 import com.webempresarial.store.commerce.infrastructure.order.persistence.OrderOutboxRepository;
 import com.webempresarial.store.commerce.infrastructure.order.persistence.OrderRepository;
-import com.webempresarial.store.commerce.application.inventory.InventoryMovementService;
-import com.webempresarial.store.commerce.application.order.OrderService;
-import com.webempresarial.store.commerce.application.order.OrderStateMachine;
-import com.webempresarial.store.commerce.infrastructure.order.notification.NotificationService;
+import com.webempresarial.store.model.Store;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceLifecycleTest {
 
     @Mock
     private OrderRepository orderRepository;
-
 
     @Mock
     private StockService stockService;
@@ -51,20 +51,26 @@ class OrderServiceLifecycleTest {
     @Mock
     private InventoryMovementService inventoryMovementService;
 
+    @Mock
+    private OrderPostPaymentTransactionService
+            postPaymentTransactionService;
+
     private OrderService orderService;
 
     private Store store;
 
     @BeforeEach
     void setUp() {
-    	orderService = new OrderService(
-    	        orderRepository,
-    	        stockService,
-    	        notificationService,
-    	        orderStateMachine,
-    	        orderOutboxRepository,
-    	        inventoryMovementService
-    	);
+
+        orderService = new OrderService(
+                orderRepository,
+                stockService,
+                notificationService,
+                orderStateMachine,
+                orderOutboxRepository,
+                inventoryMovementService,
+                postPaymentTransactionService
+        );
 
         store = new Store();
         store.setId(1L);
@@ -72,31 +78,45 @@ class OrderServiceLifecycleTest {
 
     @Test
     void shouldCreateOrderForStore() {
+
         Order order = new Order();
 
         when(orderRepository.save(order))
                 .thenReturn(order);
 
         Order result =
-                orderService.crearOrden(order, store);
+                orderService.crearOrden(
+                        order,
+                        store
+                );
 
-        assertThat(result).isSameAs(order);
-        assertThat(order.getStore()).isSameAs(store);
+        assertThat(result)
+                .isSameAs(order);
 
-        verify(orderRepository).save(order);
+        assertThat(order.getStore())
+                .isSameAs(store);
+
+        verify(orderRepository)
+                .save(order);
     }
 
     @Test
     void shouldMarkOrderAsPaid() {
+
         Order order = order(
                 OrderStatus.CREATED,
                 PaymentStatus.PENDING
         );
 
-        when(orderRepository.findByIdForUpdateAndStore(
-                10L,
-                store
-        )).thenReturn(Optional.of(order));
+        when(
+                orderRepository
+                        .findByIdForUpdateAndStore(
+                                10L,
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(order)
+        );
 
         orderService.marcarOrdenComoPagada(
                 10L,
@@ -104,24 +124,35 @@ class OrderServiceLifecycleTest {
                 store
         );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.PAYMENT_CONFIRMED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.PAYMENT_CONFIRMED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
     }
 
     @Test
     void shouldRejectPaymentForCancelledOrder() {
+
         Order order = order(
                 OrderStatus.CANCELLED,
                 PaymentStatus.PENDING
         );
 
-        when(orderRepository.findByIdForUpdateAndStore(
-                10L,
-                store
-        )).thenReturn(Optional.of(order));
+        when(
+                orderRepository
+                        .findByIdForUpdateAndStore(
+                                10L,
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(order)
+        );
 
         assertThatThrownBy(() ->
                 orderService.marcarOrdenComoPagada(
@@ -130,25 +161,35 @@ class OrderServiceLifecycleTest {
                         store
                 )
         )
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-                "No puedes pagar una orden cancelada"
-        );
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "No puedes pagar una orden cancelada"
+                );
 
-        verifyNoInteractions(orderStateMachine);
+        verifyNoInteractions(
+                orderStateMachine
+        );
     }
 
     @Test
     void shouldIgnoreRepeatedPaymentConfirmation() {
+
         Order order = order(
                 OrderStatus.PAID_PENDING_STOCK,
                 PaymentStatus.PAID
         );
 
-        when(orderRepository.findByIdForUpdateAndStore(
-                10L,
-                store
-        )).thenReturn(Optional.of(order));
+        when(
+                orderRepository
+                        .findByIdForUpdateAndStore(
+                                10L,
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(order)
+        );
 
         orderService.marcarOrdenComoPagada(
                 10L,
@@ -156,126 +197,209 @@ class OrderServiceLifecycleTest {
                 store
         );
 
-        verifyNoInteractions(orderStateMachine);
+        verifyNoInteractions(
+                orderStateMachine
+        );
     }
 
+    /*
+     * =====================================================
+     * POST-PAGO
+     *
+     * OrderService ya no ejecuta directamente stock ni
+     * transiciones de inventario.
+     *
+     * Su responsabilidad aquí es únicamente orquestar.
+     * =====================================================
+     */
+
     @Test
-    void shouldRejectPostPaymentProcessingForUnpaidOrder() {
-        Order order = order(
-                OrderStatus.CREATED,
-                PaymentStatus.PENDING
+    void shouldProcessPostPaymentAndSendConfirmation() {
+
+        Order processedOrder = order(
+                OrderStatus.PROCESSED,
+                PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        when(
+                postPaymentTransactionService
+                        .getProcessedOrder(
+                                10L,
+                                store
+                        )
+        ).thenReturn(
+                processedOrder
+        );
 
-        assertThatThrownBy(() ->
-                orderService.procesarPostPago(
+        orderService.procesarPostPago(
+                10L,
+                store
+        );
+
+        verify(postPaymentTransactionService)
+                .processStock(
                         10L,
                         store
+                );
+
+        verify(postPaymentTransactionService)
+                .getProcessedOrder(
+                        10L,
+                        store
+                );
+
+        verify(notificationService)
+                .sendPaymentConfirmation(
+                        processedOrder
+                );
+
+        verify(
+                postPaymentTransactionService,
+                never()
+        ).markStockFailed(
+                anyLong(),
+                any(Store.class)
+        );
+
+        /*
+         * La lógica de stock ya no pertenece
+         * directamente a OrderService.
+         */
+        verifyNoInteractions(
+                stockService
+        );
+    }
+
+    @Test
+    void shouldMarkStockFailureWhenTransactionalProcessingFails() {
+
+        doThrow(
+                new IllegalStateException(
+                        "Stock insuficiente"
                 )
         )
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-                "No puedes procesar una orden no pagada"
-        );
-
-        verifyNoInteractions(stockService);
-        verifyNoInteractions(orderStateMachine);
-        verifyNoInteractions(notificationService);
-    }
-
-    @Test
-    void shouldProcessPaidOrderAndReduceStock() {
-        Order order = order(
-                OrderStatus.PAID_PENDING_STOCK,
-                PaymentStatus.PAID
-        );
-
-        order.setStockReduced(false);
-
-        mockFullOrder(10L, order);
+                .when(postPaymentTransactionService)
+                .processStock(
+                        10L,
+                        store
+                );
 
         orderService.procesarPostPago(
                 10L,
                 store
         );
 
-        verify(stockService)
-                .descontarStock(order, store);
+        verify(postPaymentTransactionService)
+                .processStock(
+                        10L,
+                        store
+                );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.STOCK_CONFIRMED),
-                any(OrderTransitionContext.class)
+        verify(postPaymentTransactionService)
+                .markStockFailed(
+                        10L,
+                        store
+                );
+
+        verify(
+                postPaymentTransactionService,
+                never()
+        ).getProcessedOrder(
+                anyLong(),
+                any(Store.class)
         );
+
+        verifyNoInteractions(
+                notificationService
+        );
+
+        verifyNoInteractions(
+                stockService
+        );
+    }
+
+    @Test
+    void shouldNotMarkStockFailureWhenNotificationFails() {
+
+        Order processedOrder = order(
+                OrderStatus.PROCESSED,
+                PaymentStatus.PAID
+        );
+
+        when(
+                postPaymentTransactionService
+                        .getProcessedOrder(
+                                10L,
+                                store
+                        )
+        ).thenReturn(
+                processedOrder
+        );
+
+        doThrow(
+                new IllegalStateException(
+                        "Email service unavailable"
+                )
+        )
+                .when(notificationService)
+                .sendPaymentConfirmation(
+                        processedOrder
+                );
+
+        /*
+         * procesarPostPago captura internamente el fallo
+         * de notificación.
+         */
+        orderService.procesarPostPago(
+                10L,
+                store
+        );
+
+        verify(postPaymentTransactionService)
+                .processStock(
+                        10L,
+                        store
+                );
+
+        verify(postPaymentTransactionService)
+                .getProcessedOrder(
+                        10L,
+                        store
+                );
 
         verify(notificationService)
-                .sendPaymentConfirmation(order);
+                .sendPaymentConfirmation(
+                        processedOrder
+                );
+
+        /*
+         * Un fallo del email NO significa fallo de stock.
+         */
+        verify(
+                postPaymentTransactionService,
+                never()
+        ).markStockFailed(
+                anyLong(),
+                any(Store.class)
+        );
+
+        verifyNoInteractions(
+                stockService
+        );
     }
 
-    @Test
-    void shouldNotReduceStockTwiceDuringPostPaymentProcessing() {
-        Order order = order(
-                OrderStatus.PAID_PENDING_STOCK,
-                PaymentStatus.PAID
-        );
-
-        order.setStockReduced(true);
-
-        mockFullOrder(10L, order);
-
-        orderService.procesarPostPago(
-                10L,
-                store
-        );
-
-        verify(stockService, never())
-                .descontarStock(any(), any());
-
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.STOCK_CONFIRMED),
-                any(OrderTransitionContext.class)
-        );
-
-        verify(notificationService)
-                .sendPaymentConfirmation(order);
-    }
-
-    @Test
-    void shouldMarkStockFailureWhenReductionFails() {
-        Order order = order(
-                OrderStatus.PAID_PENDING_STOCK,
-                PaymentStatus.PAID
-        );
-
-        order.setStockReduced(false);
-
-        mockFullOrder(10L, order);
-
-        doThrow(new IllegalStateException(
-                "Stock insuficiente"
-        ))
-        .when(stockService)
-        .descontarStock(order, store);
-
-        orderService.procesarPostPago(
-                10L,
-                store
-        );
-
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.STOCK_FAILED),
-                any(OrderTransitionContext.class)
-        );
-
-        verify(notificationService, never())
-                .sendPaymentConfirmation(any());
-    }
+    /*
+     * =====================================================
+     * TRANSFERENCIA
+     *
+     * Este flujo todavía pertenece directamente a
+     * OrderService, por lo que conservamos sus pruebas.
+     * =====================================================
+     */
 
     @Test
     void shouldConfirmTransferPayment() {
+
         Order order = order(
                 OrderStatus.CREATED,
                 PaymentStatus.PENDING
@@ -283,7 +407,10 @@ class OrderServiceLifecycleTest {
 
         order.setStockReduced(false);
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         orderService.confirmarPagoTransferencia(
                 10L,
@@ -291,26 +418,42 @@ class OrderServiceLifecycleTest {
         );
 
         verify(stockService)
-                .descontarStock(order, store);
+                .descontarStock(
+                        order,
+                        store
+                );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.PAYMENT_CONFIRMED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.PAYMENT_CONFIRMED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.STOCK_CONFIRMED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.STOCK_CONFIRMED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
 
         verify(notificationService)
-                .sendPaymentConfirmation(order);
+                .sendPaymentConfirmation(
+                        order
+                );
     }
 
     @Test
     void shouldIgnoreAlreadyProcessedTransferPayment() {
+
         Order order = order(
                 OrderStatus.PROCESSED,
                 PaymentStatus.PAID
@@ -318,26 +461,41 @@ class OrderServiceLifecycleTest {
 
         order.setStockReduced(true);
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         orderService.confirmarPagoTransferencia(
                 10L,
                 store
         );
 
-        verifyNoInteractions(stockService);
-        verifyNoInteractions(orderStateMachine);
-        verifyNoInteractions(notificationService);
+        verifyNoInteractions(
+                stockService
+        );
+
+        verifyNoInteractions(
+                orderStateMachine
+        );
+
+        verifyNoInteractions(
+                notificationService
+        );
     }
 
     @Test
     void shouldDeliverOrderThroughStatusUpdate() {
+
         Order order = order(
                 OrderStatus.SHIPPED,
                 PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         Order result =
                 orderService.updateOrderStatus(
@@ -346,23 +504,33 @@ class OrderServiceLifecycleTest {
                         store
                 );
 
-        assertThat(result).isSameAs(order);
+        assertThat(result)
+                .isSameAs(order);
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.DELIVERED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.DELIVERED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
     }
 
     @Test
     void shouldRejectUnsupportedStatusUpdate() {
+
         Order order = order(
                 OrderStatus.PROCESSED,
                 PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         assertThatThrownBy(() ->
                 orderService.updateOrderStatus(
@@ -371,22 +539,30 @@ class OrderServiceLifecycleTest {
                         store
                 )
         )
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining(
-                "solo permite marcar"
-        );
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessageContaining(
+                        "solo permite marcar"
+                );
 
-        verifyNoInteractions(orderStateMachine);
+        verifyNoInteractions(
+                orderStateMachine
+        );
     }
 
     @Test
     void shouldRejectInvalidStatusValue() {
+
         Order order = order(
                 OrderStatus.PROCESSED,
                 PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         assertThatThrownBy(() ->
                 orderService.updateOrderStatus(
@@ -395,16 +571,21 @@ class OrderServiceLifecycleTest {
                         store
                 )
         )
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(
-                "Estado de orden no válido"
-        );
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessageContaining(
+                        "Estado de orden no válido"
+                );
 
-        verifyNoInteractions(orderStateMachine);
+        verifyNoInteractions(
+                orderStateMachine
+        );
     }
 
     @Test
     void shouldCancelUnpaidOrderAndRestoreStock() {
+
         Order order = order(
                 OrderStatus.CREATED,
                 PaymentStatus.PENDING
@@ -412,7 +593,10 @@ class OrderServiceLifecycleTest {
 
         order.setStockReduced(true);
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         Order result =
                 orderService.cancelOrder(
@@ -420,26 +604,39 @@ class OrderServiceLifecycleTest {
                         store
                 );
 
-        assertThat(result).isSameAs(order);
+        assertThat(result)
+                .isSameAs(order);
 
         verify(stockService)
-                .restaurarStock(order, store);
+                .restaurarStock(
+                        order,
+                        store
+                );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.CANCELLED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.CANCELLED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
     }
 
     @Test
     void shouldRejectCancellationOfPaidOrder() {
+
         Order order = order(
                 OrderStatus.PAID_PENDING_STOCK,
                 PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         assertThatThrownBy(() ->
                 orderService.cancelOrder(
@@ -447,17 +644,25 @@ class OrderServiceLifecycleTest {
                         store
                 )
         )
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-                "Una orden pagada no puede cancelarse directamente"
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "Una orden pagada no puede cancelarse directamente"
+                );
+
+        verifyNoInteractions(
+                stockService
         );
 
-        verifyNoInteractions(stockService);
-        verifyNoInteractions(orderStateMachine);
+        verifyNoInteractions(
+                orderStateMachine
+        );
     }
 
     @Test
     void shouldExpireTransferOrderAndRestoreStock() {
+
         Order order = order(
                 OrderStatus.CREATED,
                 PaymentStatus.PENDING
@@ -468,12 +673,16 @@ class OrderServiceLifecycleTest {
         );
 
         order.setOrderDate(
-                LocalDateTime.now().minusHours(25)
+                LocalDateTime.now()
+                        .minusHours(25)
         );
 
         order.setStockReduced(true);
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         boolean expired =
                 orderService.expirarOrdenTransferencia(
@@ -481,31 +690,47 @@ class OrderServiceLifecycleTest {
                         store
                 );
 
-        assertThat(expired).isTrue();
+        assertThat(expired)
+                .isTrue();
 
         verify(stockService)
-                .restaurarStock(order, store);
+                .restaurarStock(
+                        order,
+                        store
+                );
 
-        verify(orderStateMachine).transition(
-                eq(order),
-                eq(OrderTransition.EXPIRED),
-                any(OrderTransitionContext.class)
-        );
+        verify(orderStateMachine)
+                .transition(
+                        eq(order),
+                        eq(
+                                OrderTransition.EXPIRED
+                        ),
+                        any(
+                                OrderTransitionContext.class
+                        )
+                );
 
-        verify(notificationService).sendExpired(
-                eq(order),
-                any(LocalDateTime.class)
-        );
+        verify(notificationService)
+                .sendExpired(
+                        eq(order),
+                        any(
+                                LocalDateTime.class
+                        )
+                );
     }
 
     @Test
     void shouldNotExpireIneligibleOrder() {
+
         Order order = order(
                 OrderStatus.PROCESSED,
                 PaymentStatus.PAID
         );
 
-        mockFullOrder(10L, order);
+        mockFullOrder(
+                10L,
+                order
+        );
 
         boolean expired =
                 orderService.expirarOrdenTransferencia(
@@ -513,22 +738,34 @@ class OrderServiceLifecycleTest {
                         store
                 );
 
-        assertThat(expired).isFalse();
+        assertThat(expired)
+                .isFalse();
 
-        verifyNoInteractions(stockService);
-        verifyNoInteractions(orderStateMachine);
-        verifyNoInteractions(notificationService);
+        verifyNoInteractions(
+                stockService
+        );
+
+        verifyNoInteractions(
+                orderStateMachine
+        );
+
+        verifyNoInteractions(
+                notificationService
+        );
     }
 
     private Order order(
             OrderStatus orderStatus,
             PaymentStatus paymentStatus
     ) {
+
         Order order = new Order();
+
         order.setId(10L);
         order.setStore(store);
         order.setOrderStatus(orderStatus);
         order.setPaymentStatus(paymentStatus);
+
         return order;
     }
 
@@ -536,11 +773,15 @@ class OrderServiceLifecycleTest {
             Long orderId,
             Order order
     ) {
-        when(orderRepository
-                .findByIdFullForUpdateAndStore(
-                        orderId,
-                        store
-                ))
-                .thenReturn(Optional.of(order));
+
+        when(
+                orderRepository
+                        .findByIdFullForUpdateAndStore(
+                                orderId,
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(order)
+        );
     }
 }
