@@ -882,7 +882,7 @@ th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
 	}
 
   /* ── CARRITO ── */
-async function addToCart() {
+    function addToCart() {
 	console.log("click detectado");
 	console.log(window.cartStore);
 	const btns = [
@@ -945,18 +945,6 @@ document
 
 console.log("Estado carrito:", window.cartStore.getState());
 
-    // opcional backend
-    await fetch('/carrito/agregar', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        productoId,
-        cantidad: qty,
-        varianteId: varianteSel?.id ?? null
-      })
-    });
 
     btns.forEach(btn => {
       if (btn) {
