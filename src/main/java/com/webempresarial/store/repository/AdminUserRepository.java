@@ -20,4 +20,16 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, Long> {
     List<AdminUser> findByStoreId(Long storeId);
 
     List<AdminUser> findByRole(AdminRole role);
+
+    Optional<AdminUser> findByIdAndStoreId(
+            Long id,
+            Long storeId
+
+    );
+
+    boolean existsByEmailAndIdNot(
+            String email,
+            Long id
+    );
+
 }

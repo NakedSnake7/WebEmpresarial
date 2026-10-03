@@ -72,4 +72,142 @@ public class AdminUserService {
 
         adminUser.setEnabled(!adminUser.isEnabled());
     }
+    public List<AdminUser> listarPorTienda(Store store) {
+
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        return adminUserRepository.findByStoreId(
+                store.getId()
+        );
+    }
+
+    public AdminUser nuevoAdmin(Store store) {
+
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        AdminUser adminUser = new AdminUser();
+
+        adminUser.setStore(store);
+        adminUser.setRole(AdminRole.STORE_STAFF);
+        adminUser.setEnabled(true);
+
+        return adminUser;
+    }
+
+    @Transactional
+    public void guardarParaTienda(
+            Store store,
+            AdminUser adminUser
+    ) {
+
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        if (adminUser == null) {
+            throw new IllegalArgumentException(
+                    "El usuario es obligatorio"
+            );
+        }
+
+        /*
+         * Un tenant jamás puede crear SUPER_ADMIN.
+         */
+        if (adminUser.getRole() == AdminRole.SUPER_ADMIN) {
+            throw new IllegalArgumentException(
+                    "Una tienda no puede crear SUPER_ADMIN"
+            );
+        }
+
+        /*
+         * Solo permitimos los roles pertenecientes
+         * al tenant.
+         */
+        if (adminUser.getRole() != AdminRole.STORE_ADMIN
+                && adminUser.getRole() != AdminRole.STORE_STAFF) {
+
+            throw new IllegalArgumentException(
+                    "Rol administrativo no permitido"
+            );
+        }
+
+        /*
+         * Nunca confiamos en store_id proveniente
+         * del formulario.
+         */
+        adminUser.setStore(store);
+
+        String email = adminUser.getEmail();
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El email es obligatorio"
+            );
+        }
+
+        email = email.trim().toLowerCase();
+
+        adminUser.setEmail(email);
+
+        if (adminUserRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(
+                    "Ya existe un usuario con ese email"
+            );
+        }
+
+        if (adminUser.getPassword() == null
+                || adminUser.getPassword().isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "La contraseña es obligatoria"
+            );
+        }
+
+        adminUser.setPassword(
+                passwordEncoder.encode(
+                        adminUser.getPassword()
+                )
+        );
+
+        adminUserRepository.save(adminUser);
+    }
+
+    @Transactional
+    public void cambiarEstadoParaTienda(
+            Store store,
+            Long adminUserId
+    ) {
+
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        AdminUser adminUser =
+                adminUserRepository
+                        .findByIdAndStoreId(
+                                adminUserId,
+                                store.getId()
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Usuario no encontrado en esta tienda"
+                                )
+                        );
+
+        adminUser.setEnabled(
+                !adminUser.isEnabled()
+        );
+    }
 }
