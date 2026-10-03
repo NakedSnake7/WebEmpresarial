@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Pago recibido | WebEmpresarial</title>
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #07111f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .success-card {
+            width: min(620px, calc(100% - 40px));
+            padding: 48px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            background: #0d1929;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            font-size: 34px;
+        }
+
+        p {
+            margin: 0 auto 16px;
+            max-width: 500px;
+            line-height: 1.65;
+            color: #c7d1df;
+        }
+
+        .status {
+            margin-top: 28px;
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 28px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="success-card">
+
+    <div class="success-icon">✓</div>
+
+    <h1>Pago recibido</h1>
+
+    <p>
+        Gracias por contratar WebEmpresarial.
+        Estamos preparando tu cuenta.
+    </p>
+
+    <p>
+        Recibirás un correo para establecer tu contraseña
+        y activar el acceso al panel de administración.
+    </p>
+
+    <div class="status">
+        La configuración normalmente se completa
+        en unos instantes.
+    </div>
+
+    <a class="home-link"
+       th:href="@{/}">
+        Volver a WebEmpresarial
+    </a>
+
+</main>
+
+</body>
+</html>

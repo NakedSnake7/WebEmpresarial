@@ -129,6 +129,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(
                     "/api/checkout",
+                    "/api/billing/checkout",
                     "/api/stripe/**",
                     "/api/leads",
                     "/api/leads/**"
@@ -142,6 +143,7 @@ public class SecurityConfig {
                     "/index",
                     "/inicio",
                     "/privacy",
+                    "/billing/success",
                     "/productos/**",
                     "/products/**",
                     "/producto-detalle/**",
@@ -159,7 +161,8 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     HttpMethod.POST,
-                    "/api/checkout"
+                    "/api/checkout",
+                    "/api/billing/checkout"
                 ).permitAll()
 
                 .requestMatchers(
