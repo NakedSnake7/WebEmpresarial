@@ -33,7 +33,9 @@
 
         <a href="/admin/billing"
    class="sidebar-link"
-   th:classappend="${currentPath.startsWith('/admin/billing')}
+   th:if="${isSuperAdmin or isStoreAdmin}"
+   th:classappend="${currentPath != null
+                    and currentPath.startsWith('/admin/billing')}
                     ? ' active' : ''">
             <span class="sidebar-icon">💼</span>
             <span class="sidebar-text">Billing</span>
