@@ -63,14 +63,32 @@
 							</div>
 
 
-							<div class="custom-control custom-radio mt-2 text-muted">
-								<input type="radio" id="payStripe" name="paymentMethod"
-									class="custom-control-input" value="STRIPE" disabled> <label
-									class="custom-control-label" for="payStripe"> Tarjeta
-									de crédito / débito <small class="d-block text-warning">
-										(No disponible por el momento) </small>
-								</label>
-							</div>
+<div class="custom-control custom-radio mb-2">
+
+<input
+    type="radio"
+    id="payStripe"
+    name="paymentMethod"
+    class="custom-control-input"
+    value="STRIPE"
+    th:disabled="${store == null or !store.stripeConnected}"
+>
+
+<label
+    class="custom-control-label"
+    for="payStripe">
+
+    Tarjeta de crédito / débito
+
+    <small
+        class="text-muted"
+        th:if="${store == null or !store.stripeConnected}">
+        (Conecta Stripe para aceptar pagos con tarjeta)
+    </small>
+
+</label>
+
+</div>
 						</div>
 
 

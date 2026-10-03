@@ -82,17 +82,33 @@
                 </span>
               </label>
 
-              <label class="punch-radio-option disabled" for="payStripe">
-                <input type="radio"
-                       name="paymentMethod"
-                       id="payStripe"
-                       value="STRIPE"
-                       disabled>
-                <span>
-                  Tarjeta crédito / débito
-                  <small>No disponible por el momento.</small>
-                </span>
-              </label>
+<label
+    class="punch-radio-option"
+    th:classappend="${store == null or !store.stripeConnected} ? ' disabled' : ''"
+    for="payStripe">
+
+    <input
+        type="radio"
+        name="paymentMethod"
+        id="payStripe"
+        value="STRIPE"
+        th:disabled="${store == null or !store.stripeConnected}">
+
+    <span>
+        Tarjeta crédito / débito
+
+        <small
+            th:if="${store == null or !store.stripeConnected}">
+            No disponible por el momento.
+        </small>
+
+        <small
+            th:if="${store != null and store.stripeConnected}">
+            Pago seguro con tarjeta.
+        </small>
+    </span>
+
+</label>
             </div>
           </form>
 
