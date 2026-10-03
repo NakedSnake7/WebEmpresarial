@@ -38,6 +38,11 @@ public class AdminSubscriptionController {
                 subscriptionRepository.findAllWithStore()
         );
 
+        model.addAttribute(
+                "stores",
+                storeRepository.findAll()
+        );
+
         return "admin/subscriptions/list";
     }
 
