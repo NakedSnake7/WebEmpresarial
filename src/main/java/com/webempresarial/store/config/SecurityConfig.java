@@ -197,6 +197,23 @@ public class SecurityConfig {
                     "STORE_STAFF"
                 )
 
+                /*
+                 * Legacy order administration routes.
+                 *
+                 * The admin order UI still lives under /orders rather than
+                 * /admin/orders, so it must not fall through to the generic
+                 * authenticated-user rule.
+                 */
+                .requestMatchers(
+                    "/orders",
+                    "/orders/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
                 .requestMatchers(
                     "/cuenta/**",
                     "/pedidos/**"
