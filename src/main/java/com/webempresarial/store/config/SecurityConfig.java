@@ -214,6 +214,23 @@ public class SecurityConfig {
                     "STORE_STAFF"
                 )
 
+                /*
+                 * CRM administration routes.
+                 *
+                 * CRM views and APIs contain tenant commercial data and
+                 * administrative operations, so authenticated storefront
+                 * customers must not reach them.
+                 */
+                .requestMatchers(
+                    "/crm/**",
+                    "/api/crm/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
                 .requestMatchers(
                     "/cuenta/**",
                     "/pedidos/**"
