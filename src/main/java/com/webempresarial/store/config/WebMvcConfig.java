@@ -49,7 +49,13 @@ public class WebMvcConfig
                 .order(0)
                 .addPathPatterns(
                         "/admin/**",
-                        "/api/admin/**"
+                        "/api/admin/**",
+                        "/nuevo",
+                        "/editar/**",
+                        "/modificar-precios",
+                        "/variantes/**",
+                        "/api/productos/**",
+                        "/api/variantes/**"
                 )
                 .excludePathPatterns(
                         "/admin/login",
@@ -75,7 +81,13 @@ public class WebMvcConfig
         .order(10)
         .addPathPatterns(
                 "/admin/**",
-                "/crm/**"
+                "/crm/**",
+                "/nuevo",
+                "/editar/**",
+                "/modificar-precios",
+                "/variantes/**",
+                "/api/productos/**",
+                "/api/variantes/**"
         )
         .excludePathPatterns(
                 "/admin/login",

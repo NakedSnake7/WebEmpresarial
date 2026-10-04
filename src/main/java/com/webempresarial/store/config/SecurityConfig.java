@@ -176,6 +176,27 @@ public class SecurityConfig {
                     "/api/leads/**"
                 ).permitAll()
 
+                /*
+                 * Legacy Commerce administration routes.
+                 *
+                 * These endpoints still live outside /admin/** and
+                 * /api/admin/**, so they must not fall through to the
+                 * generic authenticated-user rule.
+                 */
+                .requestMatchers(
+                    "/nuevo",
+                    "/editar/**",
+                    "/modificar-precios",
+                    "/variantes/**",
+                    "/api/productos/**",
+                    "/api/variantes/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
                 .requestMatchers(
                     "/cuenta/**",
                     "/pedidos/**"
