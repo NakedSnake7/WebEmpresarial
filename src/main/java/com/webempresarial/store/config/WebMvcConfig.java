@@ -59,7 +59,9 @@ public class WebMvcConfig
                         "/orders",
                         "/orders/**",
                         "/crm/**",
-                        "/api/crm/**"
+                        "/api/crm/**",
+                        "/resenas",
+                        "/resenas/**"
                 )
                 .excludePathPatterns(
                         "/admin/login",
@@ -87,6 +89,8 @@ public class WebMvcConfig
                 "/admin/**",
                 "/crm/**",
                 "/api/crm/**",
+                "/resenas",
+                "/resenas/**",
                 "/nuevo",
                 "/editar/**",
                 "/modificar-precios",

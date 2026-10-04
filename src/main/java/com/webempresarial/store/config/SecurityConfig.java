@@ -231,6 +231,19 @@ public class SecurityConfig {
                     "STORE_STAFF"
                 )
 
+                /*
+                 * Legacy review administration routes.
+                 */
+                .requestMatchers(
+                    "/resenas",
+                    "/resenas/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
                 .requestMatchers(
                     "/cuenta/**",
                     "/pedidos/**"
