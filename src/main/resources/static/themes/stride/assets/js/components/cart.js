@@ -585,6 +585,7 @@
 	    const res = await fetch('/api/user/me', {
 	      credentials: 'include'
 	    });
+	    if (res.status === 204) return;
 	    if (!res.ok) return;
 	
 	    const user = await res.json();
