@@ -70,6 +70,18 @@ class SaaSTenantLifecycleIntegrationTest {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private com.webempresarial.store.repository.ProductoRepository
+            productoRepository;
+
+    @Autowired
+    private com.webempresarial.store.commerce.infrastructure.order.persistence.OrderRepository
+            orderRepository;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.webempresarial.store.commerce.infrastructure.order.notification.NotificationService
+            notificationService;
+
     @Test
     void shouldProvisionAndActivateNewSaaSTenant() {
 
@@ -439,6 +451,211 @@ class SaaSTenantLifecycleIntegrationTest {
                         "E2E-STOREFRONT-SLOGAN",
                         "E2E-STOREFRONT-HERO",
                         "#123456"
+                );
+
+        /*
+         * ==================================================
+         * COMMERCE SMOKE FLOW
+         * ==================================================
+         *
+         * admin -> producto -> storefront -> checkout
+         * -> inventario -> orden -> administración
+         */
+
+        String productName =
+                "E2E Commerce Product";
+
+        mockMvc.perform(
+                post("/nuevo")
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+                        .param(
+                                "productName",
+                                productName
+                        )
+                        .param(
+                                "description",
+                                "Producto creado por el smoke test E2E"
+                        )
+                        .param(
+                                "precio",
+                                "250.00"
+                        )
+                        .param(
+                                "stockSimple",
+                                "10"
+                        )
+                        .param(
+                                "visibleEnMenu",
+                                "true"
+                        )
+                        .param(
+                                "nuevaCategoria",
+                                "E2E Category"
+                        )
+                        .param(
+                                "nuevaMarca",
+                                "E2E Brand"
+                        )
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store commerceStore =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var createdProduct =
+                productoRepository
+                        .findByProductNameAndStore(
+                                productName,
+                                commerceStore
+                        )
+                        .orElseThrow();
+
+        assertThat(createdProduct.getStockSimple())
+                .isEqualTo(10);
+
+        MvcResult commerceStorefrontResult =
+                mockMvc.perform(
+                        get("/")
+                                .header(
+                                        "X-Forwarded-Host",
+                                        finalDomain
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andReturn();
+
+        assertThat(
+                commerceStorefrontResult
+                        .getResponse()
+                        .getContentAsString()
+        )
+                .contains(productName);
+
+        String checkoutJson = """
+                {
+                  "customer": {
+                    "fullName": "E2E Commerce Customer",
+                    "email": "commerce-e2e@webempresarial.test",
+                    "phone": "2221234567",
+                    "address": "Avenida E2E 123 Puebla"
+                  },
+                  "cart": [
+                    {
+                      "productId": %d,
+                      "varianteId": null,
+                      "quantity": 2
+                    }
+                  ],
+                  "paymentMethod": "TRANSFER",
+                  "couponCode": null
+                }
+                """.formatted(
+                        createdProduct.getId()
+                );
+
+        mockMvc.perform(
+                post("/api/checkout")
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+                        .contentType(
+                                "application/json"
+                        )
+                        .content(checkoutJson)
+        )
+        .andExpect(
+                status().isCreated()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeAfterCheckout =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var productAfterCheckout =
+                productoRepository
+                        .findByProductNameAndStore(
+                                productName,
+                                storeAfterCheckout
+                        )
+                        .orElseThrow();
+
+        assertThat(productAfterCheckout.getStockSimple())
+                .isEqualTo(8);
+
+        var createdOrder =
+                orderRepository
+                        .findAllWithCliente(
+                                storeAfterCheckout
+                        )
+                        .stream()
+                        .filter(order ->
+                                "commerce-e2e@webempresarial.test"
+                                        .equals(
+                                                order.getCustomerEmail()
+                                        )
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertThat(createdOrder.getPaymentMethod())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.Order.PaymentMethod.TRANSFER
+                );
+
+        assertThat(createdOrder.getPaymentStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.PaymentStatus.PENDING
+                );
+
+        assertThat(createdOrder.isStockReduced())
+                .isTrue();
+
+        MvcResult ordersResult =
+                mockMvc.perform(
+                        get("/orders")
+                                .session(session)
+                                .header(
+                                        "X-Forwarded-Host",
+                                        finalDomain
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        view().name(
+                                "admin/orders"
+                        )
+                )
+                .andReturn();
+
+        assertThat(
+                ordersResult
+                        .getResponse()
+                        .getContentAsString()
+        )
+                .contains(
+                        "E2E Commerce Customer"
                 );
     }
 

@@ -569,7 +569,7 @@
 
                                 <span class="badge"
                                       th:classappend="${order.paymentStatus ==
-                                          T(com.webempresarial.store.model.PaymentStatus).PAID
+                                          T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                                           ? ' text-bg-success'
                                           : ' text-bg-warning'}"
                                       th:text="${order.paymentStatusLabel}">
@@ -625,22 +625,22 @@
              ================================================= -->
 
         <span th:if="${order.paymentMethod ==
-                         T(com.webempresarial.store.model.Order.PaymentMethod).TRANSFER
+                         T(com.webempresarial.store.commerce.domain.order.Order.PaymentMethod).TRANSFER
                      and order.paymentStatus ==
-                         T(com.webempresarial.store.model.PaymentStatus).PENDING
+                         T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PENDING
                      and order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).CREATED}"
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).CREATED}"
               class="small text-warning">
             ⏳ Esperando transferencia
         </span>
 
         <!-- Confirmar transferencia -->
         <form th:if="${order.paymentMethod ==
-                         T(com.webempresarial.store.model.Order.PaymentMethod).TRANSFER
+                         T(com.webempresarial.store.commerce.domain.order.Order.PaymentMethod).TRANSFER
                      and order.paymentStatus ==
-                         T(com.webempresarial.store.model.PaymentStatus).PENDING
+                         T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PENDING
                      and order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).CREATED}"
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).CREATED}"
               th:action="@{/orders/{id}/confirm-payment(id=${order.id})}"
               method="post"
               onsubmit="return confirm(
@@ -659,9 +659,9 @@
 
         <!-- Cancelar orden pendiente -->
         <form th:if="${order.paymentStatus !=
-                         T(com.webempresarial.store.model.PaymentStatus).PAID
+                         T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                      and order.orderStatus !=
-                         T(com.webempresarial.store.model.OrderStatus).CANCELLED}"
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).CANCELLED}"
               th:action="@{/orders/{id}/cancel(id=${order.id})}"
               method="post"
               onsubmit="return confirm(
@@ -683,9 +683,9 @@
              ================================================= -->
 
         <a th:if="${order.paymentStatus ==
-                       T(com.webempresarial.store.model.PaymentStatus).PAID
+                       T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                    and order.orderStatus ==
-                       T(com.webempresarial.store.model.OrderStatus).PROCESSED}"
+                       T(com.webempresarial.store.commerce.domain.order.OrderStatus).PROCESSED}"
            th:href="@{/orders/{id}(id=${order.id})}"
            class="btn btn-sm btn-outline-dark">
             Gestionar envío
@@ -696,9 +696,9 @@
              ================================================= -->
 
         <button th:if="${order.paymentStatus ==
-                           T(com.webempresarial.store.model.PaymentStatus).PAID
+                           T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                        and order.orderStatus ==
-                           T(com.webempresarial.store.model.OrderStatus).SHIPPED}"
+                           T(com.webempresarial.store.commerce.domain.order.OrderStatus).SHIPPED}"
                 type="button"
                 class="btn btn-sm btn-success mark-delivered-button"
                 th:data-order-id="${order.id}">
@@ -710,29 +710,29 @@
              ================================================= -->
 
         <span th:if="${order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).DELIVERED}"
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).DELIVERED}"
               class="small text-success fw-semibold">
             ✓ Pedido entregado
         </span>
 
         <span th:if="${order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).CANCELLED
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).CANCELLED
                      and order.paymentStatus ==
-                         T(com.webempresarial.store.model.PaymentStatus).EXPIRED}"
+                         T(com.webempresarial.store.commerce.domain.order.PaymentStatus).EXPIRED}"
               class="small text-muted fw-semibold">
             ⏱ Orden expirada
         </span>
 
         <span th:if="${order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).CANCELLED
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).CANCELLED
                      and order.paymentStatus !=
-                         T(com.webempresarial.store.model.PaymentStatus).EXPIRED}"
+                         T(com.webempresarial.store.commerce.domain.order.PaymentStatus).EXPIRED}"
               class="small text-danger fw-semibold">
             ✕ Orden cancelada
         </span>
 
         <span th:if="${order.orderStatus ==
-                         T(com.webempresarial.store.model.OrderStatus).PAID_PENDING_STOCK}"
+                         T(com.webempresarial.store.commerce.domain.order.OrderStatus).PAID_PENDING_STOCK}"
               class="small text-danger fw-semibold">
             ⚠ Pago recibido, stock pendiente
         </span>
