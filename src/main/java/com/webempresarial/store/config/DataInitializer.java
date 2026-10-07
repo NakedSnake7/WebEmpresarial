@@ -4,7 +4,9 @@ import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.repository.AdminUserRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,46 +15,82 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataInitializer {
 
     @Bean
+    @ConditionalOnProperty(
+            prefix = "app.bootstrap.super-admin",
+            name = "enabled",
+            havingValue = "true"
+    )
     CommandLineRunner initAdmin(
             AdminUserRepository adminUserRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            @Value("${app.bootstrap.super-admin.email:}") String configuredEmail,
+            @Value("${app.bootstrap.super-admin.password:}") String configuredPassword,
+            @Value("${app.bootstrap.super-admin.full-name:WebEmpresarial}") String configuredFullName
     ) {
 
         return args -> {
 
-            String adminEmail = "admin@admin.com";
+            String adminEmail =
+                    configuredEmail != null
+                            ? configuredEmail.trim()
+                            : "";
 
-            boolean exists =
-                    adminUserRepository.existsByEmail(adminEmail);
+            String adminPassword =
+                    configuredPassword != null
+                            ? configuredPassword
+                            : "";
 
-            if (!exists) {
+            String adminFullName =
+                    configuredFullName != null
+                            ? configuredFullName.trim()
+                            : "";
 
-                AdminUser admin = new AdminUser();
-
-                admin.setFullName("WebEmpresarial");
-
-                admin.setEmail(adminEmail);
-
-                admin.setPassword(
-                        passwordEncoder.encode("Admin123*")
-                );
-
-                admin.setRole(AdminRole.SUPER_ADMIN);
-
-                admin.setEnabled(true);
-
-                adminUserRepository.save(admin);
-
-                System.out.println(
-                        "🔥 SUPER ADMIN creado: " + adminEmail
-                );
-
-            } else {
-
-                System.out.println(
-                        "✅ SUPER ADMIN ya existe"
+            if (adminEmail.isBlank()) {
+                throw new IllegalStateException(
+                        "SUPER_ADMIN_EMAIL es obligatorio cuando "
+                                + "SUPER_ADMIN_BOOTSTRAP_ENABLED=true"
                 );
             }
+
+            if (adminPassword.isBlank()) {
+                throw new IllegalStateException(
+                        "SUPER_ADMIN_PASSWORD es obligatorio cuando "
+                                + "SUPER_ADMIN_BOOTSTRAP_ENABLED=true"
+                );
+            }
+
+            if (adminPassword.length() < 12) {
+                throw new IllegalStateException(
+                        "SUPER_ADMIN_PASSWORD debe tener al menos 12 caracteres"
+                );
+            }
+
+            if (adminFullName.isBlank()) {
+                adminFullName = "WebEmpresarial";
+            }
+
+            if (adminUserRepository.existsByEmail(adminEmail)) {
+                System.out.println(
+                        "✅ SUPER ADMIN ya existe: " + adminEmail
+                );
+                return;
+            }
+
+            AdminUser admin = new AdminUser();
+
+            admin.setFullName(adminFullName);
+            admin.setEmail(adminEmail);
+            admin.setPassword(
+                    passwordEncoder.encode(adminPassword)
+            );
+            admin.setRole(AdminRole.SUPER_ADMIN);
+            admin.setEnabled(true);
+
+            adminUserRepository.save(admin);
+
+            System.out.println(
+                    "🔥 SUPER ADMIN creado: " + adminEmail
+            );
         };
     }
 }
