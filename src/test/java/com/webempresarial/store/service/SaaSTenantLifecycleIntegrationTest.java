@@ -657,6 +657,328 @@ class SaaSTenantLifecycleIntegrationTest {
                 .contains(
                         "E2E Commerce Customer"
                 );
+
+        /*
+         * ==================================================
+         * ORDER LIFECYCLE - FULFILLMENT
+         * ==================================================
+         *
+         * El checkout por transferencia ya descontó stock.
+         * Confirmar el pago NO debe volver a descontarlo.
+         */
+
+        Long fulfilledOrderId =
+                createdOrder.getId();
+
+        mockMvc.perform(
+                post(
+                        "/orders/{id}/confirm-payment",
+                        fulfilledOrderId
+                )
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeAfterPayment =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var paidOrder =
+                orderRepository
+                        .findByIdFullAndStore(
+                                fulfilledOrderId,
+                                storeAfterPayment
+                        )
+                        .orElseThrow();
+
+        assertThat(paidOrder.getPaymentStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.PaymentStatus.PAID
+                );
+
+        assertThat(paidOrder.getOrderStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.OrderStatus.PROCESSED
+                );
+
+        assertThat(paidOrder.isStockReduced())
+                .isTrue();
+
+        var productAfterPayment =
+                productoRepository
+                        .findByProductNameAndStore(
+                                productName,
+                                storeAfterPayment
+                        )
+                        .orElseThrow();
+
+        /*
+         * Sigue en 8: confirmar transferencia no puede
+         * descontar por segunda vez.
+         */
+        assertThat(productAfterPayment.getStockSimple())
+                .isEqualTo(8);
+
+        /*
+         * Registrar envío.
+         */
+        mockMvc.perform(
+                post("/orders/update-shipping")
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+                        .param(
+                                "orderId",
+                                fulfilledOrderId.toString()
+                        )
+                        .param(
+                                "courier",
+                                "DHL"
+                        )
+                        .param(
+                                "trackingNumber",
+                                "E2E-TRACK-001"
+                        )
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeAfterShipping =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var shippedOrder =
+                orderRepository
+                        .findByIdFullAndStore(
+                                fulfilledOrderId,
+                                storeAfterShipping
+                        )
+                        .orElseThrow();
+
+        assertThat(shippedOrder.getOrderStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.OrderStatus.SHIPPED
+                );
+
+        assertThat(shippedOrder.getCarrier())
+                .isEqualTo("DHL");
+
+        assertThat(shippedOrder.getTrackingNumber())
+                .isEqualTo("E2E-TRACK-001");
+
+        /*
+         * Marcar como entregada mediante el endpoint AJAX
+         * utilizado por la administración.
+         */
+        mockMvc.perform(
+                post(
+                        "/orders/{id}/status-ajax",
+                        fulfilledOrderId
+                )
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+                        .contentType(
+                                "application/json"
+                        )
+                        .content(
+                                """
+                                {
+                                  "status": "DELIVERED"
+                                }
+                                """
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeAfterDelivery =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var deliveredOrder =
+                orderRepository
+                        .findByIdFullAndStore(
+                                fulfilledOrderId,
+                                storeAfterDelivery
+                        )
+                        .orElseThrow();
+
+        assertThat(deliveredOrder.getOrderStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.OrderStatus.DELIVERED
+                );
+
+        /*
+         * ==================================================
+         * ORDER LIFECYCLE - CANCELLATION
+         * ==================================================
+         *
+         * Segundo pedido: descontamos 3 unidades durante
+         * checkout y comprobamos que cancelarlo antes del
+         * pago restaura exactamente esas 3.
+         */
+
+        String cancellationCheckoutJson = """
+                {
+                  "customer": {
+                    "fullName": "E2E Cancellation Customer",
+                    "email": "cancel-e2e@webempresarial.test",
+                    "phone": "2227654321",
+                    "address": "Avenida Cancelacion 456 Puebla"
+                  },
+                  "cart": [
+                    {
+                      "productId": %d,
+                      "varianteId": null,
+                      "quantity": 3
+                    }
+                  ],
+                  "paymentMethod": "TRANSFER",
+                  "couponCode": null
+                }
+                """.formatted(
+                        productAfterPayment.getId()
+                );
+
+        mockMvc.perform(
+                post("/api/checkout")
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+                        .contentType(
+                                "application/json"
+                        )
+                        .content(cancellationCheckoutJson)
+        )
+        .andExpect(
+                status().isCreated()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeBeforeCancellation =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var productBeforeCancellation =
+                productoRepository
+                        .findByProductNameAndStore(
+                                productName,
+                                storeBeforeCancellation
+                        )
+                        .orElseThrow();
+
+        assertThat(productBeforeCancellation.getStockSimple())
+                .isEqualTo(5);
+
+        var cancellableOrder =
+                orderRepository
+                        .findAllWithCliente(
+                                storeBeforeCancellation
+                        )
+                        .stream()
+                        .filter(order ->
+                                "cancel-e2e@webempresarial.test"
+                                        .equals(
+                                                order.getCustomerEmail()
+                                        )
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertThat(cancellableOrder.getPaymentStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.PaymentStatus.PENDING
+                );
+
+        assertThat(cancellableOrder.isStockReduced())
+                .isTrue();
+
+        mockMvc.perform(
+                post(
+                        "/orders/{id}/cancel",
+                        cancellableOrder.getId()
+                )
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Store storeAfterCancellation =
+                storeRepository
+                        .findByDominio(finalDomain)
+                        .orElseThrow();
+
+        var cancelledOrder =
+                orderRepository
+                        .findByIdFullAndStore(
+                                cancellableOrder.getId(),
+                                storeAfterCancellation
+                        )
+                        .orElseThrow();
+
+        assertThat(cancelledOrder.getOrderStatus())
+                .isEqualTo(
+                        com.webempresarial.store.commerce.domain.order.OrderStatus.CANCELLED
+                );
+
+        assertThat(cancelledOrder.isStockReduced())
+                .isFalse();
+
+        var productAfterCancellation =
+                productoRepository
+                        .findByProductNameAndStore(
+                                productName,
+                                storeAfterCancellation
+                        )
+                        .orElseThrow();
+
+        /*
+         * 8 -> checkout de 3 = 5 -> cancelación = 8.
+         */
+        assertThat(productAfterCancellation.getStockSimple())
+                .isEqualTo(8);
     }
 
     private Long provisionedStoreId(
