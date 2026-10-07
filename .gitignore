@@ -74,3 +74,6 @@ dist/
 ### 📘 Excepciones útiles ###
 !README.md
 !application-example.properties
+
+# Configuración productiva versionada: solo placeholders / sin secretos
+!src/main/resources/application-prod.properties
