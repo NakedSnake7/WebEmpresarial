@@ -13,18 +13,15 @@ import com.webempresarial.store.commerce.infrastructure.order.notification.Notif
 public class AutomationService {
 
     private final SalesTaskService taskService;
-    private final MailerSendService mailerSendService;
     private final WhatsAppService whatsAppService;
     private final NotificationService notificationService;
 
     public AutomationService(
             SalesTaskService taskService,
-            MailerSendService mailerSendService,
             WhatsAppService whatsAppService,
             NotificationService notificationService
     ) {
         this.taskService = taskService;
-        this.mailerSendService = mailerSendService;
         this.whatsAppService = whatsAppService;
         this.notificationService = notificationService;
     }
@@ -38,8 +35,6 @@ public class AutomationService {
                 LocalDateTime.now().plusHours(2),
                 LeadPriority.HIGH
         );
-
-        mailerSendService.sendLeadWelcomeEmail(lead);
 
         whatsAppService.prepareInitialMessage(lead);
 
