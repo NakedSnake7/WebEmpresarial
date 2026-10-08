@@ -11,12 +11,17 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
+import com.stripe.model.Invoice;
+import com.stripe.model.Subscription;
+import com.stripe.model.SubscriptionSchedule;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.repository.StripeWebhookEventRepository;
@@ -285,6 +290,269 @@ class StripeWebhookServiceTest {
                 subscriptionService
         );
     }
+
+    private void stubUnprocessedEvent(
+            Event event,
+            String eventId,
+            String eventType
+    ) {
+        when(event.getId())
+                .thenReturn(eventId);
+
+        when(event.getType())
+                .thenReturn(eventType);
+
+        when(webhookEventRepository
+                .findByStripeEventId(eventId))
+                .thenReturn(Optional.empty());
+
+        when(webhookEventRepository
+                .save(any(StripeWebhookEvent.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0)
+                );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "customer.subscription.created",
+            "customer.subscription.updated"
+    })
+    void handle_shouldSyncCreatedAndUpdatedSubscription(
+            String eventType
+    ) {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        Subscription stripeSubscription =
+                mock(Subscription.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_" + eventType.replace(".", "_"),
+                eventType
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(stripeSubscription));
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .syncStripeSubscriptionUpdated(
+                        stripeSubscription
+                );
+    }
+
+    @Test
+    void handle_shouldCancelDeletedSubscription() {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        Subscription stripeSubscription =
+                mock(Subscription.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_subscription_deleted",
+                "customer.subscription.deleted"
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(stripeSubscription));
+
+        when(stripeSubscription.getId())
+                .thenReturn("sub_deleted_123");
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .cancelByStripeSubscriptionId(
+                        "sub_deleted_123"
+                );
+    }
+
+    @Test
+    void handle_shouldRegisterSuccessfulInvoicePayment() {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        Invoice invoice =
+                mock(Invoice.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_invoice_paid",
+                "invoice.paid"
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(invoice));
+
+        when(invoice.getSubscription())
+                .thenReturn("sub_paid_123");
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .registerSuccessfulPayment(
+                        "sub_paid_123"
+                );
+    }
+
+    @Test
+    void handle_shouldMarkSubscriptionPastDueWhenInvoiceFails() {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        Invoice invoice =
+                mock(Invoice.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_invoice_failed",
+                "invoice.payment_failed"
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(invoice));
+
+        when(invoice.getSubscription())
+                .thenReturn("sub_failed_123");
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .markPastDue(
+                        "sub_failed_123"
+                );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "subscription_schedule.created",
+            "subscription_schedule.updated"
+    })
+    void handle_shouldOnlyAuditCreatedAndUpdatedSchedule(
+            String eventType
+    ) {
+        Event event = mock(Event.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_" + eventType.replace(".", "_"),
+                eventType
+        );
+
+        service.handle(event);
+
+        verifyNoInteractions(
+                subscriptionService,
+                provisioningService,
+                stripeCommercePaymentHandler,
+                stripePlanMapper
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "subscription_schedule.completed",
+            "subscription_schedule.released"
+    })
+    void handle_shouldReconcileFinishedSchedule(
+            String eventType
+    ) {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        SubscriptionSchedule schedule =
+                mock(SubscriptionSchedule.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_" + eventType.replace(".", "_"),
+                eventType
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(schedule));
+
+        when(schedule.getSubscription())
+                .thenReturn("sub_schedule_finished");
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .reconcileStripeSubscription(
+                        "sub_schedule_finished"
+                );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "subscription_schedule.canceled",
+            "subscription_schedule.aborted"
+    })
+    void handle_shouldClearPendingPlanForCanceledSchedule(
+            String eventType
+    ) {
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        SubscriptionSchedule schedule =
+                mock(SubscriptionSchedule.class);
+
+        stubUnprocessedEvent(
+                event,
+                "evt_" + eventType.replace(".", "_"),
+                eventType
+        );
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(schedule));
+
+        when(schedule.getSubscription())
+                .thenReturn("sub_schedule_canceled");
+
+        service.handle(event);
+
+        verify(subscriptionService)
+                .clearPendingPlanByStripeSubscriptionId(
+                        "sub_schedule_canceled"
+                );
+    }
+
+
     @Test
     void handle_shouldIgnoreAlreadyProcessedStripeEvent() {
 
