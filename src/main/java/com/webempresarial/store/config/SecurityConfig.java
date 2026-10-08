@@ -142,6 +142,7 @@ public class SecurityConfig {
                     "/",
                     "/index",
                     "/inicio",
+                    "/health",
                     "/privacy",
                     "/billing/success",
                     "/productos/**",
