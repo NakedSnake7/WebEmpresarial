@@ -130,17 +130,15 @@ public class StoreSettingsController {
             Store store = storeContextService.getCurrentStore(request);
             StoreSettings settings = storeSettingsService.getOrCreate(store);
 
+            String previousLogoPublicId = null;
+
             if (settings.getLogoUrl() != null &&
                     !settings.getLogoUrl().isBlank()) {
 
-                String publicId =
+                previousLogoPublicId =
                         cloudinaryService.extraerPublicIdDesdeUrl(
                                 settings.getLogoUrl()
                         );
-
-                if (publicId != null) {
-                    cloudinaryService.eliminarImagen(publicId);
-                }
             }
 
             CloudinaryUploadResult result =
@@ -152,6 +150,12 @@ public class StoreSettingsController {
             settings.setLogoUrl(result.getSecureUrl());
 
             storeSettingsService.save(settings);
+
+            if (previousLogoPublicId != null) {
+                cloudinaryService.eliminarImagen(
+                        previousLogoPublicId
+                );
+            }
 
             return "redirect:/admin/store/settings?logoSuccess";
 

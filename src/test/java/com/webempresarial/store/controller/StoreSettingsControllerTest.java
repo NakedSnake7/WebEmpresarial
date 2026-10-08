@@ -496,6 +496,60 @@ assertThat(saved.getFooterText())
     }
 
     @Test
+    void shouldKeepExistingLogoWhenReplacementUploadFails() throws Exception {
+        mockCurrentTenant();
+
+        String oldLogoUrl =
+                "https://res.cloudinary.com/demo/"
+                        + "image/upload/v1/stores/100/old.png";
+
+        settings.setLogoUrl(oldLogoUrl);
+
+        when(cloudinaryService
+                .extraerPublicIdDesdeUrl(oldLogoUrl))
+                .thenReturn("stores/100/old");
+
+        MockMultipartFile logo =
+                new MockMultipartFile(
+                        "logoFile",
+                        "new.png",
+                        "image/png",
+                        "new-image".getBytes()
+                );
+
+        when(cloudinaryService
+                .subirLogoTienda(
+                        logo,
+                        100L
+                ))
+                .thenThrow(
+                        new java.io.IOException(
+                                "Cloudinary unavailable"
+                        )
+                );
+
+        String result =
+                controller.uploadLogo(
+                        logo,
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?logoError"
+                );
+
+        assertThat(settings.getLogoUrl())
+                .isEqualTo(oldLogoUrl);
+
+        verify(cloudinaryService, never())
+                .eliminarImagen(anyString());
+
+        verify(storeSettingsService, never())
+                .save(settings);
+    }
+
+    @Test
     void shouldRejectEmptyLogo() {
         MockMultipartFile emptyLogo =
                 new MockMultipartFile(

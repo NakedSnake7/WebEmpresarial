@@ -197,6 +197,8 @@ public class CloudinaryService {
 
         String path = url.substring(startIndex + 8);
 
+        path = path.replaceFirst("^v\\d+/", "");
+
         return path.replaceFirst("\\.[a-zA-Z0-9]+$", "");
     }
 }
