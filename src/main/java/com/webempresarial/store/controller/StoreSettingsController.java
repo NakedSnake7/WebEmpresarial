@@ -104,12 +104,12 @@ public class StoreSettingsController {
         if (features.canUse(store, "WHITE_LABEL_FULL")) {
             settings.setCustomCss(form.getCustomCss());
             settings.setCustomJs(form.getCustomJs());
+
+            settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
+            settings.setMetaPixelId(form.getMetaPixelId());
+            settings.setTiktokPixelId(form.getTiktokPixelId());
+            settings.setHotjarId(form.getHotjarId());
         }
-        
-        settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
-        settings.setMetaPixelId(form.getMetaPixelId());
-        settings.setTiktokPixelId(form.getTiktokPixelId());
-        settings.setHotjarId(form.getHotjarId());
 
         storeSettingsService.save(settings);
 

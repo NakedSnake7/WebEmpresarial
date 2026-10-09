@@ -70,6 +70,11 @@ class StoreSettingsControllerTest {
         settings.setCustomCss("body { color: red; }");
         settings.setCustomJs("console.log('old');");
 
+        settings.setGoogleAnalyticsId("G-OLD");
+        settings.setMetaPixelId("META-OLD");
+        settings.setTiktokPixelId("TIKTOK-OLD");
+        settings.setHotjarId("HOTJAR-OLD");
+
         request = new MockHttpServletRequest();
     }
 
@@ -273,16 +278,16 @@ assertThat(saved.getFooterText())
         .isEqualTo("FOOTER-TEXT-ACME");
 
         assertThat(saved.getGoogleAnalyticsId())
-                .isEqualTo("G-123456");
+                .isEqualTo("G-OLD");
 
         assertThat(saved.getMetaPixelId())
-                .isEqualTo("123456789");
+                .isEqualTo("META-OLD");
 
         assertThat(saved.getTiktokPixelId())
-                .isEqualTo("TIKTOK-123");
+                .isEqualTo("TIKTOK-OLD");
 
         assertThat(saved.getHotjarId())
-                .isEqualTo("987654");
+                .isEqualTo("HOTJAR-OLD");
 
         verify(storeContextService)
                 .getCurrentStore(request);
@@ -306,6 +311,11 @@ assertThat(saved.getFooterText())
         form.setCustomCss("body { display:none; }");
         form.setCustomJs("alert('hacked');");
 
+        form.setGoogleAnalyticsId("G-HACKED");
+        form.setMetaPixelId("META-HACKED");
+        form.setTiktokPixelId("TIKTOK-HACKED");
+        form.setHotjarId("HOTJAR-HACKED");
+
         when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(false);
 
@@ -325,6 +335,18 @@ assertThat(saved.getFooterText())
 
         assertThat(settings.getCustomJs())
                 .isEqualTo("console.log('old');");
+
+        assertThat(settings.getGoogleAnalyticsId())
+                .isEqualTo("G-OLD");
+
+        assertThat(settings.getMetaPixelId())
+                .isEqualTo("META-OLD");
+
+        assertThat(settings.getTiktokPixelId())
+                .isEqualTo("TIKTOK-OLD");
+
+        assertThat(settings.getHotjarId())
+                .isEqualTo("HOTJAR-OLD");
 
         verify(features)
                 .canUse(store, "WHITE_LABEL_FULL");
@@ -347,6 +369,11 @@ assertThat(saved.getFooterText())
                 "console.log('premium');"
         );
 
+        form.setGoogleAnalyticsId("G-PREMIUM");
+        form.setMetaPixelId("META-PREMIUM");
+        form.setTiktokPixelId("TIKTOK-PREMIUM");
+        form.setHotjarId("HOTJAR-PREMIUM");
+
         when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(true);
 
@@ -367,6 +394,18 @@ assertThat(saved.getFooterText())
                 .isEqualTo(
                         "console.log('premium');"
                 );
+
+        assertThat(settings.getGoogleAnalyticsId())
+                .isEqualTo("G-PREMIUM");
+
+        assertThat(settings.getMetaPixelId())
+                .isEqualTo("META-PREMIUM");
+
+        assertThat(settings.getTiktokPixelId())
+                .isEqualTo("TIKTOK-PREMIUM");
+
+        assertThat(settings.getHotjarId())
+                .isEqualTo("HOTJAR-PREMIUM");
 
         verify(features)
                 .canUse(store, "WHITE_LABEL_FULL");

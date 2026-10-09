@@ -44,6 +44,8 @@ import static org.springframework.test.web.servlet.request
         .MockMvcRequestBuilders.post;
 
 import static org.springframework.test.web.servlet.result
+        .MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result
         .MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result
         .MockMvcResultMatchers.redirectedUrl;
@@ -126,6 +128,11 @@ class StoreSettingsControllerMockMvcTest {
         settings.setCustomJs(
                 "console.log('old');"
         );
+
+        settings.setGoogleAnalyticsId("G-OLD");
+        settings.setMetaPixelId("META-OLD");
+        settings.setTiktokPixelId("TIKTOK-OLD");
+        settings.setHotjarId("HOTJAR-OLD");
 
         /*
          * En @WebMvcTest los interceptores mockeados siguen formando
@@ -232,6 +239,97 @@ verify(storeSettingsService, atLeastOnce())
         .getOrCreate(store);
 
 
+    }
+
+
+    @Test
+    void nonWhiteLabelTenantShouldNotRenderTrackingInputs()
+            throws Exception {
+
+        mockCurrentTenant();
+
+        when(features.canUse(
+                store,
+                "WHITE_LABEL_FULL"
+        )).thenReturn(false);
+
+        mockMvc.perform(
+                get("/admin/store/settings")
+                        .with(
+                                user("admin@acme.test")
+                                        .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(status().isOk())
+        .andExpect(content().string(
+                org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(
+                                "name=\"googleAnalyticsId\""
+                        )
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(
+                                "name=\"metaPixelId\""
+                        )
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(
+                                "name=\"tiktokPixelId\""
+                        )
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(
+                                "name=\"hotjarId\""
+                        )
+                )
+        ));
+    }
+
+    @Test
+    void whiteLabelTenantShouldRenderTrackingInputs()
+            throws Exception {
+
+        mockCurrentTenant();
+
+        when(features.canUse(
+                store,
+                "WHITE_LABEL_FULL"
+        )).thenReturn(true);
+
+        mockMvc.perform(
+                get("/admin/store/settings")
+                        .with(
+                                user("admin@acme.test")
+                                        .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(status().isOk())
+        .andExpect(content().string(
+                org.hamcrest.Matchers.containsString(
+                        "name=\"googleAnalyticsId\""
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.containsString(
+                        "name=\"metaPixelId\""
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.containsString(
+                        "name=\"tiktokPixelId\""
+                )
+        ))
+        .andExpect(content().string(
+                org.hamcrest.Matchers.containsString(
+                        "name=\"hotjarId\""
+                )
+        ));
     }
 
     /*
@@ -421,16 +519,16 @@ verify(storeSettingsService, atLeastOnce())
                 );
 
         assertThat(settings.getGoogleAnalyticsId())
-                .isEqualTo("G-123456");
+                .isEqualTo("G-OLD");
 
         assertThat(settings.getMetaPixelId())
-                .isEqualTo("123456789");
+                .isEqualTo("META-OLD");
 
         assertThat(settings.getTiktokPixelId())
-                .isEqualTo("TIKTOK-123");
+                .isEqualTo("TIKTOK-OLD");
 
         assertThat(settings.getHotjarId())
-                .isEqualTo("987654");
+                .isEqualTo("HOTJAR-OLD");
 
         verify(storeSettingsService)
                 .save(settings);
@@ -474,6 +572,22 @@ verify(storeSettingsService, atLeastOnce())
                                 "customJs",
                                 "alert('hacked');"
                         )
+                        .param(
+                                "googleAnalyticsId",
+                                "G-HACKED"
+                        )
+                        .param(
+                                "metaPixelId",
+                                "META-HACKED"
+                        )
+                        .param(
+                                "tiktokPixelId",
+                                "TIKTOK-HACKED"
+                        )
+                        .param(
+                                "hotjarId",
+                                "HOTJAR-HACKED"
+                        )
         )
         .andExpect(status().is3xxRedirection())
         .andExpect(
@@ -491,6 +605,18 @@ verify(storeSettingsService, atLeastOnce())
                 .isEqualTo(
                         "console.log('old');"
                 );
+
+        assertThat(settings.getGoogleAnalyticsId())
+                .isEqualTo("G-OLD");
+
+        assertThat(settings.getMetaPixelId())
+                .isEqualTo("META-OLD");
+
+        assertThat(settings.getTiktokPixelId())
+                .isEqualTo("TIKTOK-OLD");
+
+        assertThat(settings.getHotjarId())
+                .isEqualTo("HOTJAR-OLD");
 
         verify(features)
                 .canUse(
@@ -529,6 +655,22 @@ verify(storeSettingsService, atLeastOnce())
                                 "customJs",
                                 "console.log('premium');"
                         )
+                        .param(
+                                "googleAnalyticsId",
+                                "G-PREMIUM"
+                        )
+                        .param(
+                                "metaPixelId",
+                                "META-PREMIUM"
+                        )
+                        .param(
+                                "tiktokPixelId",
+                                "TIKTOK-PREMIUM"
+                        )
+                        .param(
+                                "hotjarId",
+                                "HOTJAR-PREMIUM"
+                        )
         )
         .andExpect(status().is3xxRedirection())
         .andExpect(
@@ -546,6 +688,18 @@ verify(storeSettingsService, atLeastOnce())
                 .isEqualTo(
                         "console.log('premium');"
                 );
+
+        assertThat(settings.getGoogleAnalyticsId())
+                .isEqualTo("G-PREMIUM");
+
+        assertThat(settings.getMetaPixelId())
+                .isEqualTo("META-PREMIUM");
+
+        assertThat(settings.getTiktokPixelId())
+                .isEqualTo("TIKTOK-PREMIUM");
+
+        assertThat(settings.getHotjarId())
+                .isEqualTo("HOTJAR-PREMIUM");
 
         verify(features)
                 .canUse(
