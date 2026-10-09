@@ -48,245 +48,98 @@
     <h2 class="section-title">Cada una con su propia personalidad</h2>
   </div>
 
-  <!--
-    Cada tarjeta expone los campos del ProductoCardDTO como data-attributes:
-      data-id              → id
-      data-product-name    → productName
-      data-precio          → precio
-      data-precio-minimo   → precioMinimo
-      data-tiene-variantes → tieneVariantes
-      data-tiene-promocion → tienePromocion
-      data-descuento       → porcentajeDescuento
-      data-image-url       → imageUrl
-      data-categoria       → categoriaNombre
-      data-marca           → marcaNombre
-      data-stock           → stockSimple
+  <div class="beers-grid"
+       id="beersGrid"
+       th:if="${products != null and !products.isEmpty()}">
 
-    El método renderCard() replica la lógica de:
-      getPrecioMostrar()      → si tieneVariantes usa precioMinimo, si no precio
-      getPrecioConDescuento() → aplica porcentajeDescuento si tienePromocion
-      isSinStock()            → stockSimple <= 0
-  -->
-  <div class="beers-grid" id="beersGrid">
-
-    <!-- Card 1 · Golden Punch -->
     <div class="beer-card reveal"
-         data-id="1"
-         data-product-name="Golden Punch"
-         data-precio="95"
-         data-precio-minimo="95"
-         data-tiene-variantes="false"
-         data-tiene-promocion="false"
-         data-descuento="0"
-         data-image-url="/img/golden-punch.png"
-         data-categoria="Golden Ale"
-         data-marca="Barley Punch"
-         data-stock="120">
-      <div class="beer-badge badge-best">Más vendida</div>
+         th:each="product : ${products}"
+         th:attr="
+           data-id=${product.id},
+           data-product-name=${product.productName},
+           data-precio=${product.precio},
+           data-precio-minimo=${product.precioMinimo},
+           data-tiene-variantes=${product.tieneVariantes},
+           data-tiene-promocion=${product.tienePromocion},
+           data-descuento=${product.porcentajeDescuento},
+           data-image-url=${product.imageUrl},
+           data-categoria=${product.categoriaNombre},
+           data-marca=${product.marcaNombre},
+           data-stock=${product.stockSimple}">
+
+      <div class="beer-badge badge-limited"
+           th:if="${product.tienePromocion}">
+        Oferta
+      </div>
+
       <div class="beer-visual">
-        <div class="beer-can can-golden">
-          <div class="beer-shine"></div>
-          <div class="can-label">
-            <div class="can-label-name">GOLDEN<br>PUNCH</div>
-            <div class="can-label-abv">5.2% ABV</div>
-          </div>
-        </div>
+        <img class="beer-product-image"
+             th:src="${product.imageUrl}"
+             th:alt="${product.productName}"
+             loading="lazy">
         <div class="beer-glow"></div>
       </div>
-      <div class="beer-info">
-        <div class="beer-style">Golden Ale</div>
-        <div class="beer-name">Golden Punch</div>
-        <div class="beer-desc">Suave y refrescante con notas de miel y cítricos. El equilibrio perfecto para cualquier ocasión.</div>
-        <div class="beer-footer">
-          <div class="beer-price-block">
-            <!-- precioConDescuento renderizado por JS -->
-          </div>
-          <div class="beer-cart-controls">
-            <input
-              id="quantity-1"
-              class="product-quantity"
-              type="number"
-              min="1"
-              max="120"
-              value="1"
-              data-product-id="1">
-          </div>
-          <button
-            type="button"
-            class="btn-add add-to-cart"
-            data-product-id="1"
-            data-name="Golden Punch"
-            data-price="95"
-            data-quantity-id="quantity-1"
-            data-original-stock="120">
-            + Agregar
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Card 2 · Dark Knight -->
-    <div class="beer-card reveal"
-         data-id="2"
-         data-product-name="Dark Knight"
-         data-precio="120"
-         data-precio-minimo="120"
-         data-tiene-variantes="false"
-         data-tiene-promocion="true"
-         data-descuento="15"
-         data-image-url="/img/dark-knight.png"
-         data-categoria="Imperial Stout"
-         data-marca="Barley Punch"
-         data-stock="45">
-      <div class="beer-badge badge-limited">Edición Limitada</div>
-      <div class="beer-visual">
-        <div class="beer-can can-dark">
-          <div class="beer-shine"></div>
-          <div class="can-label">
-            <div class="can-label-name">DARK<br>KNIGHT</div>
-            <div class="can-label-abv">7.8% ABV</div>
-          </div>
-        </div>
-        <div class="beer-glow"></div>
-      </div>
       <div class="beer-info">
-        <div class="beer-style">Imperial Stout</div>
-        <div class="beer-name">Dark Knight</div>
-        <div class="beer-desc">Negra e intensa. Notas de chocolate amargo, café y caramelo tostado que te envuelven en la oscuridad.</div>
+
+        <div class="beer-style"
+             th:text="${product.categoriaNombre != null and !product.categoriaNombre.isBlank()
+               ? product.categoriaNombre
+               : (product.marcaNombre != null and !product.marcaNombre.isBlank()
+                   ? product.marcaNombre
+                   : 'Producto')}">
+          Producto
+        </div>
+
+        <div class="beer-name"
+             th:text="${product.productName}">
+          Producto
+        </div>
+
+        <div class="beer-desc"
+             th:text="${product.marcaNombre != null and !product.marcaNombre.isBlank()
+               ? product.marcaNombre
+               : 'Producto disponible en tienda.'}">
+          Producto disponible en tienda.
+        </div>
+
         <div class="beer-footer">
+
           <div class="beer-price-block"></div>
+
           <div class="beer-cart-controls">
             <input
-              id="quantity-2"
+              th:id="|quantity-${product.id}|"
               class="product-quantity"
               type="number"
               min="1"
-              max="45"
+              th:max="${product.stockSimple}"
               value="1"
-              data-product-id="2">
+              th:attr="data-product-id=${product.id}">
           </div>
+
           <button
             type="button"
             class="btn-add add-to-cart"
-            data-product-id="2"
-            data-name="Dark Knight"
-            data-price="102"
-            data-quantity-id="quantity-2"
-            data-original-stock="45">
+            th:attr="
+              data-product-id=${product.id},
+              data-name=${product.productName},
+              data-price=${product.precioConDescuento},
+              data-quantity-id=|quantity-${product.id}|,
+              data-original-stock=${product.stockSimple}">
             + Agregar
           </button>
+
         </div>
       </div>
     </div>
 
-    <!-- Card 3 · Amber Hook -->
-    <div class="beer-card reveal"
-         data-id="3"
-         data-product-name="Amber Hook"
-         data-precio="105"
-         data-precio-minimo="95"
-         data-tiene-variantes="true"
-         data-tiene-promocion="false"
-         data-descuento="0"
-         data-image-url="/img/amber-hook.png"
-         data-categoria="Amber Ale"
-         data-marca="Barley Punch"
-         data-stock="80">
-      <div class="beer-badge badge-new">Nueva</div>
-      <div class="beer-visual">
-        <div class="beer-can can-amber">
-          <div class="beer-shine"></div>
-          <div class="can-label">
-            <div class="can-label-name">AMBER<br>HOOK</div>
-            <div class="can-label-abv">6.1% ABV</div>
-          </div>
-        </div>
-        <div class="beer-glow"></div>
-      </div>
-      <div class="beer-info">
-        <div class="beer-style">Amber Ale</div>
-        <div class="beer-name">Amber Hook</div>
-        <div class="beer-desc">Ámbar profundo con aroma a caramelo y lúpulo terroso. Un gancho suave al paladar que no olvidarás.</div>
-        <div class="beer-footer">
-          <div class="beer-price-block"></div>
-          <div class="beer-cart-controls">
-            <input
-              id="quantity-3"
-              class="product-quantity"
-              type="number"
-              min="1"
-              max="80"
-              value="1"
-              data-product-id="3">
-          </div>
-          <button
-            type="button"
-            class="btn-add add-to-cart"
-            data-product-id="3"
-            data-name="Amber Hook"
-            data-price="95"
-            data-quantity-id="quantity-3"
-            data-original-stock="80">
-            + Agregar
-          </button>
-        </div>
-      </div>
-    </div>
+  </div>
 
-    <!-- Card 4 · Pale Jabs -->
-    <div class="beer-card reveal"
-         data-id="4"
-         data-product-name="Pale Jabs"
-         data-precio="98"
-         data-precio-minimo="98"
-         data-tiene-variantes="false"
-         data-tiene-promocion="false"
-         data-descuento="0"
-         data-image-url="/img/pale-jabs.png"
-         data-categoria="Pale Ale"
-         data-marca="Barley Punch"
-         data-stock="0">
-      <!-- Sin badge: sin stock se muestra como agotado -->
-      <div class="beer-visual">
-        <div class="beer-can can-pale">
-          <div class="beer-shine"></div>
-          <div class="can-label">
-            <div class="can-label-name">PALE<br>JABS</div>
-            <div class="can-label-abv">4.8% ABV</div>
-          </div>
-        </div>
-        <div class="beer-glow"></div>
-      </div>
-      <div class="beer-info">
-        <div class="beer-style">Pale Ale</div>
-        <div class="beer-name">Pale Jabs</div>
-        <div class="beer-desc">Liviana y frutada. Notas tropicales de maracuyá y mango que te conectan directo con el verano.</div>
-        <div class="beer-footer">
-          <div class="beer-price-block"></div>
-          <div class="beer-cart-controls">
-            <input
-              id="quantity-4"
-              class="product-quantity"
-              type="number"
-              min="1"
-              max="0"
-              value="1"
-              data-product-id="4">
-          </div>
-          <button
-            type="button"
-            class="btn-add add-to-cart"
-            data-product-id="4"
-            data-name="Pale Jabs"
-            data-price="98"
-            data-quantity-id="quantity-4"
-            data-original-stock="0">
-            + Agregar
-          </button>
-        </div>
-      </div>
-    </div>
-
+  <div class="beers-empty reveal"
+       th:if="${products == null or products.isEmpty()}">
+    <p class="section-label">Catálogo</p>
+    <h3>Próximamente habrá productos disponibles.</h3>
   </div>
 </section>
 

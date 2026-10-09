@@ -80,7 +80,17 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
             c.nombre,
             m.nombre,
-            p.stockSimple
+
+            CASE
+                WHEN SIZE(p.variantes) > 0 THEN
+                    COALESCE(
+                        (SELECT SUM(v.stock)
+                         FROM ProductoVariante v
+                         WHERE v.producto.id = p.id),
+                        0
+                    )
+                ELSE p.stockSimple
+            END
         )
         FROM Producto p
         LEFT JOIN p.categoria c

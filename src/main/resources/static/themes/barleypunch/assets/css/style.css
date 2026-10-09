@@ -2081,3 +2081,27 @@ body.menu-open{
 }
 
 
+
+/* Commerce Engine product image */
+.beer-product-image {
+  max-width: 78%;
+  max-height: 210px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.4s ease;
+}
+
+.beer-card:hover .beer-product-image {
+  transform: translateY(-8px) scale(1.03);
+}
+
+.beers-empty {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  text-align: center;
+  border: 1px solid rgba(201,149,42,0.15);
+}
