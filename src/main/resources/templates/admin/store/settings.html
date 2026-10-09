@@ -416,7 +416,7 @@
 
 
 <div class="col-12"
-     th:if="${features.canUse(store, 'WHITE_LABEL')}">
+     th:if="${features.canUse(store, 'WHITE_LABEL_FULL')}">
 
     <label class="form-label fw-semibold">
         CSS personalizado
@@ -432,7 +432,7 @@
 </div>
 
 <div class="col-12"
-     th:if="${features.canUse(store, 'WHITE_LABEL')}">
+     th:if="${features.canUse(store, 'WHITE_LABEL_FULL')}">
 
     <label class="form-label fw-semibold">
         JavaScript personalizado
@@ -448,7 +448,7 @@
 </div>
 
 <div class="col-12"
-     th:unless="${features.canUse(store, 'WHITE_LABEL')}">
+     th:unless="${features.canUse(store, 'WHITE_LABEL_FULL')}">
 
     <div class="alert alert-warning">
 

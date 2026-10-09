@@ -728,6 +728,147 @@ when(subscriptionInterceptor.preHandle(
         ));
     }
 
+
+    @Test
+    void nonPremiumTenantShouldNotRenderWhiteLabelFeatures()
+            throws Exception {
+
+        settingsA.setCustomCss(
+                "/* WHITE-LABEL-CSS-TENANT-A */"
+        );
+        settingsA.setCustomJs(
+                "window.WHITE_LABEL_JS_TENANT_A = true;"
+        );
+
+        settingsA.setGoogleAnalyticsId(
+                "G-WHITE-LABEL-TENANT-A"
+        );
+        settingsA.setMetaPixelId(
+                "123456789001"
+        );
+        settingsA.setTiktokPixelId(
+                "TIKTOK-WHITE-LABEL-A"
+        );
+        settingsA.setHotjarId(
+                "987654"
+        );
+
+        mockMvc.perform(
+                get("/")
+                        .header("Host", TENANT_A_HOST)
+                        .with(request -> {
+                            request.setServerName(TENANT_A_HOST);
+                            return request;
+                        })
+        )
+        .andExpect(status().isOk())
+
+        .andExpect(content().string(
+                not(containsString("WHITE-LABEL-CSS-TENANT-A"))
+        ))
+        .andExpect(content().string(
+                not(containsString("WHITE_LABEL_JS_TENANT_A"))
+        ))
+
+        .andExpect(content().string(
+                not(containsString("G-WHITE-LABEL-TENANT-A"))
+        ))
+        .andExpect(content().string(
+                not(containsString(
+                        "googletagmanager.com/gtag/js?id="
+                ))
+        ))
+
+        .andExpect(content().string(
+                not(containsString("123456789001"))
+        ))
+        .andExpect(content().string(
+                not(containsString(
+                        "connect.facebook.net/en_US/fbevents.js"
+                ))
+        ))
+
+        .andExpect(content().string(
+                not(containsString("TIKTOK-WHITE-LABEL-A"))
+        ))
+        .andExpect(content().string(
+                not(containsString(
+                        "analytics.tiktok.com/i18n/pixel/events.js"
+                ))
+        ))
+
+        .andExpect(content().string(
+                not(containsString("987654"))
+        ))
+        .andExpect(content().string(
+                not(containsString(
+                        "static.hotjar.com/c/hotjar-"
+                ))
+        ));
+    }
+
+    @Test
+    void premiumTenantShouldRenderWhiteLabelFeatures()
+            throws Exception {
+
+        storeA.setPlan(StorePlan.PREMIUM);
+
+        when(featureAccessService.canUse(
+                storeA,
+                "WHITE_LABEL_FULL"
+        )).thenReturn(true);
+
+        settingsA.setCustomCss(
+                "/* WHITE-LABEL-CSS-TENANT-A */"
+        );
+        settingsA.setCustomJs(
+                "window.WHITE_LABEL_JS_TENANT_A = true;"
+        );
+
+        settingsA.setGoogleAnalyticsId(
+                "G-WHITE-LABEL-TENANT-A"
+        );
+        settingsA.setMetaPixelId(
+                "123456789001"
+        );
+        settingsA.setTiktokPixelId(
+                "TIKTOK-WHITE-LABEL-A"
+        );
+        settingsA.setHotjarId(
+                "987654"
+        );
+
+        mockMvc.perform(
+                get("/")
+                        .header("Host", TENANT_A_HOST)
+                        .with(request -> {
+                            request.setServerName(TENANT_A_HOST);
+                            return request;
+                        })
+        )
+        .andExpect(status().isOk())
+
+        .andExpect(content().string(
+                containsString("WHITE-LABEL-CSS-TENANT-A")
+        ))
+        .andExpect(content().string(
+                containsString("WHITE_LABEL_JS_TENANT_A")
+        ))
+
+        .andExpect(content().string(
+                containsString("G-WHITE-LABEL-TENANT-A")
+        ))
+        .andExpect(content().string(
+                containsString("123456789001")
+        ))
+        .andExpect(content().string(
+                containsString("TIKTOK-WHITE-LABEL-A")
+        ))
+        .andExpect(content().string(
+                containsString("987654")
+        ));
+    }
+
     private Store resolveStore(
             HttpServletRequest request
     ) {

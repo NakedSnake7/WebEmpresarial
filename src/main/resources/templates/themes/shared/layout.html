@@ -90,13 +90,15 @@
     <!-- Custom CSS Premium -->
 
     <style
-            th:if="${settings != null
+            th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
+                and settings != null
                 and settings.customCss != null
                 and !settings.customCss.isBlank()}"
             th:utext="${settings.customCss}">
     </style>
 
-<th:block th:if="${settings != null
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
+    and settings != null
     and settings.googleAnalyticsId != null
     and !settings.googleAnalyticsId.isBlank()}">
 
@@ -112,7 +114,7 @@ gtag('js', new Date());
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUse(store, 'WHITE_LABEL')
+        th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
             and settings != null
             and settings.googleAnalyticsId != null
             and !settings.googleAnalyticsId.isBlank()}">
@@ -123,7 +125,8 @@ gtag('js', new Date());
     gtag("config", GA_ID);
 </script>
 </th:block>
-<th:block th:if="${settings != null
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
+    and settings != null
     and settings.metaPixelId != null
     and !settings.metaPixelId.isBlank()}">
 
@@ -148,7 +151,7 @@ s.parentNode.insertBefore(t,s);
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUse(store, 'WHITE_LABEL')
+        th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
             and settings != null
             and settings.metaPixelId != null
             and !settings.metaPixelId.isBlank()}">
@@ -177,7 +180,7 @@ s.parentNode.insertBefore(t,s);
 </th:block>
 
 <!-- TikTok Pixel Premium -->
-<th:block th:if="${features.canUse(store, 'WHITE_LABEL')
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
     and settings != null
     and settings.tiktokPixelId != null
     and !settings.tiktokPixelId.isBlank()}">
@@ -195,7 +198,7 @@ s.parentNode.insertBefore(t,s);
 </script>
 
 <script th:inline="javascript"
-        th:if="${features.canUse(store, 'WHITE_LABEL')
+        th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
             and settings != null
             and settings.tiktokPixelId != null
             and !settings.tiktokPixelId.isBlank()}">
@@ -232,13 +235,13 @@ s.parentNode.insertBefore(t,s);
 </th:block>
 
 <!-- Hotjar Premium -->
-<th:block th:if="${features.canUse(store, 'WHITE_LABEL')
+<th:block th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
     and settings != null
     and settings.hotjarId != null		
     and !settings.hotjarId.isBlank()}">
 
 <script th:inline="javascript"
-        th:if="${features.canUse(store, 'WHITE_LABEL')
+        th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
             and settings != null
             and settings.hotjarId != null
             and !settings.hotjarId.isBlank()}">
@@ -316,7 +319,8 @@ s.parentNode.insertBefore(t,s);
 <!-- Custom JS Premium -->
 
 <script
-        th:if="${settings != null
+        th:if="${features.canUse(store, 'WHITE_LABEL_FULL')
+            and settings != null
             and settings.customJs != null
             and !settings.customJs.isBlank()}"
         th:utext="${settings.customJs}">

@@ -101,7 +101,7 @@ public class StoreSettingsController {
 
         settings.setFooterText(form.getFooterText());
         
-        if (features.canUse(store, "WHITE_LABEL")) {
+        if (features.canUse(store, "WHITE_LABEL_FULL")) {
             settings.setCustomCss(form.getCustomCss());
             settings.setCustomJs(form.getCustomJs());
         }

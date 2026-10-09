@@ -279,7 +279,7 @@ verify(storeSettingsService, atLeastOnce())
 
         when(features.canUse(
                 store,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(false);
 
         mockMvc.perform(
@@ -450,7 +450,7 @@ verify(storeSettingsService, atLeastOnce())
 
         when(features.canUse(
                 store,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(false);
 
         mockMvc.perform(
@@ -495,7 +495,7 @@ verify(storeSettingsService, atLeastOnce())
         verify(features)
                 .canUse(
                         store,
-                        "WHITE_LABEL"
+                        "WHITE_LABEL_FULL"
                 );
 
         verify(storeSettingsService)
@@ -510,7 +510,7 @@ verify(storeSettingsService, atLeastOnce())
 
         when(features.canUse(
                 store,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(true);
 
         mockMvc.perform(
@@ -550,7 +550,7 @@ verify(storeSettingsService, atLeastOnce())
         verify(features)
                 .canUse(
                         store,
-                        "WHITE_LABEL"
+                        "WHITE_LABEL_FULL"
                 );
 
         verify(storeSettingsService)

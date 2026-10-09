@@ -171,7 +171,7 @@ class StoreSettingsTenantIsolationMockMvcTest {
 
         when(featureAccessService.canUse(
                 stride,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(false);
 
         mockMvc.perform(
@@ -410,7 +410,7 @@ assertThat(settings.getFooterText())
 
         when(featureAccessService.canUse(
                 barleyPunch,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(false);
 
         mockMvc.perform(
@@ -475,7 +475,7 @@ assertThat(settings.getFooterText())
 
         when(featureAccessService.canUse(
                 barleyPunch,
-                "WHITE_LABEL"
+                "WHITE_LABEL_FULL"
         )).thenReturn(false);
 
         mockMvc.perform(

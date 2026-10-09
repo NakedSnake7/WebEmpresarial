@@ -162,7 +162,7 @@ class StoreSettingsControllerTest {
         form.setTiktokPixelId("TIKTOK-123");
         form.setHotjarId("987654");
 
-        when(features.canUse(store, "WHITE_LABEL"))
+        when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(false);
 
         String result =
@@ -306,7 +306,7 @@ assertThat(saved.getFooterText())
         form.setCustomCss("body { display:none; }");
         form.setCustomJs("alert('hacked');");
 
-        when(features.canUse(store, "WHITE_LABEL"))
+        when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(false);
 
         String result =
@@ -327,7 +327,7 @@ assertThat(saved.getFooterText())
                 .isEqualTo("console.log('old');");
 
         verify(features)
-                .canUse(store, "WHITE_LABEL");
+                .canUse(store, "WHITE_LABEL_FULL");
 
         verify(storeSettingsService)
                 .save(settings);
@@ -347,7 +347,7 @@ assertThat(saved.getFooterText())
                 "console.log('premium');"
         );
 
-        when(features.canUse(store, "WHITE_LABEL"))
+        when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(true);
 
         String result =
@@ -369,7 +369,7 @@ assertThat(saved.getFooterText())
                 );
 
         verify(features)
-                .canUse(store, "WHITE_LABEL");
+                .canUse(store, "WHITE_LABEL_FULL");
 
         verify(storeSettingsService)
                 .save(settings);
