@@ -291,4 +291,53 @@ class StorefrontThemeContractTest {
         ));
     }
 
+
+    @Test
+    void barleyPunchSimpleProduct_shouldLinkToDetailAndKeepDirectAdd()
+            throws Exception {
+
+        product.setTieneVariantes(false);
+        product.setStockSimple(10);
+
+        store.setTheme("barleypunch");
+
+        when(storeThemeResolver.resolveTheme(store))
+                .thenReturn("barleypunch");
+
+        when(storeThemeResolver.getTheme(any()))
+                .thenReturn("barleypunch");
+
+        when(storeThemeResolver.view(
+                any(HttpServletRequest.class),
+                eq("index")
+        )).thenReturn(
+                "themes/barleypunch/index"
+        );
+
+        mockMvc.perform(
+                get("/")
+                        .header("Host", HOST)
+                        .with(request -> {
+                            request.setServerName(HOST);
+                            return request;
+                        })
+        )
+        .andExpect(status().isOk())
+        .andExpect(content().string(
+                containsString("/producto-detalle/9471")
+        ))
+        .andExpect(content().string(
+                containsString(
+                        "data-quantity-id=\"quantity-9471\""
+                )
+        ))
+        .andExpect(content().string(
+                containsString("+ Agregar")
+        ))
+        .andExpect(content().string(
+                not(containsString("Ver opciones"))
+        ));
+    }
+
+
 }

@@ -72,13 +72,17 @@
         Oferta
       </div>
 
-      <div class="beer-visual">
-        <img class="beer-product-image"
-             th:src="${product.imageUrl}"
-             th:alt="${product.productName}"
-             loading="lazy">
-        <div class="beer-glow"></div>
-      </div>
+      <a class="beer-visual-link"
+         th:href="@{/producto-detalle/{id}(id=${product.id})}"
+         th:attr="aria-label=|Ver detalles de ${product.productName}|">
+        <div class="beer-visual">
+          <img class="beer-product-image"
+               th:src="${product.imageUrl}"
+               th:alt="${product.productName}"
+               loading="lazy">
+          <div class="beer-glow"></div>
+        </div>
+      </a>
 
       <div class="beer-info">
 
@@ -91,10 +95,11 @@
           Producto
         </div>
 
-        <div class="beer-name"
-             th:text="${product.productName}">
+        <a class="beer-name"
+           th:href="@{/producto-detalle/{id}(id=${product.id})}"
+           th:text="${product.productName}">
           Producto
-        </div>
+        </a>
 
         <div class="beer-desc"
              th:text="${product.marcaNombre != null and !product.marcaNombre.isBlank()
