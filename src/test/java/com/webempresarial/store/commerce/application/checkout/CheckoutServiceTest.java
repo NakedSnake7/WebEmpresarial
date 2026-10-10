@@ -33,6 +33,8 @@ import com.webempresarial.store.model.Cliente;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.service.StoreSettingsService;
+import com.webempresarial.store.entity.StoreSettings;
 
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -53,6 +55,9 @@ class CheckoutServiceTest {
     @Mock
     private CatalogProductQueryService catalogProductQueryService;
 
+    @Mock
+    private StoreSettingsService storeSettingsService;
+
     private CheckoutService service;
 
     private Store store;
@@ -64,12 +69,20 @@ class CheckoutServiceTest {
     	        orderService,
     	        userService,
     	        orderAuditService,
-    	        catalogProductQueryService
+                catalogProductQueryService,
+                storeSettingsService
     	);
 
         store = new Store();
         store.setId(1L);
         store.setActiva(true);
+
+        StoreSettings defaultSettings =
+                new StoreSettings();
+
+        org.mockito.Mockito.lenient()
+                .when(storeSettingsService.getOrCreate(store))
+                .thenReturn(defaultSettings);
 
         cliente = new Cliente();
         cliente.setId(10L);
@@ -686,4 +699,128 @@ class CheckoutServiceTest {
 
         return producto;
     }
+
+    @Test
+    void createOrder_shouldUseStoreSpecificFreeShippingThreshold() {
+        CheckoutRequestDTO request =
+                validRequest("STRIPE", 100L, null, 1);
+
+        Producto producto =
+                simpleProduct(
+                        100L,
+                        "Producto",
+                        10,
+                        "1200.00"
+                );
+
+        StoreSettings settings = new StoreSettings();
+        settings.setFreeShippingEnabled(true);
+        settings.setFreeShippingThreshold(
+                new BigDecimal("1000.00")
+        );
+
+        mockCustomerResolution(request);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(settings);
+
+        when(catalogProductQueryService.obtenerProductoConLock(
+                100L,
+                store
+        )).thenReturn(producto);
+
+        when(orderService.crearOrden(
+                any(Order.class),
+                eq(store)
+        )).thenAnswer(i -> i.getArgument(0));
+
+        Order result =
+                service.createOrder(request, store);
+
+        assertThat(result.getTotal())
+                .isEqualByComparingTo("1200.00");
+    }
+
+    @Test
+    void createOrder_shouldChargeShippingWhenBelowStoreThreshold() {
+        CheckoutRequestDTO request =
+                validRequest("STRIPE", 100L, null, 1);
+
+        Producto producto =
+                simpleProduct(
+                        100L,
+                        "Producto",
+                        10,
+                        "1200.00"
+                );
+
+        StoreSettings settings = new StoreSettings();
+        settings.setFreeShippingEnabled(true);
+        settings.setFreeShippingThreshold(
+                new BigDecimal("1500.00")
+        );
+
+        mockCustomerResolution(request);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(settings);
+
+        when(catalogProductQueryService.obtenerProductoConLock(
+                100L,
+                store
+        )).thenReturn(producto);
+
+        when(orderService.crearOrden(
+                any(Order.class),
+                eq(store)
+        )).thenAnswer(i -> i.getArgument(0));
+
+        Order result =
+                service.createOrder(request, store);
+
+        assertThat(result.getTotal())
+                .isEqualByComparingTo("1320.00");
+    }
+
+    @Test
+    void createOrder_shouldChargeShippingWhenFreeShippingIsDisabled() {
+        CheckoutRequestDTO request =
+                validRequest("STRIPE", 100L, null, 1);
+
+        Producto producto =
+                simpleProduct(
+                        100L,
+                        "Producto",
+                        10,
+                        "5000.00"
+                );
+
+        StoreSettings settings = new StoreSettings();
+        settings.setFreeShippingEnabled(false);
+        settings.setFreeShippingThreshold(
+                new BigDecimal("1000.00")
+        );
+
+        mockCustomerResolution(request);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(settings);
+
+        when(catalogProductQueryService.obtenerProductoConLock(
+                100L,
+                store
+        )).thenReturn(producto);
+
+        when(orderService.crearOrden(
+                any(Order.class),
+                eq(store)
+        )).thenAnswer(i -> i.getArgument(0));
+
+        Order result =
+                service.createOrder(request, store);
+
+        assertThat(result.getTotal())
+                .isEqualByComparingTo("5120.00");
+    }
+
 }

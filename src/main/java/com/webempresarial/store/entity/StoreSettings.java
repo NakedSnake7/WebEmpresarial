@@ -1,5 +1,7 @@
 package com.webempresarial.store.entity;
 
+import java.math.BigDecimal;
+
 import com.webempresarial.store.model.Store;
 import jakarta.persistence.*;
 
@@ -14,6 +16,25 @@ public class StoreSettings {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false, unique = true)
     private Store store;
+
+    // =====================================================
+    // POLÍTICA DE ENVÍO
+    // =====================================================
+
+    @Column(
+        name = "free_shipping_enabled",
+        nullable = false
+    )
+    private boolean freeShippingEnabled = true;
+
+    @Column(
+        name = "free_shipping_threshold",
+        nullable = false,
+        precision = 12,
+        scale = 2
+    )
+    private BigDecimal freeShippingThreshold =
+            new BigDecimal("1250.00");
 
     @Column(length = 300)
     private String logoUrl;
@@ -417,4 +438,25 @@ public class StoreSettings {
 	}
     
     
+
+    public boolean isFreeShippingEnabled() {
+        return freeShippingEnabled;
+    }
+
+    public void setFreeShippingEnabled(
+            boolean freeShippingEnabled
+    ) {
+        this.freeShippingEnabled = freeShippingEnabled;
+    }
+
+    public BigDecimal getFreeShippingThreshold() {
+        return freeShippingThreshold;
+    }
+
+    public void setFreeShippingThreshold(
+            BigDecimal freeShippingThreshold
+    ) {
+        this.freeShippingThreshold = freeShippingThreshold;
+    }
+
 }

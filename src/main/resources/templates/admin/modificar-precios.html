@@ -198,6 +198,107 @@
             </div>
         </div>
 
+        <!-- Política de envío -->
+        <div class="card pricing-card mb-4">
+            <div class="card-body p-4">
+
+                <div class="d-flex flex-column
+                            flex-lg-row
+                            justify-content-between
+                            gap-4">
+
+                    <div class="flex-grow-1">
+                        <h5 class="fw-bold mb-1">
+                            Política de envío
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Define si esta tienda ofrece envío gratis
+                            y el subtotal mínimo necesario.
+                        </p>
+                    </div>
+
+                    <div class="flex-grow-1"
+                         style="max-width: 520px;">
+
+                        <div th:if="${param.shippingSuccess}"
+                             class="alert alert-success py-2"
+                             role="alert">
+                            Política de envío actualizada.
+                        </div>
+
+                        <div th:if="${param.shippingError}"
+                             class="alert alert-danger py-2"
+                             role="alert">
+                            El monto mínimo debe ser mayor a cero
+                            cuando el envío gratis está habilitado.
+                        </div>
+
+                        <form th:action="@{/admin/store/settings/shipping}"
+                              method="post"
+                              id="shippingPolicyForm">
+
+                            <div class="form-check form-switch mb-3">
+
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="freeShippingEnabled"
+                                       name="freeShippingEnabled"
+                                       value="true"
+                                       th:checked="${settings != null
+                                                   and settings.freeShippingEnabled}">
+
+                                <label class="form-check-label fw-semibold"
+                                       for="freeShippingEnabled">
+                                    Ofrecer envío gratis
+                                </label>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="freeShippingThreshold"
+                                       class="form-label fw-semibold">
+                                    Subtotal mínimo
+                                </label>
+
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        $
+                                    </span>
+
+                                    <input type="number"
+                                           class="form-control"
+                                           id="freeShippingThreshold"
+                                           name="freeShippingThreshold"
+                                           min="0.01"
+                                           step="0.01"
+                                           th:value="${settings != null
+                                                       ? settings.freeShippingThreshold
+                                                       : 1250.00}">
+                                </div>
+
+                                <div class="form-text">
+                                    El costo de envío se elimina cuando
+                                    el subtotal alcanza este monto.
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit"
+                                        class="btn btn-primary">
+                                    Guardar política de envío
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
         <!-- Ajuste masivo -->
         <div class="card pricing-card bulk-adjustment mb-4">
             <div class="card-body p-4">

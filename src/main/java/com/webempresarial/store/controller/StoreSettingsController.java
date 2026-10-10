@@ -9,6 +9,8 @@ import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
 
 
+import java.math.BigDecimal;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -114,6 +116,59 @@ public class StoreSettingsController {
         storeSettingsService.save(settings);
 
         return "redirect:/admin/store/settings?success";
+    }
+
+    @PostMapping("/shipping")
+    public String saveShippingPolicy(
+            @RequestParam(
+                    name = "freeShippingEnabled",
+                    defaultValue = "false"
+            )
+            boolean freeShippingEnabled,
+
+            @RequestParam(
+                    name = "freeShippingThreshold",
+                    required = false
+            )
+            BigDecimal freeShippingThreshold,
+
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeContextService.getCurrentStore(request);
+
+        if (freeShippingEnabled
+                && (
+                        freeShippingThreshold == null
+                        || freeShippingThreshold.compareTo(
+                                BigDecimal.ZERO
+                        ) <= 0
+                )) {
+
+            return "redirect:/modificar-precios?shippingError";
+        }
+
+        StoreSettings settings =
+                storeSettingsService.getOrCreate(store);
+
+        settings.setFreeShippingEnabled(
+                freeShippingEnabled
+        );
+
+        /*
+         * Al desactivar envío gratis preservamos el último
+         * umbral configurado para reutilizarlo si posteriormente
+         * vuelve a habilitarse.
+         */
+        if (freeShippingEnabled) {
+            settings.setFreeShippingThreshold(
+                    freeShippingThreshold
+            );
+        }
+
+        storeSettingsService.save(settings);
+
+        return "redirect:/modificar-precios?shippingSuccess";
     }
 
     @CacheEvict(value = "storesByDomain", allEntries = true)

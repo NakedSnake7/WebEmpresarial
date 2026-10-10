@@ -15,7 +15,19 @@ export function configurarCarrito() {
     const checkoutButton = document.getElementById('checkoutButton');
     const finalizeButton = document.getElementById("finalizeButton");
     const checkoutForm = document.getElementById('checkoutForm');
-    const LIMITE_ENVIO_GRATIS = 1250;
+    const commerceConfig = window.storeCommerceConfig ?? {};
+    const FREE_SHIPPING_ENABLED =
+        commerceConfig.freeShippingEnabled !== false;
+
+    const LIMITE_ENVIO_GRATIS = Number(
+        commerceConfig.freeShippingThreshold ?? 1250
+    );
+
+    const LIMITE_ENVIO_GRATIS_EFECTIVO =
+        FREE_SHIPPING_ENABLED
+            ? LIMITE_ENVIO_GRATIS
+            : Number.POSITIVE_INFINITY;
+
     const COSTO_ENVIO = 120;
 
 	
@@ -50,7 +62,7 @@ export function configurarCarrito() {
         
 		const { subtotal, discount, envio, total } =
 		  cartStore.getTotals({
-		    limiteEnvioGratis: LIMITE_ENVIO_GRATIS,
+		    limiteEnvioGratis: LIMITE_ENVIO_GRATIS_EFECTIVO,
 		    costoEnvio: COSTO_ENVIO
 		  });
 		  
@@ -94,21 +106,50 @@ export function configurarCarrito() {
         }
 
         // Barra de envío gratis
-        const envioMensaje = document.getElementById('envioGratisMensaje');
-        const envioBarra = document.getElementById('envioGratisBarra');
-        const envioContainer = document.getElementById('envioGratisContainer');
-		const baseEnvio = subtotal - discount;
-		if (envioContainer && envioMensaje && envioBarra) {
-            envioContainer.style.display = products.length ? 'block' : 'none';
-			if (baseEnvio >= LIMITE_ENVIO_GRATIS) {
-			  envioMensaje.textContent = "🎉 ¡Tienes envío gratis!";
-			  envioBarra.style.width = "100%";
-			} else {
-			  const faltante = LIMITE_ENVIO_GRATIS - baseEnvio;
-			  const progreso = (baseEnvio / LIMITE_ENVIO_GRATIS) * 100;
-			  envioMensaje.textContent = `Agrega $${faltante.toFixed(2)} más para envío gratis`;
-			  envioBarra.style.width = `${progreso.toFixed(0)}%`;
-			}
+        const envioMensaje =
+                document.getElementById('envioGratisMensaje');
+        const envioBarra =
+                document.getElementById('envioGratisBarra');
+        const envioContainer =
+                document.getElementById('envioGratisContainer');
+
+        const baseEnvio = subtotal - discount;
+
+        if (envioContainer && envioMensaje && envioBarra) {
+            const mostrarEnvioGratis =
+                    FREE_SHIPPING_ENABLED
+                    && products.length > 0;
+
+            envioContainer.style.display =
+                    mostrarEnvioGratis
+                            ? 'block'
+                            : 'none';
+
+            if (mostrarEnvioGratis) {
+                if (baseEnvio >= LIMITE_ENVIO_GRATIS) {
+                    envioMensaje.textContent =
+                            "🎉 ¡Tienes envío gratis!";
+
+                    envioBarra.style.width = "100%";
+                } else {
+                    const faltante =
+                            LIMITE_ENVIO_GRATIS - baseEnvio;
+
+                    const progreso = Math.min(
+                            (
+                                baseEnvio
+                                / LIMITE_ENVIO_GRATIS
+                            ) * 100,
+                            100
+                    );
+
+                    envioMensaje.textContent =
+                            `Agrega $${faltante.toFixed(2)} más para envío gratis`;
+
+                    envioBarra.style.width =
+                            `${progreso.toFixed(0)}%`;
+                }
+            }
         }
 
 		if (cartDropdown && products.length === 0) {
@@ -214,7 +255,7 @@ export function configurarCarrito() {
 	      if (!coupon) throw new Error("Cupón no válido");
 
 	      const { subtotal } = cartStore.getTotals({
-	        limiteEnvioGratis: LIMITE_ENVIO_GRATIS,
+	        limiteEnvioGratis: LIMITE_ENVIO_GRATIS_EFECTIVO,
 	        costoEnvio: COSTO_ENVIO
 	      });
 
@@ -505,7 +546,7 @@ export function configurarCarrito() {
 	        // Si todo OK — calcular totales
 			const { subtotal, discount, envio, total } =
 			  cartStore.getTotals({
-			    limiteEnvioGratis: LIMITE_ENVIO_GRATIS,
+			    limiteEnvioGratis: LIMITE_ENVIO_GRATIS_EFECTIVO,
 			    costoEnvio: COSTO_ENVIO
 			  });
 

@@ -20,6 +20,8 @@ import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.ProductoVariante;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.service.StoreSettingsService;
+import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.commerce.domain.order.Order.PaymentMethod;
 import com.webempresarial.store.commerce.domain.order.OrderAuditAction;
 
@@ -31,14 +33,12 @@ import com.webempresarial.store.commerce.application.catalog.CatalogProductQuery
 @Service
 public class CheckoutService {
 
-    private static final BigDecimal LIMITE_ENVIO_GRATIS =
-            new BigDecimal("1250.00");
-
     private static final BigDecimal COSTO_ENVIO =
             new BigDecimal("120.00");
 
     private final OrderService orderService;
     private final UserService userService;
+    private final StoreSettingsService storeSettingsService;
 
     private final OrderAuditService orderAuditService;
     
@@ -51,13 +51,15 @@ public class CheckoutService {
             OrderService orderService,
             UserService userService,
             OrderAuditService orderAuditService,
-            CatalogProductQueryService catalogProductQueryService
+            CatalogProductQueryService catalogProductQueryService,
+            StoreSettingsService storeSettingsService
     ) {
         this.orderService = orderService;
         this.userService = userService;
         this.orderAuditService = orderAuditService;
         this.catalogProductQueryService =
                 catalogProductQueryService;
+        this.storeSettingsService = storeSettingsService;
     }
 
     @Transactional
@@ -244,8 +246,18 @@ public class CheckoutService {
 
         subtotal = subtotal.setScale(2, RoundingMode.HALF_UP);
 
+        StoreSettings settings =
+                storeSettingsService.getOrCreate(store);
+
+        boolean freeShipping =
+                settings.isFreeShippingEnabled()
+                && settings.getFreeShippingThreshold() != null
+                && subtotal.compareTo(
+                        settings.getFreeShippingThreshold()
+                ) >= 0;
+
         BigDecimal shipping =
-                subtotal.compareTo(LIMITE_ENVIO_GRATIS) >= 0
+                freeShipping
                         ? BigDecimal.ZERO
                         : COSTO_ENVIO;
 

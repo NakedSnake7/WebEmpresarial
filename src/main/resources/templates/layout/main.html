@@ -110,6 +110,21 @@
 <footer th:replace="~{themes/__${theme}__/fragments/footer :: footer}">
 </footer>
 
+<script th:inline="javascript">
+    window.storeCommerceConfig = {
+        freeShippingEnabled:
+            /*[[${settings != null
+                ? settings.freeShippingEnabled
+                : true}]]*/ true,
+
+        freeShippingThreshold:
+            /*[[${settings != null
+                and settings.freeShippingThreshold != null
+                ? settings.freeShippingThreshold
+                : 1250.00}]]*/ 1250.00
+    };
+</script>
+
 <script>
     document.documentElement.classList.add("js-enabled");
 </script>
