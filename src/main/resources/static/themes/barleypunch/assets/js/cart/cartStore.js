@@ -17,11 +17,18 @@ export const cartStore = (() => {
 
 	function load() {
 	    const saved = localStorage.getItem("cartData");
+
 	    if (saved) {
 	        const data = JSON.parse(saved);
-	        products = data.products || [];
+
+	        products = (data.products || []).map(p => ({
+	            ...p,
+	            varianteId: p.varianteId ?? null
+	        }));
+
 	        coupon = data.coupon || null;
 	    }
+
 	    notify();
 	}
 
@@ -81,11 +88,28 @@ export const cartStore = (() => {
 	}
 
 	function add(product) {
-	    const existing = products.find(p => p.id === product.id);
-	    if (existing) existing.quantity += product.quantity;
-	    else products.push(product);
 
-	    const subtotal = products.reduce((s,p)=>s+p.price*p.quantity,0);
+	    const varianteId = product.varianteId ?? null;
+
+	    const existing = products.find(
+	        p =>
+	            p.id === product.id &&
+	            (p.varianteId ?? null) === varianteId
+	    );
+
+	    if (existing) {
+	        existing.quantity += product.quantity;
+	    } else {
+	        products.push({
+	            ...product,
+	            varianteId
+	        });
+	    }
+
+	    const subtotal = products.reduce(
+	        (s, p) => s + p.price * p.quantity,
+	        0
+	    );
 
 	    if (coupon && subtotal < (coupon.minSubtotal || 0)) {
 	        coupon = null;
@@ -96,24 +120,38 @@ export const cartStore = (() => {
 	}
 
 
-	function remove(id, qty) {
-	    const p = products.find(p => p.id === id);
-	    if (!p) return;
+	function remove(productId, varianteId, qty) {
+	    varianteId = varianteId ?? null;
 
-	    p.quantity -= qty;
-	    if (p.quantity <= 0) {
-	        products = products.filter(p => p.id !== id);
+	    const item = products.find(p =>
+	        Number(p.productId ?? p.id) === Number(productId) &&
+	        (p.varianteId ?? null) === varianteId
+	    );
+
+	    if (!item) {
+	        console.warn("No se encontró item para eliminar:", {
+	            productId,
+	            varianteId,
+	            products
+	        });
+	        return;
 	    }
 
-	    const subtotal = products.reduce((s,p)=>s+p.price*p.quantity,0);
+	    item.quantity -= qty;
 
-	    if (coupon && subtotal < (coupon.minSubtotal || 0)) {
-	        coupon = null;
+	    if (item.quantity <= 0) {
+	        products = products.filter(p =>
+	            !(
+	                Number(p.productId ?? p.id) === Number(productId) &&
+	                (p.varianteId ?? null) === varianteId
+	            )
+	        );
 	    }
 
 	    save();
 	    notify();
 	}
+
 
 
 	function clear() {

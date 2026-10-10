@@ -1,4 +1,7 @@
 import { cartStore } from './cartStore.js';
+
+window.cartStore = cartStore;
+
 export function configurarCarrito() {
 
   if (window.__carritoInicializado) return;
@@ -92,12 +95,14 @@ export function configurarCarrito() {
             min="1"
             max="${p.quantity}"
             value="1"
-            data-product-id="${p.id}"
+            data-product-id="${p.productId ?? p.id}"
+            data-variante-id="${p.varianteId ?? ''}"
             style="width:3rem;text-align:center;">
 
           <button
             class="cart-item-remove remove-button"
-            data-product-id="${p.id}">
+            data-product-id="${p.productId ?? p.id}"
+            data-variante-id="${p.varianteId ?? ''}">
             ✕
           </button>
         </div>
@@ -174,7 +179,14 @@ export function configurarCarrito() {
     }
   }
 
-  function addToCart(id, name, price, quantityId, originalStock) {
+  function addToCart(
+    id,
+    varianteId,
+    name,
+    price,
+    quantityId,
+    originalStock
+  ) {
     if (!id) return alert('Error: ID del producto no definido');
 
     const input = document.getElementById(quantityId);
@@ -183,7 +195,13 @@ export function configurarCarrito() {
     if (qty <= 0) return alert('Cantidad inválida');
 
     const products = cartStore.getState().products;
-    const existing = products.find(p => p.id === id);
+
+    const existing = products.find(
+      p =>
+        Number(p.productId ?? p.id) === Number(id) &&
+        (p.varianteId ?? null) === (varianteId ?? null)
+    );
+
     const inCartQty = existing ? existing.quantity : 0;
     const availableStock = originalStock - inCartQty;
 
@@ -193,13 +211,16 @@ export function configurarCarrito() {
 
     cartStore.add({
       id,
+      productId: id,
+      varianteId: varianteId ?? null,
       name,
       price,
       quantity: qty,
-      quantityId
+      quantityId,
+      originalStock
     });
 
-    actualizarStockSiExiste(id);
+    actualizarStockSiExiste(id, varianteId);
     openCart();
   }
 
@@ -247,38 +268,67 @@ export function configurarCarrito() {
     });
   }
 
-  function actualizarStockSiExiste(productId) {
-    const btn = document.querySelector(
-      `.add-to-cart[data-product-id="${productId}"]`
-    );
+  function actualizarStockSiExiste(productId, varianteId = null) {
+    const selector = varianteId != null
+      ? `.add-to-cart[data-product-id="${productId}"][data-variante-id="${varianteId}"]`
+      : `.add-to-cart[data-product-id="${productId}"]:not([data-variante-id]), ` +
+        `.add-to-cart[data-product-id="${productId}"][data-variante-id=""]`;
+
+    const btn = document.querySelector(selector);
 
     if (!btn) return;
 
     const quantityId = btn.dataset.quantityId;
-    const originalStock = parseInt(btn.dataset.originalStock);
 
-    updateStockBadge(quantityId, originalStock);
+    const originalStock =
+      Number(btn.dataset.originalStock) ||
+      Number(
+        cartStore.getState().products.find(
+          p =>
+            Number(p.productId ?? p.id) === Number(productId) &&
+            (p.varianteId ?? null) === (varianteId ?? null)
+        )?.originalStock || 0
+      );
+
+    updateStockBadge(
+      quantityId,
+      originalStock,
+      varianteId
+    );
   }
 
-  function removeFromCart(productId, qty) {
-    cartStore.remove(productId, qty);
-    actualizarStockSiExiste(productId);
+  function removeFromCart(productId, varianteId, qty) {
+    cartStore.remove(productId, varianteId, qty);
+    actualizarStockSiExiste(productId, varianteId);
   }
 
-  function updateStockBadge(quantityId, originalStock) {
+  function updateStockBadge(
+    quantityId,
+    originalStock,
+    varianteId = null
+  ) {
     const input = document.getElementById(quantityId);
     if (!input) return;
 
     const productId = Number(input.dataset.productId);
 
-    const btn = document.querySelector(
-      `.add-to-cart[data-product-id="${productId}"]`
-    );
+    const selector = varianteId != null
+      ? `.add-to-cart[data-product-id="${productId}"][data-variante-id="${varianteId}"]`
+      : `.add-to-cart[data-product-id="${productId}"]:not([data-variante-id]), ` +
+        `.add-to-cart[data-product-id="${productId}"][data-variante-id=""]`;
+
+    const btn = document.querySelector(selector);
 
     if (!btn) return;
 
     const products = cartStore.getState().products;
-    const inCartQtyObj = products.find(p => p.id === productId);
+
+    const inCartQtyObj = products.find(
+      p =>
+        Number(p.productId ?? p.id) === Number(productId) &&
+        (p.varianteId ?? null) === (varianteId ?? null)
+    );
+
     const inCartQty = inCartQtyObj ? inCartQtyObj.quantity : 0;
 
     const availableStock = originalStock - inCartQty;
@@ -311,23 +361,47 @@ export function configurarCarrito() {
     if (!btn) return;
 
     const id = Number(btn.dataset.productId);
+
+    const varianteId = btn.dataset.varianteId
+      ? Number(btn.dataset.varianteId)
+      : null;
+
     const name = btn.dataset.name;
     const price = parseFloat(btn.dataset.price);
     const quantityId = btn.dataset.quantityId;
     const stock = parseInt(btn.dataset.originalStock);
 
-    addToCart(id, name, price, quantityId, stock);
+    addToCart(
+      id,
+      varianteId,
+      name,
+      price,
+      quantityId,
+      stock
+    );
   });
 
   if (cartItems) {
     cartItems.addEventListener('click', e => {
-      if (e.target.classList.contains('remove-button')) {
-        const productId = Number(e.target.dataset.productId);
-        const qtyInput = e.target.parentElement.querySelector('.remove-quantity');
-        const qty = parseInt(qtyInput?.value) || 1;
+      const btn = e.target.closest('.remove-button');
+      if (!btn) return;
 
-        removeFromCart(productId, qty);
-      }
+      const productId = Number(btn.dataset.productId);
+
+      const varianteId = btn.dataset.varianteId
+        ? Number(btn.dataset.varianteId)
+        : null;
+
+      const qtyInput =
+        btn.parentElement.querySelector('.remove-quantity');
+
+      const qty = parseInt(qtyInput?.value) || 1;
+
+      removeFromCart(
+        productId,
+        varianteId,
+        qty
+      );
     });
   }
 
@@ -438,7 +512,8 @@ export function configurarCarrito() {
           address
         },
         cart: products.map(p => ({
-          productId: p.id,
+          productId: p.productId ?? p.id,
+          varianteId: p.varianteId ?? null,
           name: p.name,
           price: p.price,
           quantity: p.quantity

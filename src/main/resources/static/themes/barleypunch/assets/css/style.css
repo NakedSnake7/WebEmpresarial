@@ -327,6 +327,7 @@
     opacity: 0;
     transition: opacity 0.4s;
     z-index: 1;
+    pointer-events: none;
   }
 
   .beer-card:hover::before { opacity: 1; }
