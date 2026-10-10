@@ -23,6 +23,7 @@ import com.webempresarial.store.theme.ThemeModelAdvice;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -243,4 +245,50 @@ class StorefrontThemeContractTest {
                 containsString(PRODUCT_IMAGE)
         ));
     }
+
+    @Test
+    void barleyPunchVariantProduct_shouldLinkToDetailInsteadOfDirectAdd()
+            throws Exception {
+
+        product.setTieneVariantes(true);
+        product.setPrecioMinimo(new BigDecimal("98.76"));
+        product.setStockSimple(10);
+
+        store.setTheme("barleypunch");
+
+        when(storeThemeResolver.resolveTheme(store))
+                .thenReturn("barleypunch");
+
+        when(storeThemeResolver.getTheme(any()))
+                .thenReturn("barleypunch");
+
+        when(storeThemeResolver.view(
+                any(HttpServletRequest.class),
+                eq("index")
+        )).thenReturn(
+                "themes/barleypunch/index"
+        );
+
+        mockMvc.perform(
+                get("/")
+                        .header("Host", HOST)
+                        .with(request -> {
+                            request.setServerName(HOST);
+                            return request;
+                        })
+        )
+        .andExpect(status().isOk())
+        .andExpect(content().string(
+                containsString("/producto-detalle/9471")
+        ))
+        .andExpect(content().string(
+                containsString("Ver opciones")
+        ))
+        .andExpect(content().string(
+                not(containsString(
+                        "data-quantity-id=\"quantity-9471\""
+                ))
+        ));
+    }
+
 }

@@ -431,6 +431,50 @@
                         </div>
                     </div>
 
+                    <!-- Inventario simple -->
+                    <div class="card form-section mb-4"
+                         id="stockSimpleBox">
+
+                        <div class="card-body p-4">
+
+                            <div class="form-section-title">
+                                <div class="form-section-icon">
+                                    📦
+                                </div>
+
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        Inventario
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        Stock disponible para productos sin variantes.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <label for="stockSimple"
+                                   class="form-label fw-semibold">
+                                Stock general
+                            </label>
+
+                            <input type="number"
+                                   id="stockSimple"
+                                   th:field="*{stockSimple}"
+                                   class="form-control"
+                                   min="0"
+                                   step="1"
+                                   inputmode="numeric"
+                                   placeholder="0">
+
+                            <div class="form-text">
+                                Si agregas variantes, cada variante administrará
+                                su propio inventario.
+                            </div>
+
+                        </div>
+                    </div>
+
                     <!-- Organización -->
                     <div class="card form-section mb-4">
                         <div class="card-body p-4">
@@ -648,6 +692,12 @@
             const variantsJsonInput =
                 document.getElementById("variantesJson");
 
+            const stockSimpleBox =
+                document.getElementById("stockSimpleBox");
+
+            const stockSimpleInput =
+                document.getElementById("stockSimple");
+
             const counterInfo =
                 document.getElementById("counterInfo");
 
@@ -768,6 +818,16 @@
                                 });
                             });
                     });
+
+                const hasVariants =
+                    variants.length > 0;
+
+                stockSimpleBox.classList.toggle(
+                    "d-none",
+                    hasVariants
+                );
+
+                stockSimpleInput.disabled = hasVariants;
 
                 variantsJsonInput.value =
                     JSON.stringify(variants);

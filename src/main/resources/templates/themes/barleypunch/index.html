@@ -107,7 +107,8 @@
 
           <div class="beer-price-block"></div>
 
-          <div class="beer-cart-controls">
+          <div class="beer-cart-controls"
+               th:if="${!product.tieneVariantes}">
             <input
               th:id="|quantity-${product.id}|"
               class="product-quantity"
@@ -119,6 +120,7 @@
           </div>
 
           <button
+            th:if="${!product.tieneVariantes}"
             type="button"
             class="btn-add add-to-cart"
             th:attr="
@@ -129,6 +131,13 @@
               data-original-stock=${product.stockSimple}">
             + Agregar
           </button>
+
+          <a th:if="${product.tieneVariantes}"
+             th:href="@{/producto-detalle/{id}(id=${product.id})}"
+             class="btn-add"
+             style="text-decoration: none;">
+            Ver opciones
+          </a>
 
         </div>
       </div>
