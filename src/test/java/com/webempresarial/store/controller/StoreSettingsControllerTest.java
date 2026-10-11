@@ -424,6 +424,7 @@ assertThat(saved.getFooterText())
                 controller.saveShippingPolicy(
                         true,
                         new BigDecimal("1500.00"),
+                        new BigDecimal("120.00"),
                         request
                 );
 
@@ -449,6 +450,36 @@ assertThat(saved.getFooterText())
     }
 
     @Test
+    void shouldSaveStoreSpecificShippingCost() {
+        mockCurrentTenant();
+
+        String result =
+                controller.saveShippingPolicy(
+                        true,
+                        new BigDecimal("1500.00"),
+                        new BigDecimal("85.00"),
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/modificar-precios?shippingSuccess"
+                );
+
+        assertThat(settings.getShippingCost())
+                .isEqualByComparingTo("85.00");
+
+        verify(storeContextService)
+                .getCurrentStore(request);
+
+        verify(storeSettingsService)
+                .getOrCreate(store);
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
     void shouldDisableFreeShippingWithoutDeletingThreshold() {
         mockCurrentTenant();
 
@@ -460,6 +491,7 @@ assertThat(saved.getFooterText())
                 controller.saveShippingPolicy(
                         false,
                         null,
+                        new BigDecimal("120.00"),
                         request
                 );
 
@@ -493,6 +525,87 @@ assertThat(saved.getFooterText())
                 controller.saveShippingPolicy(
                         true,
                         BigDecimal.ZERO,
+                        new BigDecimal("120.00"),
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/modificar-precios?shippingError"
+                );
+
+        verify(storeContextService)
+                .getCurrentStore(request);
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldAllowZeroShippingCost() {
+        mockCurrentTenant();
+
+        String result =
+                controller.saveShippingPolicy(
+                        false,
+                        null,
+                        BigDecimal.ZERO,
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/modificar-precios?shippingSuccess"
+                );
+
+        assertThat(settings.getShippingCost())
+                .isEqualByComparingTo("0.00");
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
+    void shouldRejectMissingShippingCost() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveShippingPolicy(
+                        false,
+                        null,
+                        null,
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/modificar-precios?shippingError"
+                );
+
+        verify(storeContextService)
+                .getCurrentStore(request);
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectNegativeShippingCost() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveShippingPolicy(
+                        false,
+                        null,
+                        new BigDecimal("-0.01"),
                         request
                 );
 

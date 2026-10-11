@@ -36,6 +36,15 @@ public class StoreSettings {
     private BigDecimal freeShippingThreshold =
             new BigDecimal("1250.00");
 
+    @Column(
+        name = "shipping_cost",
+        nullable = false,
+        precision = 12,
+        scale = 2
+    )
+    private BigDecimal shippingCost =
+            new BigDecimal("120.00");
+
     @Column(length = 300)
     private String logoUrl;
 
@@ -457,6 +466,15 @@ public class StoreSettings {
             BigDecimal freeShippingThreshold
     ) {
         this.freeShippingThreshold = freeShippingThreshold;
+    }
+
+
+    public BigDecimal getShippingCost() {
+        return shippingCost;
+    }
+
+    public void setShippingCost(BigDecimal shippingCost) {
+        this.shippingCost = shippingCost;
     }
 
 }

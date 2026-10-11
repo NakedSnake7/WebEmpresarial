@@ -783,6 +783,50 @@ class CheckoutServiceTest {
     }
 
     @Test
+    void createOrder_shouldUseStoreSpecificShippingCost() {
+        CheckoutRequestDTO request =
+                validRequest("STRIPE", 100L, null, 1);
+
+        Producto producto =
+                simpleProduct(
+                        100L,
+                        "Producto",
+                        10,
+                        "1200.00"
+                );
+
+        StoreSettings settings = new StoreSettings();
+        settings.setFreeShippingEnabled(true);
+        settings.setFreeShippingThreshold(
+                new BigDecimal("1500.00")
+        );
+        settings.setShippingCost(
+                new BigDecimal("85.00")
+        );
+
+        mockCustomerResolution(request);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(settings);
+
+        when(catalogProductQueryService.obtenerProductoConLock(
+                100L,
+                store
+        )).thenReturn(producto);
+
+        when(orderService.crearOrden(
+                any(Order.class),
+                eq(store)
+        )).thenAnswer(i -> i.getArgument(0));
+
+        Order result =
+                service.createOrder(request, store);
+
+        assertThat(result.getTotal())
+                .isEqualByComparingTo("1285.00");
+    }
+
+    @Test
     void createOrder_shouldChargeShippingWhenFreeShippingIsDisabled() {
         CheckoutRequestDTO request =
                 validRequest("STRIPE", 100L, null, 1);

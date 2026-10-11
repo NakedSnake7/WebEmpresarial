@@ -31,10 +31,16 @@ class ModificarPreciosShippingPolicyTemplateTest {
                         "name=\"freeShippingThreshold\""
                 )
                 .contains(
+                        "name=\"shippingCost\""
+                )
+                .contains(
                         "settings.freeShippingEnabled"
                 )
                 .contains(
                         "settings.freeShippingThreshold"
+                )
+                .contains(
+                        "settings.shippingCost"
                 );
     }
 }

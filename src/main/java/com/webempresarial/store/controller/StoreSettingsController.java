@@ -132,10 +132,24 @@ public class StoreSettingsController {
             )
             BigDecimal freeShippingThreshold,
 
+            @RequestParam(
+                    name = "shippingCost",
+                    required = false
+            )
+            BigDecimal shippingCost,
+
             HttpServletRequest request
     ) {
         Store store =
                 storeContextService.getCurrentStore(request);
+
+        if (shippingCost == null
+                || shippingCost.compareTo(
+                        BigDecimal.ZERO
+                ) < 0) {
+
+            return "redirect:/modificar-precios?shippingError";
+        }
 
         if (freeShippingEnabled
                 && (
@@ -153,6 +167,10 @@ public class StoreSettingsController {
 
         settings.setFreeShippingEnabled(
                 freeShippingEnabled
+        );
+
+        settings.setShippingCost(
+                shippingCost
         );
 
         /*

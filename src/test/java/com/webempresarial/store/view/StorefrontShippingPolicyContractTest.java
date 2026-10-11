@@ -36,7 +36,8 @@ class StorefrontShippingPolicyContractTest {
         assertThat(html)
                 .contains("window.storeCommerceConfig")
                 .contains("freeShippingEnabled")
-                .contains("freeShippingThreshold");
+                .contains("freeShippingThreshold")
+                .contains("shippingCost");
     }
 
     @Test
@@ -52,8 +53,12 @@ class StorefrontShippingPolicyContractTest {
                     .contains("FREE_SHIPPING_ENABLED")
                     .contains("LIMITE_ENVIO_GRATIS_EFECTIVO")
                     .contains("mostrarEnvioGratis")
+                    .contains("commerceConfig.shippingCost")
                     .doesNotContain(
                             "const LIMITE_ENVIO_GRATIS = 1250"
+                    )
+                    .doesNotContain(
+                            "const COSTO_ENVIO = 120"
                     );
         }
     }

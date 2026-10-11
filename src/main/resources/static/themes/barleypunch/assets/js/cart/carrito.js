@@ -39,7 +39,9 @@ export function configurarCarrito() {
           ? LIMITE_ENVIO_GRATIS
           : Number.POSITIVE_INFINITY;
 
-  const COSTO_ENVIO = 120;
+  const COSTO_ENVIO = Number(
+      commerceConfig.shippingCost ?? 120
+  );
 
   let isProcessing = false;
 

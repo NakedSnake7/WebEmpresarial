@@ -33,7 +33,7 @@ import com.webempresarial.store.commerce.application.catalog.CatalogProductQuery
 @Service
 public class CheckoutService {
 
-    private static final BigDecimal COSTO_ENVIO =
+    private static final BigDecimal DEFAULT_SHIPPING_COST =
             new BigDecimal("120.00");
 
     private final OrderService orderService;
@@ -256,10 +256,15 @@ public class CheckoutService {
                         settings.getFreeShippingThreshold()
                 ) >= 0;
 
+        BigDecimal shippingCost =
+                settings.getShippingCost() != null
+                        ? settings.getShippingCost()
+                        : DEFAULT_SHIPPING_COST;
+
         BigDecimal shipping =
                 freeShipping
                         ? BigDecimal.ZERO
-                        : COSTO_ENVIO;
+                        : shippingCost;
 
         shipping = shipping.setScale(2, RoundingMode.HALF_UP);
 

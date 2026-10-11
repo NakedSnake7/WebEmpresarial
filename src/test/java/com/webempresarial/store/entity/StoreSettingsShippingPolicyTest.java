@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class StoreSettingsShippingPolicyTest {
 
     @Test
-    void shouldPreserveCurrentFreeShippingBehaviorByDefault()
+    void shouldPreserveCurrentShippingBehaviorByDefault()
             throws Exception {
 
         StoreSettings settings = new StoreSettings();
@@ -25,16 +25,27 @@ class StoreSettingsShippingPolicyTest {
                         "getFreeShippingThreshold"
                 );
 
+        Method shippingCostGetter =
+                StoreSettings.class.getMethod(
+                        "getShippingCost"
+                );
+
         boolean enabled =
                 (boolean) enabledGetter.invoke(settings);
 
         BigDecimal threshold =
                 (BigDecimal) thresholdGetter.invoke(settings);
 
+        BigDecimal shippingCost =
+                (BigDecimal) shippingCostGetter.invoke(settings);
+
         assertThat(enabled)
                 .isTrue();
 
         assertThat(threshold)
                 .isEqualByComparingTo("1250.00");
+
+        assertThat(shippingCost)
+                .isEqualByComparingTo("120.00");
     }
 }

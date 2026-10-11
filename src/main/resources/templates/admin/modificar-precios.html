@@ -256,6 +256,37 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="shippingCost"
+                                       class="form-label fw-semibold">
+                                    Costo normal de envío
+                                </label>
+
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        $
+                                    </span>
+
+                                    <input type="number"
+                                           class="form-control"
+                                           id="shippingCost"
+                                           name="shippingCost"
+                                           min="0"
+                                           step="0.01"
+                                           required
+                                           th:value="${settings != null
+                                                       and settings.shippingCost != null
+                                                       ? settings.shippingCost
+                                                       : 120.00}">
+                                </div>
+
+                                <div class="form-text">
+                                    Este costo se cobra cuando el pedido
+                                    no alcanza el envío gratis o cuando
+                                    esa opción está deshabilitada.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="freeShippingThreshold"
                                        class="form-label fw-semibold">
                                     Subtotal mínimo
