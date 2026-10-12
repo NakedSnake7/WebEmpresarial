@@ -89,13 +89,15 @@ class StripeWebhookServiceTest {
                 .thenReturn(metadata);
 
         service.procesarCheckoutCompleted(
-                session
+                session,
+                "acct_store_5"
         );
 
         verify(stripeCommercePaymentHandler)
                 .handlePaidCheckout(
                         session,
-                        metadata
+                        metadata,
+                        "acct_store_5"
                 );
 
         verifyNoInteractions(
@@ -289,6 +291,57 @@ class StripeWebhookServiceTest {
                 stripeCommercePaymentHandler,
                 subscriptionService
         );
+    }
+
+    @Test
+    void handle_shouldPropagateConnectedAccountForEcommerceCheckout() {
+
+        Event event = mock(Event.class);
+
+        EventDataObjectDeserializer deserializer =
+                mock(EventDataObjectDeserializer.class);
+
+        Session session = mock(Session.class);
+
+        Map<String, String> metadata =
+                Map.of(
+                        "checkout_type",
+                        "ECOMMERCE_ORDER",
+                        "order_id",
+                        "100",
+                        "store_id",
+                        "5"
+                );
+
+        stubUnprocessedEvent(
+                event,
+                "evt_ecommerce_connected_account",
+                "checkout.session.completed"
+        );
+
+        when(event.getAccount())
+                .thenReturn("acct_store_5");
+
+        when(event.getDataObjectDeserializer())
+                .thenReturn(deserializer);
+
+        when(deserializer.getObject())
+                .thenReturn(Optional.of(session));
+
+        when(session.getPaymentStatus())
+                .thenReturn("paid");
+
+        when(session.getMetadata())
+                .thenReturn(metadata);
+
+        service.handle(event);
+
+        verify(stripeCommercePaymentHandler)
+                .handlePaidCheckout(
+                        session,
+                        metadata,
+                        "acct_store_5"
+                );
     }
 
     private void stubUnprocessedEvent(

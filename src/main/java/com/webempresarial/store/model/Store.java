@@ -199,6 +199,12 @@ public class Store {
         return stripeConnected;
     }
 
+    public boolean isStripePaymentAvailable() {
+        return stripeConnected
+                && stripeConnectedAccountId != null
+                && !stripeConnectedAccountId.isBlank();
+    }
+
     public void setStripeConnected(boolean stripeConnected) {
         this.stripeConnected = stripeConnected;
     }

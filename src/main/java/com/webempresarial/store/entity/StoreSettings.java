@@ -45,6 +45,34 @@ public class StoreSettings {
     private BigDecimal shippingCost =
             new BigDecimal("120.00");
 
+    // =====================================================
+    // PAGOS POR TRANSFERENCIA
+    // =====================================================
+
+    @Column(
+        name = "transfer_enabled",
+        nullable = false
+    )
+    private boolean transferEnabled = false;
+
+    @Column(
+        name = "transfer_bank_name",
+        length = 120
+    )
+    private String transferBankName;
+
+    @Column(
+        name = "transfer_account_holder",
+        length = 160
+    )
+    private String transferAccountHolder;
+
+    @Column(
+        name = "transfer_clabe",
+        length = 18
+    )
+    private String transferClabe;
+
     @Column(length = 300)
     private String logoUrl;
 
@@ -475,6 +503,55 @@ public class StoreSettings {
 
     public void setShippingCost(BigDecimal shippingCost) {
         this.shippingCost = shippingCost;
+    }
+
+
+    public boolean isTransferEnabled() {
+        return transferEnabled;
+    }
+
+    public void setTransferEnabled(boolean transferEnabled) {
+        this.transferEnabled = transferEnabled;
+    }
+
+    public String getTransferBankName() {
+        return transferBankName;
+    }
+
+    public void setTransferBankName(String transferBankName) {
+        this.transferBankName = transferBankName;
+    }
+
+    public String getTransferAccountHolder() {
+        return transferAccountHolder;
+    }
+
+    public void setTransferAccountHolder(
+            String transferAccountHolder
+    ) {
+        this.transferAccountHolder =
+                transferAccountHolder;
+    }
+
+    public String getTransferClabe() {
+        return transferClabe;
+    }
+
+    public void setTransferClabe(String transferClabe) {
+        this.transferClabe = transferClabe;
+    }
+
+
+    @Transient
+    public boolean isTransferPaymentAvailable() {
+
+        return transferEnabled
+                && transferBankName != null
+                && !transferBankName.isBlank()
+                && transferAccountHolder != null
+                && !transferAccountHolder.isBlank()
+                && transferClabe != null
+                && transferClabe.matches("\\d{18}");
     }
 
 }

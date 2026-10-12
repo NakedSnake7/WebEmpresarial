@@ -173,7 +173,10 @@ public class StripeWebhookService {
             throw new IllegalStateException("No se pudo deserializar checkout.session.completed");
         }
 
-        procesarCheckoutCompleted(session);
+        procesarCheckoutCompleted(
+                session,
+                event.getAccount()
+        );
     }
 
     private void handleSubscriptionUpdated(Event event) {
@@ -229,6 +232,16 @@ public class StripeWebhookService {
     }
     @Transactional
     public void procesarCheckoutCompleted(Session session) {
+        procesarCheckoutCompleted(
+                session,
+                null
+        );
+    }
+
+    public void procesarCheckoutCompleted(
+            Session session,
+            String connectedAccountId
+    ) {
 
         if (!"paid".equalsIgnoreCase(session.getPaymentStatus())) {
             return;
@@ -254,7 +267,8 @@ public class StripeWebhookService {
             stripeCommercePaymentHandler
                     .handlePaidCheckout(
                             session,
-                            metadata
+                            metadata,
+                            connectedAccountId
                     );
 
             default -> {

@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.feature.registry.DashboardRegistry;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.ThemeType;
@@ -49,6 +51,9 @@ class HomeControllerTest {
     private DashboardRegistry dashboardRegistry;
 
     @Mock
+    private OrderService orderService;
+
+    @Mock
     private HttpServletRequest request;
 
     @SuppressWarnings("rawtypes")
@@ -66,7 +71,8 @@ class HomeControllerTest {
                         resenaRepository,
                         storeThemeResolver,
                         storeResolver,
-                        dashboardRegistry
+                        dashboardRegistry,
+                        orderService
                 );
     }
 
@@ -253,6 +259,65 @@ class HomeControllerTest {
                 .findByStoreOrderByEstrellasDesc(
                         any(Store.class),
                         any()
+                );
+    }
+
+    @Test
+    void gracias_shouldLoadOrderInsideCurrentStore() {
+
+        Store store = new Store();
+        store.setId(9L);
+        store.setNombre("Stride");
+
+        Order order = new Order();
+        order.setId(77L);
+        order.setStore(store);
+
+        when(storeResolver.getCurrentStore(request))
+                .thenReturn(store);
+
+        when(storeThemeResolver.resolveTheme(store))
+                .thenReturn("stride");
+
+        when(orderService.getOrderById(
+                77L,
+                store
+        )).thenReturn(order);
+
+        when(storeThemeResolver.view(
+                request,
+                "gracias"
+        )).thenReturn(
+                "themes/stride/gracias"
+        );
+
+        Model model =
+                new ConcurrentModel();
+
+        String view =
+                controller.gracias(
+                        77L,
+                        model,
+                        request
+                );
+
+        assertThat(view)
+                .isEqualTo(
+                        "themes/stride/gracias"
+                );
+
+        assertThat(
+                model.getAttribute("order")
+        ).isSameAs(order);
+
+        assertThat(
+                model.getAttribute("store")
+        ).isSameAs(store);
+
+        verify(orderService)
+                .getOrderById(
+                        77L,
+                        store
                 );
     }
 

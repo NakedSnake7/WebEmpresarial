@@ -16,6 +16,7 @@ import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
+import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
 import com.webempresarial.store.theme.ThemeModelAdvice;
@@ -73,6 +74,9 @@ class StorefrontReflectionMockMvcTest {
 
     @MockitoBean
     private ProductoService productoService;
+
+    @MockitoBean
+    private OrderService orderService;
 
     @MockitoBean
     private ResenaRepository resenaRepository;

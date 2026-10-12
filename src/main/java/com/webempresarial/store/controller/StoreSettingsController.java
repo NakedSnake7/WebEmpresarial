@@ -189,6 +189,86 @@ public class StoreSettingsController {
         return "redirect:/modificar-precios?shippingSuccess";
     }
 
+    @PostMapping("/transfer")
+    public String saveTransferSettings(
+            @RequestParam(
+                    name = "transferEnabled",
+                    defaultValue = "false"
+            )
+            boolean transferEnabled,
+
+            @RequestParam(
+                    name = "transferBankName",
+                    required = false
+            )
+            String transferBankName,
+
+            @RequestParam(
+                    name = "transferAccountHolder",
+                    required = false
+            )
+            String transferAccountHolder,
+
+            @RequestParam(
+                    name = "transferClabe",
+                    required = false
+            )
+            String transferClabe,
+
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeContextService.getCurrentStore(request);
+
+        /*
+         * Si SPEI está habilitado, todos los datos bancarios
+         * son obligatorios y la CLABE debe contener exactamente
+         * 18 dígitos.
+         */
+        if (transferEnabled) {
+
+            if (transferBankName == null
+                    || transferBankName.isBlank()
+                    || transferAccountHolder == null
+                    || transferAccountHolder.isBlank()
+                    || transferClabe == null
+                    || !transferClabe.matches("\\d{18}")) {
+
+                return "redirect:/admin/store/settings?transferError";
+            }
+        }
+
+        StoreSettings settings =
+                storeSettingsService.getOrCreate(store);
+
+        settings.setTransferEnabled(
+                transferEnabled
+        );
+
+        /*
+         * Al deshabilitar transferencias preservamos los datos
+         * existentes para permitir reactivarlas posteriormente.
+         */
+        if (transferEnabled) {
+
+            settings.setTransferBankName(
+                    transferBankName.trim()
+            );
+
+            settings.setTransferAccountHolder(
+                    transferAccountHolder.trim()
+            );
+
+            settings.setTransferClabe(
+                    transferClabe
+            );
+        }
+
+        storeSettingsService.save(settings);
+
+        return "redirect:/admin/store/settings?transferSuccess";
+    }
+
     @CacheEvict(value = "storesByDomain", allEntries = true)
     @PostMapping("/logo")
     public String uploadLogo(

@@ -47,10 +47,56 @@ class StripeCommercePaymentHandlerTest {
     }
 
     @Test
+    void handlePaidCheckout_shouldRejectMissingConnectedAccount() {
+
+        Session session = mock(Session.class);
+
+        assertThatThrownBy(() ->
+                handler.handlePaidCheckout(
+                        session,
+                        ecommerceMetadata(),
+                        null
+                )
+        )
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(
+                        "Stripe connected account ausente"
+                );
+
+        verifyNoInteractions(storeRepository);
+        verifyNoInteractions(orderService);
+    }
+
+    @Test
+    void handlePaidCheckout_shouldRejectConnectedAccountFromAnotherStore() {
+
+        Session session = mock(Session.class);
+        Store store = connectedStore();
+
+        when(storeRepository.findById(5L))
+                .thenReturn(Optional.of(store));
+
+        assertThatThrownBy(() ->
+                handler.handlePaidCheckout(
+                        session,
+                        ecommerceMetadata(),
+                        "acct_other_store"
+                )
+        )
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(
+                        "La cuenta Stripe del webhook "
+                        + "no corresponde a la tienda"
+                );
+
+        verifyNoInteractions(orderService);
+    }
+
+    @Test
     void handlePaidCheckout_shouldRejectNullAmountTotal() {
 
         Session session = mock(Session.class);
-        Store store = mock(Store.class);
+        Store store = connectedStore();
         Order order = mock(Order.class);
 
         when(storeRepository.findById(5L))
@@ -72,7 +118,9 @@ class StripeCommercePaymentHandlerTest {
                 handler.handlePaidCheckout(
                         session,
                         ecommerceMetadata()
-                )
+                ,
+                        "acct_store_5"
+)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining(
@@ -116,7 +164,9 @@ class StripeCommercePaymentHandlerTest {
                 handler.handlePaidCheckout(
                         session,
                         metadata
-                )
+                ,
+                        "acct_store_5"
+)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(
@@ -139,7 +189,9 @@ class StripeCommercePaymentHandlerTest {
                 handler.handlePaidCheckout(
                         session,
                         ecommerceMetadata()
-                )
+                ,
+                        "acct_store_5"
+)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(
@@ -157,7 +209,7 @@ class StripeCommercePaymentHandlerTest {
     void handlePaidCheckout_shouldBeIdempotentWhenOrderIsAlreadyPaid() {
 
         Session session = mock(Session.class);
-        Store store = mock(Store.class);
+        Store store = connectedStore();
         Order order = mock(Order.class);
 
         when(storeRepository.findById(5L))
@@ -172,7 +224,9 @@ class StripeCommercePaymentHandlerTest {
         handler.handlePaidCheckout(
                 session,
                 ecommerceMetadata()
-        );
+        ,
+                        "acct_store_5"
+);
 
         verify(orderService, never())
                 .marcarOrdenComoPagada(
@@ -192,7 +246,7 @@ class StripeCommercePaymentHandlerTest {
     void handlePaidCheckout_shouldRejectOrderWithoutTotal() {
 
         Session session = mock(Session.class);
-        Store store = mock(Store.class);
+        Store store = connectedStore();
         Order order = mock(Order.class);
 
         when(storeRepository.findById(5L))
@@ -211,7 +265,9 @@ class StripeCommercePaymentHandlerTest {
                 handler.handlePaidCheckout(
                         session,
                         ecommerceMetadata()
-                )
+                ,
+                        "acct_store_5"
+)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(
@@ -236,7 +292,7 @@ class StripeCommercePaymentHandlerTest {
     void handlePaidCheckout_shouldRejectAmountMismatch() {
 
         Session session = mock(Session.class);
-        Store store = mock(Store.class);
+        Store store = connectedStore();
         Order order = mock(Order.class);
 
         when(storeRepository.findById(5L))
@@ -260,7 +316,9 @@ class StripeCommercePaymentHandlerTest {
                 handler.handlePaidCheckout(
                         session,
                         ecommerceMetadata()
-                )
+                ,
+                        "acct_store_5"
+)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining(
@@ -291,7 +349,7 @@ class StripeCommercePaymentHandlerTest {
     void handlePaidCheckout_shouldConfirmPaymentAndProcessPostPayment() {
 
         Session session = mock(Session.class);
-        Store store = mock(Store.class);
+        Store store = connectedStore();
         Order order = mock(Order.class);
 
         when(storeRepository.findById(5L))
@@ -321,7 +379,9 @@ class StripeCommercePaymentHandlerTest {
         handler.handlePaidCheckout(
                 session,
                 ecommerceMetadata()
-        );
+        ,
+                        "acct_store_5"
+);
 
         verify(orderService)
                 .marcarOrdenComoPagada(
@@ -350,6 +410,16 @@ class StripeCommercePaymentHandlerTest {
                         100L,
                         store
                 );
+    }
+
+    private Store connectedStore() {
+
+        Store store = mock(Store.class);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_store_5");
+
+        return store;
     }
 
     private Map<String, String> ecommerceMetadata() {

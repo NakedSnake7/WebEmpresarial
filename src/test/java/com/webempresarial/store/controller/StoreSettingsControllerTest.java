@@ -903,4 +903,244 @@ assertThat(saved.getFooterText())
         verify(storeSettingsService)
                 .save(settings);
     }
+
+    @Test
+    void shouldSaveTransferSettingsForCurrentTenant() {
+        mockCurrentTenant();
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "ACME SA DE CV",
+                        "012345678901234567",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferSuccess"
+                );
+
+        assertThat(settings.isTransferEnabled())
+                .isTrue();
+
+        assertThat(settings.getTransferBankName())
+                .isEqualTo("BBVA");
+
+        assertThat(settings.getTransferAccountHolder())
+                .isEqualTo("ACME SA DE CV");
+
+        assertThat(settings.getTransferClabe())
+                .isEqualTo("012345678901234567");
+
+        verify(storeContextService)
+                .getCurrentStore(request);
+
+        verify(storeSettingsService)
+                .getOrCreate(store);
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
+    void shouldDisableTransferWithoutDeletingBankData() {
+        mockCurrentTenant();
+
+        settings.setTransferEnabled(true);
+        settings.setTransferBankName("BBVA");
+        settings.setTransferAccountHolder("ACME SA DE CV");
+        settings.setTransferClabe("012345678901234567");
+
+        String result =
+                controller.saveTransferSettings(
+                        false,
+                        null,
+                        null,
+                        null,
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferSuccess"
+                );
+
+        assertThat(settings.isTransferEnabled())
+                .isFalse();
+
+        /*
+         * Al desactivar SPEI conservamos los datos para que
+         * la tienda pueda volver a habilitarlo posteriormente.
+         */
+        assertThat(settings.getTransferBankName())
+                .isEqualTo("BBVA");
+
+        assertThat(settings.getTransferAccountHolder())
+                .isEqualTo("ACME SA DE CV");
+
+        assertThat(settings.getTransferClabe())
+                .isEqualTo("012345678901234567");
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
+    void shouldRejectTransferWithShortClabe() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "ACME SA DE CV",
+                        "01234567890123456",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectTransferWithLongClabe() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "ACME SA DE CV",
+                        "0123456789012345678",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectTransferWithNonNumericClabe() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "ACME SA DE CV",
+                        "01234567890123456A",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectTransferWithoutBankName() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "   ",
+                        "ACME SA DE CV",
+                        "012345678901234567",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectTransferWithoutAccountHolder() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "   ",
+                        "012345678901234567",
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
+    @Test
+    void shouldRejectTransferWithoutClabe() {
+        when(storeContextService.getCurrentStore(request))
+                .thenReturn(store);
+
+        String result =
+                controller.saveTransferSettings(
+                        true,
+                        "BBVA",
+                        "ACME SA DE CV",
+                        null,
+                        request
+                );
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?transferError"
+                );
+
+        verify(storeSettingsService, never())
+                .getOrCreate(any());
+
+        verify(storeSettingsService, never())
+                .save(any());
+    }
+
 }

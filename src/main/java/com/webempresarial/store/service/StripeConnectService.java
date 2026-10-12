@@ -127,6 +127,9 @@ public class StripeConnectService {
             boolean connected =
                     Boolean.TRUE.equals(
                             account.getChargesEnabled()
+                    )
+                    && Boolean.TRUE.equals(
+                            account.getPayoutsEnabled()
                     );
 
             store.setStripeConnected(connected);

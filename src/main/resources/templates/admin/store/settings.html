@@ -608,7 +608,139 @@
 </div>
 
 
-					<div class="card border-0 shadow-sm mb-4">
+					<div class="card border-0 shadow-sm mb-4"
+     data-transfer-payment-settings>
+
+    <div class="card-body p-4">
+
+        <span class="badge text-bg-info mb-2">
+            Transferencia SPEI
+        </span>
+
+        <h5 class="fw-bold mb-2">
+            Transferencias bancarias
+        </h5>
+
+        <p class="text-muted">
+            Configura la cuenta donde recibirás los pagos
+            realizados mediante transferencia SPEI.
+        </p>
+
+        <div th:if="${param.transferSuccess}"
+             class="alert alert-success">
+            Configuración de transferencia guardada correctamente.
+        </div>
+
+        <div th:if="${param.transferError}"
+             class="alert alert-danger">
+            Verifica banco, titular y CLABE.
+            La CLABE debe contener exactamente 18 dígitos.
+        </div>
+
+        <form th:action="@{/admin/store/settings/transfer}"
+              method="post">
+
+            <th:block
+                th:replace="~{fragments/csrf :: token}">
+            </th:block>
+
+            <div class="form-check form-switch mb-3">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="transferEnabled"
+                    name="transferEnabled"
+                    value="true"
+                    th:checked="${settings.transferEnabled}">
+
+                <label
+                    class="form-check-label fw-semibold"
+                    for="transferEnabled">
+                    Aceptar transferencias SPEI
+                </label>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label fw-semibold"
+                    for="transferBankName">
+                    Banco
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="transferBankName"
+                    name="transferBankName"
+                    maxlength="120"
+                    th:value="${settings.transferBankName}"
+                    placeholder="Ej. BBVA">
+
+            </div>
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label fw-semibold"
+                    for="transferAccountHolder">
+                    Titular de la cuenta
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="transferAccountHolder"
+                    name="transferAccountHolder"
+                    maxlength="160"
+                    th:value="${settings.transferAccountHolder}"
+                    placeholder="Nombre o razón social">
+
+            </div>
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label fw-semibold"
+                    for="transferClabe">
+                    CLABE interbancaria
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control font-monospace"
+                    id="transferClabe"
+                    name="transferClabe"
+                    inputmode="numeric"
+                    maxlength="18"
+                    pattern="[0-9]{18}"
+                    th:value="${settings.transferClabe}"
+                    placeholder="18 dígitos"
+                    autocomplete="off">
+
+                <div class="form-text">
+                    La CLABE sólo se proporcionará al cliente
+                    cuando seleccione transferencia como método
+                    de pago.
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-dark w-100">
+                Guardar datos de transferencia
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
 						<div class="card-body p-4">
 
 							<span class="badge text-bg-primary mb-2"> Stripe Connect </span>

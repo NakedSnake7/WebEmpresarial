@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<section th:fragment="orderConfirmation"
+         style="
+             max-width:720px;
+             margin:48px auto;
+             padding:32px;
+             border-radius:16px;
+             background:#ffffff;
+             box-shadow:0 8px 30px rgba(0,0,0,.10);
+             font-family:Arial,Helvetica,sans-serif;
+         ">
+
+    <div style="text-align:center;margin-bottom:28px;">
+
+        <div style="
+            width:64px;
+            height:64px;
+            margin:0 auto 16px;
+            border-radius:50%;
+            background:#ecfdf5;
+            color:#059669;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:34px;
+            font-weight:bold;
+        ">
+            ✓
+        </div>
+
+        <h1 style="margin:0 0 10px;">
+            Pedido recibido
+        </h1>
+
+        <p style="margin:0;color:#6b7280;">
+            Gracias por tu compra.
+        </p>
+
+    </div>
+
+    <div style="
+        padding:18px;
+        border-radius:10px;
+        background:#f9fafb;
+        margin-bottom:24px;
+    ">
+
+        <p style="margin:0 0 10px;">
+            <strong>Orden:</strong>
+            #
+            <span th:text="${order.id}">
+                0
+            </span>
+        </p>
+
+        <p style="margin:0 0 10px;">
+            <strong>Total:</strong>
+            $
+            <span th:text="${order.total}">
+                0.00
+            </span>
+            MXN
+        </p>
+
+        <p style="margin:0;">
+            <strong>Estado:</strong>
+            <span th:text="${order.paymentStatusLabel}">
+                Pendiente
+            </span>
+        </p>
+
+    </div>
+
+
+    <!-- ==================================================
+         TRANSFERENCIA SPEI
+         ================================================== -->
+
+    <th:block th:if="${order.paymentMethod != null and order.paymentMethod.name() == 'TRANSFER'}">
+
+        <div style="
+            padding:18px;
+            margin-bottom:20px;
+            border-radius:10px;
+            background:#fff7ed;
+            border:1px solid #fed7aa;
+        ">
+
+            <h2 style="
+                margin:0 0 12px;
+                font-size:20px;
+                color:#9a3412;
+            ">
+                Pago pendiente por transferencia
+            </h2>
+
+            <p style="
+                margin:0;
+                line-height:1.6;
+                color:#7c2d12;
+            ">
+                Tu pedido fue registrado correctamente,
+                pero el pago permanece
+                <strong>pendiente</strong>
+                hasta que confirmemos tu transferencia.
+            </p>
+
+        </div>
+
+        <div style="
+            padding:20px;
+            border-radius:10px;
+            border:1px solid #e5e7eb;
+            margin-bottom:24px;
+        ">
+
+            <h2 style="
+                margin:0 0 18px;
+                font-size:20px;
+            ">
+                Datos para transferencia SPEI
+            </h2>
+
+            <p style="margin:0 0 12px;">
+                <strong>Banco:</strong>
+                <span th:text="${settings != null ? settings.transferBankName : ''}">
+                    Banco
+                </span>
+            </p>
+
+            <p style="margin:0 0 12px;">
+                <strong>Titular:</strong>
+                <span th:text="${settings != null ? settings.transferAccountHolder : ''}">
+                    Titular
+                </span>
+            </p>
+
+            <p style="margin:0 0 12px;">
+                <strong>CLABE:</strong>
+                <span th:text="${settings != null ? settings.transferClabe : ''}"
+                      style="
+                          font-family:monospace;
+                          font-size:17px;
+                      ">
+                    000000000000000000
+                </span>
+            </p>
+
+            <p style="margin:0;">
+                <strong>Concepto:</strong>
+                Orden #
+                <span th:text="${order.id}">
+                    0
+                </span>
+            </p>
+
+        </div>
+
+        <p style="
+            color:#6b7280;
+            font-size:14px;
+            line-height:1.6;
+        ">
+            También enviamos estas instrucciones
+            al correo proporcionado durante la compra.
+        </p>
+
+    </th:block>
+
+
+    <!-- ==================================================
+         STRIPE
+         ================================================== -->
+
+    <th:block th:if="${order.paymentMethod != null and order.paymentMethod.name() == 'STRIPE'}">
+
+        <div style="
+            padding:18px;
+            margin-bottom:24px;
+            border-radius:10px;
+            background:#eff6ff;
+            border:1px solid #bfdbfe;
+        ">
+
+            <h2 style="
+                margin:0 0 12px;
+                font-size:20px;
+                color:#1d4ed8;
+            ">
+                Pedido registrado
+            </h2>
+
+            <p style="
+                margin:0;
+                color:#1e40af;
+                line-height:1.6;
+            ">
+                Recibimos el regreso de tu proceso de pago.
+                El estado definitivo de la transacción se
+                actualizará cuando Stripe confirme el pago.
+            </p>
+
+        </div>
+
+    </th:block>
+
+
+    <div style="
+        margin-top:28px;
+        text-align:center;
+    ">
+
+        <a th:href="@{/}"
+           href="/"
+           style="
+               display:inline-block;
+               padding:12px 22px;
+               border-radius:8px;
+               background:#111827;
+               color:#ffffff;
+               text-decoration:none;
+               font-weight:bold;
+           ">
+            Volver a la tienda
+        </a>
+
+    </div>
+
+</section>
+
+</body>
+</html>

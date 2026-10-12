@@ -76,11 +76,30 @@ public class CheckoutService {
     	
         validateRequest(request);
 
-
-        Cliente cliente = resolveCustomer(request, store);
-
         PaymentMethod paymentMethod =
-                resolvePaymentMethod(request.getPaymentMethod());
+                resolvePaymentMethod(
+                        request.getPaymentMethod()
+                );
+
+        if (paymentMethod == PaymentMethod.TRANSFER) {
+
+            StoreSettings transferSettings =
+                    storeSettingsService.getOrCreate(store);
+
+            validateTransferAvailability(
+                    transferSettings
+            );
+        }
+
+        if (paymentMethod == PaymentMethod.STRIPE) {
+            validateStripeAvailability(store);
+        }
+
+        Cliente cliente =
+                resolveCustomer(
+                        request,
+                        store
+                );
 
         String email = request.getCustomer()
                 .getEmail()
@@ -380,6 +399,40 @@ public class CheckoutService {
         );
 
         return userService.saveUser(cliente, store);
+    }
+
+    private void validateStripeAvailability(
+            Store store
+    ) {
+
+        if (store == null
+                || !store.isStripePaymentAvailable()) {
+
+            throw new IllegalArgumentException(
+                    "La tienda no está habilitada "
+                    + "para pagos con Stripe"
+            );
+        }
+    }
+
+    private void validateTransferAvailability(
+            StoreSettings settings
+    ) {
+
+        if (settings == null
+                || !settings.isTransferEnabled()) {
+
+            throw new IllegalArgumentException(
+                    "La tienda no acepta transferencias bancarias"
+            );
+        }
+
+        if (!settings.isTransferPaymentAvailable()) {
+
+            throw new IllegalArgumentException(
+                    "La configuración de transferencia de la tienda está incompleta"
+            );
+        }
     }
 
     private PaymentMethod resolvePaymentMethod(

@@ -89,7 +89,8 @@
                                 <b>Método de pago</b>
                             </label>
 
-                            <div class="form-check">
+                            <th:block th:if="${settings != null and settings.transferPaymentAvailable}">
+<div class="form-check">
 
                                 <input class="form-check-input"
                                        type="radio"
@@ -104,6 +105,7 @@
                                 </label>
 
                             </div>
+</th:block>
 
                             <div class="form-check">
 
@@ -112,14 +114,16 @@
                                        id="payStripe"
                                        name="paymentMethod"
                                        value="STRIPE"
-                                       th:disabled="${store == null or !store.stripeConnected}">
+                                       th:disabled="${store == null or !store.stripePaymentAvailable}"
+    th:checked="${(settings == null or !settings.transferPaymentAvailable) and store != null and store.stripePaymentAvailable}"
+>
 
                                 <label class="form-check-label"
                                        for="payStripe">
 
                                     Tarjeta de crédito / débito
 
-                                    <small th:if="${store == null or !store.stripeConnected}">
+                                    <small th:if="${store == null or !store.stripePaymentAvailable}">
                                         (Conecta Stripe para aceptar pagos con tarjeta)
                                     </small>
 

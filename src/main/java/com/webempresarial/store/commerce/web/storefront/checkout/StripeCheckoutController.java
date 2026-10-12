@@ -49,9 +49,7 @@ public class StripeCheckoutController {
                         orderId,
                         store
                 );
-        if (!store.isStripeConnected()
-                || store.getStripeConnectedAccountId() == null
-                || store.getStripeConnectedAccountId().isBlank()) {
+        if (!store.isStripePaymentAvailable()) {
 
             return ResponseEntity.badRequest()
                     .body(

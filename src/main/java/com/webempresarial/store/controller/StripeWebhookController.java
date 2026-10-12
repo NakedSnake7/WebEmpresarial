@@ -17,46 +17,97 @@ public class StripeWebhookController {
     @Value("${stripe.webhook.secret}")
     private String endpointSecret;
 
+    @Value("${stripe.connect.webhook.secret:}")
+    private String connectEndpointSecret;
+
     private final StripeWebhookService stripeWebhookService;
 
     public StripeWebhookController(
             StripeWebhookService stripeWebhookService
     ) {
-        this.stripeWebhookService = stripeWebhookService;
+        this.stripeWebhookService =
+                stripeWebhookService;
     }
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
             @RequestBody byte[] payload,
-            @RequestHeader("Stripe-Signature") String sigHeader
+            @RequestHeader("Stripe-Signature")
+            String sigHeader
+    ) {
+        return verifyAndHandle(
+                payload,
+                sigHeader,
+                endpointSecret
+        );
+    }
+
+    @PostMapping("/connect/webhook")
+    public ResponseEntity<String> handleConnectWebhook(
+            @RequestBody byte[] payload,
+            @RequestHeader("Stripe-Signature")
+            String sigHeader
+    ) {
+        return verifyAndHandle(
+                payload,
+                sigHeader,
+                connectEndpointSecret
+        );
+    }
+
+    private ResponseEntity<String> verifyAndHandle(
+            byte[] payload,
+            String sigHeader,
+            String secret
     ) {
 
         Event event;
 
         try {
-            String payloadString =
-                    new String(payload, StandardCharsets.UTF_8);
 
-            event = Webhook.constructEvent(
-                    payloadString,
-                    sigHeader,
-                    endpointSecret
-            );
+            if (secret == null
+                    || secret.isBlank()) {
+
+                return ResponseEntity.badRequest()
+                        .body(
+                                "Webhook secret not configured"
+                        );
+            }
+
+            String payloadString =
+                    new String(
+                            payload,
+                            StandardCharsets.UTF_8
+                    );
+
+            event =
+                    Webhook.constructEvent(
+                            payloadString,
+                            sigHeader,
+                            secret
+                    );
 
         } catch (Exception e) {
+
             return ResponseEntity.badRequest()
                     .body("Invalid signature");
         }
 
         try {
+
             stripeWebhookService.handle(event);
 
             return ResponseEntity.ok("OK");
 
         } catch (Exception e) {
+
             e.printStackTrace();
-            return ResponseEntity.status(500)
-                    .body("Webhook processing error");
+
+            return ResponseEntity
+                    .status(500)
+                    .body(
+                            "Webhook processing error"
+                    );
         }
     }
 }

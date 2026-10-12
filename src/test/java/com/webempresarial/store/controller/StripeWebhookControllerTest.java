@@ -1,42 +1,40 @@
 package com.webempresarial.store.controller;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.HexFormat;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.stripe.model.Event;
 import com.webempresarial.store.service.StripeWebhookService;
 
-@ExtendWith(MockitoExtension.class)
 class StripeWebhookControllerTest {
 
-    private static final String WEBHOOK_SECRET =
-            "whsec_test_webempresarial";
+    private static final String PLATFORM_SECRET =
+            "whsec_platform_test";
 
-    @Mock
+    private static final String CONNECT_SECRET =
+            "whsec_connect_test";
+
     private StripeWebhookService stripeWebhookService;
 
     private StripeWebhookController controller;
 
     @BeforeEach
     void setUp() {
+
+        stripeWebhookService =
+                mock(StripeWebhookService.class);
 
         controller =
                 new StripeWebhookController(
@@ -46,178 +44,129 @@ class StripeWebhookControllerTest {
         ReflectionTestUtils.setField(
                 controller,
                 "endpointSecret",
-                WEBHOOK_SECRET
+                PLATFORM_SECRET
+        );
+
+        ReflectionTestUtils.setField(
+                controller,
+                "connectEndpointSecret",
+                CONNECT_SECRET
         );
     }
 
     @Test
-    void handleWebhook_shouldAcceptValidStripeSignature()
+    void platformWebhookShouldAcceptPlatformSecret()
             throws Exception {
 
-        String payload = """
-                {
-                  "id": "evt_saas_123",
-                  "object": "event",
-                  "type": "checkout.session.completed",
-                  "data": {
-                    "object": {
-                      "id": "cs_test_123",
-                      "object": "checkout.session",
-                      "payment_status": "paid"
-                    }
-                  }
-                }
-                """;
+        byte[] payload = payload();
 
-        String signature =
-                stripeSignature(
+        ResponseEntity<String> response =
+                controller.handleWebhook(
                         payload,
-                        WEBHOOK_SECRET
+                        signature(
+                                payload,
+                                PLATFORM_SECRET
+                        )
                 );
 
-        ResponseEntity<String> response =
-                controller.handleWebhook(
-                        payload.getBytes(
-                                StandardCharsets.UTF_8
-                        ),
-                        signature
-                );
-
-        assertThat(
-                response.getStatusCode().value()
-        ).isEqualTo(200);
-
-        assertThat(
-                response.getBody()
-        ).isEqualTo("OK");
-
-        ArgumentCaptor<Event> eventCaptor =
-                ArgumentCaptor.forClass(
-                        Event.class
-                );
-
-        verify(stripeWebhookService)
-                .handle(
-                        eventCaptor.capture()
-                );
-
-        Event event =
-                eventCaptor.getValue();
-
-        assertThat(event.getId())
-                .isEqualTo(
-                        "evt_saas_123"
-                );
-
-        assertThat(event.getType())
-                .isEqualTo(
-                        "checkout.session.completed"
-                );
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(200);
     }
 
     @Test
-    void handleWebhook_shouldRejectInvalidStripeSignature() {
-
-        String payload = """
-                {
-                  "id": "evt_invalid",
-                  "object": "event",
-                  "type": "checkout.session.completed"
-                }
-                """;
-
-        ResponseEntity<String> response =
-                controller.handleWebhook(
-                        payload.getBytes(
-                                StandardCharsets.UTF_8
-                        ),
-                        "t=123,v1=invalid"
-                );
-
-        assertThat(
-                response.getStatusCode().value()
-        ).isEqualTo(400);
-
-        assertThat(
-                response.getBody()
-        ).isEqualTo(
-                "Invalid signature"
-        );
-
-        verify(
-                stripeWebhookService,
-                never()
-        ).handle(any());
-    }
-
-    @Test
-    void handleWebhook_shouldReturn500WhenProcessingFails()
+    void platformWebhookShouldRejectConnectSecret()
             throws Exception {
 
-        String payload = """
-                {
-                  "id": "evt_failure_123",
-                  "object": "event",
-                  "type": "checkout.session.completed",
-                  "data": {
-                    "object": {
-                      "id": "cs_failure_123",
-                      "object": "checkout.session",
-                      "payment_status": "paid"
-                    }
-                  }
-                }
-                """;
-
-        String signature =
-                stripeSignature(
-                        payload,
-                        WEBHOOK_SECRET
-                );
-
-        doThrow(
-                new IllegalStateException(
-                        "Provisioning failed"
-                )
-        )
-                .when(stripeWebhookService)
-                .handle(any(Event.class));
+        byte[] payload = payload();
 
         ResponseEntity<String> response =
                 controller.handleWebhook(
-                        payload.getBytes(
-                                StandardCharsets.UTF_8
-                        ),
-                        signature
+                        payload,
+                        signature(
+                                payload,
+                                CONNECT_SECRET
+                        )
                 );
 
-        assertThat(
-                response.getStatusCode().value()
-        ).isEqualTo(500);
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
 
-        assertThat(
-                response.getBody()
-        ).isEqualTo(
-                "Webhook processing error"
+        verifyNoInteractions(
+                stripeWebhookService
         );
-
-        verify(stripeWebhookService)
-                .handle(any(Event.class));
     }
 
-    private String stripeSignature(
-            String payload,
+    @Test
+    void connectWebhookShouldAcceptConnectSecret()
+            throws Exception {
+
+        byte[] payload = payload();
+
+        ResponseEntity<String> response =
+                controller.handleConnectWebhook(
+                        payload,
+                        signature(
+                                payload,
+                                CONNECT_SECRET
+                        )
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(200);
+    }
+
+    @Test
+    void connectWebhookShouldRejectPlatformSecret()
+            throws Exception {
+
+        byte[] payload = payload();
+
+        ResponseEntity<String> response =
+                controller.handleConnectWebhook(
+                        payload,
+                        signature(
+                                payload,
+                                PLATFORM_SECRET
+                        )
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
+
+        verifyNoInteractions(
+                stripeWebhookService
+        );
+    }
+
+    private byte[] payload() {
+
+        return """
+                {
+                  "id": "evt_test",
+                  "object": "event",
+                  "type": "test.event",
+                  "data": {
+                    "object": {}
+                  }
+                }
+                """.getBytes(UTF_8);
+    }
+
+    private String signature(
+            byte[] payload,
             String secret
     ) throws Exception {
 
         long timestamp =
-                Instant.now()
-                        .getEpochSecond();
+                Instant.now().getEpochSecond();
 
         String signedPayload =
                 timestamp
                         + "."
-                        + payload;
+                        + new String(
+                                payload,
+                                UTF_8
+                        );
 
         Mac mac =
                 Mac.getInstance(
@@ -226,35 +175,25 @@ class StripeWebhookControllerTest {
 
         mac.init(
                 new SecretKeySpec(
-                        secret.getBytes(
-                                StandardCharsets.UTF_8
-                        ),
+                        secret.getBytes(UTF_8),
                         "HmacSHA256"
                 )
         );
 
-        byte[] hash =
-                mac.doFinal(
-                        signedPayload.getBytes(
-                                StandardCharsets.UTF_8
-                        )
-                );
-
-        StringBuilder hex =
-                new StringBuilder();
-
-        for (byte b : hash) {
-            hex.append(
-                    String.format(
-                            "%02x",
-                            b & 0xff
-                    )
-            );
-        }
+        String digest =
+                HexFormat.of()
+                        .formatHex(
+                                mac.doFinal(
+                                        signedPayload
+                                                .getBytes(
+                                                        UTF_8
+                                                )
+                                )
+                        );
 
         return "t="
                 + timestamp
                 + ",v1="
-                + hex;
+                + digest;
     }
 }

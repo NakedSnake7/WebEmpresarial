@@ -76,6 +76,10 @@ class CheckoutServiceTest {
         store = new Store();
         store.setId(1L);
         store.setActiva(true);
+        store.setStripeConnected(true);
+        store.setStripeConnectedAccountId(
+                "acct_test_store_1"
+        );
 
         StoreSettings defaultSettings =
                 new StoreSettings();
@@ -206,8 +210,6 @@ class CheckoutServiceTest {
 
         CheckoutRequestDTO request =
                 validRequest("PAYPAL", 100L, null, 1);
-
-        mockCustomerResolution(request);
 
         assertThatThrownBy(() ->
                 service.createOrder(request, store)
@@ -385,6 +387,75 @@ class CheckoutServiceTest {
     
 
     @Test
+    void createOrder_shouldRejectStripeWhenStoreIsNotConnected() {
+
+        store.setStripeConnected(false);
+
+        CheckoutRequestDTO request =
+                validRequest(
+                        "STRIPE",
+                        100L,
+                        null,
+                        1
+                );
+
+        assertThatThrownBy(() ->
+                service.createOrder(
+                        request,
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "La tienda no está habilitada "
+                        + "para pagos con Stripe"
+                );
+
+        verify(orderService, never())
+                .crearOrden(
+                        any(Order.class),
+                        any(Store.class)
+                );
+    }
+
+    @Test
+    void createOrder_shouldRejectStripeWhenAccountIdIsBlank() {
+
+        store.setStripeConnected(true);
+        store.setStripeConnectedAccountId("   ");
+
+        CheckoutRequestDTO request =
+                validRequest(
+                        "STRIPE",
+                        100L,
+                        null,
+                        1
+                );
+
+        assertThatThrownBy(() ->
+                service.createOrder(
+                        request,
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "La tienda no está habilitada "
+                        + "para pagos con Stripe"
+                );
+
+        verify(orderService, never())
+                .crearOrden(
+                        any(Order.class),
+                        any(Store.class)
+                );
+    }
+
+    @Test
     void createOrder_shouldCreateStripeOrderUsingServerPrice() {
         CheckoutRequestDTO request =
                 validRequest("STRIPE", 100L, null, 2);
@@ -449,6 +520,18 @@ class CheckoutServiceTest {
 
     @Test
     void createOrder_shouldUseTransferFlow() {
+
+        StoreSettings transferSettings =
+                new StoreSettings();
+
+        transferSettings.setTransferEnabled(true);
+        transferSettings.setTransferBankName("BBVA");
+        transferSettings.setTransferAccountHolder("ACME SA DE CV");
+        transferSettings.setTransferClabe("012345678901234567");
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(transferSettings);
+
         CheckoutRequestDTO request =
                 validRequest("TRANSFER", 100L, null, 1);
 
@@ -867,4 +950,89 @@ class CheckoutServiceTest {
                 .isEqualByComparingTo("5120.00");
     }
 
+
+    @Test
+    void createOrder_shouldRejectTransferWhenStoreHasItDisabled() {
+
+        StoreSettings transferSettings =
+                new StoreSettings();
+
+        transferSettings.setTransferEnabled(false);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(transferSettings);
+
+        CheckoutRequestDTO request =
+                validRequest(
+                        "TRANSFER",
+                        100L,
+                        null,
+                        1
+                );
+
+        assertThatThrownBy(() ->
+                service.createOrder(
+                        request,
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "La tienda no acepta transferencias bancarias"
+                );
+
+        verify(
+                orderService,
+                never()
+        ).saveOrderTransferencia(
+                any(Order.class),
+                any(Store.class)
+        );
+    }
+
+    @Test
+    void createOrder_shouldRejectTransferWhenConfigurationIsIncomplete() {
+
+        StoreSettings transferSettings =
+                new StoreSettings();
+
+        transferSettings.setTransferEnabled(true);
+        transferSettings.setTransferBankName("BBVA");
+        transferSettings.setTransferAccountHolder("ACME SA DE CV");
+        transferSettings.setTransferClabe(null);
+
+        when(storeSettingsService.getOrCreate(store))
+                .thenReturn(transferSettings);
+
+        CheckoutRequestDTO request =
+                validRequest(
+                        "TRANSFER",
+                        100L,
+                        null,
+                        1
+                );
+
+        assertThatThrownBy(() ->
+                service.createOrder(
+                        request,
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "La configuración de transferencia de la tienda está incompleta"
+                );
+
+        verify(
+                orderService,
+                never()
+        ).saveOrderTransferencia(
+                any(Order.class),
+                any(Store.class)
+        );
+    }
 }

@@ -514,6 +514,38 @@ class SaaSTenantLifecycleIntegrationTest {
                         .findByDominio(finalDomain)
                         .orElseThrow();
 
+        /*
+         * La tienda recién provisionada inicia con
+         * transferencias deshabilitadas.
+         *
+         * Para probar el checkout TRANSFER debemos simular
+         * primero la configuración bancaria realizada por
+         * el administrador de la tienda.
+         */
+        var transferSettings =
+                storeSettingsRepository
+                        .findByStoreId(
+                                commerceStore.getId()
+                        )
+                        .orElseThrow();
+
+        transferSettings.setTransferEnabled(true);
+        transferSettings.setTransferBankName(
+                "Banco E2E"
+        );
+        transferSettings.setTransferAccountHolder(
+                "E2E Admin Owner"
+        );
+        transferSettings.setTransferClabe(
+                "012345678901234567"
+        );
+
+        storeSettingsRepository.save(
+                transferSettings
+        );
+
+        entityManager.flush();
+
         var createdProduct =
                 productoRepository
                         .findByProductNameAndStore(

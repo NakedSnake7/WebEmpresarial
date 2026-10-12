@@ -281,9 +281,7 @@ public class StripeCommerceCheckoutService {
             );
         }
 
-        if (!store.isStripeConnected()
-                || store.getStripeConnectedAccountId() == null
-                || store.getStripeConnectedAccountId().isBlank()) {
+        if (!store.isStripePaymentAvailable()) {
 
             throw new IllegalStateException(
                     "La tienda debe conectar Stripe antes "

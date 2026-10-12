@@ -63,17 +63,14 @@ class StripeCheckoutControllerTest {
 
     private void givenStripeConnectedStore() {
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
-
-        when(store.getStripeConnectedAccountId())
-                .thenReturn("acct_test");
-    }
+}
 
     @Test
     void createStripeSession_shouldRejectStoreWithoutStripeConnect() {
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(false);
 
         when(orderService.getByIdForStripe(100L, store))
@@ -103,18 +100,14 @@ class StripeCheckoutControllerTest {
     }
 
     @Test
-    void createStripeSession_shouldRejectStoreWithBlankStripeAccountId() {
+    void createStripeSession_shouldRejectStoreWhenStripePaymentIsUnavailable() {
 
         when(orderService.getByIdForStripe(100L, store))
                 .thenReturn(order);
 
-        when(store.isStripeConnected())
-                .thenReturn(true);
-
-        when(store.getStripeConnectedAccountId())
-                .thenReturn("   ");
-
-        ResponseEntity<?> response =
+        when(store.isStripePaymentAvailable())
+                .thenReturn(false);
+ResponseEntity<?> response =
                 controller.createStripeSession(
                         100L,
                         request

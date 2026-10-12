@@ -76,7 +76,7 @@ class StripeCommerceCheckoutServiceTest {
         when(store.getCurrency())
                 .thenReturn(" USD ");
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
         .thenReturn(true);
 
 when(store.getStripeConnectedAccountId())
@@ -131,13 +131,9 @@ when(store.getStripeConnectedAccountId())
         when(order.getStore())
                 .thenReturn(store);
 
-        when(store.isStripeConnected())
-                .thenReturn(true);
-
-        when(store.getStripeConnectedAccountId())
-                .thenReturn("   ");
-
-        assertThatThrownBy(() ->
+        when(store.isStripePaymentAvailable())
+                .thenReturn(false);
+assertThatThrownBy(() ->
                 service.createSession(order)
         )
                 .isInstanceOf(
@@ -160,7 +156,7 @@ when(store.getStripeConnectedAccountId())
         when(order.getStore())
                 .thenReturn(store);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(false);
 
         assertThatThrownBy(() ->
@@ -180,7 +176,7 @@ when(store.getStripeConnectedAccountId())
 
         Store store = mock(Store.class);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())
@@ -225,7 +221,7 @@ when(store.getStripeConnectedAccountId())
 
         Store store = mock(Store.class);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())
@@ -268,7 +264,7 @@ when(store.getStripeConnectedAccountId())
 
         Store store = mock(Store.class);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())
@@ -307,7 +303,7 @@ when(store.getStripeConnectedAccountId())
 
         Store store = mock(Store.class);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())
@@ -346,7 +342,7 @@ when(store.getStripeConnectedAccountId())
 
         Store store = mock(Store.class);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())
@@ -413,7 +409,7 @@ when(store.getStripeConnectedAccountId())
         when(store.getCurrency())
                 .thenReturn(null);
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
         .thenReturn(true);
 
 when(store.getStripeConnectedAccountId())
@@ -592,7 +588,7 @@ when(store.getStripeConnectedAccountId())
         when(store.getCurrency())
                 .thenReturn("MXN");
 
-        when(store.isStripeConnected())
+        when(store.isStripePaymentAvailable())
                 .thenReturn(true);
 
         when(store.getStripeConnectedAccountId())

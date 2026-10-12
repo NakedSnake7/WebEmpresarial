@@ -2,6 +2,7 @@ package com.webempresarial.store.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper; 
 import com.webempresarial.store.config.MailerSendConfig;
+import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.feature.runtime.TraceType;
 import com.webempresarial.store.feature.runtime.annotations.Trace;
 import com.webempresarial.store.commerce.domain.order.Order;
@@ -46,9 +47,15 @@ public class EmailService {
     private final Map<String, String> templateCache = new ConcurrentHashMap<>();
     
     private final MailerSendConfig config;
-    
-    public EmailService(MailerSendConfig config) {
+    private final StoreSettingsService storeSettingsService;
+
+    public EmailService(
+            MailerSendConfig config,
+            StoreSettingsService storeSettingsService
+    ) {
         this.config = config;
+        this.storeSettingsService =
+                storeSettingsService;
     }
 
 
@@ -116,55 +123,180 @@ public class EmailService {
 /* =====================================================
     CORREO: DATOS DE TRANSFERENCIA
  ===================================================== */
- public void enviarCorreoDatosTransferencia(Order order) throws IOException {
+ public void enviarCorreoDatosTransferencia(
+            Order order
+    ) throws IOException {
 
-     if (order.getCustomerEmail() == null) return;
+        if (order == null) {
+            throw new IllegalArgumentException(
+                    "La orden es obligatoria"
+            );
+        }
 
-     String template = cargarTemplate("email/email-transferencia.html");
+        if (order.getCustomerEmail() == null
+                || order.getCustomerEmail().isBlank()) {
+            return;
+        }
 
-     BigDecimal subtotal = BigDecimal.ZERO;
-     StringBuilder productos = new StringBuilder();
+        if (order.getStore() == null) {
+            throw new IllegalStateException(
+                    "La orden no tiene tienda asociada"
+            );
+        }
 
-     for (OrderItem item : order.getItems()) {
-    	 BigDecimal sub = item.getPrice()
-    		        .multiply(BigDecimal.valueOf(item.getQuantity()));
-    	 
-    	 subtotal = subtotal.add(sub);
-    	 
-         productos.append("<tr>")
-                 .append("<td>").append(nombreProductoSeguro(item)).append("</td>")
-                 .append("<td style='text-align:center;'>").append(item.getQuantity()).append("</td>")
-                 .append("<td style='text-align:center;'>$")
-                 .append(MONEY.format(sub))
-                 .append("</td>")
-                 .append("</tr>");
-     }
+        StoreSettings settings =
+                storeSettingsService.getOrCreate(
+                        order.getStore()
+                );
 
-     BigDecimal envioCosto = calcularEnvio(subtotal);
+        if (settings == null
+                || !settings.isTransferPaymentAvailable()) {
 
-     String envio = envioCosto.compareTo(BigDecimal.ZERO) == 0
-             ? "GRATIS"
-             : "$" + MONEY.format(envioCosto);
+            throw new IllegalStateException(
+                    "La configuración de transferencia "
+                            + "de la tienda está incompleta"
+            );
+        }
 
-     BigDecimal total = subtotal.add(envioCosto);
-     
-     
-     String html = template
-             .replace("{NOMBRE}", order.getCustomerName())
-             .replace("{NUMERO_ORDEN}", String.valueOf(order.getId()))
-             .replace("{LISTADO_PRODUCTOS}", productos.toString())
-             .replace("{SUBTOTAL}", MONEY.format(subtotal))
-             .replace("{ENVIO}", envio)
-             .replace("{TOTAL}", MONEY.format(total));
+        if (order.getTotal() == null) {
+            throw new IllegalStateException(
+                    "La orden no tiene total persistido"
+            );
+        }
 
-     enviarCorreoHTML(
-             order.getCustomerEmail(),
-             "💳 Instrucciones de pago - Orden #" + order.getId(),
-             html
-     );
- }
+        String template =
+                cargarTemplate(
+                        "email/email-transferencia.html"
+                );
 
-    /* =====================================================
+        BigDecimal subtotal =
+                BigDecimal.ZERO;
+
+        StringBuilder productos =
+                new StringBuilder();
+
+        for (OrderItem item : order.getItems()) {
+
+            BigDecimal sub =
+                    item.getPrice()
+                            .multiply(
+                                    BigDecimal.valueOf(
+                                            item.getQuantity()
+                                    )
+                            );
+
+            subtotal =
+                    subtotal.add(sub);
+
+            productos.append("<tr>")
+                    .append("<td>")
+                    .append(
+                            nombreProductoSeguro(item)
+                    )
+                    .append("</td>")
+                    .append(
+                            "<td style='text-align:center;'>"
+                    )
+                    .append(item.getQuantity())
+                    .append("</td>")
+                    .append(
+                            "<td style='text-align:center;'>$"
+                    )
+                    .append(MONEY.format(sub))
+                    .append("</td>")
+                    .append("</tr>");
+        }
+
+        subtotal =
+                subtotal.setScale(
+                        2,
+                        java.math.RoundingMode.HALF_UP
+                );
+
+        /*
+         * El total persistido en Order es la fuente
+         * autoritativa. No recalculamos la política de envío.
+         */
+        BigDecimal total =
+                order.getTotal().setScale(
+                        2,
+                        java.math.RoundingMode.HALF_UP
+                );
+
+        BigDecimal envioCosto =
+                total.subtract(subtotal)
+                        .setScale(
+                                2,
+                                java.math.RoundingMode.HALF_UP
+                        );
+
+        if (envioCosto.signum() < 0) {
+            throw new IllegalStateException(
+                    "El total de la orden es menor al subtotal"
+            );
+        }
+
+        String envio =
+                envioCosto.compareTo(
+                        BigDecimal.ZERO
+                ) == 0
+                        ? "GRATIS"
+                        : "$"
+                            + MONEY.format(
+                                    envioCosto
+                            );
+
+        String html =
+                template
+                        .replace(
+                                "{NOMBRE}",
+                                order.getCustomerName()
+                        )
+                        .replace(
+                                "{NUMERO_ORDEN}",
+                                String.valueOf(
+                                        order.getId()
+                                )
+                        )
+                        .replace(
+                                "{LISTADO_PRODUCTOS}",
+                                productos.toString()
+                        )
+                        .replace(
+                                "{SUBTOTAL}",
+                                MONEY.format(subtotal)
+                        )
+                        .replace(
+                                "{ENVIO}",
+                                envio
+                        )
+                        .replace(
+                                "{TOTAL}",
+                                MONEY.format(total)
+                        )
+                        .replace(
+                                "{BANCO}",
+                                settings.getTransferBankName()
+                        )
+                        .replace(
+                                "{TITULAR}",
+                                settings
+                                        .getTransferAccountHolder()
+                        )
+                        .replace(
+                                "{CLABE}",
+                                settings.getTransferClabe()
+                        );
+
+        enviarCorreoHTML(
+                order.getCustomerEmail(),
+                "💳 Instrucciones de pago - Orden #"
+                        + order.getId(),
+                html
+        );
+    }
+
+/* =====================================================
        CORREO: CONFIRMACIÓN DE PEDIDO
     ===================================================== */
     public void enviarCorreoPedidoProcesado(

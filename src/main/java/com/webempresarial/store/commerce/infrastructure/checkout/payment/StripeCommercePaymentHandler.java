@@ -30,8 +30,17 @@ public class StripeCommercePaymentHandler {
 
     public void handlePaidCheckout(
             Session session,
-            Map<String, String> metadata
+            Map<String, String> metadata,
+            String connectedAccountId
     ) {
+
+        if (connectedAccountId == null
+                || connectedAccountId.isBlank()) {
+
+            throw new IllegalStateException(
+                    "Stripe connected account ausente"
+            );
+        }
 
         String orderIdMeta =
                 metadata.get("order_id");
@@ -60,6 +69,21 @@ public class StripeCommercePaymentHandler {
                                         "Store no encontrada"
                                 )
                         );
+
+        String expectedConnectedAccountId =
+                store.getStripeConnectedAccountId();
+
+        if (expectedConnectedAccountId == null
+                || expectedConnectedAccountId.isBlank()
+                || !expectedConnectedAccountId.equals(
+                        connectedAccountId
+                )) {
+
+            throw new IllegalStateException(
+                    "La cuenta Stripe del webhook "
+                    + "no corresponde a la tienda"
+            );
+        }
 
         Order order =
                 orderService.getById(

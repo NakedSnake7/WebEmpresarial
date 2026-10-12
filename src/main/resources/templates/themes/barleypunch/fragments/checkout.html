@@ -70,21 +70,23 @@
             <div class="punch-payment-box">
               <label class="punch-payment-title">Método de pago</label>
 
-              <label class="punch-radio-option" for="payTransfer">
-                <input type="radio"
-                       name="paymentMethod"
-                       id="payTransfer"
-                       value="TRANSFER"
-                       checked>
-                <span>
-                  Transferencia SPEI
-                  <small>Recibirás los datos bancarios por correo.</small>
-                </span>
-              </label>
+              <th:block th:if="${settings != null and settings.transferPaymentAvailable}">
+                <label class="punch-radio-option" for="payTransfer">
+                  <input type="radio"
+                         name="paymentMethod"
+                         id="payTransfer"
+                         value="TRANSFER"
+                         checked>
+                  <span>
+                    Transferencia SPEI
+                    <small>Recibirás los datos bancarios por correo.</small>
+                  </span>
+                </label>
+              </th:block>
 
 <label
     class="punch-radio-option"
-    th:classappend="${store == null or !store.stripeConnected} ? ' disabled' : ''"
+    th:classappend="${store == null or !store.stripePaymentAvailable} ? ' disabled' : ''"
     for="payStripe">
 
     <input
@@ -92,18 +94,20 @@
         name="paymentMethod"
         id="payStripe"
         value="STRIPE"
-        th:disabled="${store == null or !store.stripeConnected}">
+        th:disabled="${store == null or !store.stripePaymentAvailable}"
+    th:checked="${(settings == null or !settings.transferPaymentAvailable) and store != null and store.stripePaymentAvailable}"
+>
 
     <span>
         Tarjeta crédito / débito
 
         <small
-            th:if="${store == null or !store.stripeConnected}">
+            th:if="${store == null or !store.stripePaymentAvailable}">
             No disponible por el momento.
         </small>
 
         <small
-            th:if="${store != null and store.stripeConnected}">
+            th:if="${store != null and store.stripePaymentAvailable}">
             Pago seguro con tarjeta.
         </small>
     </span>

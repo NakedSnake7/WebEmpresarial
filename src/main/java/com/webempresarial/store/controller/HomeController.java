@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO; 
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -26,19 +29,22 @@ public class HomeController {
     private final StoreThemeResolver storeThemeResolver;
     private final StoreResolver storeResolver;
     private final DashboardRegistry dashboardRegistry;
+    private final OrderService orderService;
 
     public HomeController(
             ProductoService productoService,
             ResenaRepository resenaRepository,
             StoreThemeResolver storeThemeResolver,
             StoreResolver storeResolver,
-            DashboardRegistry dashboardRegistry
+            DashboardRegistry dashboardRegistry,
+            OrderService orderService
     ) {
         this.productoService = productoService;
         this.resenaRepository = resenaRepository;
         this.storeThemeResolver = storeThemeResolver;
         this.storeResolver = storeResolver;
         this.dashboardRegistry = dashboardRegistry;
+        this.orderService = orderService;
     }
 
     private void cargarDatosGlobales(Model model, Store store) {
@@ -205,9 +211,36 @@ public class HomeController {
     }
 
     @GetMapping("/gracias")
-    public String gracias(Model model, HttpServletRequest request) {
-        aplicarLayout(model, request);
-        return storeThemeResolver.view(request, "gracias");
+    public String gracias(
+            @RequestParam(name = "order_id")
+            Long orderId,
+            Model model,
+            HttpServletRequest request
+    ) {
+
+        Store store =
+                storeResolver.getCurrentStore(request);
+
+        aplicarLayout(
+                model,
+                request
+        );
+
+        Order order =
+                orderService.getOrderById(
+                        orderId,
+                        store
+                );
+
+        model.addAttribute(
+                "order",
+                order
+        );
+
+        return storeThemeResolver.view(
+                request,
+                "gracias"
+        );
     }
 
     @GetMapping("/admin")

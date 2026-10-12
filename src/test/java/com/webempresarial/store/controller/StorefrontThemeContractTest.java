@@ -1,6 +1,7 @@
 package com.webempresarial.store.controller;
 
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
+import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.dto.producto.publico.ProductoCardDTO;
 import com.webempresarial.store.entity.StoreSettings;
@@ -80,6 +81,9 @@ class StorefrontThemeContractTest {
 
     @MockitoBean
     private ProductoService productoService;
+
+    @MockitoBean
+    private OrderService orderService;
 
     @MockitoBean
     private ResenaRepository resenaRepository;

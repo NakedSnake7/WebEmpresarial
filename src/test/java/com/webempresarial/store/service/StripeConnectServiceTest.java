@@ -308,6 +308,47 @@ class StripeConnectServiceTest {
     }
 
     @Test
+    void syncConnectionStatus_shouldReturnFalseWhenPayoutsAreDisabled()
+            throws Exception {
+
+        Store store = mock(Store.class);
+
+        when(store.getStripeConnectedAccountId())
+                .thenReturn("acct_test");
+
+        Account account = mock(Account.class);
+
+        when(account.getChargesEnabled())
+                .thenReturn(true);
+
+        when(account.getPayoutsEnabled())
+                .thenReturn(false);
+
+        try (MockedStatic<Account> mocked =
+                mockStatic(Account.class)) {
+
+            mocked.when(() ->
+                    Account.retrieve("acct_test")
+            ).thenReturn(account);
+
+            boolean result =
+                    service.syncConnectionStatus(store);
+
+            assertThat(result)
+                    .isFalse();
+        }
+
+        verify(store)
+                .setStripeConnected(false);
+
+        verify(store)
+                .setStripeConnectedAt(null);
+
+        verify(storeRepository)
+                .save(store);
+    }
+
+    @Test
     void syncConnectionStatus_shouldMarkStoreConnectedWhenChargesAreEnabled()
             throws Exception {
 
@@ -322,6 +363,9 @@ class StripeConnectServiceTest {
         Account account = mock(Account.class);
 
         when(account.getChargesEnabled())
+                .thenReturn(true);
+
+        when(account.getPayoutsEnabled())
                 .thenReturn(true);
 
         try (MockedStatic<Account> mocked =
@@ -374,6 +418,9 @@ class StripeConnectServiceTest {
         Account account = mock(Account.class);
 
         when(account.getChargesEnabled())
+                .thenReturn(true);
+
+        when(account.getPayoutsEnabled())
                 .thenReturn(true);
 
         try (MockedStatic<Account> mocked =

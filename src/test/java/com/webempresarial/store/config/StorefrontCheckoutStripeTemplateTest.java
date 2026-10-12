@@ -22,36 +22,69 @@ class StorefrontCheckoutStripeTemplateTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void shouldExposeStripeAccordingToStoreConnection(
-            boolean stripeConnected
+    void shouldExposeStripeAccordingToPaymentAvailability(
+            boolean stripeAvailable
     ) {
         for (String theme : THEMES) {
+
             Store store = new Store();
-            store.setStripeConnected(stripeConnected);
+
+            store.setStripeConnected(
+                    stripeAvailable
+            );
+
+            store.setStripeConnectedAccountId(
+                    stripeAvailable
+                            ? "acct_test_store"
+                            : null
+            );
+
+            assertThat(
+                    store.isStripePaymentAvailable()
+            ).isEqualTo(
+                    stripeAvailable
+            );
 
             String html = renderCheckout(
                     theme,
                     store
             );
 
-            assertThat(html)
-                    .as(
-                            "theme=%s stripeConnected=%s",
-                            theme,
-                            stripeConnected
-                    )
-                    .contains("id=\"payStripe\"")
-                    .contains("value=\"STRIPE\"");
+            if (stripeAvailable) {
 
-            if (stripeConnected) {
                 assertThat(html)
-                        .as("Stripe enabled for theme=%s", theme)
+                        .as(
+                                "Stripe disponible para theme=%s",
+                                theme
+                        )
+                        .contains(
+                                "id=\"payStripe\""
+                        )
+                        .contains(
+                                "value=\"STRIPE\""
+                        )
                         .doesNotContain(
                                 "disabled=\"disabled\""
                         );
-            } else {
+
+            } else if (
+                    html.contains(
+                            "id=\"payStripe\""
+                    )
+            ) {
+
+                /*
+                 * Algunos themes ocultan Stripe cuando no
+                 * está disponible y otros muestran la opción
+                 * deshabilitada. Ambos comportamientos son
+                 * válidos mientras nunca quede seleccionable.
+                 */
                 assertThat(html)
-                        .as("Stripe disabled for theme=%s", theme)
+                        .as(
+                                "Stripe no debe quedar habilitado "
+                                + "para theme=%s",
+                                theme
+                        )
                         .contains(
                                 "disabled=\"disabled\""
                         );
