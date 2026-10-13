@@ -107,7 +107,7 @@
         </div>
 
     </div>
-    
+
     <div class="mb-3">
     <h5 class="fw-bold mb-1">Acciones de Commerce™</h5>
     <p class="text-muted small mb-0">
@@ -259,21 +259,7 @@
 
     </div>
 
-    <script>
-        document.getElementById("stripeConnectBtn")?.addEventListener("click", async () => {
-            const response = await fetch("/api/admin/stripe/connect/onboarding", {
-                method: "POST"
-            });
 
-            if (!response.ok) {
-                alert("No se pudo iniciar Stripe Connect.");
-                return;
-            }
-
-            const data = await response.json();
-            window.location.href = data.onboardingUrl;
-        });
-    </script>
 
 </section>
 
