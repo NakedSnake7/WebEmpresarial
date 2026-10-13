@@ -576,16 +576,20 @@ export function configurarCarrito() {
             throw new Error(data.message || 'Error al crear la orden');
           }
 
-          alert('¡Orden creada exitosamente, revisa tu correo!');
+          if (!data.orderId) {
+            throw new Error(
+              'La orden fue creada sin identificador'
+            );
+          }
 
           localStorage.removeItem('cartData');
           checkoutForm.reset();
           cartStore.clear();
 
-          const modal = bootstrap.Modal.getInstance(checkoutModal);
-          if (modal) modal.hide();
+          window.location.href =
+            `/gracias?order_id=${encodeURIComponent(data.orderId)}`;
 
-          closeCart();
+          return;
 
         } else if (paymentMethod === 'STRIPE') {
           const res = await fetch('/api/checkout', {

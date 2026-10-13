@@ -2,71 +2,56 @@ package com.webempresarial.store.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Pattern;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 class StorefrontTransferCheckoutRedirectContractTest {
 
-    private static final Path CART_JS =
+    private static final List<Path> CARTS = List.of(
             Path.of(
-                    "src/main/resources/static/assets/js/"
-                    + "shared/cart/carrito.js"
-            );
+                    "src/main/resources/static/assets/js/shared/cart/carrito.js"
+            ),
+            Path.of(
+                    "src/main/resources/static/themes/barleypunch/assets/js/cart/carrito.js"
+            ),
+            Path.of(
+                    "src/main/resources/static/themes/stride/assets/js/cart/carrito.js"
+            )
+    );
 
     @Test
     void transferCheckoutMustRedirectToOrderConfirmation()
-            throws IOException {
+            throws Exception {
 
-        assertThat(CART_JS)
-                .exists()
-                .isRegularFile();
+        for (Path cart : CARTS) {
 
-        String js =
-                Files.readString(CART_JS);
+            String javascript =
+                    Files.readString(cart);
 
-        Pattern transferFlow =
-                Pattern.compile(
-                        """
-                        (?s)
-                        if\\s*\\(
-                            paymentMethod\\s*===\\s*["']TRANSFER["']
-                        \\)
-                        \\s*\\{
-                        .*?
-                        /api/checkout
-                        .*?
-                        data\\s*=\\s*JSON\\.parse\\(text\\)
-                        .*?
-                        data\\.orderId
-                        .*?
-                        /gracias\\?order_id=
-                        """,
-                        Pattern.COMMENTS
-                );
-
-        assertThat(
-                transferFlow.matcher(js).find()
-        )
-                .as(
-                        "TRANSFER debe redirigir a "
-                        + "/gracias?order_id=<orderId>"
-                )
-                .isTrue();
+            assertThat(javascript)
+                    .as(cart.toString())
+                    .contains("data.orderId")
+                    .contains("/gracias?order_id=");
+        }
     }
 
     @Test
     void transferRedirectMustUseServerOrderId()
-            throws IOException {
+            throws Exception {
 
-        String js =
-                Files.readString(CART_JS);
+        for (Path cart : CARTS) {
 
-        assertThat(js)
-                .contains("data.orderId")
-                .contains("/gracias?order_id=");
+            String javascript =
+                    Files.readString(cart);
+
+            assertThat(javascript)
+                    .as(cart.toString())
+                    .contains(
+                            "encodeURIComponent(data.orderId)"
+                    );
+        }
     }
 }

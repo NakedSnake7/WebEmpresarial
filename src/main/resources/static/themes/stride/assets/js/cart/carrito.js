@@ -508,15 +508,20 @@ export function configurarCarrito() {
 					    throw new Error(data.message || "Error creando la orden");
 					}
 
-				        alert("¡Orden creada excitosamente, revisa tu correo!.");
+                    if (!data.orderId) {
+                        throw new Error(
+                            "La orden fue creada sin identificador"
+                        );
+                    }
 
-				        localStorage.removeItem('cartData');
-				        checkoutForm.reset();
-						cartStore.clear();
-						const modalEl = document.getElementById('checkoutModal');
-						const modal = bootstrap.Modal.getInstance(modalEl);
-						if (modal) modal.hide();
-						cartDropdown.style.display = 'none';
+                    localStorage.removeItem('cartData');
+                    checkoutForm.reset();
+                    cartStore.clear();
+
+                    window.location.href =
+                        `/gracias?order_id=${encodeURIComponent(data.orderId)}`;
+
+                    return;
 
 
 					} else if (paymentMethod === "STRIPE") {
