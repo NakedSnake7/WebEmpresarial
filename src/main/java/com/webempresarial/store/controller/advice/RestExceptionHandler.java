@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.webempresarial.store.exception.ImageUploadException;
 import com.webempresarial.store.exceptions.FeatureNotAllowedException;
@@ -129,6 +130,18 @@ public class RestExceptionHandler {
              ));
  }
     
+
+    // =====================================
+    // HTTP STATUS EXPLÍCITO
+    // =====================================
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<?> handleResponseStatusException(
+            ResponseStatusException ex) {
+
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .build();
+    }
 
     // =====================================
     // FALLBACK GLOBAL
