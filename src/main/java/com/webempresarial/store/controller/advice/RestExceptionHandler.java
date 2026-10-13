@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,8 +21,8 @@ import com.webempresarial.store.service.ProductoService;
 import java.io.IOException;
 import java.util.Map;
 
-@Order(Ordered.LOWEST_PRECEDENCE)
-@RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
+@RestControllerAdvice(annotations = RestController.class)
 public class RestExceptionHandler {
 
     private static final Logger log =
