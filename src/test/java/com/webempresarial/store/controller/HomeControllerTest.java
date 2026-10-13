@@ -1,6 +1,7 @@
 package com.webempresarial.store.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -20,6 +21,7 @@ import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
@@ -55,6 +59,9 @@ class HomeControllerTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private HttpSession session;
 
     @SuppressWarnings("rawtypes")
     @Mock
@@ -294,6 +301,13 @@ class HomeControllerTest {
         Model model =
                 new ConcurrentModel();
 
+        when(request.getSession(false))
+                .thenReturn(session);
+
+        when(session.getAttribute(
+                "CHECKOUT_CONFIRMATION_ORDER_ID"
+        )).thenReturn(77L);
+
         String view =
                 controller.gracias(
                         77L,
@@ -343,4 +357,68 @@ class HomeControllerTest {
         when(resenasPage.getContent())
                 .thenReturn(Collections.emptyList());
     }
+
+
+    @Test
+    void gracias_shouldRejectRequestWithoutCheckoutSession() {
+
+        when(request.getSession(false))
+                .thenReturn(null);
+
+        Model model =
+                new ConcurrentModel();
+
+        ResponseStatusException ex =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> controller.gracias(
+                                77L,
+                                model,
+                                request
+                        )
+                );
+
+        assertThat(ex.getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+        verify(orderService, never())
+                .getOrderById(
+                        any(),
+                        any()
+                );
+    }
+
+    @Test
+    void gracias_shouldRejectDifferentOrderFromCheckoutSession() {
+
+        when(request.getSession(false))
+                .thenReturn(session);
+
+        when(session.getAttribute(
+                "CHECKOUT_CONFIRMATION_ORDER_ID"
+        )).thenReturn(99L);
+
+        Model model =
+                new ConcurrentModel();
+
+        ResponseStatusException ex =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> controller.gracias(
+                                77L,
+                                model,
+                                request
+                        )
+                );
+
+        assertThat(ex.getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+        verify(orderService, never())
+                .getOrderById(
+                        any(),
+                        any()
+                );
+    }
+
 }

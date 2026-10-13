@@ -2,7 +2,7 @@ package com.webempresarial.store.controller;
 
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
-import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO; 
+import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
 import com.webempresarial.store.service.ProductoService;
@@ -18,6 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -217,6 +219,28 @@ public class HomeController {
             Model model,
             HttpServletRequest request
     ) {
+
+        var session =
+                request.getSession(false);
+
+        if (session == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
+        Object confirmationOrderId =
+                session.getAttribute(
+                        "CHECKOUT_CONFIRMATION_ORDER_ID"
+                );
+
+        if (!(confirmationOrderId instanceof Long allowedOrderId)
+                || !orderId.equals(allowedOrderId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND
+            );
+        }
 
         Store store =
                 storeResolver.getCurrentStore(request);

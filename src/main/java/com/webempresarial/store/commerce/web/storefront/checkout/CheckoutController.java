@@ -62,6 +62,16 @@ public class CheckoutController {
                     store
             );
 
+            /*
+             * Autoriza a esta sesión del navegador a consultar
+             * la confirmación de la orden recién creada.
+             */
+            request.getSession(true)
+                    .setAttribute(
+                            "CHECKOUT_CONFIRMATION_ORDER_ID",
+                            order.getId()
+                    );
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(Map.of(

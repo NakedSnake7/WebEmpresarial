@@ -138,27 +138,29 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers(
-                    "/",
-                    "/index",
-                    "/inicio",
-                    "/health",
-                    "/privacy",
-                    "/billing/success",
-                    "/productos/**",
-                    "/products/**",
-                    "/producto-detalle/**",
-                    "/fragmento-menu",
-                    "/fragmento-resenas",
-                    "/login",
-                    "/themes/**",
-                    "/assets/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/webjars/**",
-                    "/favicon.ico"
-                ).permitAll()
+                    .requestMatchers(
+                            "/",
+                            "/index",
+                            "/inicio",
+                            "/health",
+                            "/privacy",
+                            "/billing/success",
+                            "/gracias",
+                            "/checkout-cancel",
+                            "/productos/**",
+                            "/products/**",
+                            "/producto-detalle/**",
+                            "/fragmento-menu",
+                            "/fragmento-resenas",
+                            "/login",
+                            "/themes/**",
+                            "/assets/**",
+                            "/css/**",
+                            "/js/**",
+                            "/images/**",
+                            "/webjars/**",
+                            "/favicon.ico"
+                        ).permitAll()
 
                 .requestMatchers(
                     HttpMethod.POST,
