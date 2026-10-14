@@ -112,12 +112,12 @@ public class ProvisioningService {
 
         subscriptionRepository.save(subscription);
 
-        createStoreAdmin(savedStore, ownerName, normalizedEmail);
+        createStoreOwner(savedStore, ownerName, normalizedEmail);
 
         return savedStore;
     }
 
-    private void createStoreAdmin(
+    private void createStoreOwner(
             Store store,
             String ownerName,
             String email
@@ -148,7 +148,11 @@ public class ProvisioningService {
         admin.setEnabled(false);
 
         admin.setStore(store);
-        admin.setRole(AdminRole.STORE_ADMIN);
+        /*
+         * El usuario creado durante el checkout representa
+         * al propietario contractual del tenant.
+         */
+        admin.setRole(AdminRole.STORE_OWNER);
 
         AdminUser savedAdmin =
                 adminUserRepository.save(admin);

@@ -38,7 +38,7 @@ public class StoreProvisioningService {
         storeDefaultDataService.createDefaults(store);
 
         // Próximos pasos:
-        // createDefaultStoreAdmin(store);
+        // createDefaultStoreOwner(store);
         // createDefaultCategories(store);
         // createDefaultCrmSettings(store);
         // sendWelcomeEmail(store);

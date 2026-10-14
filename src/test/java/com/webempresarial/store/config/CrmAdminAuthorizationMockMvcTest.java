@@ -132,7 +132,45 @@ class CrmAdminAuthorizationMockMvcTest {
     }
 
     @Test
-    void storeStaffShouldAccessCrm()
+    void storeOwnerShouldAccessCrm()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/crm/dashboard")
+                        .with(user("owner@stride.test")
+                                .roles("STORE_OWNER"))
+        )
+        .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/crm/leads")
+                        .with(user("owner@stride.test")
+                                .roles("STORE_OWNER"))
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void salesShouldAccessCrm()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/crm/dashboard")
+                        .with(user("sales@stride.test")
+                                .roles("SALES"))
+        )
+        .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/crm/leads")
+                        .with(user("sales@stride.test")
+                                .roles("SALES"))
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void storeStaffShouldNotAccessCrm()
             throws Exception {
 
         mockMvc.perform(
@@ -140,14 +178,14 @@ class CrmAdminAuthorizationMockMvcTest {
                         .with(user("staff@stride.test")
                                 .roles("STORE_STAFF"))
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
 
         mockMvc.perform(
                 get("/api/crm/leads")
                         .with(user("staff@stride.test")
                                 .roles("STORE_STAFF"))
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
     }
 
     @RestController

@@ -1,5 +1,6 @@
 package com.webempresarial.store.config;
 
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.service.AdminUserDetailsService; 
 import com.webempresarial.store.service.AuthUserDetailsService;
 
@@ -72,28 +73,176 @@ public class SecurityConfig {
                 )
                 .hasRole("SUPER_ADMIN")
 
+                /*
+                 * Administración del tenant.
+                 *
+                 * STORE_OWNER y STORE_ADMIN pueden acceder a usuarios
+                 * y configuración general de la tienda.
+                 */
+                /*
+                 * Billing del tenant.
+                 *
+                 * Ver la suscripción y modificarla son permisos
+                 * diferentes.
+                 *
+                 * STORE_ADMIN:
+                 *   SUBSCRIPTION_VIEW
+                 *
+                 * STORE_OWNER:
+                 *   SUBSCRIPTION_VIEW
+                 *   SUBSCRIPTION_MANAGE
+                 */
                 .requestMatchers(
-                    "/admin/users/**",
-                    "/admin/billing/**",
-                    "/admin/store/settings/**",
+                    HttpMethod.POST,
+                    "/admin/billing/checkout",
+                    "/admin/billing/portal"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .SUBSCRIPTION_MANAGE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/billing",
+                    "/admin/billing/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .SUBSCRIPTION_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier método futuro de /admin/billing/**
+                 * debe declararse explícitamente.
+                 */
+                .requestMatchers(
+                    "/admin/billing",
+                    "/admin/billing/**"
+                )
+                .denyAll()
+
+                /*
+                 * Gestión de equipo.
+                 *
+                 * Cada acción se protege con su permiso real.
+                 */
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/users/nuevo"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .TEAM_INVITE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/users/guardar"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .TEAM_INVITE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/users/estado/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .TEAM_EDIT
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/users",
+                    "/admin/users/"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .TEAM_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier nueva ruta de equipo deberá
+                 * declararse explícitamente.
+                 */
+                .requestMatchers(
+                    "/admin/users/**"
+                )
+                .denyAll()
+
+                .requestMatchers(
+                    "/admin/store/settings/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN"
+                )
+
+                /*
+                 * Stripe Connect modifica la relación financiera entre
+                 * la plataforma y la tienda, por lo que queda reservado
+                 * al propietario del tenant.
+                 */
+                .requestMatchers(
                     "/admin/stripe/connect/**",
                     "/api/admin/stripe/connect/**"
                 )
                 .hasAnyRole(
                     "SUPER_ADMIN",
-                    "STORE_ADMIN"
+                    "STORE_OWNER"
+                )
+
+                /*
+                 * Todos los perfiles administrativos pueden entrar
+                 * al dashboard principal.
+                 *
+                 * SALES queda deliberadamente fuera del anyRequest()
+                 * general para que no obtenga acceso accidental a
+                 * módulos operativos no clasificados.
+                 */
+                .requestMatchers(
+                    "/admin",
+                    "/admin/dashboard"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN",
+                    "STORE_STAFF",
+                    "SALES"
                 )
 
                 .requestMatchers("/api/knowledge/**")
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
                     "STORE_STAFF"
                 )
 
+                /*
+                 * Acceso administrativo operacional general.
+                 *
+                 * SALES no entra aquí: sus módulos deben declararse
+                 * explícitamente.
+                 */
                 .anyRequest()
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
                     "STORE_STAFF"
                 )
@@ -196,6 +345,7 @@ public class SecurityConfig {
                 )
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
                     "STORE_STAFF"
                 )
@@ -213,6 +363,7 @@ public class SecurityConfig {
                 )
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
                     "STORE_STAFF"
                 )
@@ -226,12 +377,15 @@ public class SecurityConfig {
                  */
                 .requestMatchers(
                     "/crm/**",
-                    "/api/crm/**"
+                    "/api/crm/**",
+                    "/admin/leads",
+                    "/admin/leads/**"
                 )
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
-                    "STORE_STAFF"
+                    "SALES"
                 )
 
                 /*
@@ -243,6 +397,7 @@ public class SecurityConfig {
                 )
                 .hasAnyRole(
                     "SUPER_ADMIN",
+                    "STORE_OWNER",
                     "STORE_ADMIN",
                     "STORE_STAFF"
                 )

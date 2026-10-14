@@ -18,7 +18,10 @@ public record SidebarItemDefinition(
      *
      * Si un item no declara restricciones de rol,
      * pertenece al panel operacional y puede ser
-     * mostrado a los tres roles administrativos.
+     * mostrado a los roles operativos del tenant.
+     *
+     * SALES se excluye deliberadamente: sus módulos
+     * deben declararse explícitamente.
      */
     public SidebarItemDefinition(
             String title,
@@ -33,6 +36,7 @@ public record SidebarItemDefinition(
                 feature,
                 Set.of(
                         AdminRole.SUPER_ADMIN,
+                        AdminRole.STORE_OWNER,
                         AdminRole.STORE_ADMIN,
                         AdminRole.STORE_STAFF
                 )

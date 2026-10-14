@@ -5,6 +5,7 @@ import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.AdminUserService;
@@ -146,7 +147,17 @@ class AdminStoreUserControllerTest {
         .andExpect(view().name("admin/store/admins/form"))
         .andExpect(model().attribute("store", store))
         .andExpect(model().attribute("adminUser", adminUser))
-        .andExpect(model().attributeExists("roles"));
+        .andExpect(
+                model().attribute(
+                        "roles",
+                        List.of(
+                                AdminRole.STORE_OWNER,
+                                AdminRole.STORE_ADMIN,
+                                AdminRole.STORE_STAFF,
+                                AdminRole.SALES
+                        )
+                )
+        );
 
         verify(storeAdminService).buscarPorId(42L);
         verify(adminUserService).nuevoAdmin(42L);

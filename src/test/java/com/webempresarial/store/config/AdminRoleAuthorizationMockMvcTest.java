@@ -172,7 +172,7 @@ class AdminRoleAuthorizationMockMvcTest {
      */
 
     @Test
-    void storeAdmin_shouldAccessUsers()
+    void storeAdmin_roleAloneShouldNotGrantUsers()
             throws Exception {
 
         mockMvc.perform(
@@ -182,11 +182,11 @@ class AdminRoleAuthorizationMockMvcTest {
                                         .roles("STORE_ADMIN")
                         )
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
     }
 
     @Test
-    void storeAdmin_shouldAccessBilling()
+    void storeAdmin_roleAloneShouldNotGrantBilling()
             throws Exception {
 
         mockMvc.perform(
@@ -196,7 +196,7 @@ class AdminRoleAuthorizationMockMvcTest {
                                         .roles("STORE_ADMIN")
                         )
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
     }
 
     @Test
@@ -236,6 +236,186 @@ class AdminRoleAuthorizationMockMvcTest {
                         .with(
                                 user("admin@stride.test")
                                         .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * STORE_OWNER
+     * ---------------------------------------------------------
+     */
+
+    @Test
+    void storeOwner_shouldAccessOperationalPanel()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/test-operational")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void storeOwner_roleAloneShouldNotGrantUsers()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/users")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void storeOwner_roleAloneShouldNotGrantBilling()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/billing")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void storeOwner_shouldAccessStoreSettings()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/store/settings")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void storeOwner_shouldNotAccessPlatformStores()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/stores")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void storeOwner_shouldNotAccessPlatform()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/platform")
+                        .with(
+                                user("owner@stride.test")
+                                        .roles("STORE_OWNER")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * SALES
+     * ---------------------------------------------------------
+     */
+
+    @Test
+    void sales_shouldAccessAdminDashboard()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/dashboard")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void sales_shouldNotAccessGenericOperationalPanel()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/test-operational")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void sales_shouldNotAccessUsers()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/users")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void sales_shouldNotAccessBilling()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/billing")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void sales_shouldNotAccessStoreSettings()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/store/settings")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void sales_shouldNotAccessPlatform()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/platform")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
                         )
         )
         .andExpect(status().isForbidden());
@@ -300,6 +480,11 @@ class AdminRoleAuthorizationMockMvcTest {
 
         @GetMapping("/admin/test-operational")
         String operational() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/dashboard")
+        String dashboard() {
             return "OK";
         }
 

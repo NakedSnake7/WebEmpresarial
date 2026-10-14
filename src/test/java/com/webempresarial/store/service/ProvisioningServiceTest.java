@@ -254,7 +254,7 @@ class ProvisioningServiceTest {
 
         /*
          * =====================================================
-         * STORE ADMIN
+         * STORE OWNER
          * =====================================================
          */
 
@@ -277,7 +277,7 @@ class ProvisioningServiceTest {
 
         assertThat(admin.getRole())
                 .isEqualTo(
-                        AdminRole.STORE_ADMIN
+                        AdminRole.STORE_OWNER
                 );
 
         assertThat(admin.isEnabled())

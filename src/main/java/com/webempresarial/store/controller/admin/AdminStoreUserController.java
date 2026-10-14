@@ -5,6 +5,8 @@ import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.service.AdminUserService;
 import com.webempresarial.store.service.StoreAdminService;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +63,12 @@ public class AdminStoreUserController {
 
         model.addAttribute(
                 "roles",
-                AdminRole.values()
+                List.of(
+                        AdminRole.STORE_OWNER,
+                        AdminRole.STORE_ADMIN,
+                        AdminRole.STORE_STAFF,
+                        AdminRole.SALES
+                )
         );
 
         return "admin/store/admins/form";

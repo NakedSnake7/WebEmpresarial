@@ -33,7 +33,7 @@
 
         <a href="/admin/billing"
    class="sidebar-link"
-   th:if="${isSuperAdmin or isStoreAdmin}"
+   th:if="${canViewBilling}"
    th:classappend="${currentPath != null
                     and currentPath.startsWith('/admin/billing')}
                     ? ' active' : ''">
@@ -317,8 +317,18 @@
     Configuración
 </div>
 
+<a href="/admin/users"
+   class="sidebar-link"
+   th:if="${canViewTeam}"
+   th:classappend="${currentPath.startsWith('/admin/users')}
+                    ? ' active' : ''">
+    <span class="sidebar-icon">👥</span>
+    <span class="sidebar-text">Equipo</span>
+</a>
+
 <a href="/admin/store/settings"
    class="sidebar-link"
+   th:if="${canManageStoreSettings}"
    th:classappend="${currentPath.startsWith('/admin/store/settings')}
                     ? ' active' : ''">
     <span class="sidebar-icon">⚙️</span>
@@ -327,6 +337,7 @@
 
 <a href="/admin/store/crm"
    class="sidebar-link"
+   th:if="${canManageStoreSettings}"
    th:classappend="${currentPath.startsWith('/admin/store/crm')}
                     ? ' active' : ''">
     <span class="sidebar-icon">📊</span>

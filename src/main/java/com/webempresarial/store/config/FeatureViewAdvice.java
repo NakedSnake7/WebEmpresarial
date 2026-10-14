@@ -136,12 +136,20 @@ public class FeatureViewAdvice {
             return AdminRole.SUPER_ADMIN;
         }
 
+        if (hasRole(authentication, "ROLE_STORE_OWNER")) {
+            return AdminRole.STORE_OWNER;
+        }
+
         if (hasRole(authentication, "ROLE_STORE_ADMIN")) {
             return AdminRole.STORE_ADMIN;
         }
 
         if (hasRole(authentication, "ROLE_STORE_STAFF")) {
             return AdminRole.STORE_STAFF;
+        }
+
+        if (hasRole(authentication, "ROLE_SALES")) {
+            return AdminRole.SALES;
         }
 
         return null;

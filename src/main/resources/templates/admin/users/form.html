@@ -2,7 +2,7 @@
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{admin/layout/main :: layout(
-        'Nuevo admin de tienda | WebEmpresarial Admin',
+        'Nuevo usuario del equipo | WebEmpresarial Admin',
         ~{::content}
 )}">
 
@@ -13,32 +13,39 @@
     <section class="container-fluid">
 
         <div class="mb-4">
+
             <span class="badge text-bg-dark mb-2">
-                Admin de tienda
+                Equipo
             </span>
 
             <h1 class="fw-bold mb-1">
-                Nuevo admin para <span th:text="${store.nombre}"></span>
+                Nuevo usuario para
+                <span th:text="${store.nombre}"></span>
             </h1>
 
             <p class="text-muted mb-0">
-                Este usuario podrá acceder al panel administrativo de esta tienda.
+                Crea un usuario interno con acceso al panel administrativo
+                de esta tienda.
             </p>
+
         </div>
 
         <div class="card border-0 shadow-sm">
+
             <div class="card-body p-4">
 
                 <form th:action="@{/admin/users/guardar}"
                       th:object="${adminUser}"
                       method="post">
-                      <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
-                    <input type="hidden" th:field="*{id}">
+                    <th:block
+                        th:replace="~{fragments/csrf :: token}">
+                    </th:block>
 
                     <div class="row g-4">
 
                         <div class="col-md-6">
+
                             <label class="form-label fw-semibold">
                                 Nombre completo
                             </label>
@@ -46,11 +53,14 @@
                             <input type="text"
                                    class="form-control"
                                    th:field="*{fullName}"
-                                   placeholder="Admin STRIDE"
+                                   placeholder="Nombre del usuario"
+                                   autocomplete="name"
                                    required>
+
                         </div>
 
                         <div class="col-md-6">
+
                             <label class="form-label fw-semibold">
                                 Email
                             </label>
@@ -58,11 +68,14 @@
                             <input type="email"
                                    class="form-control"
                                    th:field="*{email}"
-                                   placeholder="admin@tienda.com"
+                                   placeholder="usuario@empresa.com"
+                                   autocomplete="email"
                                    required>
+
                         </div>
 
                         <div class="col-md-6">
+
                             <label class="form-label fw-semibold">
                                 Contraseña temporal
                             </label>
@@ -70,15 +83,19 @@
                             <input type="password"
                                    class="form-control"
                                    th:field="*{password}"
-                                   placeholder="Admin123*"
+                                   placeholder="Contraseña temporal"
+                                   autocomplete="new-password"
                                    required>
 
                             <div class="form-text">
-                                Después puedes permitir que el cliente cambie su contraseña.
+                                Esta contraseña permitirá el primer acceso
+                                del usuario al panel.
                             </div>
+
                         </div>
 
                         <div class="col-md-6">
+
                             <label class="form-label fw-semibold">
                                 Rol
                             </label>
@@ -86,18 +103,44 @@
                             <select class="form-select"
                                     th:field="*{role}"
                                     required>
+
                                 <option th:each="role : ${roles}"
                                         th:value="${role}"
-                                        th:text="${role}">
+                                        th:text="${
+                                            role.name() == 'STORE_ADMIN'
+                                                ? 'Administrador de tienda'
+                                                : (
+                                                    role.name() == 'STORE_STAFF'
+                                                        ? 'Personal operativo'
+                                                        : (
+                                                            role.name() == 'SALES'
+                                                                ? 'Ventas / CRM'
+                                                                : role.name()
+                                                        )
+                                                )
+                                        }">
                                 </option>
+
                             </select>
 
                             <div class="form-text">
-                                Para dueños usa STORE_ADMIN. Para empleados usa STORE_STAFF.
+
+                                <span th:if="${isStoreOwner}">
+                                    Como propietario puedes crear administradores,
+                                    personal operativo y usuarios de ventas.
+                                </span>
+
+                                <span th:if="${isStoreAdmin}">
+                                    Como administrador puedes crear personal
+                                    operativo y usuarios de ventas.
+                                </span>
+
                             </div>
+
                         </div>
 
                         <div class="col-12">
+
                             <div class="form-check form-switch">
 
                                 <input class="form-check-input"
@@ -109,6 +152,7 @@
                                 </label>
 
                             </div>
+
                         </div>
 
                     </div>
@@ -119,7 +163,7 @@
 
                         <button type="submit"
                                 class="btn btn-success">
-                            Guardar admin
+                            Crear usuario
                         </button>
 
                         <a th:href="@{/admin/users}"
@@ -132,6 +176,7 @@
                 </form>
 
             </div>
+
         </div>
 
     </section>

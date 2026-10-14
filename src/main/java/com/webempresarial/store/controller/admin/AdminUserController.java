@@ -8,11 +8,10 @@ import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin/users")
@@ -36,7 +35,9 @@ public class AdminUserController {
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(request);
+                storeContextService.getCurrentStore(
+                        request
+                );
 
         model.addAttribute(
                 "store",
@@ -45,7 +46,9 @@ public class AdminUserController {
 
         model.addAttribute(
                 "admins",
-                adminUserService.listarPorTienda(store)
+                adminUserService.listarPorTienda(
+                        store
+                )
         );
 
         return "admin/users/list";
@@ -54,11 +57,17 @@ public class AdminUserController {
     @GetMapping("/nuevo")
     public String nuevo(
             HttpServletRequest request,
+            Authentication authentication,
             Model model
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(request);
+                storeContextService.getCurrentStore(
+                        request
+                );
+
+        AdminRole actorRole =
+                currentRole(authentication);
 
         model.addAttribute(
                 "store",
@@ -67,15 +76,18 @@ public class AdminUserController {
 
         model.addAttribute(
                 "adminUser",
-                adminUserService.nuevoAdmin(store)
+                adminUserService.nuevoAdmin(
+                        store,
+                        actorRole
+                )
         );
 
         model.addAttribute(
                 "roles",
-                List.of(
-                        AdminRole.STORE_ADMIN,
-                        AdminRole.STORE_STAFF
-                )
+                adminUserService
+                        .rolesPermitidosParaGestion(
+                                actorRole
+                        )
         );
 
         return "admin/users/form";
@@ -84,15 +96,19 @@ public class AdminUserController {
     @PostMapping("/guardar")
     public String guardar(
             HttpServletRequest request,
+            Authentication authentication,
             @ModelAttribute AdminUser adminUser
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(request);
+                storeContextService.getCurrentStore(
+                        request
+                );
 
         adminUserService.guardarParaTienda(
                 store,
-                adminUser
+                adminUser,
+                currentRole(authentication)
         );
 
         return "redirect:/admin/users";
@@ -101,17 +117,71 @@ public class AdminUserController {
     @PostMapping("/estado/{id}")
     public String cambiarEstado(
             HttpServletRequest request,
+            Authentication authentication,
             @PathVariable Long id
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(request);
+                storeContextService.getCurrentStore(
+                        request
+                );
 
         adminUserService.cambiarEstadoParaTienda(
                 store,
-                id
+                id,
+                currentRole(authentication)
         );
 
         return "redirect:/admin/users";
+    }
+
+    private AdminRole currentRole(
+            Authentication authentication
+    ) {
+
+        if (authentication == null
+                || !authentication.isAuthenticated()) {
+
+            throw new IllegalStateException(
+                    "No existe un administrador autenticado"
+            );
+        }
+
+        /*
+         * El orden es intencional.
+         * Un usuario administrativo debe tener un único ROLE_*,
+         * pero priorizamos siempre el de mayor privilegio.
+         */
+        AdminRole[] precedence = {
+                AdminRole.SUPER_ADMIN,
+                AdminRole.STORE_OWNER,
+                AdminRole.STORE_ADMIN,
+                AdminRole.STORE_STAFF,
+                AdminRole.SALES
+        };
+
+        for (AdminRole role : precedence) {
+
+            String authority =
+                    "ROLE_" + role.name();
+
+            boolean present =
+                    authentication
+                            .getAuthorities()
+                            .stream()
+                            .anyMatch(granted ->
+                                    authority.equals(
+                                            granted.getAuthority()
+                                    )
+                            );
+
+            if (present) {
+                return role;
+            }
+        }
+
+        throw new IllegalStateException(
+                "El usuario autenticado no tiene un rol administrativo válido"
+        );
     }
 }

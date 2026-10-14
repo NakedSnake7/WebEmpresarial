@@ -14,6 +14,7 @@ import com.webempresarial.store.feature.automation.crm.CreateLeadTaskAction;
 import com.webempresarial.store.feature.automation.crm.NotifyNewLeadAction;
 import com.webempresarial.store.feature.event.ModuleEventDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.feature.permission.PermissionDefinition;
@@ -50,11 +51,56 @@ public class CrmFeatures implements PlatformModule {
 
 	            .sidebarSection(
 	                    SidebarSectionDefinition.builder("CRM Comercial", "📊")
-	                            .item("CRM Dashboard", "📊", "/crm/dashboard", Feature.CRM)
-	                            .item("Pipeline", "🎯", "/crm/pipeline", Feature.PIPELINE)
-	                            .item("Leads", "🗂️", "/admin/leads", Feature.LEADS)
-	                            .item("Tareas", "✅", "/crm/tasks", Feature.TASKS)
-	                            .item("Propuestas", "📄", "/crm/proposals", Feature.PROPOSALS)
+	                            .item(
+                                    "CRM Dashboard",
+                                    "📊",
+                                    "/crm/dashboard",
+                                    Feature.CRM,
+                                    AdminRole.SUPER_ADMIN,
+                                    AdminRole.STORE_OWNER,
+                                    AdminRole.STORE_ADMIN,
+                                    AdminRole.SALES
+                            )
+	                            .item(
+                                    "Pipeline",
+                                    "🎯",
+                                    "/crm/pipeline",
+                                    Feature.PIPELINE,
+                                    AdminRole.SUPER_ADMIN,
+                                    AdminRole.STORE_OWNER,
+                                    AdminRole.STORE_ADMIN,
+                                    AdminRole.SALES
+                            )
+	                            .item(
+                                    "Leads",
+                                    "🗂️",
+                                    "/admin/leads",
+                                    Feature.LEADS,
+                                    AdminRole.SUPER_ADMIN,
+                                    AdminRole.STORE_OWNER,
+                                    AdminRole.STORE_ADMIN,
+                                    AdminRole.SALES
+                            )
+	                            .item(
+                                    "Tareas",
+                                    "✅",
+                                    "/crm/tasks",
+                                    Feature.TASKS,
+                                    AdminRole.SUPER_ADMIN,
+                                    AdminRole.STORE_OWNER,
+                                    AdminRole.STORE_ADMIN,
+                                    AdminRole.SALES
+                            )
+	                            .item(
+                                    "Propuestas",
+                                    "📄",
+                                    "/crm/proposals",
+                                    Feature.PROPOSALS,
+                                    AdminRole.SUPER_ADMIN,
+                                    AdminRole.STORE_OWNER,
+                                    AdminRole.STORE_ADMIN,
+                                    AdminRole.SALES
+                            )
 	                            .build()
 	            )
 

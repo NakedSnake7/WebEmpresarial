@@ -2,7 +2,7 @@
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{admin/layout/main :: layout(
-        'Nuevo admin de tienda | WebEmpresarial Admin',
+        'Nuevo usuario de tienda | WebEmpresarial Admin',
         ~{::content}
 )}">
 
@@ -14,11 +14,11 @@
 
         <div class="mb-4">
             <span class="badge text-bg-dark mb-2">
-                Admin de tienda
+                Usuario de tienda
             </span>
 
             <h1 class="fw-bold mb-1">
-                Nuevo admin para <span th:text="${store.nombre}"></span>
+                Nuevo usuario para <span th:text="${store.nombre}"></span>
             </h1>
 
             <p class="text-muted mb-0">
@@ -33,8 +33,6 @@
                       th:object="${adminUser}"
                       method="post">
                       <th:block th:replace="~{fragments/csrf :: token}"></th:block>
-
-                    <input type="hidden" th:field="*{id}">
 
                     <div class="row g-4">
 
@@ -88,12 +86,30 @@
                                     required>
                                 <option th:each="role : ${roles}"
                                         th:value="${role}"
-                                        th:text="${role}">
+                                        th:text="${
+                                            role.name() == 'STORE_OWNER'
+                                                ? 'Propietario'
+                                                : (
+                                                    role.name() == 'STORE_ADMIN'
+                                                        ? 'Administrador'
+                                                        : (
+                                                            role.name() == 'STORE_STAFF'
+                                                                ? 'Personal operativo'
+                                                                : (
+                                                                    role.name() == 'SALES'
+                                                                        ? 'Ventas / CRM'
+                                                                        : role.name()
+                                                                )
+                                                        )
+                                                )
+                                        }">
                                 </option>
                             </select>
 
                             <div class="form-text">
-                                Para dueños usa STORE_ADMIN. Para empleados usa STORE_STAFF.
+                                STORE_OWNER representa al propietario contractual.
+                                STORE_ADMIN administra la operación; STORE_STAFF y SALES
+                                tienen acceso limitado según sus funciones.
                             </div>
                         </div>
 
@@ -119,7 +135,7 @@
 
                         <button type="submit"
                                 class="btn btn-success">
-                            Guardar admin
+                            Crear usuario
                         </button>
 
                         <a th:href="@{/admin/stores/{id}/admins(id=${store.id})}"

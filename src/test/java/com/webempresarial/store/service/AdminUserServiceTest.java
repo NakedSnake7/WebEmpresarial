@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -39,10 +40,12 @@ class AdminUserServiceTest {
 
     @BeforeEach
     void setUp() {
+
         service = new AdminUserService(
                 adminUserRepository,
                 storeRepository,
-                passwordEncoder
+                passwordEncoder,
+                new AdminPermissionService()
         );
     }
 
@@ -55,226 +58,436 @@ class AdminUserServiceTest {
         admin.setId(100L);
         admin.setStore(store);
 
-        when(adminUserRepository.findByStoreId(10L))
-                .thenReturn(List.of(admin));
+        when(
+                adminUserRepository.findByStoreId(10L)
+        ).thenReturn(List.of(admin));
 
-        List<AdminUser> result =
-                service.listarPorTienda(store);
-
-        assertThat(result)
-                .containsExactly(admin);
-
-        verify(adminUserRepository)
-                .findByStoreId(10L);
+        assertThat(
+                service.listarPorTienda(store)
+        ).containsExactly(admin);
     }
 
     @Test
-    void shouldCreateNewTenantAdminWithSafeDefaults() {
+    void ownerShouldManageAdminStaffAndSalesRoles() {
+
+        assertThat(
+                service.rolesPermitidosParaGestion(
+                        AdminRole.STORE_OWNER
+                )
+        ).containsExactly(
+                AdminRole.STORE_ADMIN,
+                AdminRole.STORE_STAFF,
+                AdminRole.SALES
+        );
+    }
+
+    @Test
+    void storeAdminShouldManageOnlyStaffAndSales() {
+
+        assertThat(
+                service.rolesPermitidosParaGestion(
+                        AdminRole.STORE_ADMIN
+                )
+        ).containsExactly(
+                AdminRole.STORE_STAFF,
+                AdminRole.SALES
+        );
+    }
+
+    @Test
+    void ownerShouldCreateStoreAdmin() {
 
         Store store = store(10L);
 
         AdminUser admin =
-                service.nuevoAdmin(store);
-
-        assertThat(admin.getStore())
-                .isSameAs(store);
-
-        assertThat(admin.getRole())
-                .isEqualTo(AdminRole.STORE_STAFF);
-
-        assertThat(admin.isEnabled())
-                .isTrue();
-
-        verifyNoInteractions(adminUserRepository);
-        verifyNoInteractions(passwordEncoder);
-    }
-
-    @Test
-    void shouldSaveTenantUserWithNormalizedEmailAndEncodedPassword() {
-
-        Store currentStore = store(10L);
-        Store forgedStore = store(99L);
-
-        AdminUser admin = new AdminUser();
-        admin.setFullName("Staff User");
-        admin.setEmail(" Staff@Example.COM ");
-        admin.setPassword("temporary-password");
-        admin.setRole(AdminRole.STORE_STAFF);
-        admin.setStore(forgedStore);
+                validUser(
+                        AdminRole.STORE_ADMIN,
+                        "admin@example.com"
+                );
 
         when(
                 adminUserRepository.existsByEmail(
-                        "staff@example.com"
+                        "admin@example.com"
                 )
         ).thenReturn(false);
 
         when(
-                passwordEncoder.encode(
-                        "temporary-password"
-                )
-        ).thenReturn("encoded-password");
+                passwordEncoder.encode("password")
+        ).thenReturn("encoded");
 
         service.guardarParaTienda(
-                currentStore,
-                admin
+                store,
+                admin,
+                AdminRole.STORE_OWNER
         );
 
-        ArgumentCaptor<AdminUser> captor =
-                ArgumentCaptor.forClass(
-                        AdminUser.class
-                );
-
         verify(adminUserRepository)
-                .save(captor.capture());
+                .save(admin);
 
-        AdminUser saved =
-                captor.getValue();
+        assertThat(admin.getStore())
+                .isSameAs(store);
 
-        assertThat(saved.getStore())
-                .isSameAs(currentStore);
-
-        assertThat(saved.getEmail())
-                .isEqualTo("staff@example.com");
-
-        assertThat(saved.getPassword())
-                .isEqualTo("encoded-password");
-
-        assertThat(saved.getRole())
-                .isEqualTo(AdminRole.STORE_STAFF);
-
-        verify(passwordEncoder)
-                .encode("temporary-password");
+        assertThat(admin.getPassword())
+                .isEqualTo("encoded");
     }
 
     @Test
-    void shouldRejectSuperAdminCreationFromTenant() {
+    void storeAdminShouldCreateSalesUser() {
 
         Store store = store(10L);
 
-        AdminUser admin = new AdminUser();
-        admin.setEmail("root@example.com");
-        admin.setPassword("temporary-password");
-        admin.setRole(AdminRole.SUPER_ADMIN);
-
-        assertThatThrownBy(
-                () -> service.guardarParaTienda(
-                        store,
-                        admin
-                )
-        )
-                .isInstanceOf(
-                        IllegalArgumentException.class
-                )
-                .hasMessage(
-                        "Una tienda no puede crear SUPER_ADMIN"
+        AdminUser sales =
+                validUser(
+                        AdminRole.SALES,
+                        "sales@example.com"
                 );
-
-        verifyNoInteractions(adminUserRepository);
-        verifyNoInteractions(passwordEncoder);
-    }
-
-    @Test
-    void shouldRejectDuplicateEmail() {
-
-        Store store = store(10L);
-
-        AdminUser admin = new AdminUser();
-        admin.setEmail(" Existing@Example.COM ");
-        admin.setPassword("temporary-password");
-        admin.setRole(AdminRole.STORE_ADMIN);
 
         when(
                 adminUserRepository.existsByEmail(
-                        "existing@example.com"
+                        "sales@example.com"
                 )
-        ).thenReturn(true);
+        ).thenReturn(false);
 
-        assertThatThrownBy(
-                () -> service.guardarParaTienda(
-                        store,
-                        admin
-                )
-        )
-                .isInstanceOf(
-                        IllegalArgumentException.class
-                )
-                .hasMessage(
-                        "Ya existe un usuario con ese email"
+        when(
+                passwordEncoder.encode("password")
+        ).thenReturn("encoded");
+
+        service.guardarParaTienda(
+                store,
+                sales,
+                AdminRole.STORE_ADMIN
+        );
+
+        verify(adminUserRepository)
+                .save(sales);
+    }
+
+    @Test
+    void storeAdminShouldNotCreateAnotherStoreAdmin() {
+
+        Store store = store(10L);
+
+        AdminUser admin =
+                validUser(
+                        AdminRole.STORE_ADMIN,
+                        "admin2@example.com"
                 );
 
-        verify(adminUserRepository, never())
-                .save(any(AdminUser.class));
+        assertThatThrownBy(() ->
+                service.guardarParaTienda(
+                        store,
+                        admin,
+                        AdminRole.STORE_ADMIN
+                )
+        )
+        .isInstanceOf(
+                AccessDeniedException.class
+        );
 
-        verifyNoInteractions(passwordEncoder);
+        verify(
+                adminUserRepository,
+                never()
+        ).save(any());
+    }
+
+    @Test
+    void ownerShouldNotCreateAnotherOwnerFromTeamManager() {
+
+        Store store = store(10L);
+
+        AdminUser owner =
+                validUser(
+                        AdminRole.STORE_OWNER,
+                        "owner2@example.com"
+                );
+
+        assertThatThrownBy(() ->
+                service.guardarParaTienda(
+                        store,
+                        owner,
+                        AdminRole.STORE_OWNER
+                )
+        )
+        .isInstanceOf(
+                AccessDeniedException.class
+        );
+
+        verify(
+                adminUserRepository,
+                never()
+        ).save(any());
+    }
+
+    @Test
+    void shouldRejectSubmittedIdDuringCreation() {
+
+        Store store = store(10L);
+
+        AdminUser admin =
+                validUser(
+                        AdminRole.STORE_STAFF,
+                        "staff@example.com"
+                );
+
+        admin.setId(999L);
+
+        assertThatThrownBy(() ->
+                service.guardarParaTienda(
+                        store,
+                        admin,
+                        AdminRole.STORE_OWNER
+                )
+        )
+        .isInstanceOf(
+                IllegalArgumentException.class
+        )
+        .hasMessage(
+                "El alta de usuarios no admite un id existente"
+        );
+
+        verify(
+                adminUserRepository,
+                never()
+        ).save(any());
+    }
+
+    @Test
+    void ownerShouldNeverBeDisabledFromTenantTeamManager() {
+
+        Store store = store(10L);
+
+        AdminUser owner = new AdminUser();
+
+        owner.setId(50L);
+        owner.setStore(store);
+        owner.setRole(
+                AdminRole.STORE_OWNER
+        );
+        owner.setEnabled(true);
+
+        when(
+                adminUserRepository.findByIdAndStoreId(
+                        50L,
+                        10L
+                )
+        ).thenReturn(
+                Optional.of(owner)
+        );
+
+        assertThatThrownBy(() ->
+                service.cambiarEstadoParaTienda(
+                        store,
+                        50L,
+                        AdminRole.STORE_OWNER
+                )
+        )
+        .isInstanceOf(
+                AccessDeniedException.class
+        )
+        .hasMessage(
+                "El propietario de la tienda no puede ser desactivado"
+        );
+
+        assertThat(owner.isEnabled())
+                .isTrue();
+    }
+
+    @Test
+    void storeAdminShouldNotDisableAnotherStoreAdmin() {
+
+        Store store = store(10L);
+
+        AdminUser target = new AdminUser();
+
+        target.setId(60L);
+        target.setStore(store);
+        target.setRole(
+                AdminRole.STORE_ADMIN
+        );
+        target.setEnabled(true);
+
+        when(
+                adminUserRepository.findByIdAndStoreId(
+                        60L,
+                        10L
+                )
+        ).thenReturn(
+                Optional.of(target)
+        );
+
+        assertThatThrownBy(() ->
+                service.cambiarEstadoParaTienda(
+                        store,
+                        60L,
+                        AdminRole.STORE_ADMIN
+                )
+        )
+        .isInstanceOf(
+                AccessDeniedException.class
+        );
+
+        assertThat(target.isEnabled())
+                .isTrue();
+    }
+
+    @Test
+    void ownerShouldDisableStoreAdmin() {
+
+        Store store = store(10L);
+
+        AdminUser target = new AdminUser();
+
+        target.setId(60L);
+        target.setStore(store);
+        target.setRole(
+                AdminRole.STORE_ADMIN
+        );
+        target.setEnabled(true);
+
+        when(
+                adminUserRepository.findByIdAndStoreId(
+                        60L,
+                        10L
+                )
+        ).thenReturn(
+                Optional.of(target)
+        );
+
+        service.cambiarEstadoParaTienda(
+                store,
+                60L,
+                AdminRole.STORE_OWNER
+        );
+
+        assertThat(target.isEnabled())
+                .isFalse();
     }
 
     @Test
     void shouldNotChangeStateOfUserFromAnotherStore() {
 
-        Store currentStore = store(10L);
+        Store store = store(10L);
 
         when(
                 adminUserRepository.findByIdAndStoreId(
                         200L,
                         10L
                 )
-        ).thenReturn(Optional.empty());
+        ).thenReturn(
+                Optional.empty()
+        );
 
-        assertThatThrownBy(
-                () -> service.cambiarEstadoParaTienda(
-                        currentStore,
-                        200L
+        assertThatThrownBy(() ->
+                service.cambiarEstadoParaTienda(
+                        store,
+                        200L,
+                        AdminRole.STORE_OWNER
                 )
         )
-                .isInstanceOf(
-                        IllegalArgumentException.class
-                )
-                .hasMessage(
-                        "Usuario no encontrado en esta tienda"
-                );
-
-        verify(adminUserRepository)
-                .findByIdAndStoreId(
-                        200L,
-                        10L
-                );
+        .isInstanceOf(
+                IllegalArgumentException.class
+        )
+        .hasMessage(
+                "Usuario no encontrado en esta tienda"
+        );
     }
 
     @Test
-    void shouldToggleStateOfUserFromCurrentStore() {
+    void platformStoreUserCreationShouldRejectSuperAdminRole() {
 
         Store store = store(10L);
 
-        AdminUser admin = new AdminUser();
-        admin.setId(200L);
-        admin.setStore(store);
-        admin.setEnabled(true);
+        AdminUser user =
+                validUser(
+                        AdminRole.SUPER_ADMIN,
+                        "root2@example.com"
+                );
 
         when(
-                adminUserRepository.findByIdAndStoreId(
-                        200L,
-                        10L
-                )
-        ).thenReturn(Optional.of(admin));
-
-        service.cambiarEstadoParaTienda(
-                store,
-                200L
+                storeRepository.findById(10L)
+        ).thenReturn(
+                Optional.of(store)
         );
 
-        assertThat(admin.isEnabled())
-                .isFalse();
+        assertThatThrownBy(() ->
+                service.guardar(
+                        10L,
+                        user
+                )
+        )
+        .isInstanceOf(
+                IllegalArgumentException.class
+        )
+        .hasMessage(
+                "SUPER_ADMIN no puede asignarse a una tienda"
+        );
 
-        verify(adminUserRepository)
-                .findByIdAndStoreId(
-                        200L,
-                        10L
+        verify(
+                adminUserRepository,
+                never()
+        ).save(any());
+    }
+
+    @Test
+    void platformStoreUserCreationShouldRejectExistingId() {
+
+        Store store = store(10L);
+
+        AdminUser user =
+                validUser(
+                        AdminRole.STORE_ADMIN,
+                        "admin3@example.com"
                 );
+
+        user.setId(777L);
+
+        when(
+                storeRepository.findById(10L)
+        ).thenReturn(
+                Optional.of(store)
+        );
+
+        assertThatThrownBy(() ->
+                service.guardar(
+                        10L,
+                        user
+                )
+        )
+        .isInstanceOf(
+                IllegalArgumentException.class
+        )
+        .hasMessage(
+                "El alta de usuarios no admite un id existente"
+        );
+
+        verify(
+                adminUserRepository,
+                never()
+        ).save(any());
+    }
+
+    private AdminUser validUser(
+            AdminRole role,
+            String email
+    ) {
+
+        AdminUser user = new AdminUser();
+
+        user.setFullName("Test User");
+        user.setEmail(email);
+        user.setPassword("password");
+        user.setRole(role);
+        user.setEnabled(true);
+
+        return user;
     }
 
     private Store store(Long id) {
+
         Store store = new Store();
+
         store.setId(id);
+
         return store;
     }
 }

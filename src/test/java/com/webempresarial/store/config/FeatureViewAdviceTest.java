@@ -68,6 +68,58 @@ class FeatureViewAdviceTest {
     }
 
     @Test
+    void shouldResolveStoreOwnerRoleForSidebar() {
+
+        authenticate(
+                "owner@stride.test",
+                "ROLE_STORE_OWNER"
+        );
+
+        when(
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.STORE_OWNER
+                )
+        ).thenReturn(List.of());
+
+        List<SidebarSectionDTO> result =
+                advice.sidebarSections(request);
+
+        assertThat(result).isEmpty();
+
+        verify(sidebarRegistry).sections(
+                store,
+                AdminRole.STORE_OWNER
+        );
+    }
+
+    @Test
+    void shouldResolveSalesRoleForSidebar() {
+
+        authenticate(
+                "sales@stride.test",
+                "ROLE_SALES"
+        );
+
+        when(
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.SALES
+                )
+        ).thenReturn(List.of());
+
+        List<SidebarSectionDTO> result =
+                advice.sidebarSections(request);
+
+        assertThat(result).isEmpty();
+
+        verify(sidebarRegistry).sections(
+                store,
+                AdminRole.SALES
+        );
+    }
+
+    @Test
     void shouldResolveStoreAdminRoleForSidebar() {
 
         authenticate(
