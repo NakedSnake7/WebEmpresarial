@@ -182,6 +182,44 @@ public class SecurityConfig {
                 )
                 .denyAll()
 
+                /*
+                 * CRM lead administration.
+                 *
+                 * /admin/leads/** belongs to this SecurityFilterChain
+                 * because adminSecurity matches /admin/**.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/leads",
+                    "/admin/leads/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .CRM_VIEW
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/leads/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .CRM_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier método futuro bajo /admin/leads/**
+                 * requiere clasificación explícita.
+                 */
+                .requestMatchers(
+                    "/admin/leads",
+                    "/admin/leads/**"
+                )
+                .denyAll()
+
                 .requestMatchers(
                     "/admin/store/settings/**"
                 )
@@ -371,22 +409,107 @@ public class SecurityConfig {
                 /*
                  * CRM administration routes.
                  *
-                 * CRM views and APIs contain tenant commercial data and
-                 * administrative operations, so authenticated storefront
-                 * customers must not reach them.
+                 * Authorization is permission based.
+                 *
+                 * Role -> AdminPermission is resolved when the
+                 * authenticated AdminUser is loaded.
+                 *
+                 * Plan access remains independently enforced by
+                 * FeatureAccessService inside the CRM controllers.
+                 */
+
+                /*
+                 * Proposals.
+                 *
+                 * These patterns MUST appear before the generic
+                 * /api/crm/leads/** rules below.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/crm/leads/*/proposals",
+                    "/api/crm/proposals/*/pdf"
+                )
+                .hasAuthority("PERM_PROPOSAL_VIEW")
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/crm/leads/*/proposals"
+                )
+                .hasAuthority("PERM_PROPOSAL_CREATE")
+
+                .requestMatchers(
+                    HttpMethod.PATCH,
+                    "/api/crm/proposals/**"
+                )
+                .hasAuthority("PERM_PROPOSAL_EDIT")
+
+                /*
+                 * Pipeline.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/crm/pipeline",
+                    "/api/crm/pipeline",
+                    "/api/crm/pipeline/**"
+                )
+                .hasAuthority("PERM_PIPELINE_VIEW")
+
+                /*
+                 * CRM analytics / reports.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/crm/reports"
+                )
+                .hasAuthority("PERM_ANALYTICS_VIEW")
+
+                /*
+                 * CRM read operations.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/crm/dashboard",
+                    "/crm/leads/**",
+                    "/crm/tasks",
+                    "/api/crm/dashboard",
+                    "/api/crm/dashboard/**",
+                    "/api/crm/leads",
+                    "/api/crm/leads/**",
+                    "/api/crm/tasks",
+                    "/api/crm/tasks/**"
+                )
+                .hasAuthority("PERM_CRM_VIEW")
+
+                /*
+                 * CRM write operations.
+                 *
+                 * TASKS currently belong to CRM_EDIT because there
+                 * is no independent TASK permission family.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/crm/leads/**"
+                )
+                .hasAuthority("PERM_CRM_EDIT")
+
+                .requestMatchers(
+                    HttpMethod.PATCH,
+                    "/api/crm/leads/**",
+                    "/api/crm/tasks/**"
+                )
+                .hasAuthority("PERM_CRM_EDIT")
+
+                /*
+                 * Fail closed.
+                 *
+                 * A newly introduced CRM endpoint must receive an
+                 * explicit permission before becoming accessible.
                  */
                 .requestMatchers(
                     "/crm/**",
-                    "/api/crm/**",
-                    "/admin/leads",
-                    "/admin/leads/**"
+                    "/api/crm/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "SALES"
-                )
+                .denyAll()
 
                 /*
                  * Legacy review administration routes.

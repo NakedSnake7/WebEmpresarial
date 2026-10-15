@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import com.webempresarial.store.dto.lead.LeadScoreDTO;
 import com.webempresarial.store.dto.lead.LeadTimelineItemDTO;
 import com.webempresarial.store.dto.lead.MergeLeadDTO;
 import com.webempresarial.store.dto.lead.UpdateLeadStatusDTO;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.LeadService;
 import com.webempresarial.store.service.SalesTaskService;
 import com.webempresarial.store.service.StoreContextService;
@@ -39,6 +41,7 @@ public class LeadRestController {
     private final LeadAuditLogService leadAuditLogService;
     private final LeadTimelineService leadTimelineService;
     private final LeadMergeService leadMergeService;
+    private final FeatureAccessService featureAccessService;
 
     public LeadRestController(
             LeadService leadService,
@@ -46,7 +49,8 @@ public class LeadRestController {
             StoreContextService storeContextService,
             LeadAuditLogService leadAuditLogService,
             LeadTimelineService leadTimelineService,
-            LeadMergeService leadMergeService
+            LeadMergeService leadMergeService,
+            FeatureAccessService featureAccessService
     ) {
         this.leadService = leadService;
         this.taskService = taskService;
@@ -54,11 +58,14 @@ public class LeadRestController {
         this.leadAuditLogService = leadAuditLogService;
         this.leadTimelineService = leadTimelineService;
         this.leadMergeService = leadMergeService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
     public List<LeadCardDTO> getLeads(HttpServletRequest request) {
         Store store = storeContextService.getCurrentStore(request);
+
+        requireLeadsFeature(store);
         return leadService.getLeadsForStore(store.getId());
     }
 
@@ -68,6 +75,8 @@ public class LeadRestController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+
+        requireLeadsFeature(store);
         return leadService.getDetail(id, store.getId());
     }
 
@@ -78,6 +87,8 @@ public class LeadRestController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+
+        requireLeadsFeature(store);
 
         leadService.updateStatus(
                 id,
@@ -97,6 +108,8 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
+        requireLeadsFeature(store);
+
         leadService.addNote(
                 id,
                 store.getId(),
@@ -114,6 +127,12 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
+        requireLeadsFeature(store);
+        featureAccessService.requireFeature(
+                store,
+                Feature.TASKS
+        );
+
         taskService.createManualTask(
                 id,
                 store.getId(),
@@ -130,6 +149,8 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
+        requireLeadsFeature(store);
+
         return leadAuditLogService.getByLead(
                 id,
                 store.getId()
@@ -143,12 +164,23 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
+        requireLeadsFeature(store);
+
         return leadTimelineService.getTimeline(
                 id,
                 store.getId()
         );
     }
     
+    private void requireLeadsFeature(
+            Store store
+    ) {
+        featureAccessService.requireFeature(
+                store,
+                Feature.LEADS
+        );
+    }
+
     private AdminUser getCurrentUser() {
 
         Authentication authentication = SecurityContextHolder
@@ -174,6 +206,8 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
+        requireLeadsFeature(store);
+
         return leadService.getScore(id, store.getId());
     }
     
@@ -183,6 +217,8 @@ public class LeadRestController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+
+        requireLeadsFeature(store);
 
         AdminUser user = getCurrentUser();
 

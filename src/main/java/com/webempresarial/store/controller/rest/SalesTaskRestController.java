@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webempresarial.store.dto.lead.SalesTaskDTO;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.SalesTaskService;
 import com.webempresarial.store.service.StoreContextService;
 
@@ -21,18 +23,22 @@ public class SalesTaskRestController {
 
     private final SalesTaskService salesTaskService;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public SalesTaskRestController(
             SalesTaskService salesTaskService,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.salesTaskService = salesTaskService;
         this.storeContextService = storeContextService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
     public List<SalesTaskDTO> getTasks(HttpServletRequest request) {
         Store store = storeContextService.getCurrentStore(request);
+        featureAccessService.requireFeature(store, Feature.TASKS);
         return salesTaskService.getAllTasks(store.getId());
     }
     
@@ -42,6 +48,7 @@ public class SalesTaskRestController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+        featureAccessService.requireFeature(store, Feature.TASKS);
         salesTaskService.completeTask(id, store.getId());
         return ResponseEntity.ok().build();
     }

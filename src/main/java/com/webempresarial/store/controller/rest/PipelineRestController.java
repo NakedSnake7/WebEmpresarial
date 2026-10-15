@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webempresarial.store.dto.lead.PipelineStageStatsDTO;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.PipelineService;
 import com.webempresarial.store.service.StoreContextService;
 
@@ -19,18 +21,22 @@ public class PipelineRestController {
 
     private final PipelineService pipelineService;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public PipelineRestController(
             PipelineService pipelineService,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.pipelineService = pipelineService;
         this.storeContextService = storeContextService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping("/stats")
     public List<PipelineStageStatsDTO> getStats(HttpServletRequest request) {
         Store store = storeContextService.getCurrentStore(request);
+        featureAccessService.requireFeature(store, Feature.PIPELINE);
         return pipelineService.getStats(store.getId());
     }
 }

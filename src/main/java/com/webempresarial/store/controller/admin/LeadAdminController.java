@@ -1,7 +1,9 @@
 package com.webempresarial.store.controller.admin;
 
 import com.webempresarial.store.repository.LeadRepository;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.LeadStatus;
 import com.webempresarial.store.model.Store;
 
@@ -17,13 +19,16 @@ public class LeadAdminController {
 
     private final LeadRepository leadRepository;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public LeadAdminController(
             LeadRepository leadRepository,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.leadRepository = leadRepository;
         this.storeContextService = storeContextService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
@@ -32,6 +37,8 @@ public class LeadAdminController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+
+        featureAccessService.requireFeature(store, Feature.LEADS);
 
         model.addAttribute(
                 "leads",
@@ -50,6 +57,8 @@ public class LeadAdminController {
             HttpServletRequest request
     ) {
         Store store = storeContextService.getCurrentStore(request);
+
+        featureAccessService.requireFeature(store, Feature.LEADS);
 
         var lead = leadRepository.findByIdAndStoreId(id, store.getId())
                 .orElseThrow();

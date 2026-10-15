@@ -91,16 +91,6 @@ public class CrmFeatures implements PlatformModule {
                                     AdminRole.STORE_ADMIN,
                                     AdminRole.SALES
                             )
-	                            .item(
-                                    "Propuestas",
-                                    "📄",
-                                    "/crm/proposals",
-                                    Feature.PROPOSALS,
-                                    AdminRole.SUPER_ADMIN,
-                                    AdminRole.STORE_OWNER,
-                                    AdminRole.STORE_ADMIN,
-                                    AdminRole.SALES
-                            )
 	                            .build()
 	            )
 
@@ -268,7 +258,7 @@ public class CrmFeatures implements PlatformModule {
                 .category(FeatureCategory.CRM)
                 .icon("📄")
                 .color("primary")
-                .url("/crm/proposals")
+                .url("/admin/leads")
                 .healthWeight(6)
                 .order(140)
                 .accessPolicy(pro())
