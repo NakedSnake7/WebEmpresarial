@@ -32,7 +32,6 @@ public class PlatformFeatures implements PlatformModule {
                 .sidebarSection(
                         SidebarSectionDefinition.builder("Plataforma", "🧩")
                                 .item("Analytics", "📈", "/crm/reports", Feature.ANALYTICS)
-                                .item("Dominio", "🌐", "/admin/domains", Feature.CUSTOM_DOMAIN)
                                 .item(
                                         "Usuarios",
                                         "👥",
