@@ -6,6 +6,7 @@ import com.webempresarial.store.commerce.application.inventory.InventoryPersiste
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
 import com.webempresarial.store.service.FeatureAccessService;
@@ -200,14 +201,25 @@ class AdminRoleAuthorizationMockMvcTest {
     }
 
     @Test
-    void storeAdmin_shouldAccessStoreSettings()
+    void storeAdminWithStoreViewShouldAccessStoreSettings()
             throws Exception {
 
         mockMvc.perform(
                 get("/admin/store/settings")
                         .with(
                                 user("admin@stride.test")
-                                        .roles("STORE_ADMIN")
+                                        .authorities(
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                "ROLE_STORE_ADMIN"
+                                                        ),
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                AdminPermission
+                                                                        .STORE_VIEW
+                                                                        .authority()
+                                                        )
+                                        )
                         )
         )
         .andExpect(status().isOk());
@@ -290,14 +302,25 @@ class AdminRoleAuthorizationMockMvcTest {
     }
 
     @Test
-    void storeOwner_shouldAccessStoreSettings()
+    void storeOwnerWithStoreViewShouldAccessStoreSettings()
             throws Exception {
 
         mockMvc.perform(
                 get("/admin/store/settings")
                         .with(
                                 user("owner@stride.test")
-                                        .roles("STORE_OWNER")
+                                        .authorities(
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                "ROLE_STORE_OWNER"
+                                                        ),
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                AdminPermission
+                                                                        .STORE_VIEW
+                                                                        .authority()
+                                                        )
+                                        )
                         )
         )
         .andExpect(status().isOk());

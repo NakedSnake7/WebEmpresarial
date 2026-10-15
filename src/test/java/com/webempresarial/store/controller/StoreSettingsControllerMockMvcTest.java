@@ -8,6 +8,7 @@ import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
@@ -209,8 +210,7 @@ class StoreSettingsControllerMockMvcTest {
         mockMvc.perform(
                 get("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
         )
         .andExpect(status().isOk())
@@ -256,8 +256,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 get("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
         )
         .andExpect(status().isOk())
@@ -305,8 +304,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 get("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
         )
         .andExpect(status().isOk())
@@ -345,8 +343,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 post("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
                         .param(
                                 "companyEmail",
@@ -383,8 +380,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 post("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
                         .with(csrf())
 
@@ -554,8 +550,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 post("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
                         .with(csrf())
 
@@ -642,8 +637,7 @@ verify(storeSettingsService, atLeastOnce())
         mockMvc.perform(
                 post("/admin/store/settings")
                         .with(
-                                user("admin@acme.test")
-                                        .roles("STORE_ADMIN")
+                                storeAdmin()
                         )
                         .with(csrf())
 
@@ -726,8 +720,7 @@ verify(storeSettingsService, atLeastOnce())
                         "/admin/store/settings/logo/delete"
                 )
                 .with(
-                        user("admin@acme.test")
-                                .roles("STORE_ADMIN")
+                        storeAdmin()
                 )
         )
         .andExpect(status().isForbidden());
@@ -758,4 +751,42 @@ verify(storeSettingsService, atLeastOnce())
         verifyNoInteractions(storeContextService);
         verifyNoInteractions(storeSettingsService);
     }
+
+    private static org.springframework.security.test.web.servlet.request
+            .SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor
+            storeAdmin() {
+
+        return user("admin@acme.test")
+                .authorities(
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        "ROLE_STORE_ADMIN"
+                                ),
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        AdminPermission
+                                                .STORE_VIEW
+                                                .authority()
+                                ),
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        AdminPermission
+                                                .STORE_EDIT
+                                                .authority()
+                                ),
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        AdminPermission
+                                                .STORE_BRANDING_EDIT
+                                                .authority()
+                                ),
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        AdminPermission
+                                                .PAYMENT_METHOD_MANAGE
+                                                .authority()
+                                )
+                );
+    }
+
 }

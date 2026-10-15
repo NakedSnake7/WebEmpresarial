@@ -237,14 +237,79 @@ public class SecurityConfig {
                         .authority()
                 )
 
+                /*
+                 * Store settings.
+                 *
+                 * La pantalla reúne varias responsabilidades, pero las
+                 * operaciones independientes se protegen con su permiso
+                 * específico.
+                 */
+
+                /*
+                 * Branding: logo de la tienda.
+                 */
                 .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/store/settings/logo",
+                    "/admin/store/settings/logo/delete"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STORE_BRANDING_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Métodos de pago: transferencia SPEI.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/store/settings/transfer"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PAYMENT_METHOD_MANAGE
+                        .authority()
+                )
+
+                /*
+                 * Configuración operacional de tienda.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/store/settings",
+                    "/admin/store/settings/shipping"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STORE_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Lectura de configuración.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/store/settings",
+                    "/admin/store/settings/"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STORE_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier nueva operación de Store Settings deberá
+                 * recibir un permiso explícito.
+                 */
+                .requestMatchers(
+                    "/admin/store/settings",
                     "/admin/store/settings/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN"
-                )
+                .denyAll()
 
                 /*
                  * Stripe Connect modifica la relación financiera entre
