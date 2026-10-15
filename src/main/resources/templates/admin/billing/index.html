@@ -158,7 +158,8 @@
                 Esta tienda aún no tiene suscripción registrada.
             </p>
             
-            <form th:if="${subscription != null 
+            <form th:if="${canManageBilling
+              and subscription != null
               and subscription.stripeCustomerId != null
               and !subscription.stripeCustomerId.isBlank()}"
       method="post"
@@ -200,7 +201,8 @@
                         Plan actual
                     </button>
 
-                    <form th:if="${currentPlan.name() != 'BASIC'}"
+                    <form th:if="${canManageBilling
+                          and currentPlan.name() != 'BASIC'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
                           <th:block th:replace="~{fragments/csrf :: token}"></th:block>
@@ -241,7 +243,8 @@
                         Plan actual
                     </button>
 
-                    <form th:if="${currentPlan.name() != 'PRO'}"
+                    <form th:if="${canManageBilling
+                          and currentPlan.name() != 'PRO'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
                           <th:block th:replace="~{fragments/csrf :: token}"></th:block>
@@ -281,7 +284,8 @@
                         Plan actual
                     </button>
 
-                    <form th:if="${currentPlan.name() != 'PREMIUM'}"
+                    <form th:if="${canManageBilling
+                          and currentPlan.name() != 'PREMIUM'}"
                           method="post"
                           th:action="@{/admin/billing/checkout}">
                           <th:block th:replace="~{fragments/csrf :: token}"></th:block>

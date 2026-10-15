@@ -130,8 +130,52 @@ class BillingTemplateTest {
                 .doesNotContain("a partir del");
     }
 
+    @Test
+    void shouldHideSubscriptionMutationControlsWithoutManagePermission()
+            throws Exception {
+
+        Subscription subscription = new Subscription();
+        subscription.setStripeCustomerId("cus_test");
+
+        String html = renderBilling(subscription, false);
+
+        assertThat(html)
+                .doesNotContain(
+                        "action=\"/admin/billing/portal\""
+                )
+                .doesNotContain(
+                        "action=\"/admin/billing/checkout\""
+                );
+    }
+
+    @Test
+    void shouldRenderSubscriptionMutationControlsWithManagePermission()
+            throws Exception {
+
+        Subscription subscription = new Subscription();
+        subscription.setStripeCustomerId("cus_test");
+
+        String html = renderBilling(subscription, true);
+
+        assertThat(html)
+                .contains(
+                        "action=\"/admin/billing/portal\""
+                )
+                .contains(
+                        "action=\"/admin/billing/checkout\""
+                );
+    }
+
     private String renderBilling(Subscription subscription)
             throws Exception {
+
+        return renderBilling(subscription, true);
+    }
+
+    private String renderBilling(
+            Subscription subscription,
+            boolean canManageBilling
+    ) throws Exception {
 
         Store store = new Store();
         store.setSubscription(subscription);
@@ -147,6 +191,10 @@ class BillingTemplateTest {
 
         MvcResult result = mockMvc.perform(
                         get("/admin/billing")
+                                .flashAttr(
+                                        "canManageBilling",
+                                        canManageBilling
+                                )
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/billing/index"))

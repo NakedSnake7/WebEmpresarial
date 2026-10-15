@@ -30,6 +30,9 @@ class SecurityViewAdviceTest {
                         .SUBSCRIPTION_VIEW
                         .authority(),
                 AdminPermission
+                        .SUBSCRIPTION_MANAGE
+                        .authority(),
+                AdminPermission
                         .STORE_EDIT
                         .authority(),
                 AdminPermission
@@ -46,12 +49,35 @@ class SecurityViewAdviceTest {
         ).isTrue();
 
         assertThat(
+                advice.canManageBilling(auth)
+        ).isTrue();
+
+        assertThat(
                 advice.canManageStoreSettings(auth)
         ).isTrue();
 
         assertThat(
                 advice.canManageStripeConnect(auth)
         ).isTrue();
+    }
+
+    @Test
+    void storeAdminShouldViewBillingWithoutManagingSubscription() {
+
+        Authentication auth = authentication(
+                "ROLE_STORE_ADMIN",
+                AdminPermission
+                        .SUBSCRIPTION_VIEW
+                        .authority()
+        );
+
+        assertThat(
+                advice.canViewBilling(auth)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageBilling(auth)
+        ).isFalse();
     }
 
     @Test
@@ -71,6 +97,10 @@ class SecurityViewAdviceTest {
         ).isFalse();
 
         assertThat(
+                advice.canManageBilling(auth)
+        ).isFalse();
+
+        assertThat(
                 advice.canManageStoreSettings(auth)
         ).isFalse();
 
@@ -84,6 +114,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canViewBilling(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageBilling(null)
         ).isFalse();
 
         assertThat(

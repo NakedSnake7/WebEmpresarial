@@ -42,6 +42,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageBilling")
+    public boolean canManageBilling(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.SUBSCRIPTION_MANAGE.authority()
+        );
+    }
+
     @ModelAttribute("canViewTeam")
     public boolean canViewTeam(Authentication auth) {
         return hasAuthority(

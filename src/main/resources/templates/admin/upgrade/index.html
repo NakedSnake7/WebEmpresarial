@@ -38,9 +38,12 @@
                 para usar esta funcionalidad.
             </p>
 
-            <form method="post"
+            <form th:if="${canManageBilling}"
+                  method="post"
                   th:action="@{/admin/billing/checkout}"
                   class="d-inline">
+
+                <th:block th:replace="~{fragments/csrf :: token}"></th:block>
 
                 <input type="hidden"
                        name="plan"
@@ -55,7 +58,8 @@
             </form>
 
             <div class="mt-3">
-                <a th:href="@{/admin/billing}"
+                <a th:if="${canViewBilling}"
+                   th:href="@{/admin/billing}"
                    class="text-muted">
                     Ver todos los planes
                 </a>
