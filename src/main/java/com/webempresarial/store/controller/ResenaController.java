@@ -4,10 +4,12 @@ import com.webempresarial.store.dto.CloudinaryUploadResult;
 import com.webempresarial.store.dto.ResenaEditDTO;
 import com.webempresarial.store.entity.ResenaEntity;
 import com.webempresarial.store.mapper.ResenaMapper;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Resena;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +28,18 @@ public class ResenaController {
     private final CloudinaryService cloudinaryService;
     private final ResenaRepository resenaRepository;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public ResenaController(
             CloudinaryService cloudinaryService,
             ResenaRepository resenaRepository,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.cloudinaryService = cloudinaryService;
         this.resenaRepository = resenaRepository;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @ModelAttribute("resena")
@@ -47,7 +52,7 @@ public class ResenaController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         Resena resena = new Resena();
         resena.setEstrellas(null);
@@ -71,7 +76,7 @@ public class ResenaController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         try {
             if (resena.getImagen() == null ||
@@ -126,7 +131,7 @@ public class ResenaController {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         Map<String, Object> response = new HashMap<>();
 
@@ -157,7 +162,7 @@ public class ResenaController {
             @RequestBody ResenaEditDTO dto,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         ResenaEntity resena =
                 resenaRepository.findByIdAndStore(id, store)
@@ -176,7 +181,7 @@ public class ResenaController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         model.addAttribute("resena", new Resena());
 
@@ -198,7 +203,7 @@ public class ResenaController {
             @RequestParam("imagen") MultipartFile imagen,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         ResenaEntity resena =
                 resenaRepository.findByIdAndStore(id, store)
@@ -232,7 +237,7 @@ public class ResenaController {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithReviews(request);
 
         ResenaEntity resena =
                 resenaRepository.findByIdAndStore(id, store)
@@ -252,5 +257,19 @@ public class ResenaController {
         resenaRepository.save(resena);
 
         return ResponseEntity.ok().build();
+    }
+
+    private Store currentStoreWithReviews(
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.REVIEWS
+        );
+
+        return store;
     }
 }

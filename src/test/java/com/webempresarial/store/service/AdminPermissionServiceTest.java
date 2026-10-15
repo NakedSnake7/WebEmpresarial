@@ -47,6 +47,17 @@ class AdminPermissionServiceTest {
                         AdminPermission.ROLE_MANAGE
                 )
         ).isTrue();
+
+        assertThat(
+                service.permissionsFor(
+                        AdminRole.STORE_OWNER
+                )
+        ).contains(
+                AdminPermission.REVIEW_VIEW,
+                AdminPermission.REVIEW_CREATE,
+                AdminPermission.REVIEW_EDIT,
+                AdminPermission.REVIEW_DELETE
+        );
     }
 
     @Test
@@ -86,6 +97,17 @@ class AdminPermissionServiceTest {
                         AdminPermission.ROLE_MANAGE
                 )
         ).isFalse();
+
+        assertThat(
+                service.permissionsFor(
+                        AdminRole.STORE_ADMIN
+                )
+        ).contains(
+                AdminPermission.REVIEW_VIEW,
+                AdminPermission.REVIEW_CREATE,
+                AdminPermission.REVIEW_EDIT,
+                AdminPermission.REVIEW_DELETE
+        );
     }
 
     @Test
@@ -132,6 +154,19 @@ class AdminPermissionServiceTest {
                         AdminPermission.CRM_VIEW
                 )
         ).isFalse();
+
+        assertThat(
+                service.permissionsFor(
+                        AdminRole.STORE_STAFF
+                )
+        ).contains(
+                AdminPermission.REVIEW_VIEW,
+                AdminPermission.REVIEW_CREATE,
+                AdminPermission.REVIEW_EDIT
+        )
+        .doesNotContain(
+                AdminPermission.REVIEW_DELETE
+        );
     }
 
     @Test
@@ -178,6 +213,17 @@ class AdminPermissionServiceTest {
                         AdminPermission.SUBSCRIPTION_VIEW
                 )
         ).isFalse();
+
+        assertThat(
+                service.permissionsFor(
+                        AdminRole.SALES
+                )
+        ).doesNotContain(
+                AdminPermission.REVIEW_VIEW,
+                AdminPermission.REVIEW_CREATE,
+                AdminPermission.REVIEW_EDIT,
+                AdminPermission.REVIEW_DELETE
+        );
     }
 
     @Test

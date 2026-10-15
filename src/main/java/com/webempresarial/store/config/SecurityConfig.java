@@ -791,18 +791,80 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
-                 * Legacy review administration routes.
+                 * Review administration.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/resenas"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_VIEW
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/resenas/nueva"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_CREATE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/resenas/nueva"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_CREATE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.PUT,
+                    "/resenas/*",
+                    "/resenas/*/imagen"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_EDIT
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/resenas/*/imagen"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_EDIT
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/resenas/eliminar/*"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .REVIEW_DELETE
+                        .authority()
+                )
+
+                /*
+                 * Fail closed.
+                 *
+                 * Any new review administration endpoint must receive
+                 * an explicit permission before becoming accessible.
                  */
                 .requestMatchers(
                     "/resenas",
                     "/resenas/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "STORE_STAFF"
-                )
+                .denyAll()
 
                 .requestMatchers(
                     "/cuenta/**",

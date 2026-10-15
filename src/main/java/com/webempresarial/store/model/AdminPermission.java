@@ -41,6 +41,12 @@ public enum AdminPermission {
     CUSTOMER_EDIT,
     CUSTOMER_DELETE,
 
+    // Reseñas
+    REVIEW_VIEW,
+    REVIEW_CREATE,
+    REVIEW_EDIT,
+    REVIEW_DELETE,
+
     // CRM
     CRM_VIEW,
     CRM_EDIT,

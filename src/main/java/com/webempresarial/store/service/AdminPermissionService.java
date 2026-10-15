@@ -94,6 +94,11 @@ public class AdminPermissionService {
                         AdminPermission.CUSTOMER_EDIT,
                         AdminPermission.CUSTOMER_DELETE,
 
+                        AdminPermission.REVIEW_VIEW,
+                        AdminPermission.REVIEW_CREATE,
+                        AdminPermission.REVIEW_EDIT,
+                        AdminPermission.REVIEW_DELETE,
+
                         AdminPermission.CRM_VIEW,
                         AdminPermission.CRM_EDIT,
 
@@ -177,6 +182,11 @@ public class AdminPermissionService {
                         AdminPermission.CUSTOMER_EDIT,
                         AdminPermission.CUSTOMER_DELETE,
 
+                        AdminPermission.REVIEW_VIEW,
+                        AdminPermission.REVIEW_CREATE,
+                        AdminPermission.REVIEW_EDIT,
+                        AdminPermission.REVIEW_DELETE,
+
                         AdminPermission.CRM_VIEW,
                         AdminPermission.CRM_EDIT,
 
@@ -243,7 +253,11 @@ public class AdminPermissionService {
                         AdminPermission.ORDER_VIEW,
                         AdminPermission.ORDER_UPDATE,
 
-                        AdminPermission.CUSTOMER_VIEW
+                        AdminPermission.CUSTOMER_VIEW,
+
+                        AdminPermission.REVIEW_VIEW,
+                        AdminPermission.REVIEW_CREATE,
+                        AdminPermission.REVIEW_EDIT
                 ))
         );
 
