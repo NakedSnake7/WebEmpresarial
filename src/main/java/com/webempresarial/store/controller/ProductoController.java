@@ -3,9 +3,13 @@ package com.webempresarial.store.controller;
 import com.webempresarial.store.dto.producto.admin.ProductoAdminDTO;
 import com.webempresarial.store.dto.producto.publico.ProductoCardDTO;
 import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO;
+import com.webempresarial.store.model.AdminPermission;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CategoriaService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.MarcaService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
@@ -26,24 +30,32 @@ public class ProductoController {
     private final CategoriaService categoriaService;
     private final MarcaService marcaService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
+    private final CurrentAdminAuthorizationService currentAdminAuthorizationService;
 
     public ProductoController(
             ProductoService productoService,
             CategoriaService categoriaService,
             MarcaService marcaService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService,
+            CurrentAdminAuthorizationService currentAdminAuthorizationService
     ) {
         this.productoService = productoService;
         this.categoriaService = categoriaService;
         this.marcaService = marcaService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
+        this.currentAdminAuthorizationService =
+                currentAdminAuthorizationService;
     }
 
     @GetMapping
     public List<ProductoCardDTO> listarProductos(
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
         return productoService.obtenerProductosCompletos(store);
     }
 
@@ -52,7 +64,8 @@ public class ProductoController {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
         return productoService.obtenerDetalleProducto(id, store);
     }
 
@@ -61,7 +74,8 @@ public class ProductoController {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
         productoService.eliminarProducto(id, store);
         return ResponseEntity.noContent().build();
     }
@@ -77,7 +91,21 @@ public class ProductoController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
+
+        if (dto.getNuevaCategoria() != null &&
+                !dto.getNuevaCategoria().isBlank()) {
+
+            currentAdminAuthorizationService.requirePermission(
+                    AdminPermission.CATEGORY_MANAGE
+            );
+
+            featureAccessService.requireFeature(
+                    store,
+                    Feature.CATEGORIES
+            );
+        }
 
         Producto datos = new Producto();
 
@@ -141,7 +169,8 @@ public class ProductoController {
             @PathVariable Long idImagen,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
 
         productoService.eliminarImagenInmediatoSeguro(
                 productoId,
@@ -157,7 +186,8 @@ public class ProductoController {
             @RequestParam Long productoId,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
         return productoService.togglePromocion(productoId, store);
     }
 
@@ -166,7 +196,8 @@ public class ProductoController {
             @RequestParam Long productoId,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
         return productoService.toggleVisibility(productoId, store);
     }
 
@@ -176,7 +207,8 @@ public class ProductoController {
             @RequestParam boolean visible,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
 
         productoService.toggleVisibilidadPorCategoria(
                 categoriaId,
@@ -193,7 +225,8 @@ public class ProductoController {
             @RequestParam BigDecimal precio,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
 
         productoService.actualizarPrecio(
                 productoId,
@@ -211,7 +244,8 @@ public class ProductoController {
             @RequestParam String modo,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithProducts(request);
 
         productoService.ajustarPrecioCategoria(
                 categoriaId,
@@ -222,4 +256,19 @@ public class ProductoController {
 
         return ResponseEntity.ok().build();
     }
+
+    private Store currentStoreWithProducts(
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.PRODUCTS
+        );
+
+        return store;
+    }
+
 }

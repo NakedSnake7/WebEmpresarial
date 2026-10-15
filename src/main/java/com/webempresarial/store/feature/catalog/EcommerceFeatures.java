@@ -48,7 +48,7 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "Precios y promociones",
 	                                    "💲",
 	                                    "/modificar-precios",
-	                                    Feature.INVENTORY
+	                                    Feature.PRODUCTS
 	                            )
 	                            
 	                            .item(

@@ -4,9 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webempresarial.store.dto.producto.admin.ProductoAdminDTO;
 import com.webempresarial.store.dto.producto.shared.ProductoVarianteDTO;
+import com.webempresarial.store.model.AdminPermission;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Producto;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CategoriaService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.MarcaService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
@@ -28,17 +32,24 @@ public class ProductoViewController {
     private final CategoriaService categoriaService;
     private final MarcaService marcaService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
+    private final CurrentAdminAuthorizationService currentAdminAuthorizationService;
 
     public ProductoViewController(
             ProductoService productoService,
             CategoriaService categoriaService,
             MarcaService marcaService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService,
+            CurrentAdminAuthorizationService currentAdminAuthorizationService
     ) {
         this.productoService = productoService;
         this.categoriaService = categoriaService;
         this.marcaService = marcaService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
+        this.currentAdminAuthorizationService =
+                currentAdminAuthorizationService;
     }
 
     @GetMapping("/admin/productos")
@@ -46,7 +57,8 @@ public class ProductoViewController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         model.addAttribute(
                 "categorias",
@@ -61,7 +73,8 @@ public class ProductoViewController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         model.addAttribute("producto", new ProductoAdminDTO());
         model.addAttribute("categorias", categoriaService.obtenerTodas(store));
@@ -86,12 +99,29 @@ public class ProductoViewController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         if (result.hasErrors()) {
             model.addAttribute("categorias", categoriaService.obtenerTodas(store));
             model.addAttribute("marcas", marcaService.obtenerTodas(store));
             return "admin/subirProducto";
+        }
+
+        if (nuevaCategoria != null && !nuevaCategoria.isBlank()) {
+            currentAdminAuthorizationService.requirePermission(
+                    AdminPermission.CATEGORY_MANAGE
+            );
+            featureAccessService.requireFeature(
+                    store,
+                    Feature.CATEGORIES
+            );
+        }
+
+        if (nuevaMarca != null && !nuevaMarca.isBlank()) {
+            currentAdminAuthorizationService.requirePermission(
+                    AdminPermission.BRAND_MANAGE
+            );
         }
 
         try {
@@ -159,7 +189,8 @@ public class ProductoViewController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         ProductoAdminDTO dto =
                 productoService.obtenerProductoAdmin(id, store);
@@ -182,13 +213,34 @@ public class ProductoViewController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         if (result.hasErrors()) {
             model.addAttribute("productoDTO", dto);
             model.addAttribute("categorias", categoriaService.obtenerTodas(store));
             model.addAttribute("marcas", marcaService.obtenerTodas(store));
             return "admin/EditarProducto";
+        }
+
+        if (dto.getNuevaCategoria() != null &&
+                !dto.getNuevaCategoria().isBlank()) {
+
+            currentAdminAuthorizationService.requirePermission(
+                    AdminPermission.CATEGORY_MANAGE
+            );
+            featureAccessService.requireFeature(
+                    store,
+                    Feature.CATEGORIES
+            );
+        }
+
+        if (dto.getMarcaNombre() != null &&
+                !dto.getMarcaNombre().isBlank()) {
+
+            currentAdminAuthorizationService.requirePermission(
+                    AdminPermission.BRAND_MANAGE
+            );
         }
 
         try {
@@ -267,7 +319,8 @@ public class ProductoViewController {
             @RequestParam Integer stock,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.INVENTORY);
 
         productoService.actualizarStockVariante(
                 id,
@@ -283,7 +336,8 @@ public class ProductoViewController {
             Model model,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store =
+                currentStoreWithFeature(request, Feature.PRODUCTS);
 
         model.addAttribute(
                 "productos",
@@ -297,4 +351,20 @@ public class ProductoViewController {
 
         return "admin/modificar-precios";
     }
+
+    private Store currentStoreWithFeature(
+            HttpServletRequest request,
+            Feature feature
+    ) {
+        Store store =
+                storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                feature
+        );
+
+        return store;
+    }
+
 }

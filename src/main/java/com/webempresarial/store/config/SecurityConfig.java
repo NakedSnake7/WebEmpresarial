@@ -261,6 +261,30 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Catalog product listing.
+                 *
+                 * /admin/productos belongs to adminSecurity because it
+                 * already lives under /admin/**.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/productos"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed for unsupported methods on the product list.
+                 */
+                .requestMatchers(
+                    "/admin/productos"
+                )
+                .denyAll()
+
+                /*
                  * Inventory administration.
                  *
                  * All these URLs belong to adminSecurity because they live
@@ -453,26 +477,151 @@ public class SecurityConfig {
                 ).permitAll()
 
                 /*
-                 * Legacy Commerce administration routes.
+                 * Legacy catalog administration routes.
                  *
-                 * These endpoints still live outside /admin/** and
-                 * /api/admin/**, so they must not fall through to the
-                 * generic authenticated-user rule.
+                 * These endpoints still live outside /admin/**, so their
+                 * permissions belong to this SecurityFilterChain.
+                 */
+
+                /*
+                 * Product creation.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/nuevo"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_CREATE
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/nuevo"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_CREATE
+                        .authority()
+                )
+
+                /*
+                 * Product editing views.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/editar/*",
+                    "/modificar-precios"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_EDIT
+                        .authority()
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/editar/*"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Variant stock belongs to inventory administration,
+                 * not to commercial product editing.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/variantes/*/stock"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .INVENTORY_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Product API reads.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/productos",
+                    "/api/productos/*"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Editing a product image is an edit operation.
+                 */
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/api/productos/*/eliminar-imagen/*"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Deleting the product itself is deliberately more
+                 * privileged than editing it.
+                 */
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/api/productos/*"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_DELETE
+                        .authority()
+                )
+
+                /*
+                 * Product and price mutations.
+                 *
+                 * toggleCategoria changes product visibility by category;
+                 * it does not administer the category entity itself.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/productos/editar/*",
+                    "/api/productos/togglePromocion",
+                    "/api/productos/toggleVisibility",
+                    "/api/productos/toggleCategoria",
+                    "/api/productos/actualizarPrecio",
+                    "/api/productos/ajustarPrecioCategoria",
+                    "/api/variantes/actualizarPrecio"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .PRODUCT_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * future catalog operations require explicit classification.
                  */
                 .requestMatchers(
                     "/nuevo",
                     "/editar/**",
                     "/modificar-precios",
                     "/variantes/**",
+                    "/api/productos",
                     "/api/productos/**",
+                    "/api/variantes",
                     "/api/variantes/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "STORE_STAFF"
-                )
+                .denyAll()
 
                 /*
                  * Order administration.
