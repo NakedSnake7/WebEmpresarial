@@ -10,9 +10,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.webempresarial.store.dto.inventory.InventoryAdjustmentRequestDTO;
 import com.webempresarial.store.commerce.domain.inventory.InventoryMovementType;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.inventory.InventoryAdjustmentService;
 import com.webempresarial.store.commerce.application.inventory.InventoryProductDetailService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 
 @Controller
@@ -22,15 +24,18 @@ public class InventoryProductController {
     private final InventoryProductDetailService detailService;
     private final InventoryAdjustmentService adjustmentService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public InventoryProductController(
             InventoryProductDetailService detailService,
             InventoryAdjustmentService adjustmentService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.detailService = detailService;
         this.adjustmentService = adjustmentService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping("/{id}/inventory")
@@ -40,6 +45,11 @@ public class InventoryProductController {
             HttpServletRequest request
     ) {
         Store store = storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.INVENTORY
+        );
 
         model.addAttribute(
                 "inventory",
@@ -72,6 +82,11 @@ public class InventoryProductController {
             HttpServletRequest request
     ) {
         Store store = storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.INVENTORY
+        );
 
         try {
             adjustmentService.adjust(

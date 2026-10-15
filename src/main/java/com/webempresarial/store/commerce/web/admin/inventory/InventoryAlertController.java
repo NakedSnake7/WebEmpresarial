@@ -9,8 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 
 @Controller
@@ -19,13 +21,16 @@ public class InventoryAlertController {
 
     private final InventoryPersistentAlertService alertService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public InventoryAlertController(
             InventoryPersistentAlertService alertService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.alertService = alertService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
@@ -35,6 +40,11 @@ public class InventoryAlertController {
     ) {
         Store store =
                 storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.INVENTORY
+        );
 
         model.addAttribute(
                 "activeAlerts",
@@ -63,6 +73,11 @@ public class InventoryAlertController {
     ) {
         Store store =
                 storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.INVENTORY
+        );
 
         String username =
                 principal != null

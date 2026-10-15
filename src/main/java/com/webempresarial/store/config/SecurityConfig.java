@@ -261,6 +261,57 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Inventory administration.
+                 *
+                 * All these URLs belong to adminSecurity because they live
+                 * under /admin/**.
+                 */
+
+                /*
+                 * Inventory mutations.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/productos/*/inventory/adjust",
+                    "/admin/inventory/alerts/*/acknowledge"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .INVENTORY_EDIT
+                        .authority()
+                )
+
+                /*
+                 * Inventory reads: dashboard, product stock detail,
+                 * alerts and Kardex views.
+                 *
+                 * FeatureAccessService independently distinguishes
+                 * INVENTORY from INVENTORY_KARDEX.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/inventory",
+                    "/admin/inventory/**",
+                    "/admin/productos/*/inventory"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .INVENTORY_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed for future inventory operations.
+                 */
+                .requestMatchers(
+                    "/admin/inventory",
+                    "/admin/inventory/**",
+                    "/admin/productos/*/inventory",
+                    "/admin/productos/*/inventory/**"
+                )
+                .denyAll()
+
+                /*
                  * Order exports.
                  *
                  * These URLs belong to adminSecurity because they are under

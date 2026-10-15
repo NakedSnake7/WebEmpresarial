@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import com.webempresarial.store.dto.inventory.InventoryMovementRowDTO;
 import com.webempresarial.store.commerce.domain.inventory.InventoryMovement;
 import com.webempresarial.store.commerce.domain.inventory.InventoryMovementType;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.inventory.InventoryMovementService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
 
@@ -26,16 +28,19 @@ public class InventoryMovementController {
     private final InventoryMovementService inventoryMovementService;
     private final ProductoService productoService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public InventoryMovementController(
             InventoryMovementService inventoryMovementService,
             ProductoService productoService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.inventoryMovementService =
                 inventoryMovementService;
         this.productoService = productoService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping("/movements")
@@ -65,6 +70,11 @@ public class InventoryMovementController {
     ) {
         Store store =
                 storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.INVENTORY_KARDEX
+        );
 
         LocalDateTime fromDate =
                 from != null
