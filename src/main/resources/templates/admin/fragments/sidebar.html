@@ -317,15 +317,6 @@
     Configuración
 </div>
 
-<a href="/admin/users"
-   class="sidebar-link"
-   th:if="${canViewTeam}"
-   th:classappend="${currentPath.startsWith('/admin/users')}
-                    ? ' active' : ''">
-    <span class="sidebar-icon">👥</span>
-    <span class="sidebar-text">Equipo</span>
-</a>
-
 <a href="/admin/store/settings"
    class="sidebar-link"
    th:if="${canManageStoreSettings}"

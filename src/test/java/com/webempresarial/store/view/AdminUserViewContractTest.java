@@ -84,21 +84,23 @@ class AdminUserViewContractTest {
     }
 
     @Test
-    void sidebarMustExposeTeamOnlyThroughPermission()
+    void sidebarMustNotHardcodeTeamModule()
             throws IOException {
 
         String html = read(
                 "templates/admin/fragments/sidebar.html"
         );
 
+        /*
+         * /admin/users pertenece al catálogo dinámico
+         * Feature.MULTI_USER.
+         *
+         * No debe existir una segunda entrada estática que
+         * ignore el plan de la tienda.
+         */
         assertThat(html)
-                .contains(
+                .doesNotContain(
                         "href=\"/admin/users\""
-                );
-
-        assertThat(html)
-                .contains(
-                        "th:if=\"${canViewTeam}\""
                 );
     }
 

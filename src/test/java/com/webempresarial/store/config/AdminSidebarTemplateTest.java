@@ -39,6 +39,7 @@ class AdminSidebarTemplateTest {
         String html = renderSidebar(
                 true,
                 false,
+                true,
                 "/admin/dashboard"
         );
 
@@ -50,6 +51,7 @@ class AdminSidebarTemplateTest {
     void shouldShowBillingForStoreAdmin() {
         String html = renderSidebar(
                 false,
+                true,
                 true,
                 "/admin/dashboard"
         );
@@ -63,6 +65,7 @@ class AdminSidebarTemplateTest {
         String html = renderSidebar(
                 false,
                 false,
+                false,
                 "/admin/dashboard"
         );
 
@@ -73,6 +76,7 @@ class AdminSidebarTemplateTest {
     private String renderSidebar(
             boolean isSuperAdmin,
             boolean isStoreAdmin,
+            boolean canViewBilling,
             String currentPath
     ) {
         Context context = new Context();
@@ -81,6 +85,7 @@ class AdminSidebarTemplateTest {
                 Map.of(
                         "isSuperAdmin", isSuperAdmin,
                         "isStoreAdmin", isStoreAdmin,
+                        "canViewBilling", canViewBilling,
                         "currentPlan", "BASIC",
                         "theme", "WebEmpresarial"
                 )

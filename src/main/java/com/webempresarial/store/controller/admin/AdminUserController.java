@@ -2,8 +2,10 @@ package com.webempresarial.store.controller.admin;
 
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.AdminUserService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +21,16 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public AdminUserController(
             AdminUserService adminUserService,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.adminUserService = adminUserService;
         this.storeContextService = storeContextService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
@@ -35,7 +40,7 @@ public class AdminUserController {
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(
+                currentStoreWithMultiUser(
                         request
                 );
 
@@ -62,7 +67,7 @@ public class AdminUserController {
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(
+                currentStoreWithMultiUser(
                         request
                 );
 
@@ -101,7 +106,7 @@ public class AdminUserController {
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(
+                currentStoreWithMultiUser(
                         request
                 );
 
@@ -122,7 +127,7 @@ public class AdminUserController {
     ) {
 
         Store store =
-                storeContextService.getCurrentStore(
+                currentStoreWithMultiUser(
                         request
                 );
 
@@ -133,6 +138,33 @@ public class AdminUserController {
         );
 
         return "redirect:/admin/users";
+    }
+
+    /**
+     * Resuelve el tenant actual y comprueba que su plan
+     * incluya administración multiusuario.
+     *
+     * Si MULTI_USER está bloqueado, FeatureAccessService
+     * lanza FeatureLockedException y el handler global
+     * redirige a:
+     *
+     * /admin/upgrade?feature=MULTI_USER
+     */
+    private Store currentStoreWithMultiUser(
+            HttpServletRequest request
+    ) {
+
+        Store store =
+                storeContextService.getCurrentStore(
+                        request
+                );
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.MULTI_USER
+        );
+
+        return store;
     }
 
     private AdminRole currentRole(
@@ -147,11 +179,6 @@ public class AdminUserController {
             );
         }
 
-        /*
-         * El orden es intencional.
-         * Un usuario administrativo debe tener un único ROLE_*,
-         * pero priorizamos siempre el de mayor privilegio.
-         */
         AdminRole[] precedence = {
                 AdminRole.SUPER_ADMIN,
                 AdminRole.STORE_OWNER,

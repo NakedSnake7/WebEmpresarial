@@ -39,6 +39,7 @@ public class PlatformFeatures implements PlatformModule {
                                         "/admin/users",
                                         Feature.MULTI_USER,
                                         AdminRole.SUPER_ADMIN,
+                                        AdminRole.STORE_OWNER,
                                         AdminRole.STORE_ADMIN
                                 )
                                 .build()
@@ -110,7 +111,7 @@ public class PlatformFeatures implements PlatformModule {
                 .url("/admin/users")
                 .healthWeight(4)
                 .order(330)
-                .accessPolicy(premium())
+                .accessPolicy(pro())
                 .presentation(visible(true, false, false))
                 .build();
     }

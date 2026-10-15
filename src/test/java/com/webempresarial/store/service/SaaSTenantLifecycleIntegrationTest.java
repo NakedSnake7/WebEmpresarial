@@ -169,7 +169,7 @@ class SaaSTenantLifecycleIntegrationTest {
 
         assertThat(admin.getRole())
                 .isEqualTo(
-                        AdminRole.STORE_ADMIN
+                        AdminRole.STORE_OWNER
                 );
 
         assertThat(admin.getStore().getId())
