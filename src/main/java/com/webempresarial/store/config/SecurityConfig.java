@@ -440,7 +440,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     HttpMethod.GET,
                     "/admin/orders/excel",
-                    "/admin/orders/pdf"
+                    "/admin/orders/pdf",
+                    "/admin/reports/products/excel",
+                    "/admin/reports/products/pdf"
                 )
                 .hasAuthority(
                     AdminPermission

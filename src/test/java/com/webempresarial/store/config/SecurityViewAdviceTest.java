@@ -81,6 +81,27 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void analyticsPermissionShouldControlReportsVisibility() {
+
+        Authentication allowed = authentication(
+                "ROLE_STORE_ADMIN",
+                AdminPermission.ANALYTICS_VIEW.authority()
+        );
+
+        Authentication denied = authentication(
+                "ROLE_STORE_ADMIN"
+        );
+
+        assertThat(
+                advice.canViewAnalytics(allowed)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewAnalytics(denied)
+        ).isFalse();
+    }
+
+    @Test
     void salesShouldBeDetectedWithoutBillingOrSettingsAccess() {
 
         Authentication auth = authentication(
@@ -118,6 +139,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageBilling(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewAnalytics(null)
         ).isFalse();
 
         assertThat(

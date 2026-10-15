@@ -192,6 +192,46 @@ class OrdersAdminAuthorizationMockMvcTest {
     }
 
     @Test
+    void productSalesExportsShouldRequireOrderView()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/reports/products/excel")
+                        .with(
+                                user("admin@stride.test")
+                                        .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(
+                status().isForbidden()
+        );
+
+        mockMvc.perform(
+                get("/admin/reports/products/excel")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+
+        mockMvc.perform(
+                get("/admin/reports/products/pdf")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+    }
+
+    @Test
     void orderViewShouldNotAllowMutations()
             throws Exception {
 
@@ -462,6 +502,16 @@ class OrdersAdminAuthorizationMockMvcTest {
 
         @GetMapping("/admin/orders/pdf")
         String pdf() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/reports/products/excel")
+        String productSalesExcel() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/reports/products/pdf")
+        String productSalesPdf() {
             return "OK";
         }
     }

@@ -50,6 +50,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canViewAnalytics")
+    public boolean canViewAnalytics(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.ANALYTICS_VIEW.authority()
+        );
+    }
+
     @ModelAttribute("canViewTeam")
     public boolean canViewTeam(Authentication auth) {
         return hasAuthority(

@@ -16,7 +16,8 @@
         <a th:href="@{/crm/dashboard}">Dashboard</a>
         <a th:href="@{/crm/pipeline}">Pipeline</a>
         <a th:href="@{/crm/tasks}">Tareas</a>
-        <a th:href="@{/crm/reports}">Reportes</a>
+        <a th:if="${canViewAnalytics}"
+           th:href="@{/crm/reports}">Reportes</a>
     </nav>
 
 </aside>
