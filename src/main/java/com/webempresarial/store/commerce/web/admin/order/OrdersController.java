@@ -3,9 +3,11 @@ package com.webempresarial.store.commerce.web.admin.order;
 import com.webempresarial.store.commerce.domain.order.Order; 
 import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.order.OrderAuditService;
 import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,15 +29,18 @@ public class OrdersController {
     private final OrderService orderService;
     private final StoreResolver storeResolver;
     private final OrderAuditService orderAuditService;
+    private final FeatureAccessService featureAccessService;
     
     public OrdersController(
             OrderService orderService,
             StoreResolver storeResolver,
-            OrderAuditService orderAuditService
+            OrderAuditService orderAuditService,
+            FeatureAccessService featureAccessService
     ) {
         this.orderService = orderService;
         this.storeResolver = storeResolver;
         this.orderAuditService = orderAuditService;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping
@@ -53,7 +58,7 @@ public class OrdersController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         List<Order> orders = orderService.filterOrders(
                 from,
@@ -92,7 +97,7 @@ public class OrdersController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         Order order = orderService.getOrderByIdWithUserAndItems(
                 id,
@@ -118,7 +123,7 @@ public class OrdersController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         try {
             orderService.confirmarPagoTransferencia(id, store);
@@ -148,7 +153,7 @@ public class OrdersController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         try {
             orderService.updateShippingInfo(
@@ -180,7 +185,7 @@ public class OrdersController {
             RedirectAttributes redirectAttributes,
             HttpServletRequest request
     ) {
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         try {
             orderService.cancelOrder(id, store);
@@ -214,7 +219,7 @@ public class OrdersController {
             HttpServletRequest request
     ) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         Order order = orderService.updateOrderStatus(
                 id,
@@ -228,5 +233,21 @@ public class OrdersController {
         response.put("badge", order.getOrderStatusBadge());
 
         return response;
+    }
+
+    private Store currentStoreWithOrders(
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeResolver.getCurrentStore(
+                        request
+                );
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.ORDERS
+        );
+
+        return store;
     }
 }

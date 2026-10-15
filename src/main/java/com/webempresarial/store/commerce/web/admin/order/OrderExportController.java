@@ -5,8 +5,10 @@ import com.itextpdf.text.pdf.*;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,13 +33,16 @@ public class OrderExportController {
 
     private final OrderService orderService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public OrderExportController(
             OrderService orderService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.orderService = orderService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     private final DateTimeFormatter formatter =
@@ -55,7 +60,7 @@ public class OrderExportController {
             HttpServletResponse response
     ) throws IOException {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         LocalDateTime fromDT =
                 from != null ? from.atStartOfDay() : null;
@@ -135,7 +140,7 @@ public class OrderExportController {
             HttpServletResponse response
     ) throws Exception {
 
-        Store store = storeResolver.getCurrentStore(request);
+        Store store = currentStoreWithOrders(request);
 
         LocalDateTime fromDate =
                 from != null ? from.atStartOfDay() : null;
@@ -280,5 +285,21 @@ public class OrderExportController {
 
         document.add(table);
         document.close();
+    }
+
+    private Store currentStoreWithOrders(
+            HttpServletRequest request
+    ) {
+        Store store =
+                storeResolver.getCurrentStore(
+                        request
+                );
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.ORDERS
+        );
+
+        return store;
     }
 }

@@ -4,6 +4,7 @@ import com.webempresarial.store.commerce.application.inventory.InventoryPersiste
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
 import com.webempresarial.store.service.FeatureAccessService;
@@ -16,11 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -41,37 +47,48 @@ class OrdersAdminAuthorizationMockMvcTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler;
+    private AdminAuthenticationSuccessHandler
+            adminAuthenticationSuccessHandler;
 
     @MockitoBean
-    private AdminUserDetailsService adminUserDetailsService;
+    private AdminUserDetailsService
+            adminUserDetailsService;
 
     @MockitoBean
-    private AuthUserDetailsService authUserDetailsService;
+    private AuthUserDetailsService
+            authUserDetailsService;
 
     @MockitoBean
-    private StoreContextService storeContextService;
+    private StoreContextService
+            storeContextService;
 
     @MockitoBean
-    private SidebarRegistry sidebarRegistry;
+    private SidebarRegistry
+            sidebarRegistry;
 
     @MockitoBean
-    private InventoryPersistentAlertService inventoryPersistentAlertService;
+    private InventoryPersistentAlertService
+            inventoryPersistentAlertService;
 
     @MockitoBean
-    private StoreSettingsService storeSettingsService;
+    private StoreSettingsService
+            storeSettingsService;
 
     @MockitoBean
-    private AdminTenantAccessInterceptor adminTenantAccessInterceptor;
+    private AdminTenantAccessInterceptor
+            adminTenantAccessInterceptor;
 
     @MockitoBean
-    private SubscriptionInterceptor subscriptionInterceptor;
+    private SubscriptionInterceptor
+            subscriptionInterceptor;
 
     @MockitoBean
-    private StoreThemeResolver storeThemeResolver;
+    private StoreThemeResolver
+            storeThemeResolver;
 
     @MockitoBean
-    private FeatureAccessService featureAccessService;
+    private FeatureAccessService
+            featureAccessService;
 
     @Test
     void clientShouldNotAccessOrdersAdministration()
@@ -79,86 +96,325 @@ class OrdersAdminAuthorizationMockMvcTest {
 
         mockMvc.perform(
                 get("/orders")
-                        .with(user("cliente@test.local")
-                                .roles("CLIENTE"))
+                        .with(
+                                user("cliente@test.local")
+                                        .roles("CLIENTE")
+                        )
         )
-        .andExpect(status().isForbidden());
+        .andExpect(
+                status().isForbidden()
+        );
 
         mockMvc.perform(
                 get("/orders/1")
-                        .with(user("cliente@test.local")
-                                .roles("CLIENTE"))
+                        .with(
+                                user("cliente@test.local")
+                                        .roles("CLIENTE")
+                        )
         )
-        .andExpect(status().isForbidden());
+        .andExpect(
+                status().isForbidden()
+        );
     }
 
     @Test
-    void clientShouldNotMutateOrders()
+    void adminRoleAloneShouldNotGrantOrderAccess()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/orders")
+                        .with(
+                                user("admin@stride.test")
+                                        .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(
+                status().isForbidden()
+        );
+    }
+
+    @Test
+    void orderViewShouldAllowReads()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/orders")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+
+        mockMvc.perform(
+                get("/orders/1")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+    }
+
+    @Test
+    void orderViewShouldAllowExports()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/orders/excel")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+
+        mockMvc.perform(
+                get("/admin/orders/pdf")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        );
+    }
+
+    @Test
+    void orderViewShouldNotAllowMutations()
             throws Exception {
 
         mockMvc.perform(
                 post("/orders/1/confirm-payment")
-                        .with(user("cliente@test.local")
-                                .roles("CLIENTE"))
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
                         .with(csrf())
         )
-        .andExpect(status().isForbidden());
+        .andExpect(
+                status().isForbidden()
+        );
 
         mockMvc.perform(
                 post("/orders/1/cancel")
-                        .with(user("cliente@test.local")
-                                .roles("CLIENTE"))
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW
+                                )
+                        )
                         .with(csrf())
         )
-        .andExpect(status().isForbidden());
+        .andExpect(
+                status().isForbidden()
+        );
+    }
+
+    @Test
+    void orderUpdateShouldAllowDayToDayProcessing()
+            throws Exception {
+
+        RequestPostProcessor admin =
+                adminWith(
+                        AdminPermission.ORDER_UPDATE
+                );
+
+        mockMvc.perform(
+                post("/orders/1/confirm-payment")
+                        .with(admin)
+                        .with(csrf())
+        )
+        .andExpect(
+                status().isOk()
+        );
+
+        mockMvc.perform(
+                post("/orders/update-shipping")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().isOk()
+        );
 
         mockMvc.perform(
                 post("/orders/1/status-ajax")
-                        .with(user("cliente@test.local")
-                                .roles("CLIENTE"))
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
                         .with(csrf())
         )
-        .andExpect(status().isForbidden());
+        .andExpect(
+                status().isOk()
+        );
     }
 
     @Test
-    void storeAdminShouldAccessOrdersAdministration()
+    void orderUpdateShouldNotAllowCancellation()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/orders/1/cancel")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().isForbidden()
+        );
+    }
+
+    @Test
+    void orderCancelShouldAllowCancellation()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/orders/1/cancel")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_CANCEL
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().isOk()
+        );
+    }
+
+    @Test
+    void storeStaffPermissionsShouldNotAllowCancellation()
             throws Exception {
 
         mockMvc.perform(
                 get("/orders")
-                        .with(user("admin@stride.test")
-                                .roles("STORE_ADMIN"))
+                        .with(
+                                staffWith(
+                                        AdminPermission.ORDER_VIEW,
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
         )
-        .andExpect(status().isOk());
+        .andExpect(
+                status().isOk()
+        );
+
+        mockMvc.perform(
+                post("/orders/1/status-ajax")
+                        .with(
+                                staffWith(
+                                        AdminPermission.ORDER_VIEW,
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(
+                status().isOk()
+        );
 
         mockMvc.perform(
                 post("/orders/1/cancel")
-                        .with(user("admin@stride.test")
-                                .roles("STORE_ADMIN"))
+                        .with(
+                                staffWith(
+                                        AdminPermission.ORDER_VIEW,
+                                        AdminPermission.ORDER_UPDATE
+                                )
+                        )
                         .with(csrf())
         )
-        .andExpect(status().isOk());
+        .andExpect(
+                status().isForbidden()
+        );
     }
 
     @Test
-    void storeStaffShouldAccessOrdersAdministration()
+    void unknownOrderOperationsShouldFailClosed()
             throws Exception {
 
         mockMvc.perform(
-                get("/orders")
-                        .with(user("staff@stride.test")
-                                .roles("STORE_STAFF"))
-        )
-        .andExpect(status().isOk());
-
-        mockMvc.perform(
-                post("/orders/1/cancel")
-                        .with(user("staff@stride.test")
-                                .roles("STORE_STAFF"))
+                post("/orders/1/reopen")
+                        .with(
+                                adminWith(
+                                        AdminPermission.ORDER_VIEW,
+                                        AdminPermission.ORDER_UPDATE,
+                                        AdminPermission.ORDER_CANCEL
+                                )
+                        )
                         .with(csrf())
         )
-        .andExpect(status().isOk());
+        .andExpect(
+                status().isForbidden()
+        );
+    }
+
+    private RequestPostProcessor adminWith(
+            AdminPermission... permissions
+    ) {
+        return userWithRole(
+                "STORE_ADMIN",
+                "admin@stride.test",
+                permissions
+        );
+    }
+
+    private RequestPostProcessor staffWith(
+            AdminPermission... permissions
+    ) {
+        return userWithRole(
+                "STORE_STAFF",
+                "staff@stride.test",
+                permissions
+        );
+    }
+
+    private RequestPostProcessor userWithRole(
+            String role,
+            String username,
+            AdminPermission... permissions
+    ) {
+
+        SimpleGrantedAuthority[] authorities =
+                Stream.concat(
+                        Stream.of(
+                                new SimpleGrantedAuthority(
+                                        "ROLE_" + role
+                                )
+                        ),
+                        Arrays.stream(permissions)
+                                .map(permission ->
+                                        new SimpleGrantedAuthority(
+                                                permission.authority()
+                                        )
+                                )
+                )
+                .toArray(
+                        SimpleGrantedAuthority[]::new
+                );
+
+        return user(username)
+                .authorities(authorities);
     }
 
     @RestController
@@ -179,6 +435,11 @@ class OrdersAdminAuthorizationMockMvcTest {
             return "OK";
         }
 
+        @PostMapping("/orders/update-shipping")
+        String updateShipping() {
+            return "OK";
+        }
+
         @PostMapping("/orders/{id}/cancel")
         String cancelOrder() {
             return "OK";
@@ -186,6 +447,21 @@ class OrdersAdminAuthorizationMockMvcTest {
 
         @PostMapping("/orders/{id}/status-ajax")
         String updateStatus() {
+            return "OK";
+        }
+
+        @PostMapping("/orders/{id}/reopen")
+        String reopenOrder() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/orders/excel")
+        String excel() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/orders/pdf")
+        String pdf() {
             return "OK";
         }
     }

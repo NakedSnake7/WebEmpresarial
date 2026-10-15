@@ -261,6 +261,24 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Order exports.
+                 *
+                 * These URLs belong to adminSecurity because they are under
+                 * /admin/**. Exporting is considered an alternate view of
+                 * order data, not a separate analytics entitlement.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/orders/excel",
+                    "/admin/orders/pdf"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .ORDER_VIEW
+                        .authority()
+                )
+
+                /*
                  * Todos los perfiles administrativos pueden entrar
                  * al dashboard principal.
                  *
@@ -406,22 +424,66 @@ public class SecurityConfig {
                 )
 
                 /*
-                 * Legacy order administration routes.
+                 * Order administration.
                  *
-                 * The admin order UI still lives under /orders rather than
-                 * /admin/orders, so it must not fall through to the generic
-                 * authenticated-user rule.
+                 * /orders/** still lives outside /admin/**, therefore
+                 * permissions must be enforced in this filter chain.
+                 */
+
+                /*
+                 * Cancellation is deliberately more privileged than normal
+                 * order processing because it changes order lifecycle and
+                 * restores inventory.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/orders/*/cancel"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .ORDER_CANCEL
+                        .authority()
+                )
+
+                /*
+                 * Day-to-day order processing.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/orders/*/confirm-payment",
+                    "/orders/update-shipping",
+                    "/orders/*/status-ajax"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .ORDER_UPDATE
+                        .authority()
+                )
+
+                /*
+                 * Order listing and detail.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/orders",
+                    "/orders/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .ORDER_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * new order administration operations must receive an
+                 * explicit permission before becoming accessible.
                  */
                 .requestMatchers(
                     "/orders",
                     "/orders/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "STORE_STAFF"
-                )
+                .denyAll()
 
                 /*
                  * CRM administration routes.
