@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.webempresarial.store.exception.ImageUploadException;
 import com.webempresarial.store.exceptions.FeatureNotAllowedException;
+import com.webempresarial.store.exceptions.FeatureLockedException;
 import com.webempresarial.store.service.ProductoService;
 
 import java.io.IOException;
@@ -113,6 +114,32 @@ public class RestExceptionHandler {
                 ));
     }
     
+    // =====================================
+    // FEATURE BLOQUEADA POR PLAN
+    // =====================================
+    @ExceptionHandler(FeatureLockedException.class)
+    public ResponseEntity<?> handleFeatureLocked(
+            FeatureLockedException ex
+    ) {
+
+        log.warn(
+                "Feature bloqueada por plan: {}",
+                ex.getFeature()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                        "success", false,
+                        "error", "FEATURE_LOCKED",
+                        "feature", ex.getFeature().name(),
+                        "message", ex.getMessage(),
+                        "upgradeUrl",
+                        "/admin/upgrade?feature="
+                                + ex.getFeature().name()
+                ));
+    }
+
  // =====================================
  // FEATURE NO PERMITIDA POR PLAN
  // =====================================

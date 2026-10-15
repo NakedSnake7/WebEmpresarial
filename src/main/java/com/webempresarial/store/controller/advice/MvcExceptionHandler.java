@@ -10,9 +10,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.webempresarial.store.exception.ImageUploadException;
+import com.webempresarial.store.exceptions.FeatureLockedException;
 import com.webempresarial.store.service.ProductoService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +38,24 @@ public class MvcExceptionHandler {
 
         model.addAttribute("error", ex.getMessage());
         return "error";
+    }
+
+    // =====================================
+    // FEATURE BLOQUEADA POR PLAN
+    // =====================================
+    @ExceptionHandler(FeatureLockedException.class)
+    public String handleFeatureLocked(
+            FeatureLockedException ex,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        redirectAttributes.addFlashAttribute(
+                "lockedFeature",
+                ex.getFeature().name()
+        );
+
+        return "redirect:/admin/upgrade?feature="
+                + ex.getFeature().name();
     }
 
     // =====================================
