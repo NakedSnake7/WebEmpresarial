@@ -50,12 +50,6 @@ public class SecurityConfig {
                 "/api/knowledge/**"
             )
 
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers(
-                    "/api/admin/stripe/connect/**"
-                )
-            )
-
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/admin/login",

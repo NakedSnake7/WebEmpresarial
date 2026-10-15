@@ -63,6 +63,28 @@ class StripeConnectFrontendContractTest {
                 .isEqualTo(1);
     }
 
+    @Test
+    void stripeConnectOnboardingShouldSendCsrfToken()
+            throws IOException {
+
+        String layout = read(
+                "admin/layout/main.html"
+        );
+
+        assertThat(layout)
+                .contains("name=\"_csrf\"")
+                .contains("name=\"_csrf_header\"")
+                .contains("const csrfToken")
+                .contains("const csrfHeader")
+                .contains(
+                        "headers[csrfHeader] = csrfToken"
+                )
+                .contains(
+                        "\"/api/admin/stripe/connect/onboarding\""
+                )
+                .contains("method: \"POST\"");
+    }
+
     private String read(String relativePath)
             throws IOException {
 

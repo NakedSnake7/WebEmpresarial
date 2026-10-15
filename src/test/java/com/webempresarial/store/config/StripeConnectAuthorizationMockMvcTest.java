@@ -106,6 +106,18 @@ class StripeConnectAuthorizationMockMvcTest {
                                 user("owner@acme.test")
                                         .roles("STORE_OWNER")
                         )
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void managePermissionWithoutCsrfShouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/api/admin/stripe/connect/onboarding")
+                        .with(stripeManager())
         )
         .andExpect(status().isForbidden());
     }
@@ -116,6 +128,7 @@ class StripeConnectAuthorizationMockMvcTest {
         mockMvc.perform(
                 post("/api/admin/stripe/connect/onboarding")
                         .with(stripeManager())
+                        .with(csrf())
         )
         .andExpect(status().isOk());
     }
@@ -148,6 +161,7 @@ class StripeConnectAuthorizationMockMvcTest {
                                                 .PAYMENT_METHOD_MANAGE
                                 )
                         )
+                        .with(csrf())
         )
         .andExpect(status().isForbidden());
     }
