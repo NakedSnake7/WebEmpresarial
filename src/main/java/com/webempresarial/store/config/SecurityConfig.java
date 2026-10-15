@@ -220,6 +220,23 @@ public class SecurityConfig {
                 )
                 .denyAll()
 
+                /*
+                 * CRM store configuration.
+                 *
+                 * These routes configure tenant-level CRM behavior,
+                 * so commercial users such as SALES must not inherit
+                 * access only because they have CRM_EDIT.
+                 */
+                .requestMatchers(
+                    "/admin/store/crm",
+                    "/admin/store/crm/**"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STORE_EDIT
+                        .authority()
+                )
+
                 .requestMatchers(
                     "/admin/store/settings/**"
                 )
