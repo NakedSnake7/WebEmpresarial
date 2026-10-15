@@ -74,6 +74,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageStripeConnect")
+    public boolean canManageStripeConnect(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.STRIPE_CONNECT_MANAGE.authority()
+        );
+    }
+
     private boolean hasRole(
             Authentication auth,
             String role

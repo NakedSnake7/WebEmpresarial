@@ -37,6 +37,7 @@ import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.AdminUserRepository;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StripeConnectService;
 import com.webempresarial.store.theme.ThemeModelAdvice;
@@ -70,6 +71,9 @@ class StripeConnectTenantIsolationMockMvcTest {
 
     @MockitoBean
     private StoreContextService storeContextService;
+
+    @MockitoBean
+    private FeatureAccessService featureAccessService;
 
 
 

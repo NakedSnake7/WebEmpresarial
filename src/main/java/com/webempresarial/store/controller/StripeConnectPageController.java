@@ -6,7 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StripeConnectService;
 
@@ -15,16 +17,21 @@ public class StripeConnectPageController {
 
     private final StripeConnectService stripeConnectService;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public StripeConnectPageController(
             StripeConnectService stripeConnectService,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.stripeConnectService =
                 stripeConnectService;
 
         this.storeContextService =
                 storeContextService;
+
+        this.featureAccessService =
+                featureAccessService;
     }
 
     @GetMapping("/admin/stripe/connect/return")
@@ -35,6 +42,11 @@ public class StripeConnectPageController {
         Store store =
                 storeContextService
                         .getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.STRIPE_CONNECT
+        );
 
         boolean connected =
                 stripeConnectService
@@ -57,6 +69,15 @@ public class StripeConnectPageController {
     public RedirectView connectRefresh(
             HttpServletRequest request
     ) {
+
+        Store store =
+                storeContextService
+                        .getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.STRIPE_CONNECT
+        );
 
         /*
          * Stripe Account Links son de un solo uso.

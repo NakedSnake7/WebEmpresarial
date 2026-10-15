@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.webempresarial.store.dto.billing.StripeConnectOnboardingResponseDTO;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StripeConnectService;
 
@@ -16,13 +18,16 @@ public class StripeConnectController {
 
     private final StripeConnectService stripeConnectService;
     private final StoreContextService storeContextService;
+    private final FeatureAccessService featureAccessService;
 
     public StripeConnectController(
             StripeConnectService stripeConnectService,
-            StoreContextService storeContextService
+            StoreContextService storeContextService,
+            FeatureAccessService featureAccessService
     ) {
         this.stripeConnectService = stripeConnectService;
         this.storeContextService = storeContextService;
+        this.featureAccessService = featureAccessService;
     }
 
     @PostMapping("/onboarding")
@@ -33,6 +38,11 @@ public class StripeConnectController {
 
         Store store =
                 storeContextService.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.STRIPE_CONNECT
+        );
 
         String baseUrl =
                 resolveBaseUrl(request);

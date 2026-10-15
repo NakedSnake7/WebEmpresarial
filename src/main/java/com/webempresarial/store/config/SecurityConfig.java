@@ -312,18 +312,54 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
-                 * Stripe Connect modifica la relación financiera entre
-                 * la plataforma y la tienda, por lo que queda reservado
-                 * al propietario del tenant.
+                 * Stripe Connect.
+                 *
+                 * Modifica la relación financiera entre la plataforma
+                 * y la tienda, por lo que requiere un permiso explícito.
+                 *
+                 * El plan se valida independientemente dentro de los
+                 * controllers mediante Feature.STRIPE_CONNECT.
+                 */
+
+                /*
+                 * Inicio de onboarding.
                  */
                 .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/admin/stripe/connect/onboarding"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STRIPE_CONNECT_MANAGE
+                        .authority()
+                )
+
+                /*
+                 * Callbacks del onboarding.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/stripe/connect/return",
+                    "/admin/stripe/connect/refresh"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .STRIPE_CONNECT_MANAGE
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier futura operación de Stripe Connect debe
+                 * recibir autorización explícita.
+                 */
+                .requestMatchers(
+                    "/admin/stripe/connect",
                     "/admin/stripe/connect/**",
+                    "/api/admin/stripe/connect",
                     "/api/admin/stripe/connect/**"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER"
-                )
+                .denyAll()
 
                 /*
                  * Catalog product listing.

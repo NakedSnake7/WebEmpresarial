@@ -1,6 +1,7 @@
 package com.webempresarial.store.controller.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.webempresarial.store.dto.billing.StripeConnectOnboardingResponseDTO;
+import com.webempresarial.store.exceptions.FeatureLockedException;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StripeConnectService;
 
@@ -17,6 +21,7 @@ class StripeConnectControllerTest {
 
     private StripeConnectService stripeConnectService;
     private StoreContextService storeContextService;
+    private FeatureAccessService featureAccessService;
     private HttpServletRequest request;
     private Store store;
 
@@ -31,6 +36,9 @@ class StripeConnectControllerTest {
         storeContextService =
                 mock(StoreContextService.class);
 
+        featureAccessService =
+                mock(FeatureAccessService.class);
+
         request =
                 mock(HttpServletRequest.class);
 
@@ -40,7 +48,8 @@ class StripeConnectControllerTest {
         controller =
                 new StripeConnectController(
                         stripeConnectService,
-                        storeContextService
+                        storeContextService,
+                        featureAccessService
                 );
 
         when(storeContextService
@@ -92,6 +101,38 @@ class StripeConnectControllerTest {
                         store,
                         "https://stride.web-empresarial.com"
                 );
+    }
+
+    @Test
+    void createOnboarding_shouldStopWhenFeatureIsLocked() {
+
+        doThrow(
+                new FeatureLockedException(
+                        Feature.STRIPE_CONNECT
+                )
+        )
+        .when(featureAccessService)
+        .requireFeature(
+                store,
+                Feature.STRIPE_CONNECT
+        );
+
+        assertThatThrownBy(() ->
+                controller.createOnboarding(request)
+        )
+        .isInstanceOf(
+                FeatureLockedException.class
+        );
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.STRIPE_CONNECT
+                );
+
+        verifyNoInteractions(
+                stripeConnectService
+        );
     }
 
     @Test

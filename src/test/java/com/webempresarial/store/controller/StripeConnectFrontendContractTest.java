@@ -36,6 +36,24 @@ class StripeConnectFrontendContractTest {
                 .contains("id=\"stripeConnectBtn\"");
 
         assertThat(settings)
+                .contains("canManageStripeConnect")
+                .contains(
+                        "features.canUse(store, 'STRIPE_CONNECT')"
+                )
+                .contains("data-stripe-connect-locked")
+                .contains("/admin/upgrade")
+                .contains("STRIPE_CONNECT");
+
+        assertThat(dashboard)
+                .contains("canManageStripeConnect")
+                .contains(
+                        "features.canUse(store, 'STRIPE_CONNECT')"
+                )
+                .contains("data-stripe-connect-locked")
+                .contains("/admin/upgrade")
+                .contains("STRIPE_CONNECT");
+
+        assertThat(settings)
                 .doesNotContain(ENDPOINT);
 
         assertThat(dashboard)

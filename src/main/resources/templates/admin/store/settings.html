@@ -740,7 +740,8 @@
     </div>
 </div>
 
-<div class="card border-0 shadow-sm mb-4">
+<div class="card border-0 shadow-sm mb-4"
+     th:if="${canManageStripeConnect}">
 						<div class="card-body p-4">
 
 							<span class="badge text-bg-primary mb-2"> Stripe Connect </span>
@@ -750,7 +751,7 @@
 							<p class="text-muted">Conecta la cuenta Stripe de esta tienda
 								para recibir pagos directamente.</p>
 
-							<div th:if="${store.stripeConnected}">
+							<div th:if="${features.canUse(store, 'STRIPE_CONNECT') and store.stripeConnected}">
 								<span class="badge text-bg-success mb-2"> Stripe
 									conectado </span>
 
@@ -761,13 +762,25 @@
 									disabled>Cuenta conectada</button>
 							</div>
 
-							<div th:unless="${store.stripeConnected}">
+							<div th:if="${features.canUse(store, 'STRIPE_CONNECT') and !store.stripeConnected}">
 								<span class="badge text-bg-warning mb-3"> Pendiente de
 									conexión </span>
 
 								<button type="button" class="btn btn-dark w-100"
 									id="stripeConnectBtn">Conectar Stripe →</button>
 							</div>
+
+                            <div data-stripe-connect-locked
+                                 th:unless="${features.canUse(store, 'STRIPE_CONNECT')}">
+                                <span class="badge text-bg-secondary mb-3">
+                                    Disponible en PRO
+                                </span>
+
+                                <a th:href="@{/admin/upgrade(feature='STRIPE_CONNECT')}"
+                                   class="btn btn-outline-dark w-100">
+                                    Mejorar plan →
+                                </a>
+                            </div>
 
 						</div>
 					</div>

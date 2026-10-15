@@ -31,6 +31,9 @@ class SecurityViewAdviceTest {
                         .authority(),
                 AdminPermission
                         .STORE_EDIT
+                        .authority(),
+                AdminPermission
+                        .STRIPE_CONNECT_MANAGE
                         .authority()
         );
 
@@ -44,6 +47,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageStoreSettings(auth)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageStripeConnect(auth)
         ).isTrue();
     }
 
@@ -66,6 +73,10 @@ class SecurityViewAdviceTest {
         assertThat(
                 advice.canManageStoreSettings(auth)
         ).isFalse();
+
+        assertThat(
+                advice.canManageStripeConnect(auth)
+        ).isFalse();
     }
 
     @Test
@@ -81,6 +92,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageStoreSettings(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStripeConnect(null)
         ).isFalse();
     }
 
