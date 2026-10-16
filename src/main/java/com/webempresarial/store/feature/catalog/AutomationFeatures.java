@@ -26,7 +26,6 @@ public class AutomationFeatures implements PlatformModule {
                 .sidebarSection(
                         SidebarSectionDefinition.builder("Automatización", "⚡")
                                 .item("WhatsApp", "💬", "/admin/whatsapp", Feature.WHATSAPP_AUTOMATION)
-                                .item("Automatizaciones", "⚡", "/admin/automations", Feature.AUTOMATIONS)
                                 .build()
                 )
 

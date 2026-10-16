@@ -91,6 +91,29 @@ class AutomationFeaturesPresentationContractTest {
         ).isTrue();
     }
 
+    @Test
+    void unimplementedAutomationsShouldNotBeRegisteredInSidebar() {
+
+        var sidebarFeatures =
+                new AutomationFeatures()
+                        .descriptor()
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .map(item -> item.feature())
+                        .toList();
+
+        assertThat(sidebarFeatures)
+                .contains(
+                        Feature.WHATSAPP_AUTOMATION
+                )
+                .doesNotContain(
+                        Feature.AUTOMATIONS
+                );
+    }
+
     private FeatureDefinition definitionFor(
             Feature feature
     ) {
