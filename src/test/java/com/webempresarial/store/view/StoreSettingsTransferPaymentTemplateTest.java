@@ -65,4 +65,31 @@ class StoreSettingsTransferPaymentTemplateTest {
                 .contains("param.transferSuccess")
                 .contains("param.transferError");
     }
+    @Test
+    void shouldRespectTransferPaymentViewAndManagePermissions()
+            throws Exception {
+
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html)
+                .contains(
+                        "th:if=\"${canViewPaymentMethods}\""
+                )
+                .contains(
+                        "th:if=\"${canManagePaymentMethods}\""
+                );
+
+        long disabledControls =
+                html.lines()
+                        .filter(line ->
+                                line.contains(
+                                        "th:disabled=\"${!canManagePaymentMethods}\""
+                                )
+                        )
+                        .count();
+
+        assertThat(disabledControls)
+                .isEqualTo(4);
+    }
+
 }

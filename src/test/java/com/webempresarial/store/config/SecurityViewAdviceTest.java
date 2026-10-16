@@ -131,6 +131,38 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void paymentMethodPermissionsShouldControlViewAndManageIndependently() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission
+                        .PAYMENT_METHOD_VIEW
+                        .authority()
+        );
+
+        Authentication manageOnly = authentication(
+                AdminPermission
+                        .PAYMENT_METHOD_MANAGE
+                        .authority()
+        );
+
+        assertThat(
+                advice.canViewPaymentMethods(viewOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canManagePaymentMethods(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewPaymentMethods(manageOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canManagePaymentMethods(manageOnly)
+        ).isTrue();
+    }
+
+    @Test
     void missingAuthenticationShouldNotGrantAnything() {
 
         assertThat(
@@ -151,6 +183,14 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageStoreSettings(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewPaymentMethods(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManagePaymentMethods(null)
         ).isFalse();
 
         assertThat(

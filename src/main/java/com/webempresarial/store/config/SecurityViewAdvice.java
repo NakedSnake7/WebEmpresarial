@@ -90,6 +90,22 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canViewPaymentMethods")
+    public boolean canViewPaymentMethods(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PAYMENT_METHOD_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canManagePaymentMethods")
+    public boolean canManagePaymentMethods(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PAYMENT_METHOD_MANAGE.authority()
+        );
+    }
+
     @ModelAttribute("canManageStripeConnect")
     public boolean canManageStripeConnect(Authentication auth) {
         return hasAuthority(

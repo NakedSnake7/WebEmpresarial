@@ -609,6 +609,7 @@
 
 
 					<div class="card border-0 shadow-sm mb-4"
+     th:if="${canViewPaymentMethods}"
      data-transfer-payment-settings>
 
     <div class="card-body p-4">
@@ -653,7 +654,8 @@
                     id="transferEnabled"
                     name="transferEnabled"
                     value="true"
-                    th:checked="${settings.transferEnabled}">
+                    th:checked="${settings.transferEnabled}"
+                    th:disabled="${!canManagePaymentMethods}">
 
                 <label
                     class="form-check-label fw-semibold"
@@ -678,6 +680,7 @@
                     name="transferBankName"
                     maxlength="120"
                     th:value="${settings.transferBankName}"
+                    th:disabled="${!canManagePaymentMethods}"
                     placeholder="Ej. BBVA">
 
             </div>
@@ -697,6 +700,7 @@
                     name="transferAccountHolder"
                     maxlength="160"
                     th:value="${settings.transferAccountHolder}"
+                    th:disabled="${!canManagePaymentMethods}"
                     placeholder="Nombre o razón social">
 
             </div>
@@ -718,6 +722,7 @@
                     maxlength="18"
                     pattern="[0-9]{18}"
                     th:value="${settings.transferClabe}"
+                    th:disabled="${!canManagePaymentMethods}"
                     placeholder="18 dígitos"
                     autocomplete="off">
 
@@ -730,6 +735,7 @@
             </div>
 
             <button
+                th:if="${canManagePaymentMethods}"
                 type="submit"
                 class="btn btn-dark w-100">
                 Guardar datos de transferencia
