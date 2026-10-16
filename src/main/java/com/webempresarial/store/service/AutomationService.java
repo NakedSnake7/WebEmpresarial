@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 import com.webempresarial.store.entity.Lead;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.LeadPriority;
 
 import com.webempresarial.store.commerce.infrastructure.order.notification.NotificationService;
@@ -15,15 +16,18 @@ public class AutomationService {
     private final SalesTaskService taskService;
     private final WhatsAppService whatsAppService;
     private final NotificationService notificationService;
+    private final FeatureAccessService featureAccessService;
 
     public AutomationService(
             SalesTaskService taskService,
             WhatsAppService whatsAppService,
-            NotificationService notificationService
+            NotificationService notificationService,
+            FeatureAccessService featureAccessService
     ) {
         this.taskService = taskService;
         this.whatsAppService = whatsAppService;
         this.notificationService = notificationService;
+        this.featureAccessService = featureAccessService;
     }
 
     public void onLeadCreated(Lead lead) {
@@ -53,6 +57,13 @@ public class AutomationService {
     }
 
     public void onLeadNotResponding24h(Lead lead) {
+
+        if (!featureAccessService.canUse(
+                lead.getStore(),
+                Feature.LEADS
+        )) {
+            return;
+        }
 
         taskService.createTask(
                 lead,
