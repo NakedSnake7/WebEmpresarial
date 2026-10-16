@@ -63,7 +63,7 @@ public class AutomationFeatures implements PlatformModule {
                 .healthWeight(8)
                 .order(230)
                 .accessPolicy(premium())
-                .presentation(premiumPresentation())
+                .presentation(unimplementedPresentation())
                 .build();
     }
 
@@ -72,6 +72,16 @@ public class AutomationFeatures implements PlatformModule {
                 .minimumPlan(StorePlan.PREMIUM)
                 .premium(true)
                 .enabled(true)
+                .build();
+    }
+
+    private FeaturePresentation unimplementedPresentation() {
+        return FeaturePresentation.builder()
+                .showInSidebar(false)
+                .showInDashboard(false)
+                .showInBilling(true)
+                .showUpgradeCard(true)
+                .trackUsage(false)
                 .build();
     }
 

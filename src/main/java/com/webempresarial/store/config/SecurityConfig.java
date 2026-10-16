@@ -451,6 +451,33 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Platform automation diagnostics.
+                 *
+                 * Kernel registry and execution history are global
+                 * platform diagnostics. They are not tenant automation
+                 * features and AutomationExecution is not tenant-scoped.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/automations/kernel",
+                    "/admin/automations/history",
+                    "/admin/automations/history/**"
+                )
+                .hasRole("SUPER_ADMIN")
+
+                /*
+                 * Fail closed:
+                 * the tenant-facing /admin/automations module is not
+                 * implemented yet and any future operation must receive
+                 * an explicit authorization rule.
+                 */
+                .requestMatchers(
+                    "/admin/automations",
+                    "/admin/automations/**"
+                )
+                .denyAll()
+
+                /*
                  * Todos los perfiles administrativos pueden entrar
                  * al dashboard principal.
                  *
