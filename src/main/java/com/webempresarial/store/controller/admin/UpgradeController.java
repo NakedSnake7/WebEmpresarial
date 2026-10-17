@@ -48,12 +48,12 @@ public class UpgradeController {
                  PROPOSALS,
                  CUSTOM_DOMAIN,
                  STRIPE_CONNECT,
-                 ANALYTICS -> StorePlan.PRO;
+                 ANALYTICS,
+                 MULTI_USER -> StorePlan.PRO;
 
             case EMAIL_MARKETING,
                  WHATSAPP_AUTOMATION,
                  AUTOMATIONS,
-                 MULTI_USER,
                  API_ACCESS,
                  WHITE_LABEL_FULL -> StorePlan.PREMIUM;
         };
