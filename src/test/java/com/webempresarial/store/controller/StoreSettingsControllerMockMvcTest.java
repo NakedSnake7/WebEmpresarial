@@ -13,6 +13,7 @@ import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
@@ -74,6 +75,10 @@ class StoreSettingsControllerMockMvcTest {
     @MockitoBean
     private FeatureAccessService features;
 
+    @MockitoBean
+    private CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
+
     /*
      * Dependencias requeridas por SecurityConfig / infraestructura MVC.
      */
@@ -106,6 +111,21 @@ class StoreSettingsControllerMockMvcTest {
 
     @BeforeEach
     void setUp() throws Exception {
+
+        /*
+         * Default Store Settings permissions for existing tests.
+         */
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(true);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(true);
 
         store = new Store();
         store.setId(100L);

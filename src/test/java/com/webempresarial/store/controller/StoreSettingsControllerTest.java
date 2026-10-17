@@ -2,8 +2,10 @@ package com.webempresarial.store.controller;
 
 import com.webempresarial.store.dto.CloudinaryUploadResult;
 import com.webempresarial.store.entity.StoreSettings;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
@@ -45,6 +47,10 @@ class StoreSettingsControllerTest {
     @Mock
     private FeatureAccessService features;
 
+    @Mock
+    private CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
+
     private StoreSettingsController controller;
 
     private Store store;
@@ -57,8 +63,25 @@ class StoreSettingsControllerTest {
                 storeContextService,
                 storeSettingsService,
                 cloudinaryService,
-                features
+                features,
+                currentAdminAuthorizationService
         );
+
+        lenient()
+                .when(
+                        currentAdminAuthorizationService.hasPermission(
+                                AdminPermission.STORE_EDIT
+                        )
+                )
+                .thenReturn(true);
+
+        lenient()
+                .when(
+                        currentAdminAuthorizationService.hasPermission(
+                                AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                        )
+                )
+                .thenReturn(true);
 
         store = new Store();
         store.setId(100L);
@@ -296,6 +319,193 @@ assertThat(saved.getFooterText())
 
         verify(storeSettingsService)
                 .getOrCreate(store);
+    }
+
+    @Test
+    void storeEditOnlyShouldNotModifyCommercialInfo() {
+        mockCurrentTenant();
+
+        settings.setCompanyEmail("old@acme.test");
+        settings.setCompanyPhone("OLD-PHONE");
+        settings.setCompanyAddress("OLD-ADDRESS");
+        settings.setCompanyWebsite("https://old.test");
+        settings.setContactName("OLD-CONTACT");
+        settings.setCurrency("MXN");
+        settings.setProposalFooter("OLD-PROPOSAL");
+        settings.setPrimaryColor("#111827");
+
+        StoreSettings form = new StoreSettings();
+
+        /*
+         * Intento de modificar información comercial sin
+         * STORE_COMMERCIAL_INFO_EDIT.
+         */
+        form.setCompanyEmail("attack@acme.test");
+        form.setCompanyPhone("NEW-PHONE");
+        form.setCompanyAddress("NEW-ADDRESS");
+        form.setCompanyWebsite("https://new.test");
+        form.setContactName("NEW-CONTACT");
+        form.setCurrency("USD");
+
+        /*
+         * STORE_EDIT sí debe permitir configuración general.
+         */
+        form.setProposalFooter("NEW-PROPOSAL");
+        form.setPrimaryColor("#123456");
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(true);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(false);
+
+        when(features.canUse(store, "WHITE_LABEL_FULL"))
+                .thenReturn(false);
+
+        String result =
+                controller.saveSettings(form, request);
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?success"
+                );
+
+        /*
+         * Información comercial protegida.
+         */
+        assertThat(settings.getCompanyEmail())
+                .isEqualTo("old@acme.test");
+
+        assertThat(settings.getCompanyPhone())
+                .isEqualTo("OLD-PHONE");
+
+        assertThat(settings.getCompanyAddress())
+                .isEqualTo("OLD-ADDRESS");
+
+        assertThat(settings.getCompanyWebsite())
+                .isEqualTo("https://old.test");
+
+        assertThat(settings.getContactName())
+                .isEqualTo("OLD-CONTACT");
+
+        assertThat(settings.getCurrency())
+                .isEqualTo("MXN");
+
+        /*
+         * Configuración general sí editable.
+         */
+        assertThat(settings.getProposalFooter())
+                .isEqualTo("NEW-PROPOSAL");
+
+        assertThat(settings.getPrimaryColor())
+                .isEqualTo("#123456");
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
+    void commercialInfoOnlyShouldNotModifyGeneralSettings() {
+        mockCurrentTenant();
+
+        settings.setCompanyEmail("old@acme.test");
+        settings.setCompanyPhone("OLD-PHONE");
+        settings.setCompanyAddress("OLD-ADDRESS");
+        settings.setCompanyWebsite("https://old.test");
+        settings.setContactName("OLD-CONTACT");
+        settings.setCurrency("MXN");
+
+        settings.setProposalFooter("OLD-PROPOSAL");
+        settings.setPrimaryColor("#111827");
+        settings.setHeroTitle("OLD-HERO");
+
+        StoreSettings form = new StoreSettings();
+
+        /*
+         * Información comercial válida para este permiso.
+         */
+        form.setCompanyEmail("ventas@acme.test");
+        form.setCompanyPhone("NEW-PHONE");
+        form.setCompanyAddress("NEW-ADDRESS");
+        form.setCompanyWebsite("https://new.test");
+        form.setContactName("NEW-CONTACT");
+        form.setCurrency("USD");
+
+        /*
+         * Intento de modificar configuración general sin STORE_EDIT.
+         */
+        form.setProposalFooter("ATTACK-PROPOSAL");
+        form.setPrimaryColor("#FFFFFF");
+        form.setHeroTitle("ATTACK-HERO");
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(false);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(true);
+
+        String result =
+                controller.saveSettings(form, request);
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?success"
+                );
+
+        /*
+         * Información comercial sí editable.
+         */
+        assertThat(settings.getCompanyEmail())
+                .isEqualTo("ventas@acme.test");
+
+        assertThat(settings.getCompanyPhone())
+                .isEqualTo("NEW-PHONE");
+
+        assertThat(settings.getCompanyAddress())
+                .isEqualTo("NEW-ADDRESS");
+
+        assertThat(settings.getCompanyWebsite())
+                .isEqualTo("https://new.test");
+
+        assertThat(settings.getContactName())
+                .isEqualTo("NEW-CONTACT");
+
+        assertThat(settings.getCurrency())
+                .isEqualTo("USD");
+
+        /*
+         * Configuración general protegida.
+         */
+        assertThat(settings.getProposalFooter())
+                .isEqualTo("OLD-PROPOSAL");
+
+        assertThat(settings.getPrimaryColor())
+                .isEqualTo("#111827");
+
+        assertThat(settings.getHeroTitle())
+                .isEqualTo("OLD-HERO");
+
+        /*
+         * WHITE_LABEL_FULL ni siquiera debe evaluarse porque
+         * el usuario carece de STORE_EDIT.
+         */
+        verify(features, never())
+                .canUse(any(Store.class), anyString());
+
+        verify(storeSettingsService)
+                .save(settings);
     }
 
     @Test

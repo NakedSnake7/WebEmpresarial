@@ -90,6 +90,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageCommercialInfo")
+    public boolean canManageCommercialInfo(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.STORE_COMMERCIAL_INFO_EDIT.authority()
+        );
+    }
+
     @ModelAttribute("canViewPaymentMethods")
     public boolean canViewPaymentMethods(Authentication auth) {
         return hasAuthority(

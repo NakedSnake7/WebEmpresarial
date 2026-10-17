@@ -107,6 +107,10 @@
 
 </div>
 
+<fieldset
+    data-store-settings-general
+    th:disabled="${!canManageStoreSettings}"
+    style="display: contents;">
 <div class="col-12">
     <hr>
     <h5 class="fw-bold mb-0">Identidad visual White Label</h5>
@@ -477,7 +481,13 @@
 
 
 
-									<div class="col-12">
+									</fieldset>
+
+<fieldset
+    data-store-settings-commercial
+    th:disabled="${!canManageCommercialInfo}"
+    style="display: contents;">
+<div class="col-12">
 										<hr>
 										<h5 class="fw-bold mb-0">Información comercial</h5>
 									</div>
@@ -524,7 +534,13 @@
 											placeholder="Dirección comercial o fiscal"></textarea>
 									</div>
 
-									<div class="col-12">
+									</fieldset>
+
+<fieldset
+    data-store-settings-proposals
+    th:disabled="${!canManageStoreSettings}"
+    style="display: contents;">
+<div class="col-12">
 										<hr>
 										<h5 class="fw-bold mb-0">Propuestas PDF</h5>
 									</div>
@@ -544,7 +560,12 @@
 
 								<hr class="my-4">
 
-								<button class="btn btn-success" type="submit">Guardar
+								</fieldset>
+
+<button
+    th:if="${canManageStoreSettings or canManageCommercialInfo}"
+    class="btn btn-success"
+    type="submit">Guardar
 									configuración</button>
 
 							</form>

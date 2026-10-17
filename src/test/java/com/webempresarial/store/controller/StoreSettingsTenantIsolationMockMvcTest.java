@@ -6,11 +6,13 @@ import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.config.WebMvcConfig;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.AdminUserRepository;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
@@ -86,6 +88,10 @@ class StoreSettingsTenantIsolationMockMvcTest {
     private FeatureAccessService featureAccessService;
 
     @MockitoBean
+    private CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
+
+    @MockitoBean
     private AdminUserRepository adminUserRepository;
 
     @MockitoBean
@@ -96,6 +102,21 @@ class StoreSettingsTenantIsolationMockMvcTest {
 
     @BeforeEach
     void setUp() throws Exception {
+
+        /*
+         * Default Store Settings permissions for existing tests.
+         */
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(true);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(true);
 
         SecurityContextHolder.clearContext();
 

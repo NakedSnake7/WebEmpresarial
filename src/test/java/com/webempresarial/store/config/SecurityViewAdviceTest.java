@@ -131,6 +131,38 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void commercialInfoPermissionShouldControlCommercialEditing() {
+
+        Authentication commercial = authentication(
+                AdminPermission
+                        .STORE_COMMERCIAL_INFO_EDIT
+                        .authority()
+        );
+
+        Authentication storeEdit = authentication(
+                AdminPermission
+                        .STORE_EDIT
+                        .authority()
+        );
+
+        assertThat(
+                advice.canManageCommercialInfo(commercial)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageStoreSettings(commercial)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageCommercialInfo(storeEdit)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStoreSettings(storeEdit)
+        ).isTrue();
+    }
+
+    @Test
     void paymentMethodPermissionsShouldControlViewAndManageIndependently() {
 
         Authentication viewOnly = authentication(
@@ -171,6 +203,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageBilling(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageCommercialInfo(null)
         ).isFalse();
 
         assertThat(

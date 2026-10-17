@@ -2,8 +2,10 @@ package com.webempresarial.store.controller;
 
 import com.webempresarial.store.dto.CloudinaryUploadResult; 
 import com.webempresarial.store.entity.StoreSettings;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
@@ -27,17 +29,23 @@ public class StoreSettingsController {
     private final StoreSettingsService storeSettingsService;
     private final CloudinaryService cloudinaryService;
     private final FeatureAccessService features;
+    private final CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
 
     public StoreSettingsController(
             StoreContextService storeContextService,
             StoreSettingsService storeSettingsService,
             CloudinaryService cloudinaryService,
-            FeatureAccessService features
+            FeatureAccessService features,
+            CurrentAdminAuthorizationService
+                    currentAdminAuthorizationService
     ) {
         this.storeContextService = storeContextService;
         this.storeSettingsService = storeSettingsService;
         this.cloudinaryService = cloudinaryService;
         this.features = features;
+        this.currentAdminAuthorizationService =
+                currentAdminAuthorizationService;
     }
 
     @GetMapping
@@ -65,52 +73,70 @@ public class StoreSettingsController {
 
         StoreSettings settings = storeSettingsService.getOrCreate(store);
 
-        settings.setCompanyEmail(form.getCompanyEmail());
-        settings.setCompanyPhone(form.getCompanyPhone());
-        settings.setCompanyAddress(form.getCompanyAddress());
-        settings.setCompanyWebsite(form.getCompanyWebsite());
-        settings.setContactName(form.getContactName());
-        settings.setCurrency(form.getCurrency());
-        settings.setProposalFooter(form.getProposalFooter());
+        boolean canManageStoreSettings =
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                );
 
-        settings.setFaviconUrl(form.getFaviconUrl());
-        settings.setPrimaryColor(form.getPrimaryColor());
-        settings.setSecondaryColor(form.getSecondaryColor());
-        settings.setAccentColor(form.getAccentColor());
-        settings.setFontFamily(form.getFontFamily());
-        settings.setHeroImageUrl(form.getHeroImageUrl());
-        settings.setSlogan(form.getSlogan());
-        /*
-         * Contenido del storefront.
-         */
-        settings.setHeroEyebrow(form.getHeroEyebrow());
-        settings.setHeroTitle(form.getHeroTitle());
-        settings.setHeroSubtitle(form.getHeroSubtitle());
-        settings.setHeroButtonText(form.getHeroButtonText());
-        settings.setHeroButtonUrl(form.getHeroButtonUrl());
+        boolean canManageCommercialInfo =
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                );
 
-        settings.setAboutTitle(form.getAboutTitle());
-        settings.setAboutText(form.getAboutText());
+        if (canManageCommercialInfo) {
+            settings.setCompanyEmail(form.getCompanyEmail());
+            settings.setCompanyPhone(form.getCompanyPhone());
+            settings.setCompanyAddress(form.getCompanyAddress());
+            settings.setCompanyWebsite(form.getCompanyWebsite());
+            settings.setContactName(form.getContactName());
+            settings.setCurrency(form.getCurrency());
+        }
 
-        settings.setCtaTitle(form.getCtaTitle());
-        settings.setCtaText(form.getCtaText());
+        if (canManageStoreSettings) {
+            settings.setProposalFooter(form.getProposalFooter());
 
-        settings.setWhatsappMessage(form.getWhatsappMessage());
+            settings.setFaviconUrl(form.getFaviconUrl());
+            settings.setPrimaryColor(form.getPrimaryColor());
+            settings.setSecondaryColor(form.getSecondaryColor());
+            settings.setAccentColor(form.getAccentColor());
+            settings.setFontFamily(form.getFontFamily());
+            settings.setHeroImageUrl(form.getHeroImageUrl());
+            settings.setSlogan(form.getSlogan());
 
-        settings.setFacebookUrl(form.getFacebookUrl());
-        settings.setInstagramUrl(form.getInstagramUrl());
-        settings.setTiktokUrl(form.getTiktokUrl());
+            /*
+             * Contenido del storefront.
+             */
+            settings.setHeroEyebrow(form.getHeroEyebrow());
+            settings.setHeroTitle(form.getHeroTitle());
+            settings.setHeroSubtitle(form.getHeroSubtitle());
+            settings.setHeroButtonText(form.getHeroButtonText());
+            settings.setHeroButtonUrl(form.getHeroButtonUrl());
 
-        settings.setFooterText(form.getFooterText());
-        
-        if (features.canUse(store, "WHITE_LABEL_FULL")) {
-            settings.setCustomCss(form.getCustomCss());
-            settings.setCustomJs(form.getCustomJs());
+            settings.setAboutTitle(form.getAboutTitle());
+            settings.setAboutText(form.getAboutText());
 
-            settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
-            settings.setMetaPixelId(form.getMetaPixelId());
-            settings.setTiktokPixelId(form.getTiktokPixelId());
-            settings.setHotjarId(form.getHotjarId());
+            settings.setCtaTitle(form.getCtaTitle());
+            settings.setCtaText(form.getCtaText());
+
+            settings.setWhatsappMessage(form.getWhatsappMessage());
+
+            settings.setFacebookUrl(form.getFacebookUrl());
+            settings.setInstagramUrl(form.getInstagramUrl());
+            settings.setTiktokUrl(form.getTiktokUrl());
+
+            settings.setFooterText(form.getFooterText());
+
+            if (features.canUse(store, "WHITE_LABEL_FULL")) {
+                settings.setCustomCss(form.getCustomCss());
+                settings.setCustomJs(form.getCustomJs());
+
+                settings.setGoogleAnalyticsId(
+                        form.getGoogleAnalyticsId()
+                );
+                settings.setMetaPixelId(form.getMetaPixelId());
+                settings.setTiktokPixelId(form.getTiktokPixelId());
+                settings.setHotjarId(form.getHotjarId());
+            }
         }
 
         storeSettingsService.save(settings);

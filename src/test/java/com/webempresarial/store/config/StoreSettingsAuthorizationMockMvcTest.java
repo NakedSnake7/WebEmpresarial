@@ -115,6 +115,50 @@ class StoreSettingsAuthorizationMockMvcTest {
     }
 
     @Test
+    void commercialInfoPermissionShouldGrantGeneralSettingsPost()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/admin/store/settings")
+                        .with(
+                                user("admin@acme.test")
+                                        .roles("STORE_ADMIN")
+                                        .authorities(
+                                                new SimpleGrantedAuthority(
+                                                        AdminPermission
+                                                                .STORE_COMMERCIAL_INFO_EDIT
+                                                                .authority()
+                                                )
+                                        )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void commercialInfoPermissionShouldNotGrantShippingPost()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/admin/store/settings/shipping")
+                        .with(
+                                user("admin@acme.test")
+                                        .roles("STORE_ADMIN")
+                                        .authorities(
+                                                new SimpleGrantedAuthority(
+                                                        AdminPermission
+                                                                .STORE_COMMERCIAL_INFO_EDIT
+                                                                .authority()
+                                                )
+                                        )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
     void storeViewShouldOnlyGrantSettingsRead()
             throws Exception {
 

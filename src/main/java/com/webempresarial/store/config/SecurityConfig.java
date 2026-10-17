@@ -267,11 +267,30 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Configuración general e información comercial.
+                 *
+                 * El controlador aplica granularidad por campo:
+                 * STORE_EDIT modifica configuración general;
+                 * STORE_COMMERCIAL_INFO_EDIT modifica datos comerciales.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/store/settings"
+                )
+                .hasAnyAuthority(
+                    AdminPermission
+                        .STORE_EDIT
+                        .authority(),
+                    AdminPermission
+                        .STORE_COMMERCIAL_INFO_EDIT
+                        .authority()
+                )
+
+                /*
                  * Configuración operacional de tienda.
                  */
                 .requestMatchers(
                     HttpMethod.POST,
-                    "/admin/store/settings",
                     "/admin/store/settings/shipping"
                 )
                 .hasAuthority(
