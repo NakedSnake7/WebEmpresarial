@@ -90,6 +90,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageStoreBranding")
+    public boolean canManageStoreBranding(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.STORE_BRANDING_EDIT.authority()
+        );
+    }
+
     @ModelAttribute("canManageCommercialInfo")
     public boolean canManageCommercialInfo(Authentication auth) {
         return hasAuthority(

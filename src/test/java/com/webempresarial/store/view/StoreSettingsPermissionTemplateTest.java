@@ -34,4 +34,28 @@ class StoreSettingsPermissionTemplateTest {
                         "th:if=\"${canManageStoreSettings or canManageCommercialInfo}\""
                 );
     }
+    @Test
+    void shouldProtectBrandingMutationsWithBrandingPermission()
+            throws Exception {
+
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html)
+                .contains("data-store-branding-upload")
+                .contains("data-store-branding-delete")
+                .contains("data-store-branding-delete-form");
+
+        long brandingGuards =
+                html.lines()
+                        .filter(line ->
+                                line.contains(
+                                        "th:if=\"${canManageStoreBranding}\""
+                                )
+                        )
+                        .count();
+
+        assertThat(brandingGuards)
+                .isEqualTo(3);
+    }
+
 }

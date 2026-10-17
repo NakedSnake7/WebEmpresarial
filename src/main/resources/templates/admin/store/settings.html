@@ -78,7 +78,10 @@
 
 
 
-<button type="submit"
+<button
+        th:if="${canManageStoreBranding}"
+        data-store-branding-delete
+        type="submit"
         form="deleteLogoForm"
         class="btn btn-outline-danger btn-sm"
         onclick="return confirm('¿Eliminar el logo actual?');">
@@ -608,7 +611,10 @@
                  style="max-height:90px;max-width:240px;object-fit:contain;">
         </div>
 
-        <form th:action="@{/admin/store/settings/logo}"
+        <form
+              th:if="${canManageStoreBranding}"
+              data-store-branding-upload
+              th:action="@{/admin/store/settings/logo}"
               method="post"
               enctype="multipart/form-data">
 
@@ -867,7 +873,10 @@
 			</div>
 
 		</section>
-    <form id="deleteLogoForm"
+    <form
+      th:if="${canManageStoreBranding}"
+      data-store-branding-delete-form
+      id="deleteLogoForm"
       th:action="@{/admin/store/settings/logo/delete}"
       method="post">
       <th:block th:replace="~{fragments/csrf :: token}"></th:block>

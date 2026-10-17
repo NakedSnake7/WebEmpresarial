@@ -131,6 +131,38 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void brandingPermissionShouldControlLogoManagement() {
+
+        Authentication branding = authentication(
+                AdminPermission
+                        .STORE_BRANDING_EDIT
+                        .authority()
+        );
+
+        Authentication storeEdit = authentication(
+                AdminPermission
+                        .STORE_EDIT
+                        .authority()
+        );
+
+        assertThat(
+                advice.canManageStoreBranding(branding)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageStoreSettings(branding)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStoreBranding(storeEdit)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStoreSettings(storeEdit)
+        ).isTrue();
+    }
+
+    @Test
     void commercialInfoPermissionShouldControlCommercialEditing() {
 
         Authentication commercial = authentication(
@@ -207,6 +239,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canManageCommercialInfo(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStoreBranding(null)
         ).isFalse();
 
         assertThat(
