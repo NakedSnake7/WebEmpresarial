@@ -1,6 +1,7 @@
 package com.webempresarial.store.feature;
 
 import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.AdminPermission;
 
 import java.util.Objects;
 
@@ -32,6 +33,7 @@ public final class FeatureDefinition {
 
     private final FeatureAccessPolicy accessPolicy;
     private final FeaturePresentation presentation;
+    private final AdminPermission dashboardPermission;
 
     private FeatureDefinition(Builder builder) {
         this.feature = Objects.requireNonNull(builder.feature, "feature es requerido");
@@ -65,6 +67,9 @@ public final class FeatureDefinition {
         this.presentation = builder.presentation != null
                 ? builder.presentation
                 : FeaturePresentation.defaults();
+
+        this.dashboardPermission =
+                builder.dashboardPermission;
     }
 
     public static Builder builder(Feature feature) {
@@ -91,6 +96,7 @@ public final class FeatureDefinition {
     public String getSectionIcon() { return sectionIcon; }
     public FeatureAccessPolicy getAccessPolicy() { return accessPolicy; }
     public FeaturePresentation getPresentation() { return presentation; }
+    public AdminPermission getDashboardPermission() { return dashboardPermission; }
 
  
     private static String resolveDefaultSection(FeatureCategory category) {
@@ -144,6 +150,7 @@ public final class FeatureDefinition {
 
         private FeatureAccessPolicy accessPolicy;
         private FeaturePresentation presentation;
+        private AdminPermission dashboardPermission;
 
         private Builder(Feature feature) {
             this.feature = Objects.requireNonNull(feature, "feature es requerido");
@@ -236,6 +243,14 @@ public final class FeatureDefinition {
 
         public Builder presentation(FeaturePresentation presentation) {
             this.presentation = presentation;
+            return this;
+        }
+
+        public Builder dashboardPermission(
+                AdminPermission dashboardPermission
+        ) {
+            this.dashboardPermission =
+                    dashboardPermission;
             return this;
         }
 

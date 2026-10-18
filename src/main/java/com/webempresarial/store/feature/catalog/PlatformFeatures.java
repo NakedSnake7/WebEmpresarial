@@ -8,6 +8,7 @@ import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.health.checks.KernelHealthCheck;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
@@ -31,7 +32,13 @@ public class PlatformFeatures implements PlatformModule {
 
                 .sidebarSection(
                         SidebarSectionDefinition.builder("Plataforma", "🧩")
-                                .item("Analytics", "📈", "/crm/reports", Feature.ANALYTICS)
+                                .item(
+                                        "Analytics",
+                                        "📈",
+                                        "/crm/reports",
+                                        Feature.ANALYTICS,
+                                        AdminPermission.ANALYTICS_VIEW
+                                )
                                 .item(
                                         "Usuarios",
                                         "👥",
@@ -61,6 +68,9 @@ public class PlatformFeatures implements PlatformModule {
                 .order(150)
                 .accessPolicy(pro())
                 .presentation(visible(true, true, true))
+                .dashboardPermission(
+                        AdminPermission.ANALYTICS_VIEW
+                )
                 .build();
     }
 

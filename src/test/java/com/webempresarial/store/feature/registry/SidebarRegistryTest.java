@@ -4,9 +4,11 @@ import com.webempresarial.store.dto.sidebar.SidebarItemDTO;
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,10 @@ class SidebarRegistryTest {
     @Mock
     private FeatureAccessService featureAccessService;
 
+    @Mock
+    private CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
+
     private SidebarRegistry sidebarRegistry;
     private Store store;
 
@@ -35,7 +41,8 @@ class SidebarRegistryTest {
 
         sidebarRegistry =
                 new SidebarRegistry(
-                        featureAccessService
+                        featureAccessService,
+                        currentAdminAuthorizationService
                 );
 
         store = new Store();
@@ -189,6 +196,152 @@ class SidebarRegistryTest {
 
         assertThat(sections)
                 .isEmpty();
+    }
+
+    @Test
+    void salesShouldSeeAnalyticsWhenPermissionAndFeatureAvailable() {
+
+        registerAnalyticsSection();
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.ANALYTICS_VIEW
+                )
+        ).thenReturn(true);
+
+        when(
+                featureAccessService.canUse(
+                        store,
+                        Feature.ANALYTICS
+                )
+        ).thenReturn(true);
+
+        List<SidebarSectionDTO> sections =
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.SALES
+                );
+
+        assertThat(sections)
+                .hasSize(1);
+
+        SidebarItemDTO item =
+                sections.get(0).items().get(0);
+
+        assertThat(item.title())
+                .isEqualTo("Analytics");
+
+        assertThat(item.locked())
+                .isFalse();
+
+        assertThat(item.url())
+                .isEqualTo("/crm/reports");
+    }
+
+    @Test
+    void salesShouldSeeLockedAnalyticsWhenPermissionButFeatureUnavailable() {
+
+        registerAnalyticsSection();
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.ANALYTICS_VIEW
+                )
+        ).thenReturn(true);
+
+        when(
+                featureAccessService.canUse(
+                        store,
+                        Feature.ANALYTICS
+                )
+        ).thenReturn(false);
+
+        List<SidebarSectionDTO> sections =
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.SALES
+                );
+
+        assertThat(sections)
+                .hasSize(1);
+
+        SidebarItemDTO item =
+                sections.get(0).items().get(0);
+
+        assertThat(item.locked())
+                .isTrue();
+
+        assertThat(item.url())
+                .isEqualTo(
+                        "/admin/upgrade?feature=ANALYTICS"
+                );
+    }
+
+    @Test
+    void salesShouldNotSeeAnalyticsWithoutPermission() {
+
+        registerAnalyticsSection();
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.ANALYTICS_VIEW
+                )
+        ).thenReturn(false);
+
+        List<SidebarSectionDTO> sections =
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.SALES
+                );
+
+        assertThat(sections)
+                .isEmpty();
+    }
+
+    @Test
+    void storeStaffShouldNotSeeAnalyticsWithoutPermission() {
+
+        registerAnalyticsSection();
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.ANALYTICS_VIEW
+                )
+        ).thenReturn(false);
+
+        List<SidebarSectionDTO> sections =
+                sidebarRegistry.sections(
+                        store,
+                        AdminRole.STORE_STAFF
+                );
+
+        assertThat(sections)
+                .isEmpty();
+    }
+
+    private void registerAnalyticsSection() {
+
+        PlatformModuleDescriptor module =
+                PlatformModuleDescriptor
+                        .builder("Platform")
+                        .sidebarSection(
+                                SidebarSectionDefinition
+                                        .builder(
+                                                "Plataforma",
+                                                "🧩"
+                                        )
+                                        .item(
+                                                "Analytics",
+                                                "📈",
+                                                "/crm/reports",
+                                                Feature.ANALYTICS,
+                                                AdminPermission.ANALYTICS_VIEW
+                                        )
+                                        .build()
+                        )
+                        .build();
+
+        sidebarRegistry.register(module);
     }
 
     private void registerPlatformSection() {

@@ -86,6 +86,58 @@ public final class SidebarSectionDefinition {
             return this;
         }
 
+        /*
+         * Variante permission-first.
+         *
+         * La visibilidad depende de AdminPermission y no
+         * necesita duplicar la lista de roles.
+         */
+        public Builder item(
+                String title,
+                String icon,
+                String url,
+                com.webempresarial.store.model.Feature feature,
+                com.webempresarial.store.model.AdminPermission requiredPermission
+        ) {
+            this.items.add(
+                    new SidebarItemDefinition(
+                            title,
+                            icon,
+                            url,
+                            feature,
+                            requiredPermission
+                    )
+            );
+
+            return this;
+        }
+
+        /*
+         * Variante para casos excepcionales donde además
+         * del permiso exista una restricción explícita de rol.
+         */
+        public Builder item(
+                String title,
+                String icon,
+                String url,
+                com.webempresarial.store.model.Feature feature,
+                com.webempresarial.store.model.AdminPermission requiredPermission,
+                com.webempresarial.store.model.AdminRole... allowedRoles
+        ) {
+            this.items.add(
+                    new SidebarItemDefinition(
+                            title,
+                            icon,
+                            url,
+                            feature,
+                            requiredPermission,
+                            java.util.Set.of(allowedRoles)
+                    )
+            );
+
+            return this;
+        }
+
         public SidebarSectionDefinition build() {
             return new SidebarSectionDefinition(this);
         }
