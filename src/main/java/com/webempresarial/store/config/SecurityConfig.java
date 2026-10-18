@@ -499,23 +499,20 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
-                 * Todos los perfiles administrativos pueden entrar
-                 * al dashboard principal.
+                 * Dashboard principal.
                  *
-                 * SALES queda deliberadamente fuera del anyRequest()
-                 * general para que no obtenga acceso accidental a
-                 * módulos operativos no clasificados.
+                 * El acceso depende de DASHBOARD_VIEW, no del nombre
+                 * concreto del rol. SALES sigue pudiendo acceder porque
+                 * su rol recibe explícitamente este permiso.
                  */
                 .requestMatchers(
                     "/admin",
                     "/admin/dashboard"
                 )
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "STORE_STAFF",
-                    "SALES"
+                .hasAuthority(
+                    AdminPermission
+                        .DASHBOARD_VIEW
+                        .authority()
                 )
 
                 .requestMatchers("/api/knowledge/**")

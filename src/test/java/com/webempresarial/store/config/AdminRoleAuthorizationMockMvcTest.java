@@ -368,10 +368,31 @@ class AdminRoleAuthorizationMockMvcTest {
                 get("/admin/dashboard")
                         .with(
                                 user("sales@stride.test")
-                                        .roles("SALES")
+                                        .authorities(
+                                                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                                        "ROLE_SALES"
+                                                ),
+                                                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                                        "PERM_DASHBOARD_VIEW"
+                                                )
+                                        )
                         )
         )
         .andExpect(status().isOk());
+    }
+
+    @Test
+    void salesWithoutDashboardPermissionShouldNotAccessAdminDashboard()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/dashboard")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
     }
 
     @Test
