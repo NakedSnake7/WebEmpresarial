@@ -63,6 +63,8 @@ public class SecurityConfig {
                     "/admin/subscriptions/**",
                     "/admin/saas/**",
                     "/admin/platform/**",
+                    "/api/admin/saas",
+                    "/api/admin/saas/**",
                     "/api/admin/platform/**"
                 )
                 .hasRole("SUPER_ADMIN")

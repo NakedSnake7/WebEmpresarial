@@ -444,6 +444,33 @@ class AdminRoleAuthorizationMockMvcTest {
         .andExpect(status().isForbidden());
     }
 
+    @Test
+    void tenantRolesShouldNotAccessSaasApi()
+            throws Exception {
+
+        String[] roles = {
+                "STORE_OWNER",
+                "STORE_ADMIN",
+                "STORE_STAFF",
+                "SALES"
+        };
+
+        for (String role : roles) {
+
+            mockMvc.perform(
+                    get("/api/admin/saas")
+                            .with(
+                                    user(
+                                            role.toLowerCase()
+                                                    + "@stride.test"
+                                    )
+                                    .roles(role)
+                            )
+            )
+            .andExpect(status().isForbidden());
+        }
+    }
+
     /*
      * ---------------------------------------------------------
      * SUPER_ADMIN
@@ -459,6 +486,22 @@ class AdminRoleAuthorizationMockMvcTest {
                         .with(
                                 user("superadmin@webempresarial.test")
                                         .roles("SUPER_ADMIN")
+                        )
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void superAdminShouldAccessSaasApi()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/api/admin/saas")
+                        .with(
+                                user(
+                                        "superadmin@webempresarial.test"
+                                )
+                                .roles("SUPER_ADMIN")
                         )
         )
         .andExpect(status().isOk());
@@ -533,6 +576,11 @@ class AdminRoleAuthorizationMockMvcTest {
 
         @GetMapping("/admin/platform")
         String platform() {
+            return "OK";
+        }
+
+        @GetMapping("/api/admin/saas")
+        String saasApi() {
             return "OK";
         }
     }
