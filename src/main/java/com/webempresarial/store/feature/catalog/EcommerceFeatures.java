@@ -7,6 +7,7 @@ import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -36,19 +37,22 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "Productos",
 	                                    "📦",
 	                                    "/admin/productos",
-	                                    Feature.PRODUCTS
+	                                    Feature.PRODUCTS,
+                                    AdminPermission.PRODUCT_VIEW
 	                            )
 	                            .item(
 	                                    "Nuevo producto",
 	                                    "➕",
 	                                    "/nuevo",
-	                                    Feature.PRODUCTS
+	                                    Feature.PRODUCTS,
+                                    AdminPermission.PRODUCT_CREATE
 	                            )
 	                            .item(
 	                                    "Precios y promociones",
 	                                    "💲",
 	                                    "/modificar-precios",
-	                                    Feature.PRODUCTS
+	                                    Feature.PRODUCTS,
+                                    AdminPermission.PRODUCT_EDIT
 	                            )
 	                            
 	                            .item(
@@ -96,6 +100,9 @@ public class EcommerceFeatures implements PlatformModule {
                 .order(10)
                 .accessPolicy(basic())
                 .presentation(standardBasic(true))
+                .dashboardPermission(
+                        AdminPermission.PRODUCT_VIEW
+                )
                 .build();
     }
 

@@ -34,6 +34,38 @@ public class SecurityViewAdvice {
         return hasRole(auth, "ROLE_SALES");
     }
 
+    @ModelAttribute("canViewProducts")
+    public boolean canViewProducts(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PRODUCT_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canCreateProducts")
+    public boolean canCreateProducts(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PRODUCT_CREATE.authority()
+        );
+    }
+
+    @ModelAttribute("canEditProducts")
+    public boolean canEditProducts(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PRODUCT_EDIT.authority()
+        );
+    }
+
+    @ModelAttribute("canDeleteProducts")
+    public boolean canDeleteProducts(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PRODUCT_DELETE.authority()
+        );
+    }
+
     @ModelAttribute("canViewBilling")
     public boolean canViewBilling(Authentication auth) {
         return hasAuthority(

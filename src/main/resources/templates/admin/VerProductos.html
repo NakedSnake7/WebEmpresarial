@@ -260,6 +260,7 @@
 
                     <div class="col-sm-auto">
                         <a th:href="@{/modificar-precios}"
+                           th:if="${canEditProducts}"
                            class="btn btn-outline-primary w-100">
                             💲 Precios
                         </a>
@@ -267,6 +268,7 @@
 
                     <div class="col-sm-auto">
                         <a th:href="@{/nuevo}"
+                           th:if="${canCreateProducts}"
                            class="btn btn-primary w-100">
                             ＋ Nuevo producto
                         </a>
@@ -373,6 +375,7 @@
                                     </div>
 
                                     <div class="form-check form-switch m-0"
+                                         th:if="${canEditProducts}"
                                          onclick="event.stopPropagation()">
 
                                         <input class="form-check-input
@@ -556,11 +559,13 @@
                                     <div class="d-flex flex-wrap gap-2">
 
                                         <a th:href="@{/editar/{id}(id=${producto.id})}"
+                                           th:if="${canEditProducts}"
                                            class="btn btn-sm btn-outline-primary">
                                             Editar
                                         </a>
 
                                         <button type="button"
+                                                th:if="${canEditProducts}"
                                                 class="btn btn-sm
                                                        btn-outline-success
                                                        toggle-promotion"
@@ -582,6 +587,7 @@
                                         </button>
 
                                         <button type="button"
+                                                th:if="${canDeleteProducts}"
                                                 class="btn btn-sm
                                                        btn-outline-danger
                                                        delete-product"
@@ -596,7 +602,8 @@
 
                                 <td class="pe-4">
 
-                                    <div class="visibility-switch">
+                                    <div class="visibility-switch"
+                                         th:if="${canEditProducts}">
 
                                         <div class="form-check form-switch m-0">
 
@@ -763,6 +770,7 @@
                 </p>
 
                 <a th:href="@{/nuevo}"
+                   th:if="${canCreateProducts}"
                    class="btn btn-primary">
                     Crear primer producto
                 </a>

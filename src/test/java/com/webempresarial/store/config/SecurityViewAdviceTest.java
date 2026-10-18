@@ -227,7 +227,75 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void productPermissionsShouldControlActionsIndependently() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.PRODUCT_VIEW.authority()
+        );
+
+        Authentication createOnly = authentication(
+                AdminPermission.PRODUCT_CREATE.authority()
+        );
+
+        Authentication editOnly = authentication(
+                AdminPermission.PRODUCT_EDIT.authority()
+        );
+
+        Authentication deleteOnly = authentication(
+                AdminPermission.PRODUCT_DELETE.authority()
+        );
+
+        assertThat(
+                advice.canViewProducts(viewOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canCreateProducts(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateProducts(createOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canEditProducts(createOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProducts(editOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canDeleteProducts(editOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canDeleteProducts(deleteOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewProducts(deleteOnly)
+        ).isFalse();
+    }
+
+    @Test
     void missingAuthenticationShouldNotGrantAnything() {
+
+        assertThat(
+                advice.canViewProducts(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateProducts(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProducts(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canDeleteProducts(null)
+        ).isFalse();
 
         assertThat(
                 advice.canViewBilling(null)

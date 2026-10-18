@@ -32,7 +32,8 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3"
+             th:if="${canViewProducts}">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">Productos</div>
@@ -135,7 +136,8 @@
 
 <div class="row g-3 mb-5">
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-3"
+         th:if="${canCreateProducts}">
         <a th:href="@{/nuevo}"
            class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100 dashboard-card">
@@ -150,7 +152,8 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-3"
+         th:if="${canViewProducts}">
         <a th:href="@{/admin/productos}"
            class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100 dashboard-card">
@@ -158,14 +161,15 @@
                     <div class="fs-2 mb-2">📦</div>
                     <h5 class="fw-bold mb-2">Productos</h5>
                     <p class="text-muted small mb-0">
-                        Edita productos, variantes, imágenes y stock.
+                        Consulta y administra el catálogo de productos.
                     </p>
                 </div>
             </div>
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-3"
+         th:if="${canEditProducts}">
         <a th:href="@{/modificar-precios}"
            class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100 dashboard-card">
