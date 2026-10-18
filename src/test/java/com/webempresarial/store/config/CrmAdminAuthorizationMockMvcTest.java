@@ -321,6 +321,16 @@ class CrmAdminAuthorizationMockMvcTest {
     void proposalReadsShouldRequireProposalView()
             throws Exception {
 
+        mockMvc.perform(
+                get("/api/crm/leads/10/proposals")
+                        .with(
+                                adminWith(
+                                        AdminPermission.CRM_VIEW
+                                )
+                        )
+        )
+        .andExpect(status().isForbidden());
+
         RequestPostProcessor proposalViewer =
                 adminWith(
                         AdminPermission.PROPOSAL_VIEW
