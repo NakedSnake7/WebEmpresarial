@@ -52,7 +52,7 @@ class AutomationFeaturesPresentationContractTest {
     }
 
     @Test
-    void whatsappAutomationShouldKeepNormalPremiumPresentation() {
+    void whatsappAutomationShouldRemainPremiumButHiddenUntilImplemented() {
 
         FeatureDefinition definition =
                 definitionFor(
@@ -72,11 +72,11 @@ class AutomationFeaturesPresentationContractTest {
 
         assertThat(
                 presentation.isShowInSidebar()
-        ).isTrue();
+        ).isFalse();
 
         assertThat(
                 presentation.isShowInDashboard()
-        ).isTrue();
+        ).isFalse();
 
         assertThat(
                 presentation.isShowInBilling()
@@ -88,11 +88,11 @@ class AutomationFeaturesPresentationContractTest {
 
         assertThat(
                 presentation.isTrackUsage()
-        ).isTrue();
+        ).isFalse();
     }
 
     @Test
-    void unimplementedAutomationsShouldNotBeRegisteredInSidebar() {
+    void unimplementedAutomationFeaturesShouldNotBeRegisteredInSidebar() {
 
         var sidebarFeatures =
                 new AutomationFeatures()
@@ -106,10 +106,8 @@ class AutomationFeaturesPresentationContractTest {
                         .toList();
 
         assertThat(sidebarFeatures)
-                .contains(
-                        Feature.WHATSAPP_AUTOMATION
-                )
                 .doesNotContain(
+                        Feature.WHATSAPP_AUTOMATION,
                         Feature.AUTOMATIONS
                 );
     }

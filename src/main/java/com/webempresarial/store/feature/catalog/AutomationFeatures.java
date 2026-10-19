@@ -6,7 +6,6 @@ import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
-import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -22,12 +21,6 @@ public class AutomationFeatures implements PlatformModule {
 
                 .feature(whatsappAutomation())
                 .feature(automations())
-
-                .sidebarSection(
-                        SidebarSectionDefinition.builder("Automatización", "⚡")
-                                .item("WhatsApp", "💬", "/admin/whatsapp", Feature.WHATSAPP_AUTOMATION)
-                                .build()
-                )
 
                 .build();
     }
@@ -45,7 +38,7 @@ public class AutomationFeatures implements PlatformModule {
                 .healthWeight(5)
                 .order(220)
                 .accessPolicy(premium())
-                .presentation(premiumPresentation())
+                .presentation(unimplementedPresentation())
                 .build();
     }
 
@@ -84,13 +77,4 @@ public class AutomationFeatures implements PlatformModule {
                 .build();
     }
 
-    private FeaturePresentation premiumPresentation() {
-        return FeaturePresentation.builder()
-                .showInSidebar(true)
-                .showInDashboard(true)
-                .showInBilling(true)
-                .showUpgradeCard(true)
-                .trackUsage(true)
-                .build();
-    }
 }

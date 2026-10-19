@@ -20,6 +20,15 @@ import java.util.List;
 @Service
 public class HealthScoreService {
 
+    /*
+     * Automation todavía no participa en Health Score porque
+     * EMAIL_MARKETING, WHATSAPP_AUTOMATION y AUTOMATIONS son
+     * capacidades comerciales futuras, no módulos operativos.
+     *
+     * Las dimensiones actualmente evaluables suman 90 puntos.
+     */
+    private static final int IMPLEMENTED_HEALTH_MAX_SCORE = 90;
+
     private final StoreRepository storeRepository;
     private final ProductoRepository productoRepository;
     private final OrderMetricsQueryService orderMetricsQueryService;
@@ -156,53 +165,12 @@ public class HealthScoreService {
         return score;
     }
     
-    private int calculateAutomationScore(
-            Store store,
-            StoreHealthDTO dto
-    ) {
-
-        int score = 0;
-
-        if (featureUsageRepository.countByStoreAndFeature(
-                store,
-                Feature.AUTOMATIONS) > 0) {
-
-            score += 4;
-
-        } else {
-
-            dto.getRecommendations().add(
-                    "Activa Automatizaciones."
-            );
-        }
-
-        if (featureUsageRepository.countByStoreAndFeature(
-                store,
-                Feature.EMAIL_MARKETING) > 0) {
-
-            score += 3;
-
-        } else {
-
-            dto.getRecommendations().add(
-                    "Configura campañas de Email Marketing."
-            );
-        }
-
-        if (featureUsageRepository.countByStoreAndFeature(
-                store,
-                Feature.WHATSAPP_AUTOMATION) > 0) {
-
-            score += 3;
-
-        } else {
-
-            dto.getRecommendations().add(
-                    "Implementa automatizaciones por WhatsApp."
-            );
-        }
-
-        return Math.min(score, 10);
+    private int calculateAutomationScore() {
+        /*
+         * Reservado para cuando las capacidades de automatización
+         * tenant estén realmente implementadas.
+         */
+        return 0;
     }
 
     public StoreHealthDTO calculate(Store store) {
@@ -216,7 +184,7 @@ public class HealthScoreService {
         int billing = calculateBillingScore(store, dto);
         int ecommerce = calculateEcommerceScore(store, dto);
         int crm = calculateCrmScore(store, dto);
-        int automation = calculateAutomationScore(store, dto);
+        int automation = calculateAutomationScore();
         int activity = calculateActivityScore(store, dto);
         
         dto.setBrandingScore(branding);
@@ -226,7 +194,15 @@ public class HealthScoreService {
         dto.setAutomationScore(automation);
         dto.setActivityScore(activity);
 
-        int total = branding + billing + ecommerce + crm + automation + activity;
+        int implementedScore =
+                branding
+                + billing
+                + ecommerce
+                + crm
+                + activity;
+
+        int total = normalizeImplementedScore(implementedScore);
+
         dto.setOverallScore(total);
         dto.setStatus(resolveStatus(total));
 
@@ -304,6 +280,16 @@ public class HealthScoreService {
         }
 
         return Math.min(score, 20);
+    }
+
+    private int normalizeImplementedScore(int score) {
+        return Math.min(
+                100,
+                (int) Math.round(
+                        score * 100.0
+                                / IMPLEMENTED_HEALTH_MAX_SCORE
+                )
+        );
     }
 
     private String resolveStatus(int score) {

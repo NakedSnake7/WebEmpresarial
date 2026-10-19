@@ -42,7 +42,6 @@ public class MarketingFeatures implements PlatformModule {
                                         AdminPermission.REVIEW_CREATE
                                 )
                                 .item("Cupones", "🏷️", "/admin/coupons", Feature.COUPONS)
-                                .item("Email Marketing", "✉️", "/admin/email-marketing", Feature.EMAIL_MARKETING)
                                 .build()
                 )
 
@@ -99,7 +98,7 @@ public class MarketingFeatures implements PlatformModule {
                 .healthWeight(5)
                 .order(210)
                 .accessPolicy(premium())
-                .presentation(premiumPresentation(true))
+                .presentation(unimplementedPresentation())
                 .build();
     }
 
@@ -134,6 +133,16 @@ public class MarketingFeatures implements PlatformModule {
                 .showInBilling(true)
                 .showUpgradeCard(false)
                 .trackUsage(true)
+                .build();
+    }
+
+    private FeaturePresentation unimplementedPresentation() {
+        return FeaturePresentation.builder()
+                .showInSidebar(false)
+                .showInDashboard(false)
+                .showInBilling(true)
+                .showUpgradeCard(true)
+                .trackUsage(false)
                 .build();
     }
 
