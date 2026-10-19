@@ -440,7 +440,8 @@
 
                         <td>
 
-                            <a th:if="${movement.orderId != null}"
+                            <a th:if="${canViewOrders
+                                         and movement.orderId != null}"
                                th:href="@{/orders/{id}(id=${movement.orderId})}"
                                class="btn btn-sm btn-outline-primary"
                                th:text="'#' + ${movement.orderId}">

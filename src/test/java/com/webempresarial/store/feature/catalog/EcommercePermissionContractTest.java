@@ -143,6 +143,49 @@ class EcommercePermissionContractTest {
         );
     }
 
+    @Test
+    void orderNavigationMustRequireOrderView() {
+
+        PlatformModuleDescriptor descriptor =
+                new EcommerceFeatures().descriptor();
+
+        List<SidebarItemDefinition> items =
+                descriptor.getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .toList();
+
+        assertPermission(
+                items,
+                "Pedidos",
+                AdminPermission.ORDER_VIEW
+        );
+    }
+
+    @Test
+    void orderDashboardWidgetMustRequireOrderView() {
+
+        FeatureDefinition orders =
+                new EcommerceFeatures()
+                        .descriptor()
+                        .getFeatures()
+                        .stream()
+                        .filter(definition ->
+                                definition.getFeature()
+                                        == Feature.ORDERS
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertThat(
+                orders.getDashboardPermission()
+        ).isEqualTo(
+                AdminPermission.ORDER_VIEW
+        );
+    }
+
     private void assertPermission(
             List<SidebarItemDefinition> items,
             String title,

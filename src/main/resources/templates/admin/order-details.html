@@ -495,7 +495,8 @@
 
                                 </div>
 
-                                <form th:action="@{/orders/{id}/confirm-payment(
+                                <form th:if="${canUpdateOrders}"
+                                      th:action="@{/orders/{id}/confirm-payment(
                                           id=${order.id}
                                       )}"
                                       method="post"
@@ -839,7 +840,9 @@
 </div>
 
                         <!-- Editable -->
-                        <form th:if="${order.paid and !order.delivered}"
+                        <form th:if="${canUpdateOrders
+                                         and order.paid
+                                         and !order.delivered}"
                               th:action="@{/orders/update-shipping}"
                               method="post"
                               class="shipping-panel">

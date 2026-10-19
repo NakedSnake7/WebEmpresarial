@@ -912,7 +912,8 @@
 
                         <td>
 
-                            <a th:if="${movement.orderId != null}"
+                            <a th:if="${canViewOrders
+                                         and movement.orderId != null}"
                                th:href="@{/orders/{id}(
                                    id=${movement.orderId}
                                )}"

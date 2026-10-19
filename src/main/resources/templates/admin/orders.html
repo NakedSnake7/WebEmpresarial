@@ -635,7 +635,8 @@
         </span>
 
         <!-- Confirmar transferencia -->
-        <form th:if="${order.paymentMethod ==
+        <form th:if="${canUpdateOrders
+                     and order.paymentMethod ==
                          T(com.webempresarial.store.commerce.domain.order.Order.PaymentMethod).TRANSFER
                      and order.paymentStatus ==
                          T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PENDING
@@ -658,7 +659,8 @@
         </form>
 
         <!-- Cancelar orden pendiente -->
-        <form th:if="${order.paymentStatus !=
+        <form th:if="${canCancelOrders
+                     and order.paymentStatus !=
                          T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                      and order.orderStatus !=
                          T(com.webempresarial.store.commerce.domain.order.OrderStatus).CANCELLED}"
@@ -682,7 +684,8 @@
              ORDEN PAGADA Y PROCESADA
              ================================================= -->
 
-        <a th:if="${order.paymentStatus ==
+        <a th:if="${canUpdateOrders
+                   and order.paymentStatus ==
                        T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                    and order.orderStatus ==
                        T(com.webempresarial.store.commerce.domain.order.OrderStatus).PROCESSED}"
@@ -695,7 +698,8 @@
              ORDEN ENVIADA
              ================================================= -->
 
-        <button th:if="${order.paymentStatus ==
+        <button th:if="${canUpdateOrders
+                       and order.paymentStatus ==
                            T(com.webempresarial.store.commerce.domain.order.PaymentStatus).PAID
                        and order.orderStatus ==
                            T(com.webempresarial.store.commerce.domain.order.OrderStatus).SHIPPED}"

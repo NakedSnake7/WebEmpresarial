@@ -84,7 +84,8 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "Pedidos",
 	                                    "🧾",
 	                                    "/orders",
-	                                    Feature.ORDERS
+	                                    Feature.ORDERS,
+                                    AdminPermission.ORDER_VIEW
 	                            )
 	                            .build()
 	            )
@@ -155,6 +156,9 @@ public class EcommerceFeatures implements PlatformModule {
                 .order(40)
                 .accessPolicy(basic())
                 .presentation(standardBasic(true))
+                .dashboardPermission(
+                        AdminPermission.ORDER_VIEW
+                )
                 .build();
     }
 

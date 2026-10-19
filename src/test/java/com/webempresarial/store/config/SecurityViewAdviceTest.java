@@ -307,7 +307,47 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void orderPermissionsShouldControlActionsIndependently() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.ORDER_VIEW.authority()
+        );
+
+        Authentication updateOnly = authentication(
+                AdminPermission.ORDER_UPDATE.authority()
+        );
+
+        Authentication cancelOnly = authentication(
+                AdminPermission.ORDER_CANCEL.authority()
+        );
+
+        assertThat(advice.canViewOrders(viewOnly)).isTrue();
+        assertThat(advice.canUpdateOrders(viewOnly)).isFalse();
+        assertThat(advice.canCancelOrders(viewOnly)).isFalse();
+
+        assertThat(advice.canUpdateOrders(updateOnly)).isTrue();
+        assertThat(advice.canViewOrders(updateOnly)).isFalse();
+        assertThat(advice.canCancelOrders(updateOnly)).isFalse();
+
+        assertThat(advice.canCancelOrders(cancelOnly)).isTrue();
+        assertThat(advice.canViewOrders(cancelOnly)).isFalse();
+        assertThat(advice.canUpdateOrders(cancelOnly)).isFalse();
+    }
+
+    @Test
     void missingAuthenticationShouldNotGrantAnything() {
+
+        assertThat(
+                advice.canViewOrders(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canUpdateOrders(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canCancelOrders(null)
+        ).isFalse();
 
         assertThat(
                 advice.canViewInventory(null)
