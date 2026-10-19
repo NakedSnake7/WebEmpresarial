@@ -227,6 +227,26 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void categoryManagePermissionShouldBeIndependent() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.CATEGORY_VIEW.authority()
+        );
+
+        Authentication manageOnly = authentication(
+                AdminPermission.CATEGORY_MANAGE.authority()
+        );
+
+        assertThat(
+                advice.canManageCategories(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageCategories(manageOnly)
+        ).isTrue();
+    }
+
+    @Test
     void productPermissionsShouldControlActionsIndependently() {
 
         Authentication viewOnly = authentication(
@@ -411,6 +431,10 @@ class SecurityViewAdviceTest {
 
         assertThat(
                 advice.canEditInventory(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageCategories(null)
         ).isFalse();
 
         assertThat(

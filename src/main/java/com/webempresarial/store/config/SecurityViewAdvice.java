@@ -106,6 +106,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageCategories")
+    public boolean canManageCategories(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.CATEGORY_MANAGE.authority()
+        );
+    }
+
     @ModelAttribute("canViewProducts")
     public boolean canViewProducts(Authentication auth) {
         return hasAuthority(

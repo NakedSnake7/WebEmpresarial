@@ -516,21 +516,25 @@
 
                                 </select>
 
-                                <div class="text-center text-muted small my-2">
-                                    o
+                                <div th:if="${canManageCategories}">
+
+                                    <div class="text-center text-muted small my-2">
+                                        o
+                                    </div>
+
+                                    <label for="nuevaCategoria"
+                                           class="form-label fw-semibold">
+                                        Crear nueva categoría
+                                    </label>
+
+                                    <input type="text"
+                                           id="nuevaCategoria"
+                                           th:field="*{nuevaCategoria}"
+                                           class="form-control"
+                                           maxlength="120"
+                                           placeholder="Ej. Calzado deportivo">
+
                                 </div>
-
-                                <label for="nuevaCategoria"
-                                       class="form-label fw-semibold">
-                                    Crear nueva categoría
-                                </label>
-
-                                <input type="text"
-                                       id="nuevaCategoria"
-                                       th:field="*{nuevaCategoria}"
-                                       class="form-control"
-                                       maxlength="120"
-                                       placeholder="Ej. Calzado deportivo">
                             </div>
 
                             <div>
@@ -1050,7 +1054,10 @@
 
             categorySelect
                 ?.addEventListener("change", () => {
-                    if (categorySelect.value) {
+                    if (
+                        categorySelect.value
+                        && newCategoryInput
+                    ) {
                         newCategoryInput.value = "";
                     }
 
@@ -1130,7 +1137,11 @@
                         Boolean(categorySelect.value);
 
                     const newCategory =
-                        Boolean(newCategoryInput.value.trim());
+                        Boolean(
+                            newCategoryInput
+                                ?.value
+                                ?.trim()
+                        );
 
                     if (!existingCategory && !newCategory) {
                         event.preventDefault();
@@ -1142,7 +1153,9 @@
                         categorySelect.focus();
 
                         window.alert(
-                            "Selecciona una categoría o escribe una nueva."
+                            newCategoryInput
+                                ? "Selecciona una categoría o escribe una nueva."
+                                : "Selecciona una categoría."
                         );
 
                         return;

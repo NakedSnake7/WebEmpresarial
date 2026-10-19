@@ -186,6 +186,46 @@ class EcommercePermissionContractTest {
         );
     }
 
+    @Test
+    void categoryModuleMustNotExposeUnimplementedAdminNavigation() {
+
+        PlatformModuleDescriptor descriptor =
+                new EcommerceFeatures().descriptor();
+
+        FeatureDefinition categories =
+                descriptor
+                        .getFeatures()
+                        .stream()
+                        .filter(definition ->
+                                definition.getFeature()
+                                        == Feature.CATEGORIES
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        boolean categoryAdminLink =
+                descriptor
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .anyMatch(item ->
+                                "/admin/categorias".equals(
+                                        item.url()
+                                )
+                        );
+
+        assertThat(
+                categories
+                        .getPresentation()
+                        .isShowInDashboard()
+        ).isFalse();
+
+        assertThat(categoryAdminLink)
+                .isFalse();
+    }
+
     private void assertPermission(
             List<SidebarItemDefinition> items,
             String title,

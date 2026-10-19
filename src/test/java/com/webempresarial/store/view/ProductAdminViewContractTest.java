@@ -75,6 +75,73 @@ class ProductAdminViewContractTest {
     }
 
     @Test
+    void newProductMustAllowExistingCategoryWithoutManagePermission()
+            throws IOException {
+
+        String html = normalize(
+                read("templates/admin/subirProducto.html")
+        );
+
+        int categorySelect =
+                html.indexOf(
+                        "<select id=\"categoriaSelect\""
+                );
+
+        int manageGuard =
+                html.indexOf(
+                        "<div th:if=\"${canManageCategories}\">"
+                );
+
+        int newCategoryLabel =
+                html.indexOf(
+                        "Crear nueva categoría"
+                );
+
+        assertThat(categorySelect)
+                .isGreaterThanOrEqualTo(0);
+
+        assertThat(manageGuard)
+                .isGreaterThan(categorySelect);
+
+        assertThat(newCategoryLabel)
+                .isGreaterThan(manageGuard);
+
+        assertThat(html)
+                .contains(
+                        "<select id=\"categoriaSelect\""
+                )
+                .contains(
+                        "<div th:if=\"${canManageCategories}\">"
+                )
+                .contains(
+                        "id=\"nuevaCategoria\""
+                );
+    }
+
+    @Test
+    void newProductCategoryJavascriptMustSupportMissingCreateInput()
+            throws IOException {
+
+        String html = normalize(
+                read("templates/admin/subirProducto.html")
+        );
+
+        assertThat(html)
+                .contains(
+                        "categorySelect.value && newCategoryInput"
+                )
+                .contains(
+                        "newCategoryInput ?.value ?.trim()"
+                )
+                .contains(
+                        "Selecciona una categoría o escribe una nueva."
+                )
+                .contains(
+                        "Selecciona una categoría."
+                );
+    }
+
+    @Test
     void productEditControlsMustRequireEditPermission()
             throws IOException {
 
