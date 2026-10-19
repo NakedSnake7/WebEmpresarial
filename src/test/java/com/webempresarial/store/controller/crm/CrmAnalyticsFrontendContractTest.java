@@ -29,4 +29,58 @@ class CrmAnalyticsFrontendContractTest {
                         "th:href=\"@{/crm/reports}\""
                 );
     }
+    @Test
+    void reportsViewShouldExistAndRenderAnalyticsMetrics()
+            throws IOException {
+
+        String reports = Files.readString(
+                Path.of(
+                        "src/main/resources/templates/"
+                                + "crm/reports.html"
+                )
+        );
+
+        assertThat(reports)
+                .contains(
+                        "data-crm-view=\"reports\""
+                )
+                .contains(
+                        "${analytics.leadsToday}"
+                )
+                .contains(
+                        "${analytics.leadsThisWeek}"
+                )
+                .contains(
+                        "${analytics.leadsThisMonth}"
+                )
+                .contains(
+                        "${analytics.hotLeads}"
+                )
+                .contains(
+                        "analytics.pipelineValue"
+                )
+                .contains(
+                        "analytics.revenueForecast"
+                )
+                .contains(
+                        "analytics.closeRate"
+                )
+                .contains(
+                        "${analytics.bestChannel}"
+                )
+                .contains(
+                        "${analytics.bookedCalls}"
+                )
+                .contains(
+                        "${analytics.sentProposals}"
+                )
+                .contains(
+                        "${analytics.pendingTasks}"
+                )
+                .contains(
+                        "${analytics.overdueTasks}"
+                );
+    }
+
+
 }

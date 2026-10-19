@@ -108,7 +108,10 @@
         <div class="crm-panel">
             <div class="crm-panel-header">
                 <h3>Actividad reciente</h3>
-                <a href="/crm/pipeline">Ver todo</a>
+                <a th:if="${canViewPipeline}"
+                   href="/crm/pipeline">
+                    Ver todo
+                </a>
             </div>
 
 <div id="crmRecentActivity">

@@ -115,6 +115,12 @@ class CrmPermissionViewContractTest {
         assertThat(dashboard)
                 .contains(
                         "th:if=\"${canViewPipeline}\""
+                )
+                .contains(
+                        "<a th:if=\"${canViewPipeline}\""
+                )
+                .contains(
+                        "href=\"/crm/pipeline\">"
                 );
 
         assertThat(adminLeads)

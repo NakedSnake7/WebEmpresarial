@@ -2,6 +2,7 @@ package com.webempresarial.store.controller.crm;
 
 import com.webempresarial.store.model.Feature; 
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.CrmDashboardService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.FeatureUsageService;
 import com.webempresarial.store.service.LeadService;
@@ -21,17 +22,20 @@ public class CrmViewController {
     private final FeatureAccessService featureAccessService;
     private final FeatureUsageService featureUsageService;
     private final LeadService leadService;
+    private final CrmDashboardService crmDashboardService;
 
     public CrmViewController(
             StoreContextService storeContextService,
             FeatureAccessService featureAccessService,
             FeatureUsageService featureUsageService,
-            LeadService leadService
+            LeadService leadService,
+            CrmDashboardService crmDashboardService
     ) {
         this.storeContextService = storeContextService;
         this.featureAccessService = featureAccessService;
         this.featureUsageService = featureUsageService;
         this.leadService = leadService;
+        this.crmDashboardService = crmDashboardService;
     }
 
     @GetMapping("/crm/dashboard")
@@ -81,7 +85,11 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.ANALYTICS, "crm_reports");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "Reportes CRM | WebEmpresarial");
+        model.addAttribute("title", "Analytics CRM | WebEmpresarial");
+        model.addAttribute(
+                "analytics",
+                crmDashboardService.getDashboard(store.getId())
+        );
 
         return "crm/reports";
     }

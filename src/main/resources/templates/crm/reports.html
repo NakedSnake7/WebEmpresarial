@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Analytics CRM | WebEmpresarial',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+
+<section class="crm-page"
+         data-crm-view="reports">
+
+    <div class="crm-header">
+        <div>
+            <span class="crm-kicker">
+                WebEmpresarial™ Analytics
+            </span>
+
+            <h1>Analytics comercial</h1>
+
+            <p>
+                Métricas consolidadas del rendimiento comercial
+                de tu tienda.
+            </p>
+        </div>
+
+        <div class="crm-header-actions">
+
+            <a th:if="${canViewCrm}"
+               href="/crm/dashboard"
+               class="crm-btn">
+                CRM Dashboard
+            </a>
+
+            <a th:if="${canViewPipeline}"
+               href="/crm/pipeline"
+               class="crm-btn crm-btn-primary">
+                Ver pipeline
+            </a>
+
+        </div>
+    </div>
+
+    <div class="crm-metrics-grid">
+
+        <div class="crm-metric-card">
+            <span>Leads hoy</span>
+            <strong th:text="${analytics.leadsToday}">
+                0
+            </strong>
+            <small>Capturados hoy</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Leads semana</span>
+            <strong th:text="${analytics.leadsThisWeek}">
+                0
+            </strong>
+            <small>Desde el lunes</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Leads mes</span>
+            <strong th:text="${analytics.leadsThisMonth}">
+                0
+            </strong>
+            <small>Mes actual</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Leads HOT</span>
+            <strong th:text="${analytics.hotLeads}">
+                0
+            </strong>
+            <small>Alta intención</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Pipeline value</span>
+            <strong th:text="${
+                '$' + #numbers.formatDecimal(
+                    analytics.pipelineValue != null
+                        ? analytics.pipelineValue
+                        : 0,
+                    1,
+                    2
+                )
+            }">
+                $0.00
+            </strong>
+            <small>Valor comercial estimado</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Forecast</span>
+            <strong th:text="${
+                '$' + #numbers.formatDecimal(
+                    analytics.revenueForecast != null
+                        ? analytics.revenueForecast
+                        : 0,
+                    1,
+                    2
+                )
+            }">
+                $0.00
+            </strong>
+            <small>Proyección comercial</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Tasa de cierre</span>
+            <strong th:text="${
+                #numbers.formatDecimal(
+                    analytics.closeRate != null
+                        ? analytics.closeRate
+                        : 0,
+                    1,
+                    2
+                ) + '%'
+            }">
+                0.00%
+            </strong>
+            <small>Conversión acumulada</small>
+        </div>
+
+        <div class="crm-metric-card">
+            <span>Mejor canal</span>
+            <strong th:text="${analytics.bestChannel}">
+                Sin datos
+            </strong>
+            <small>Origen con mayor volumen</small>
+        </div>
+
+    </div>
+
+    <div class="crm-grid-2 mt-4">
+
+        <div class="crm-panel">
+
+            <div class="crm-panel-header">
+                <h3>Actividad comercial</h3>
+            </div>
+
+            <div class="crm-metrics-grid">
+
+                <div class="crm-metric-card">
+                    <span>Llamadas agendadas</span>
+                    <strong th:text="${analytics.bookedCalls}">
+                        0
+                    </strong>
+                    <small>Oportunidades agendadas</small>
+                </div>
+
+                <div class="crm-metric-card">
+                    <span>Propuestas enviadas</span>
+                    <strong th:text="${analytics.sentProposals}">
+                        0
+                    </strong>
+                    <small>Actividad de propuestas</small>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="crm-panel">
+
+            <div class="crm-panel-header">
+                <h3>Seguimiento</h3>
+            </div>
+
+            <div class="crm-metrics-grid">
+
+                <div class="crm-metric-card">
+                    <span>Tareas pendientes</span>
+                    <strong th:text="${analytics.pendingTasks}">
+                        0
+                    </strong>
+                    <small>Por atender</small>
+                </div>
+
+                <div class="crm-metric-card">
+                    <span>Tareas vencidas</span>
+                    <strong th:text="${analytics.overdueTasks}">
+                        0
+                    </strong>
+                    <small>Requieren atención</small>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
+
+</body>
+</html>
