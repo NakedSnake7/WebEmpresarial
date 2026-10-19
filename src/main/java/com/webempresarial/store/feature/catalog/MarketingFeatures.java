@@ -7,6 +7,7 @@ import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -26,7 +27,20 @@ public class MarketingFeatures implements PlatformModule {
 
                 .sidebarSection(
                         SidebarSectionDefinition.builder("Marketing", "📣")
-                                .item("Reseñas", "⭐", "/resenas", Feature.REVIEWS)
+                                .item(
+                                        "Reseñas",
+                                        "⭐",
+                                        "/resenas",
+                                        Feature.REVIEWS,
+                                        AdminPermission.REVIEW_VIEW
+                                )
+                                .item(
+                                        "Nueva reseña",
+                                        "✍️",
+                                        "/resenas/nueva",
+                                        Feature.REVIEWS,
+                                        AdminPermission.REVIEW_CREATE
+                                )
                                 .item("Cupones", "🏷️", "/admin/coupons", Feature.COUPONS)
                                 .item("Email Marketing", "✉️", "/admin/email-marketing", Feature.EMAIL_MARKETING)
                                 .build()
@@ -44,11 +58,14 @@ public class MarketingFeatures implements PlatformModule {
                 .category(FeatureCategory.MARKETING)
                 .icon("⭐")
                 .color("warning")
-                .url("/resenas/nueva")
+                .url("/resenas")
                 .healthWeight(4)
                 .order(60)
                 .accessPolicy(basic())
                 .presentation(basicPresentation(true))
+                .dashboardPermission(
+                        AdminPermission.REVIEW_VIEW
+                )
                 .build();
     }
 

@@ -307,6 +307,46 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void reviewPermissionsShouldControlActionsIndependently() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.REVIEW_VIEW.authority()
+        );
+
+        Authentication createOnly = authentication(
+                AdminPermission.REVIEW_CREATE.authority()
+        );
+
+        Authentication editOnly = authentication(
+                AdminPermission.REVIEW_EDIT.authority()
+        );
+
+        Authentication deleteOnly = authentication(
+                AdminPermission.REVIEW_DELETE.authority()
+        );
+
+        assertThat(advice.canViewReviews(viewOnly)).isTrue();
+        assertThat(advice.canCreateReviews(viewOnly)).isFalse();
+        assertThat(advice.canEditReviews(viewOnly)).isFalse();
+        assertThat(advice.canDeleteReviews(viewOnly)).isFalse();
+
+        assertThat(advice.canCreateReviews(createOnly)).isTrue();
+        assertThat(advice.canViewReviews(createOnly)).isFalse();
+        assertThat(advice.canEditReviews(createOnly)).isFalse();
+        assertThat(advice.canDeleteReviews(createOnly)).isFalse();
+
+        assertThat(advice.canEditReviews(editOnly)).isTrue();
+        assertThat(advice.canViewReviews(editOnly)).isFalse();
+        assertThat(advice.canCreateReviews(editOnly)).isFalse();
+        assertThat(advice.canDeleteReviews(editOnly)).isFalse();
+
+        assertThat(advice.canDeleteReviews(deleteOnly)).isTrue();
+        assertThat(advice.canViewReviews(deleteOnly)).isFalse();
+        assertThat(advice.canCreateReviews(deleteOnly)).isFalse();
+        assertThat(advice.canEditReviews(deleteOnly)).isFalse();
+    }
+
+    @Test
     void orderPermissionsShouldControlActionsIndependently() {
 
         Authentication viewOnly = authentication(
@@ -336,6 +376,22 @@ class SecurityViewAdviceTest {
 
     @Test
     void missingAuthenticationShouldNotGrantAnything() {
+
+        assertThat(
+                advice.canViewReviews(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateReviews(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditReviews(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canDeleteReviews(null)
+        ).isFalse();
 
         assertThat(
                 advice.canViewOrders(null)

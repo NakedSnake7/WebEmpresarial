@@ -201,7 +201,8 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-3"
+         th:if="${canViewReviews}">
         <a th:href="@{/resenas}"
            class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100 dashboard-card">

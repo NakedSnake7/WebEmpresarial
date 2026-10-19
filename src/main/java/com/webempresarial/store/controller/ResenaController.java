@@ -4,11 +4,13 @@ import com.webempresarial.store.dto.CloudinaryUploadResult;
 import com.webempresarial.store.dto.ResenaEditDTO;
 import com.webempresarial.store.entity.ResenaEntity;
 import com.webempresarial.store.mapper.ResenaMapper;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Resena;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,17 +31,23 @@ public class ResenaController {
     private final ResenaRepository resenaRepository;
     private final StoreResolver storeResolver;
     private final FeatureAccessService featureAccessService;
+    private final CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
 
     public ResenaController(
             CloudinaryService cloudinaryService,
             ResenaRepository resenaRepository,
             StoreResolver storeResolver,
-            FeatureAccessService featureAccessService
+            FeatureAccessService featureAccessService,
+            CurrentAdminAuthorizationService
+                    currentAdminAuthorizationService
     ) {
         this.cloudinaryService = cloudinaryService;
         this.resenaRepository = resenaRepository;
         this.storeResolver = storeResolver;
         this.featureAccessService = featureAccessService;
+        this.currentAdminAuthorizationService =
+                currentAdminAuthorizationService;
     }
 
     @ModelAttribute("resena")
@@ -59,12 +67,9 @@ public class ResenaController {
 
         model.addAttribute("resena", resena);
 
-        model.addAttribute(
-                "resenas",
-                resenaRepository.findByStoreOrderByEstrellasDesc(store)
-                        .stream()
-                        .map(ResenaMapper::toModel)
-                        .toList()
+        addReviewsIfAllowed(
+                model,
+                store
         );
 
         return "admin/reviews";
@@ -109,12 +114,9 @@ public class ResenaController {
             model.addAttribute("errorMsg", e.getMessage());
             model.addAttribute("resena", resena);
 
-            model.addAttribute(
-                    "resenas",
-                    resenaRepository.findByStoreOrderByEstrellasDesc(store)
-                            .stream()
-                            .map(ResenaMapper::toModel)
-                            .toList()
+            addReviewsIfAllowed(
+                    model,
+                    store
             );
 
             return "admin/reviews";
@@ -257,6 +259,26 @@ public class ResenaController {
         resenaRepository.save(resena);
 
         return ResponseEntity.ok().build();
+    }
+
+    private void addReviewsIfAllowed(
+            Model model,
+            Store store
+    ) {
+
+        if (!currentAdminAuthorizationService.hasPermission(
+                AdminPermission.REVIEW_VIEW
+        )) {
+            return;
+        }
+
+        model.addAttribute(
+                "resenas",
+                resenaRepository.findByStoreOrderByEstrellasDesc(store)
+                        .stream()
+                        .map(ResenaMapper::toModel)
+                        .toList()
+        );
     }
 
     private Store currentStoreWithReviews(

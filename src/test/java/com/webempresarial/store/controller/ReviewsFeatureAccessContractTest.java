@@ -6,6 +6,7 @@ import com.webempresarial.store.model.Resena;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
 import com.webempresarial.store.service.CloudinaryService;
+import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 
@@ -40,6 +41,10 @@ class ReviewsFeatureAccessContractTest {
     private FeatureAccessService featureAccessService;
 
     @Mock
+    private CurrentAdminAuthorizationService
+            currentAdminAuthorizationService;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -63,7 +68,8 @@ class ReviewsFeatureAccessContractTest {
                         cloudinaryService,
                         resenaRepository,
                         storeResolver,
-                        featureAccessService
+                        featureAccessService,
+                        currentAdminAuthorizationService
                 );
 
         doThrow(
