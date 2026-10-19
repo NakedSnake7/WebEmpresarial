@@ -284,6 +284,9 @@ public class SecurityConfig {
                         .STORE_EDIT
                         .authority(),
                     AdminPermission
+                        .STORE_BRANDING_EDIT
+                        .authority(),
+                    AdminPermission
                         .STORE_COMMERCIAL_INFO_EDIT
                         .authority()
                 )

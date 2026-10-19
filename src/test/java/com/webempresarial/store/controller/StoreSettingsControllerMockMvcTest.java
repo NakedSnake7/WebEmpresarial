@@ -127,6 +127,12 @@ class StoreSettingsControllerMockMvcTest {
                 )
         ).thenReturn(true);
 
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_BRANDING_EDIT
+                )
+        ).thenReturn(true);
+
         store = new Store();
         store.setId(100L);
         store.setNombre("ACME");

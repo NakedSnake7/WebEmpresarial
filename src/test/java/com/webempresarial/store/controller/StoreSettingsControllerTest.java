@@ -83,6 +83,14 @@ class StoreSettingsControllerTest {
                 )
                 .thenReturn(true);
 
+        lenient()
+                .when(
+                        currentAdminAuthorizationService.hasPermission(
+                                AdminPermission.STORE_BRANDING_EDIT
+                        )
+                )
+                .thenReturn(true);
+
         store = new Store();
         store.setId(100L);
         store.setNombre("ACME");
@@ -348,7 +356,8 @@ assertThat(saved.getFooterText())
         form.setCurrency("USD");
 
         /*
-         * STORE_EDIT sí debe permitir configuración general.
+         * STORE_EDIT sí debe permitir configuración general,
+         * pero no identidad visual.
          */
         form.setProposalFooter("NEW-PROPOSAL");
         form.setPrimaryColor("#123456");
@@ -362,6 +371,12 @@ assertThat(saved.getFooterText())
         when(
                 currentAdminAuthorizationService.hasPermission(
                         AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(false);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_BRANDING_EDIT
                 )
         ).thenReturn(false);
 
@@ -404,7 +419,7 @@ assertThat(saved.getFooterText())
                 .isEqualTo("NEW-PROPOSAL");
 
         assertThat(settings.getPrimaryColor())
-                .isEqualTo("#123456");
+                .isEqualTo("#111827");
 
         verify(storeSettingsService)
                 .save(settings);
@@ -447,6 +462,12 @@ assertThat(saved.getFooterText())
         when(
                 currentAdminAuthorizationService.hasPermission(
                         AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(false);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_BRANDING_EDIT
                 )
         ).thenReturn(false);
 
@@ -501,6 +522,105 @@ assertThat(saved.getFooterText())
          * WHITE_LABEL_FULL ni siquiera debe evaluarse porque
          * el usuario carece de STORE_EDIT.
          */
+        verify(features, never())
+                .canUse(any(Store.class), anyString());
+
+        verify(storeSettingsService)
+                .save(settings);
+    }
+
+    @Test
+    void brandingOnlyShouldModifyVisualIdentityButNotGeneralOrCommercialSettings() {
+        mockCurrentTenant();
+
+        settings.setCompanyEmail("old@acme.test");
+        settings.setProposalFooter("OLD-PROPOSAL");
+        settings.setHeroTitle("OLD-HERO");
+
+        settings.setFaviconUrl("old-favicon.png");
+        settings.setHeroImageUrl("old-hero.jpg");
+        settings.setPrimaryColor("#111827");
+        settings.setSecondaryColor("#222222");
+        settings.setAccentColor("#333333");
+        settings.setFontFamily("Inter");
+        settings.setSlogan("OLD-SLOGAN");
+
+        StoreSettings form = new StoreSettings();
+
+        form.setCompanyEmail("attack@acme.test");
+        form.setProposalFooter("ATTACK-PROPOSAL");
+        form.setHeroTitle("ATTACK-HERO");
+
+        form.setFaviconUrl("new-favicon.png");
+        form.setHeroImageUrl("new-hero.jpg");
+        form.setPrimaryColor("#123456");
+        form.setSecondaryColor("#234567");
+        form.setAccentColor("#345678");
+        form.setFontFamily("Montserrat");
+        form.setSlogan("NEW-SLOGAN");
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_EDIT
+                )
+        ).thenReturn(false);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_COMMERCIAL_INFO_EDIT
+                )
+        ).thenReturn(false);
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_BRANDING_EDIT
+                )
+        ).thenReturn(true);
+
+        String result =
+                controller.saveSettings(form, request);
+
+        assertThat(result)
+                .isEqualTo(
+                        "redirect:/admin/store/settings?success"
+                );
+
+        /*
+         * Identidad visual sí editable.
+         */
+        assertThat(settings.getFaviconUrl())
+                .isEqualTo("new-favicon.png");
+
+        assertThat(settings.getHeroImageUrl())
+                .isEqualTo("new-hero.jpg");
+
+        assertThat(settings.getPrimaryColor())
+                .isEqualTo("#123456");
+
+        assertThat(settings.getSecondaryColor())
+                .isEqualTo("#234567");
+
+        assertThat(settings.getAccentColor())
+                .isEqualTo("#345678");
+
+        assertThat(settings.getFontFamily())
+                .isEqualTo("Montserrat");
+
+        assertThat(settings.getSlogan())
+                .isEqualTo("NEW-SLOGAN");
+
+        /*
+         * Otros dominios permanecen protegidos.
+         */
+        assertThat(settings.getCompanyEmail())
+                .isEqualTo("old@acme.test");
+
+        assertThat(settings.getProposalFooter())
+                .isEqualTo("OLD-PROPOSAL");
+
+        assertThat(settings.getHeroTitle())
+                .isEqualTo("OLD-HERO");
+
         verify(features, never())
                 .canUse(any(Store.class), anyString());
 

@@ -78,6 +78,11 @@ public class StoreSettingsController {
                         AdminPermission.STORE_EDIT
                 );
 
+        boolean canManageStoreBranding =
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.STORE_BRANDING_EDIT
+                );
+
         boolean canManageCommercialInfo =
                 currentAdminAuthorizationService.hasPermission(
                         AdminPermission.STORE_COMMERCIAL_INFO_EDIT
@@ -92,9 +97,7 @@ public class StoreSettingsController {
             settings.setCurrency(form.getCurrency());
         }
 
-        if (canManageStoreSettings) {
-            settings.setProposalFooter(form.getProposalFooter());
-
+        if (canManageStoreBranding) {
             settings.setFaviconUrl(form.getFaviconUrl());
             settings.setPrimaryColor(form.getPrimaryColor());
             settings.setSecondaryColor(form.getSecondaryColor());
@@ -102,6 +105,10 @@ public class StoreSettingsController {
             settings.setFontFamily(form.getFontFamily());
             settings.setHeroImageUrl(form.getHeroImageUrl());
             settings.setSlogan(form.getSlogan());
+        }
+
+        if (canManageStoreSettings) {
+            settings.setProposalFooter(form.getProposalFooter());
 
             /*
              * Contenido del storefront.

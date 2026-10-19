@@ -21,6 +21,10 @@ class StoreSettingsPermissionTemplateTest {
         String html = Files.readString(TEMPLATE);
 
         assertThat(html)
+                .contains("data-store-settings-branding")
+                .contains(
+                        "th:disabled=\"${!canManageStoreBranding}\""
+                )
                 .contains("data-store-settings-general")
                 .contains(
                         "th:disabled=\"${!canManageStoreSettings}\""
@@ -31,7 +35,7 @@ class StoreSettingsPermissionTemplateTest {
                 )
                 .contains("data-store-settings-proposals")
                 .contains(
-                        "th:if=\"${canManageStoreSettings or canManageCommercialInfo}\""
+                        "th:if=\"${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo}\""
                 );
     }
     @Test

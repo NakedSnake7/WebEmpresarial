@@ -6,7 +6,7 @@ import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.feature.FeaturePresentation;
 import com.webempresarial.store.feature.PlatformModule;
 import com.webempresarial.store.feature.PlatformModuleDescriptor;
-import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -22,17 +22,6 @@ public class BillingFeatures implements PlatformModule {
                 .description("Servicios de facturación y pagos.")
 
                 .feature(stripeConnect())
-
-                .sidebarSection(
-                        SidebarSectionDefinition.builder("Billing", "💳")
-                                .item(
-                                        "Stripe Connect",
-                                        "💳",
-                                        "/admin/store/settings",
-                                        Feature.STRIPE_CONNECT
-                                )
-                                .build()
-                )
 
                 .build();
     }
@@ -66,6 +55,10 @@ public class BillingFeatures implements PlatformModule {
                                 .showUpgradeCard(true)
                                 .trackUsage(false)
                                 .build()
+                )
+
+                .dashboardPermission(
+                        AdminPermission.STRIPE_CONNECT_MANAGE
                 )
 
                 .build();

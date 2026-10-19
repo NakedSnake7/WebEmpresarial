@@ -111,8 +111,8 @@
 </div>
 
 <fieldset
-    data-store-settings-general
-    th:disabled="${!canManageStoreSettings}"
+    data-store-settings-branding
+    th:disabled="${!canManageStoreBranding}"
     style="display: contents;">
 <div class="col-12">
     <hr>
@@ -179,6 +179,13 @@
            th:field="*{slogan}"
            placeholder="Ej. Tecnología para vender más">
 </div>
+
+</fieldset>
+
+<fieldset
+    data-store-settings-general
+    th:disabled="${!canManageStoreSettings}"
+    style="display: contents;">
 
 <div class="col-12">
     <hr>
@@ -566,7 +573,7 @@
 								</fieldset>
 
 <button
-    th:if="${canManageStoreSettings or canManageCommercialInfo}"
+    th:if="${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo}"
     class="btn btn-success"
     type="submit">Guardar
 									configuración</button>

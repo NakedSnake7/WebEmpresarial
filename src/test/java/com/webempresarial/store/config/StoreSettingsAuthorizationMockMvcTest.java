@@ -261,7 +261,7 @@ class StoreSettingsAuthorizationMockMvcTest {
     }
 
     @Test
-    void storeBrandingEditShouldGrantLogoMutations()
+    void storeBrandingEditShouldGrantBrandingMutationsOnly()
             throws Exception {
 
         RequestPostProcessor actor =
@@ -269,6 +269,13 @@ class StoreSettingsAuthorizationMockMvcTest {
                         AdminPermission
                                 .STORE_BRANDING_EDIT
                 );
+
+        mockMvc.perform(
+                post("/admin/store/settings")
+                        .with(actor)
+                        .with(csrf())
+        )
+        .andExpect(status().isOk());
 
         mockMvc.perform(
                 post("/admin/store/settings/logo")
@@ -285,6 +292,13 @@ class StoreSettingsAuthorizationMockMvcTest {
                         .with(csrf())
         )
         .andExpect(status().isOk());
+
+        mockMvc.perform(
+                post("/admin/store/settings/shipping")
+                        .with(actor)
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
 
         mockMvc.perform(
                 post("/admin/store/settings/transfer")
