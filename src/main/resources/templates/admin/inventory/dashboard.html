@@ -272,7 +272,8 @@
                             Ver Kardex
                         </a>
 
-                        <a th:href="@{/admin/productos}"
+                        <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                            class="btn btn-light">
                             Gestionar productos
                         </a>
@@ -311,7 +312,8 @@
 
             <div class="col-md-6 col-xl-3">
 
-                <a th:href="@{/admin/productos}"
+                <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                    class="metric-link">
 
                     <div class="card metric-card h-100">

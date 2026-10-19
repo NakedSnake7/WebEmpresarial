@@ -34,6 +34,22 @@ public class SecurityViewAdvice {
         return hasRole(auth, "ROLE_SALES");
     }
 
+    @ModelAttribute("canViewInventory")
+    public boolean canViewInventory(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.INVENTORY_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canEditInventory")
+    public boolean canEditInventory(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.INVENTORY_EDIT.authority()
+        );
+    }
+
     @ModelAttribute("canViewProducts")
     public boolean canViewProducts(Authentication auth) {
         return hasAuthority(

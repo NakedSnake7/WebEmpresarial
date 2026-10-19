@@ -59,7 +59,8 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "Dashboard de inventario",
 	                                    "📦",
 	                                    "/admin/inventory",
-	                                    Feature.INVENTORY
+	                                    Feature.INVENTORY,
+                                    AdminPermission.INVENTORY_VIEW
 	                            )
 
 	                            
@@ -67,14 +68,16 @@ public class EcommerceFeatures implements PlatformModule {
 	                                    "Kardex de inventario",
 	                                    "📊",
 	                                    "/admin/inventory/movements",
-	                                    Feature.INVENTORY_KARDEX
+	                                    Feature.INVENTORY_KARDEX,
+                                    AdminPermission.INVENTORY_VIEW
 	                            )
 	                            
 	                            .item(
 	                                    "Alertas de inventario",
 	                                    "🚨",
 	                                    "/admin/inventory/alerts",
-	                                    Feature.INVENTORY
+	                                    Feature.INVENTORY,
+                                    AdminPermission.INVENTORY_VIEW
 	                            )
 	                            
 	                            .item(
@@ -134,6 +137,9 @@ public class EcommerceFeatures implements PlatformModule {
                 .order(30)
                 .accessPolicy(basic())
                 .presentation(standardBasic(true))
+                .dashboardPermission(
+                        AdminPermission.INVENTORY_VIEW
+                )
                 .build();
     }
 
@@ -210,6 +216,9 @@ public class EcommerceFeatures implements PlatformModule {
                 .accessPolicy(basic())
                 .presentation(
                         standardBasic(true)
+                )
+                .dashboardPermission(
+                        AdminPermission.INVENTORY_VIEW
                 )
                 .build();
     }

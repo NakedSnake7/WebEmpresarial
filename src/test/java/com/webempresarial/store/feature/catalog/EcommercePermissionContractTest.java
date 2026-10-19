@@ -70,6 +70,79 @@ class EcommercePermissionContractTest {
         );
     }
 
+    @Test
+    void inventoryNavigationMustRequireInventoryView() {
+
+        PlatformModuleDescriptor descriptor =
+                new EcommerceFeatures().descriptor();
+
+        List<SidebarItemDefinition> items =
+                descriptor
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .toList();
+
+        assertPermission(
+                items,
+                "Dashboard de inventario",
+                AdminPermission.INVENTORY_VIEW
+        );
+
+        assertPermission(
+                items,
+                "Kardex de inventario",
+                AdminPermission.INVENTORY_VIEW
+        );
+
+        assertPermission(
+                items,
+                "Alertas de inventario",
+                AdminPermission.INVENTORY_VIEW
+        );
+    }
+
+    @Test
+    void inventoryDashboardWidgetsMustRequireInventoryView() {
+
+        List<FeatureDefinition> features =
+                new EcommerceFeatures()
+                        .descriptor()
+                        .getFeatures();
+
+        FeatureDefinition inventory =
+                features.stream()
+                        .filter(definition ->
+                                definition.getFeature()
+                                        == Feature.INVENTORY
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        FeatureDefinition kardex =
+                features.stream()
+                        .filter(definition ->
+                                definition.getFeature()
+                                        == Feature.INVENTORY_KARDEX
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertThat(
+                inventory.getDashboardPermission()
+        ).isEqualTo(
+                AdminPermission.INVENTORY_VIEW
+        );
+
+        assertThat(
+                kardex.getDashboardPermission()
+        ).isEqualTo(
+                AdminPermission.INVENTORY_VIEW
+        );
+    }
+
     private void assertPermission(
             List<SidebarItemDefinition> items,
             String title,

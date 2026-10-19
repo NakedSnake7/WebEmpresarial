@@ -279,7 +279,43 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void inventoryPermissionsShouldControlViewAndEditIndependently() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.INVENTORY_VIEW.authority()
+        );
+
+        Authentication editOnly = authentication(
+                AdminPermission.INVENTORY_EDIT.authority()
+        );
+
+        assertThat(
+                advice.canViewInventory(viewOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canEditInventory(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditInventory(editOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewInventory(editOnly)
+        ).isFalse();
+    }
+
+    @Test
     void missingAuthenticationShouldNotGrantAnything() {
+
+        assertThat(
+                advice.canViewInventory(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditInventory(null)
+        ).isFalse();
 
         assertThat(
                 advice.canViewProducts(null)

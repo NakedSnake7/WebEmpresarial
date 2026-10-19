@@ -221,7 +221,8 @@
                             Ver Kardex
                         </a>
 
-                        <a th:href="@{/admin/productos}"
+                        <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                            class="btn btn-light">
                             Productos
                         </a>
@@ -552,7 +553,8 @@
                                     Gestionar inventario
                                 </a>
 
-                                <form th:if="${alert.status.name()
+                                <form th:if="${canEditInventory
+                                             and alert.status.name()
                                              == 'OPEN'}"
                                       th:action="@{/admin/inventory/alerts/{id}/acknowledge(
                                           id=${alert.id}

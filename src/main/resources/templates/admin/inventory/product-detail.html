@@ -232,7 +232,8 @@
                             Ver Kardex
                         </a>
 
-                        <a th:href="@{/admin/productos}"
+                        <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                            class="btn btn-light">
                             Productos
                         </a>
@@ -430,7 +431,8 @@
 
                         </div>
 
-                        <form th:action="@{/admin/productos/{id}/inventory/adjust(
+                        <form th:if="${canEditInventory}"
+                              th:action="@{/admin/productos/{id}/inventory/adjust(
                                   id=${inventory.productId}
                               )}"
                               th:object="${adjustment}"

@@ -117,7 +117,8 @@
 
                     <div class="d-flex flex-column flex-sm-row gap-2">
 
-                        <a th:href="@{/admin/productos}"
+                        <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                            class="btn btn-outline-light">
                             Ver productos
                         </a>
@@ -529,7 +530,8 @@
                     con los filtros seleccionados.
                 </p>
 
-                <a th:href="@{/admin/productos}"
+                <a th:if="${canViewProducts}"
+                           th:href="@{/admin/productos}"
                    class="btn btn-primary">
                     Ver productos
                 </a>
