@@ -142,6 +142,88 @@ class ProductAdminViewContractTest {
     }
 
     @Test
+    void newProductMustAllowExistingBrandWithoutManagePermission()
+            throws IOException {
+
+        String html = normalize(
+                read("templates/admin/subirProducto.html")
+        );
+
+        int brandSelect =
+                html.indexOf(
+                        "<select id=\"marcaSelect\""
+                );
+
+        int existingBrands =
+                html.indexOf(
+                        "th:each=\"marca : ${marcas}\""
+                );
+
+        int createBrand =
+                html.indexOf(
+                        "＋ Crear nueva marca"
+                );
+
+        int optionGuard =
+                html.lastIndexOf(
+                        "th:if=\"${canManageBrands}\"",
+                        createBrand
+                );
+
+        int brandCreateBox =
+                html.indexOf(
+                        "id=\"brandCreateBox\""
+                );
+
+        int boxGuard =
+                html.indexOf(
+                        "th:if=\"${canManageBrands}\"",
+                        brandCreateBox
+                );
+
+        assertThat(brandSelect)
+                .isGreaterThanOrEqualTo(0);
+
+        assertThat(existingBrands)
+                .isGreaterThan(brandSelect);
+
+        assertThat(optionGuard)
+                .isGreaterThan(existingBrands);
+
+        assertThat(createBrand)
+                .isGreaterThan(optionGuard);
+
+        assertThat(brandCreateBox)
+                .isGreaterThan(createBrand);
+
+        assertThat(boxGuard)
+                .isGreaterThan(brandCreateBox);
+    }
+
+    @Test
+    void newProductBrandJavascriptMustSupportMissingCreateControls()
+            throws IOException {
+
+        String html = normalize(
+                read("templates/admin/subirProducto.html")
+        );
+
+        assertThat(html)
+                .contains(
+                        "!brandCreateBox || !newBrandInput"
+                )
+                .contains(
+                        "brandSelect.value === \"-1\""
+                )
+                .contains(
+                        "newBrandInput ?.value ?.trim()"
+                )
+                .contains(
+                        "newBrandInput?.focus()"
+                );
+    }
+
+    @Test
     void productEditControlsMustRequireEditPermission()
             throws IOException {
 

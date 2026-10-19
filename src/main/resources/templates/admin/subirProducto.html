@@ -556,14 +556,16 @@
                                             th:text="${marca.nombre}">
                                     </option>
 
-                                    <option value="-1">
+                                    <option value="-1"
+                                            th:if="${canManageBrands}">
                                         ＋ Crear nueva marca
                                     </option>
 
                                 </select>
 
                                 <div id="brandCreateBox"
-                                     class="mt-3 d-none">
+                                     class="mt-3 d-none"
+                                     th:if="${canManageBrands}">
 
                                     <label for="nuevaMarca"
                                            class="form-label fw-semibold">
@@ -1036,6 +1038,13 @@
 
             brandSelect
                 ?.addEventListener("change", function () {
+                    if (
+                        !brandCreateBox
+                        || !newBrandInput
+                    ) {
+                        return;
+                    }
+
                     const creatingBrand =
                         this.value === "-1";
 
@@ -1162,16 +1171,18 @@
                     }
 
                     if (
-                        brandSelect.value === "-1" &&
-                        !newBrandInput.value.trim()
+                        brandSelect.value === "-1"
+                        && !newBrandInput
+                            ?.value
+                            ?.trim()
                     ) {
                         event.preventDefault();
 
-                        newBrandInput.classList.add(
-                            "is-invalid"
-                        );
+                        newBrandInput
+                            ?.classList
+                            .add("is-invalid");
 
-                        newBrandInput.focus();
+                        newBrandInput?.focus();
 
                         window.alert(
                             "Escribe el nombre de la nueva marca."

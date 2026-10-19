@@ -247,6 +247,30 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void brandManagePermissionShouldBeIndependent() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.BRAND_VIEW.authority()
+        );
+
+        Authentication manageOnly = authentication(
+                AdminPermission.BRAND_MANAGE.authority()
+        );
+
+        assertThat(
+                advice.canManageBrands(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageBrands(manageOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageBrands(null)
+        ).isFalse();
+    }
+
+    @Test
     void productPermissionsShouldControlActionsIndependently() {
 
         Authentication viewOnly = authentication(

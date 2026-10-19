@@ -114,6 +114,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageBrands")
+    public boolean canManageBrands(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.BRAND_MANAGE.authority()
+        );
+    }
+
     @ModelAttribute("canViewProducts")
     public boolean canViewProducts(Authentication auth) {
         return hasAuthority(
