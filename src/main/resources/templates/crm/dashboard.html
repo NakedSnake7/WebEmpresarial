@@ -40,7 +40,9 @@
         </div>
 
         <div class="crm-header-actions">
-            <a href="/crm/pipeline" class="crm-btn crm-btn-primary">
+            <a th:if="${canViewPipeline}"
+               href="/crm/pipeline"
+               class="crm-btn crm-btn-primary">
                 Ver pipeline
             </a>
             <a href="/crm/tasks" class="crm-btn">

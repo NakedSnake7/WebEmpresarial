@@ -2,11 +2,26 @@ const API_URL = "/api/crm/tasks";
 
 let allTasks = [];
 
+function canEditCrm() {
+    const board =
+        document.getElementById(
+            "crmTasksBoard"
+        );
+
+    return (
+        board?.dataset?.canEditCrm
+        === "true"
+    );
+}
+
 export async function initTasks() {
     allTasks = await fetchTasks();
     renderTasks(allTasks);
     initTaskFilters();
-    initCompleteButtons();
+
+    if (canEditCrm()) {
+        initCompleteButtons();
+    }
 }
 
 async function fetchTasks() {
@@ -54,11 +69,19 @@ function createTaskCard(task) {
         </div>
 
         ${
-            task.status !== "COMPLETED"
-                ? `<button class="crm-complete-task-btn" data-id="${task.id}" type="button">
-                    Completar
-                   </button>`
-                : `<div class="crm-task-completed">✓ Completada</div>`
+            task.status === "COMPLETED"
+                ? `<div class="crm-task-completed">✓ Completada</div>`
+                : (
+                    canEditCrm()
+                        ? `<button class="crm-complete-task-btn"
+                                   data-id="${task.id}"
+                                   type="button">
+                               Completar
+                           </button>`
+                        : `<div class="crm-task-completed">
+                               Solo lectura
+                           </div>`
+                )
         }
     `;
 
@@ -127,6 +150,11 @@ function formatDate(value) {
 }
 
 function initCompleteButtons() {
+
+    if (!canEditCrm()) {
+        return;
+    }
+
     document.addEventListener("click", async event => {
         const button = event.target.closest(".crm-complete-task-btn");
 

@@ -22,8 +22,12 @@
         </div>
 
         <div class="crm-header-actions">
-            <a href="/crm/dashboard" class="crm-btn">Dashboard</a>
-            <a href="/crm/pipeline" class="crm-btn crm-btn-primary">Pipeline</a>
+            <a th:if="${canViewCrm}"
+               href="/crm/dashboard"
+               class="crm-btn">Dashboard</a>
+            <a th:if="${canViewPipeline}"
+               href="/crm/pipeline"
+               class="crm-btn crm-btn-primary">Pipeline</a>
         </div>
     </div>
 
@@ -40,7 +44,9 @@
         </select>
     </div>
 
-    <div class="crm-tasks-board" id="crmTasksBoard">
+    <div class="crm-tasks-board"
+         id="crmTasksBoard"
+         th:data-can-edit-crm="${canEditCrm}">
 
         <div class="crm-task-column" data-status="PENDING">
             <div class="crm-column-header">

@@ -885,6 +885,22 @@ public class SecurityConfig {
                 .hasAuthority("PERM_ANALYTICS_VIEW")
 
                 /*
+                 * Shared lead reads used by the CRM and Pipeline.
+                 *
+                 * Pipeline cards and drawer consume these two endpoints,
+                 * so PIPELINE_VIEW must be sufficient for read-only use.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/crm/leads",
+                    "/api/crm/leads/*"
+                )
+                .hasAnyAuthority(
+                    "PERM_CRM_VIEW",
+                    "PERM_PIPELINE_VIEW"
+                )
+
+                /*
                  * CRM read operations.
                  */
                 .requestMatchers(
@@ -912,6 +928,22 @@ public class SecurityConfig {
                     "/api/crm/leads/**"
                 )
                 .hasAuthority("PERM_CRM_EDIT")
+
+                /*
+                 * Lead stage/status is shared by general CRM editing
+                 * and Pipeline management.
+                 *
+                 * This rule MUST remain before the generic
+                 * /api/crm/leads/** PATCH matcher.
+                 */
+                .requestMatchers(
+                    HttpMethod.PATCH,
+                    "/api/crm/leads/*/status"
+                )
+                .hasAnyAuthority(
+                    "PERM_CRM_EDIT",
+                    "PERM_PIPELINE_MANAGE"
+                )
 
                 .requestMatchers(
                     HttpMethod.PATCH,

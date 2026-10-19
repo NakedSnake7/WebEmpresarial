@@ -13,9 +13,12 @@
     </div>
 
     <nav class="crm-nav">
-        <a th:href="@{/crm/dashboard}">Dashboard</a>
-        <a th:href="@{/crm/pipeline}">Pipeline</a>
-        <a th:href="@{/crm/tasks}">Tareas</a>
+        <a th:if="${canViewCrm}"
+           th:href="@{/crm/dashboard}">Dashboard</a>
+        <a th:if="${canViewPipeline}"
+           th:href="@{/crm/pipeline}">Pipeline</a>
+        <a th:if="${canViewCrm}"
+           th:href="@{/crm/tasks}">Tareas</a>
         <a th:if="${canViewAnalytics}"
            th:href="@{/crm/reports}">Reportes</a>
     </nav>

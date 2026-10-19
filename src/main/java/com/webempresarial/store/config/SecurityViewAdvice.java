@@ -170,6 +170,62 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canViewCrm")
+    public boolean canViewCrm(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.CRM_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canEditCrm")
+    public boolean canEditCrm(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.CRM_EDIT.authority()
+        );
+    }
+
+    @ModelAttribute("canViewPipeline")
+    public boolean canViewPipeline(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PIPELINE_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canManagePipeline")
+    public boolean canManagePipeline(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PIPELINE_MANAGE.authority()
+        );
+    }
+
+    @ModelAttribute("canViewProposals")
+    public boolean canViewProposals(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PROPOSAL_VIEW.authority()
+        );
+    }
+
+    @ModelAttribute("canCreateProposals")
+    public boolean canCreateProposals(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PROPOSAL_CREATE.authority()
+        );
+    }
+
+    @ModelAttribute("canEditProposals")
+    public boolean canEditProposals(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.PROPOSAL_EDIT.authority()
+        );
+    }
+
     @ModelAttribute("canViewAnalytics")
     public boolean canViewAnalytics(Authentication auth) {
         return hasAuthority(

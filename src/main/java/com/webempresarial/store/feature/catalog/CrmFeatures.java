@@ -14,7 +14,7 @@ import com.webempresarial.store.feature.automation.crm.CreateLeadTaskAction;
 import com.webempresarial.store.feature.automation.crm.NotifyNewLeadAction;
 import com.webempresarial.store.feature.event.ModuleEventDefinition;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
-import com.webempresarial.store.model.AdminRole;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.feature.permission.PermissionDefinition;
@@ -56,40 +56,28 @@ public class CrmFeatures implements PlatformModule {
                                     "📊",
                                     "/crm/dashboard",
                                     Feature.CRM,
-                                    AdminRole.SUPER_ADMIN,
-                                    AdminRole.STORE_OWNER,
-                                    AdminRole.STORE_ADMIN,
-                                    AdminRole.SALES
+                                        AdminPermission.CRM_VIEW
                             )
 	                            .item(
                                     "Pipeline",
                                     "🎯",
                                     "/crm/pipeline",
                                     Feature.PIPELINE,
-                                    AdminRole.SUPER_ADMIN,
-                                    AdminRole.STORE_OWNER,
-                                    AdminRole.STORE_ADMIN,
-                                    AdminRole.SALES
+                                        AdminPermission.PIPELINE_VIEW
                             )
 	                            .item(
                                     "Leads",
                                     "🗂️",
                                     "/admin/leads",
                                     Feature.LEADS,
-                                    AdminRole.SUPER_ADMIN,
-                                    AdminRole.STORE_OWNER,
-                                    AdminRole.STORE_ADMIN,
-                                    AdminRole.SALES
+                                        AdminPermission.CRM_VIEW
                             )
 	                            .item(
                                     "Tareas",
                                     "✅",
                                     "/crm/tasks",
                                     Feature.TASKS,
-                                    AdminRole.SUPER_ADMIN,
-                                    AdminRole.STORE_OWNER,
-                                    AdminRole.STORE_ADMIN,
-                                    AdminRole.SALES
+                                        AdminPermission.CRM_VIEW
                             )
 	                            .build()
 	            )
@@ -97,14 +85,14 @@ public class CrmFeatures implements PlatformModule {
 	            .permission(new PermissionDefinition(
 	                    "crm.read",
 	                    "Leer CRM",
-	                    "Permite consultar dashboard, leads y pipeline.",
+	                    "Permite consultar el dashboard y los leads del CRM.",
 	                    Feature.CRM
 	            ))
 
 	            .permission(new PermissionDefinition(
 	                    "crm.write",
 	                    "Gestionar CRM",
-	                    "Permite crear, editar y mover leads dentro del CRM.",
+	                    "Permite gestionar información y actividad de leads dentro del CRM.",
 	                    Feature.CRM
 	            ))
 
@@ -195,6 +183,9 @@ public class CrmFeatures implements PlatformModule {
                 .order(100)
                 .accessPolicy(pro())
                 .presentation(standard(true))
+                .dashboardPermission(
+                        AdminPermission.CRM_VIEW
+                )
                 .build();
     }
 
@@ -212,6 +203,9 @@ public class CrmFeatures implements PlatformModule {
                 .order(110)
                 .accessPolicy(pro())
                 .presentation(standard(true))
+                .dashboardPermission(
+                        AdminPermission.CRM_VIEW
+                )
                 .build();
     }
 
@@ -229,6 +223,9 @@ public class CrmFeatures implements PlatformModule {
                 .order(120)
                 .accessPolicy(pro())
                 .presentation(standard(true))
+                .dashboardPermission(
+                        AdminPermission.PIPELINE_VIEW
+                )
                 .build();
     }
 
@@ -246,6 +243,9 @@ public class CrmFeatures implements PlatformModule {
                 .order(130)
                 .accessPolicy(pro())
                 .presentation(standard(false))
+                .dashboardPermission(
+                        AdminPermission.CRM_VIEW
+                )
                 .build();
     }
 
@@ -262,7 +262,10 @@ public class CrmFeatures implements PlatformModule {
                 .healthWeight(6)
                 .order(140)
                 .accessPolicy(pro())
-                .presentation(standard(true))
+                .presentation(standard(false))
+                .dashboardPermission(
+                        AdminPermission.PROPOSAL_VIEW
+                )
                 .build();
     }
 

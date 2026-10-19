@@ -21,7 +21,9 @@
         </div>
 
         <div class="crm-header-actions">
-            <a href="/crm/pipeline" class="crm-btn">← Pipeline</a>
+            <a th:if="${canViewPipeline}"
+               href="/crm/pipeline"
+               class="crm-btn">← Pipeline</a>
             <a href="/crm/tasks" class="crm-btn">Tareas</a>
             <a href="/crm/dashboard" class="crm-btn crm-btn-primary">Dashboard</a>
         </div>
@@ -42,6 +44,7 @@
             </div>
 
             <div class="mt-4"
+                 th:if="${canViewProposals}"
                  th:replace="~{crm/fragments/lead-proposals :: proposals(${lead})}">
             </div>
 
@@ -56,6 +59,7 @@
             </div>
 
             <div class="mt-4"
+                 th:if="${canEditCrm}"
                  th:replace="~{crm/fragments/lead-duplicates :: duplicates(${lead})}">
             </div>
 

@@ -32,7 +32,8 @@
 
         <div class="d-flex gap-2">
 
-            <a href="/crm/pipeline"
+            <a th:if="${canViewPipeline}"
+               href="/crm/pipeline"
                class="btn btn-dark">
 
                 Abrir CRM Pipeline

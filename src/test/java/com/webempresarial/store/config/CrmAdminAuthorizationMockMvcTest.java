@@ -293,6 +293,123 @@ class CrmAdminAuthorizationMockMvcTest {
     }
 
     @Test
+    void pipelineViewShouldAllowSharedLeadReads()
+            throws Exception {
+
+        RequestPostProcessor pipelineUser =
+                adminWith(
+                        AdminPermission.PIPELINE_VIEW
+                );
+
+        mockMvc.perform(
+                get("/api/crm/leads")
+                        .with(pipelineUser)
+        )
+        .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/crm/leads/10")
+                        .with(pipelineUser)
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void pipelineViewShouldNotAllowPipelineMutation()
+            throws Exception {
+
+        mockMvc.perform(
+                patch("/api/crm/leads/10/status")
+                        .with(
+                                adminWith(
+                                        AdminPermission.PIPELINE_VIEW
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void pipelineManageShouldAllowLeadStatusMutation()
+            throws Exception {
+
+        mockMvc.perform(
+                patch("/api/crm/leads/10/status")
+                        .with(
+                                adminWith(
+                                        AdminPermission.PIPELINE_MANAGE
+                                )
+                        )
+                        .with(csrf())
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void pipelineViewShouldNotGrantProposalReads()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/api/crm/leads/10/proposals")
+                        .with(
+                                adminWith(
+                                        AdminPermission.PIPELINE_VIEW
+                                )
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void crmViewShouldNotAllowGenericCrmWrites()
+            throws Exception {
+
+        RequestPostProcessor viewer =
+                adminWith(
+                        AdminPermission.CRM_VIEW
+                );
+
+        mockMvc.perform(
+                post("/api/crm/leads/10/notes")
+                        .with(viewer)
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
+
+        mockMvc.perform(
+                post("/api/crm/leads/10/tasks")
+                        .with(viewer)
+                        .with(csrf())
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void crmEditShouldAllowGenericCrmWrites()
+            throws Exception {
+
+        RequestPostProcessor editor =
+                adminWith(
+                        AdminPermission.CRM_EDIT
+                );
+
+        mockMvc.perform(
+                post("/api/crm/leads/10/notes")
+                        .with(editor)
+                        .with(csrf())
+        )
+        .andExpect(status().isOk());
+
+        mockMvc.perform(
+                post("/api/crm/leads/10/tasks")
+                        .with(editor)
+                        .with(csrf())
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
     void reportsShouldRequireAnalyticsView()
             throws Exception {
 
@@ -499,6 +616,21 @@ class CrmAdminAuthorizationMockMvcTest {
 
         @GetMapping("/api/crm/leads")
         String leads() {
+            return "OK";
+        }
+
+        @GetMapping("/api/crm/leads/{id}")
+        String lead() {
+            return "OK";
+        }
+
+        @PostMapping("/api/crm/leads/{id}/notes")
+        String createNote() {
+            return "OK";
+        }
+
+        @PostMapping("/api/crm/leads/{id}/tasks")
+        String createTask() {
             return "OK";
         }
 

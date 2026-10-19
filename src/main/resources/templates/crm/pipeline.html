@@ -22,8 +22,12 @@
         </div>
 
         <div class="crm-header-actions">
-            <a href="/crm/dashboard" class="crm-btn">Dashboard</a>
-            <a href="/crm/tasks" class="crm-btn">Tareas</a>
+            <a th:if="${canViewCrm}"
+               href="/crm/dashboard"
+               class="crm-btn">Dashboard</a>
+            <a th:if="${canViewCrm}"
+               href="/crm/tasks"
+               class="crm-btn">Tareas</a>
         </div>
     </div>
 
@@ -41,7 +45,13 @@
         </select>
     </div>
 
-    <div class="crm-kanban" id="crmKanban">
+    <div class="crm-kanban"
+         id="crmKanban"
+         th:data-can-manage-pipeline="${canManagePipeline}"
+         th:data-can-edit-crm="${canEditCrm}"
+         th:data-can-view-proposals="${canViewProposals}"
+         th:data-can-create-proposals="${canCreateProposals}"
+         th:data-can-edit-proposals="${canEditProposals}">
 
         <div class="crm-kanban-column" data-status="NEW">
             <div class="crm-column-header">
@@ -198,7 +208,8 @@
             </div>
         </div>
 
-        <div class="crm-drawer-section">
+        <div class="crm-drawer-section"
+             th:if="${canEditCrm}">
             <h3>Agregar nota</h3>
 
             <textarea id="crmNoteInput"
@@ -212,7 +223,8 @@
             </button>
         </div>
 
-        <div class="crm-drawer-section">
+        <div class="crm-drawer-section"
+             th:if="${canEditCrm}">
             <h3>Crear tarea</h3>
 
             <input id="crmTaskTitle"
@@ -250,10 +262,12 @@
             </div>
         </div>
         
-        <div class="crm-drawer-section">
+        <div class="crm-drawer-section"
+             th:if="${canViewProposals or canCreateProposals}">
     <h3>Propuestas</h3>
 
-    <div class="crm-proposal-form">
+    <div class="crm-proposal-form"
+         th:if="${canCreateProposals}">
         <input id="crmProposalTitle"
                class="crm-input"
                placeholder="Ej: Tienda online Commerce Pro">
@@ -284,7 +298,9 @@
         </button>
     </div>
 
-    <div class="crm-proposal-list" id="crmLeadProposals">
+    <div class="crm-proposal-list"
+         id="crmLeadProposals"
+         th:if="${canViewProposals}">
         <div class="crm-empty">Sin propuestas registradas.</div>
     </div>
 </div>

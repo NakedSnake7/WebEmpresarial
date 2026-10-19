@@ -5,6 +5,13 @@ const PROPOSALS_API = "/api/crm";
 let allLeads = [];
 let currentLeadId = null;
 
+function hasPipelinePermission(name) {
+    const kanban =
+        document.getElementById("crmKanban");
+
+    return kanban?.dataset?.[name] === "true";
+}
+
 export async function initPipeline() {
     allLeads = await fetchLeads();
     renderPipeline(allLeads);
@@ -38,14 +45,24 @@ function renderPipeline(leads) {
     });
 
     updateCounters();
-    initDragAndDrop();
+
+    if (
+        hasPipelinePermission(
+            "canManagePipeline"
+        )
+    ) {
+        initDragAndDrop();
+    }
 }
 
 function createLeadCard(lead) {
     const card = document.createElement("article");
 
     card.className = "crm-lead-card";
-    card.draggable = true;
+    card.draggable =
+        hasPipelinePermission(
+            "canManagePipeline"
+        );
     card.dataset.leadId = lead.id;
     card.dataset.temperature = lead.temperature || "";
 
@@ -77,6 +94,15 @@ function createLeadCard(lead) {
 }
 
 function initDragAndDrop() {
+
+    if (
+        !hasPipelinePermission(
+            "canManagePipeline"
+        )
+    ) {
+        return;
+    }
+
     const cards = document.querySelectorAll(".crm-lead-card");
     const columns = document.querySelectorAll(".crm-kanban-column");
 
@@ -157,6 +183,15 @@ function initDragAndDrop() {
     });
 }
 async function updateLeadStatus(leadId, status) {
+
+    if (
+        !hasPipelinePermission(
+            "canManagePipeline"
+        )
+    ) {
+        return false;
+    }
+
     const response = await fetch(`${API_URL}/${leadId}/status`, {
         method: "PATCH",
         headers: {
@@ -271,7 +306,14 @@ function initDrawer() {
 	document.addEventListener("click", async event => {
 	    const button = event.target.closest("[data-proposal-action]");
 
-	    if (!button) return;
+	    if (
+	        !button
+	        || !hasPipelinePermission(
+	            "canEditProposals"
+	        )
+	    ) {
+	        return;
+	    }
 
 	    const proposalId = button.dataset.proposalId;
 	    const action = button.dataset.proposalAction;
@@ -288,6 +330,15 @@ function initDrawer() {
 }
 
 async function updateProposalStatus(proposalId, action) {
+
+    if (
+        !hasPipelinePermission(
+            "canEditProposals"
+        )
+    ) {
+        return;
+    }
+
     const response = await fetch(`${PROPOSALS_API}/proposals/${proposalId}/${action}`, {
         method: "PATCH"
     });
@@ -352,7 +403,13 @@ function fillDrawer(lead) {
 	renderTasks(lead.tasks || []);
     renderTimeline(lead.activities || []);
 	
-	loadProposals(lead.id);
+	if (
+	    hasPipelinePermission(
+	        "canViewProposals"
+	    )
+	) {
+	    loadProposals(lead.id);
+	}
 }
 
 function renderTimeline(activities) {
@@ -375,6 +432,15 @@ function renderTimeline(activities) {
 }
 
 async function saveNote() {
+
+    if (
+        !hasPipelinePermission(
+            "canEditCrm"
+        )
+    ) {
+        return;
+    }
+
     if (!currentLeadId) return;
 
     const input = document.getElementById("crmNoteInput");
@@ -410,6 +476,15 @@ async function saveNote() {
 }
 
 async function loadProposals(leadId) {
+
+    if (
+        !hasPipelinePermission(
+            "canViewProposals"
+        )
+    ) {
+        return;
+    }
+
     const response = await fetch(`${PROPOSALS_API}/leads/${leadId}/proposals`);
 
 	if (!response.ok) {
@@ -498,9 +573,32 @@ function renderProposals(proposals) {
             </div>
         </article>
     `).join("");
+
+    if (
+        !hasPipelinePermission(
+            "canEditProposals"
+        )
+    ) {
+        container
+            .querySelectorAll(
+                "[data-proposal-action]"
+            )
+            .forEach(button =>
+                button.remove()
+            );
+    }
 }
 
 async function createProposal() {
+
+    if (
+        !hasPipelinePermission(
+            "canCreateProposals"
+        )
+    ) {
+        return;
+    }
+
     if (!currentLeadId) return;
 
     const titleInput = document.getElementById("crmProposalTitle");
@@ -577,6 +675,15 @@ const error = await parseErrorResponse(response);
 }
 
 async function createTask() {
+
+    if (
+        !hasPipelinePermission(
+            "canEditCrm"
+        )
+    ) {
+        return;
+    }
+
     if (!currentLeadId) return;
 
     const titleInput = document.getElementById("crmTaskTitle");

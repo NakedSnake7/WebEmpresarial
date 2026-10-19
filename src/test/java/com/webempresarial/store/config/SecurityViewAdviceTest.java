@@ -419,6 +419,123 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void crmPermissionsShouldControlActionsIndependently() {
+
+        Authentication crmView = authentication(
+                AdminPermission.CRM_VIEW.authority()
+        );
+
+        Authentication crmEdit = authentication(
+                AdminPermission.CRM_EDIT.authority()
+        );
+
+        Authentication pipelineView = authentication(
+                AdminPermission.PIPELINE_VIEW.authority()
+        );
+
+        Authentication pipelineManage = authentication(
+                AdminPermission.PIPELINE_MANAGE.authority()
+        );
+
+        Authentication proposalView = authentication(
+                AdminPermission.PROPOSAL_VIEW.authority()
+        );
+
+        Authentication proposalCreate = authentication(
+                AdminPermission.PROPOSAL_CREATE.authority()
+        );
+
+        Authentication proposalEdit = authentication(
+                AdminPermission.PROPOSAL_EDIT.authority()
+        );
+
+        assertThat(advice.canViewCrm(crmView)).isTrue();
+        assertThat(advice.canEditCrm(crmView)).isFalse();
+
+        assertThat(advice.canEditCrm(crmEdit)).isTrue();
+        assertThat(advice.canViewCrm(crmEdit)).isFalse();
+
+        assertThat(
+                advice.canViewPipeline(pipelineView)
+        ).isTrue();
+
+        assertThat(
+                advice.canManagePipeline(pipelineView)
+        ).isFalse();
+
+        assertThat(
+                advice.canManagePipeline(pipelineManage)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewPipeline(pipelineManage)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewProposals(proposalView)
+        ).isTrue();
+
+        assertThat(
+                advice.canCreateProposals(proposalView)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProposals(proposalView)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateProposals(proposalCreate)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewProposals(proposalCreate)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProposals(proposalCreate)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProposals(proposalEdit)
+        ).isTrue();
+
+        assertThat(
+                advice.canViewProposals(proposalEdit)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateProposals(proposalEdit)
+        ).isFalse();
+    }
+
+    @Test
+    void missingAuthenticationShouldNotGrantCrmPermissions() {
+
+        assertThat(advice.canViewCrm(null)).isFalse();
+        assertThat(advice.canEditCrm(null)).isFalse();
+
+        assertThat(
+                advice.canViewPipeline(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canManagePipeline(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewProposals(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canCreateProposals(null)
+        ).isFalse();
+
+        assertThat(
+                advice.canEditProposals(null)
+        ).isFalse();
+    }
+
+    @Test
     void missingAuthenticationShouldNotGrantAnything() {
 
         assertThat(
