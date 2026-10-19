@@ -273,6 +273,7 @@ public class SecurityConfig {
                  *
                  * El controlador aplica granularidad por campo:
                  * STORE_EDIT modifica configuración general;
+                 * STORE_BRANDING_EDIT modifica identidad visual;
                  * STORE_COMMERCIAL_INFO_EDIT modifica datos comerciales.
                  */
                 .requestMatchers(
@@ -498,6 +499,19 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/admin/automations",
                     "/admin/automations/**"
+                )
+                .denyAll()
+
+                /*
+                 * Custom domains.
+                 *
+                 * El módulo tenant-facing todavía no está implementado.
+                 * DOMAIN_VIEW y DOMAIN_MANAGE permanecen reservados para
+                 * cuando existan operaciones reales de dominio.
+                 */
+                .requestMatchers(
+                    "/admin/domains",
+                    "/admin/domains/**"
                 )
                 .denyAll()
 

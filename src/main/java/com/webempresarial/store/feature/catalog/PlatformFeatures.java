@@ -87,7 +87,7 @@ public class PlatformFeatures implements PlatformModule {
                 .healthWeight(8)
                 .order(310)
                 .accessPolicy(pro())
-                .presentation(visible(true, true, false))
+                .presentation(unimplementedPresentation())
                 .build();
     }
 
@@ -139,6 +139,16 @@ public class PlatformFeatures implements PlatformModule {
                 .order(340)
                 .accessPolicy(premium())
                 .presentation(hiddenFromSidebar(false, false))
+                .build();
+    }
+
+    private FeaturePresentation unimplementedPresentation() {
+        return FeaturePresentation.builder()
+                .showInSidebar(false)
+                .showInDashboard(false)
+                .showInBilling(true)
+                .showUpgradeCard(true)
+                .trackUsage(false)
                 .build();
     }
 
