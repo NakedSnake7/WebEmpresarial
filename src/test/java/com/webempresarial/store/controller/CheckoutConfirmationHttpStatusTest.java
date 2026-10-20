@@ -9,6 +9,7 @@ import com.webempresarial.store.controller.advice.MvcExceptionHandler;
 import com.webempresarial.store.controller.advice.RestExceptionHandler;
 import com.webempresarial.store.feature.registry.DashboardRegistry;
 import com.webempresarial.store.repository.ResenaRepository;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
@@ -33,6 +34,7 @@ class CheckoutConfirmationHttpStatusTest {
                         mock(ResenaRepository.class),
                         mock(StoreThemeResolver.class),
                         mock(StoreResolver.class),
+                        mock(FeatureAccessService.class),
                         mock(DashboardRegistry.class),
                         mock(OrderService.class)
                 );

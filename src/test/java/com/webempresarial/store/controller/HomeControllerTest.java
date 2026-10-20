@@ -3,6 +3,7 @@ package com.webempresarial.store.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,9 +14,12 @@ import java.util.Collections;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.feature.registry.DashboardRegistry;
+import com.webempresarial.store.exceptions.FeatureLockedException;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.ThemeType;
 import com.webempresarial.store.repository.ResenaRepository;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
@@ -52,6 +56,9 @@ class HomeControllerTest {
     private StoreResolver storeResolver;
 
     @Mock
+    private FeatureAccessService featureAccessService;
+
+    @Mock
     private DashboardRegistry dashboardRegistry;
 
     @Mock
@@ -78,6 +85,7 @@ class HomeControllerTest {
                         resenaRepository,
                         storeThemeResolver,
                         storeResolver,
+                        featureAccessService,
                         dashboardRegistry,
                         orderService
                 );
@@ -216,6 +224,74 @@ class HomeControllerTest {
     }
 
     @Test
+    void storefrontShouldRequireProductsFeatureBeforeLoadingCatalog() {
+
+        Store store = new Store();
+        store.setNombre("Locked Store");
+
+        when(storeResolver.getCurrentStore(request))
+                .thenReturn(store);
+
+        when(storeThemeResolver.resolveTheme(store))
+                .thenReturn("basic");
+
+        doThrow(FeatureLockedException.class)
+                .when(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.PRODUCTS
+                );
+
+        assertThrows(
+                FeatureLockedException.class,
+                () ->
+                        controller.home(
+                                new ConcurrentModel(),
+                                request
+                        )
+        );
+
+        verify(productoService, never())
+                .obtenerCategorias(any());
+
+        verify(productoService, never())
+                .obtenerProductosIndexOptimizado(any());
+    }
+
+    @Test
+    void productDetailShouldRequireProductsFeatureBeforeLoadingProduct() {
+
+        Store store = new Store();
+        store.setNombre("Locked Store");
+
+        when(storeResolver.getCurrentStore(request))
+                .thenReturn(store);
+
+        doThrow(FeatureLockedException.class)
+                .when(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.PRODUCTS
+                );
+
+        assertThrows(
+                FeatureLockedException.class,
+                () ->
+                        controller.verDetalleProducto(
+                                1L,
+                                new ConcurrentModel(),
+                                request
+                        )
+        );
+
+        verify(productoService, never())
+                .obtenerDetalleProducto(
+                        any(),
+                        any()
+                );
+    }
+
+    @Test
     void shouldRenderWebEmpresarialWithoutLoadingCommerceData() {
 
         Store store = new Store();
@@ -261,6 +337,12 @@ class HomeControllerTest {
 
         verify(productoService, never())
                 .obtenerProductosIndexOptimizado(any());
+
+        verify(featureAccessService, never())
+                .requireFeature(
+                        store,
+                        Feature.PRODUCTS
+                );
 
         verify(resenaRepository, never())
                 .findByStoreOrderByEstrellasDesc(

@@ -837,6 +837,7 @@ public class SecurityConfig {
                  * future catalog operations require explicit classification.
                  */
                 .requestMatchers(
+                    "/subirProducto",
                     "/nuevo",
                     "/editar/**",
                     "/modificar-precios",

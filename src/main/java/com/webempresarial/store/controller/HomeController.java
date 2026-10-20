@@ -3,16 +3,16 @@ package com.webempresarial.store.controller;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.dto.producto.publico.ProductoDetailDTO;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.ResenaRepository;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.ProductoService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
 import com.webempresarial.store.feature.registry.DashboardRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +30,7 @@ public class HomeController {
     private final ResenaRepository resenaRepository;
     private final StoreThemeResolver storeThemeResolver;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
     private final DashboardRegistry dashboardRegistry;
     private final OrderService orderService;
 
@@ -38,6 +39,7 @@ public class HomeController {
             ResenaRepository resenaRepository,
             StoreThemeResolver storeThemeResolver,
             StoreResolver storeResolver,
+            FeatureAccessService featureAccessService,
             DashboardRegistry dashboardRegistry,
             OrderService orderService
     ) {
@@ -45,11 +47,17 @@ public class HomeController {
         this.resenaRepository = resenaRepository;
         this.storeThemeResolver = storeThemeResolver;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
         this.dashboardRegistry = dashboardRegistry;
         this.orderService = orderService;
     }
 
     private void cargarDatosGlobales(Model model, Store store) {
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.PRODUCTS
+        );
 
         List<String> categorias =
                 productoService.obtenerCategorias(store);
@@ -140,15 +148,6 @@ public class HomeController {
         return storeThemeResolver.view(request, "index");
     }
 
-    @GetMapping("/subirProducto")
-    public String subirProducto(@AuthenticationPrincipal UserDetails user) {
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        return "admin/subirProducto";
-    }
-
     @GetMapping("/fragmento-menu")
     public String cargarFragmentoMenu(Model model, HttpServletRequest request) {
 
@@ -167,6 +166,11 @@ public class HomeController {
     ) {
 
         Store store = storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.PRODUCTS
+        );
 
         aplicarLayout(model, request);
 

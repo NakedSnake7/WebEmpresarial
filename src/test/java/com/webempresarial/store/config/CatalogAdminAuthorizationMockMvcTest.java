@@ -460,6 +460,12 @@ class CatalogAdminAuthorizationMockMvcTest {
                 );
 
         mockMvc.perform(
+                get("/subirProducto")
+                        .with(privileged)
+        )
+        .andExpect(status().isForbidden());
+
+        mockMvc.perform(
                 post("/api/productos/rebuild-index")
                         .with(privileged)
                         .with(csrf())
@@ -537,6 +543,11 @@ class CatalogAdminAuthorizationMockMvcTest {
 
         @GetMapping("/admin/productos")
         String products() {
+            return "OK";
+        }
+
+        @GetMapping("/subirProducto")
+        String legacyUploadProduct() {
             return "OK";
         }
 
