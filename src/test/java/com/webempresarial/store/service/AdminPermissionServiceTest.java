@@ -280,6 +280,38 @@ class AdminPermissionServiceTest {
     }
 
     @Test
+    void tenantWhiteLabelPermissionShouldBeLimitedToOwnerAndAdmin() {
+
+        assertThat(
+                service.hasPermission(
+                        AdminRole.STORE_OWNER,
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).isTrue();
+
+        assertThat(
+                service.hasPermission(
+                        AdminRole.STORE_ADMIN,
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).isTrue();
+
+        assertThat(
+                service.hasPermission(
+                        AdminRole.STORE_STAFF,
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).isFalse();
+
+        assertThat(
+                service.hasPermission(
+                        AdminRole.SALES,
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).isFalse();
+    }
+
+    @Test
     void nullRoleOrPermissionNeverGrantsAccess() {
 
         assertThat(

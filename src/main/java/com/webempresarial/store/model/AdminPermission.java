@@ -88,6 +88,9 @@ public enum AdminPermission {
     INTEGRATION_VIEW,
     INTEGRATION_MANAGE,
 
+    // White Label
+    WHITE_LABEL_MANAGE,
+
     // Equipo
     TEAM_VIEW,
     TEAM_INVITE,

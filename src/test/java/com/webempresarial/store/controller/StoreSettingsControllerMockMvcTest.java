@@ -133,6 +133,12 @@ class StoreSettingsControllerMockMvcTest {
                 )
         ).thenReturn(true);
 
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).thenReturn(true);
+
         store = new Store();
         store.setId(100L);
         store.setNombre("ACME");
@@ -314,6 +320,105 @@ verify(storeSettingsService, atLeastOnce())
                         )
                 )
         ));
+    }
+
+    @Test
+    void premiumUserWithoutWhiteLabelPermissionShouldNotRenderWhiteLabelControls()
+            throws Exception {
+
+        mockCurrentTenant();
+
+        when(features.canUse(
+                store,
+                "WHITE_LABEL_FULL"
+        )).thenReturn(true);
+
+        mockMvc.perform(
+                get("/admin/store/settings")
+                        .with(
+                                user("restricted-admin@acme.test")
+                                        .authorities(
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                "ROLE_STORE_ADMIN"
+                                                        ),
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                AdminPermission
+                                                                        .STORE_VIEW
+                                                                        .authority()
+                                                        )
+                                        )
+                        )
+        )
+        .andExpect(status().isOk())
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"customCss\""
+                                )
+                        )
+                )
+        )
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"customJs\""
+                                )
+                        )
+                )
+        )
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"googleAnalyticsId\""
+                                )
+                        )
+                )
+        )
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"metaPixelId\""
+                                )
+                        )
+                )
+        )
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"tiktokPixelId\""
+                                )
+                        )
+                )
+        )
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "name=\"hotjarId\""
+                                )
+                        )
+                )
+        )
+        /*
+         * Sin WHITE_LABEL_MANAGE tampoco debe mostrarse
+         * el CTA comercial de upgrade.
+         */
+        .andExpect(
+                content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "El tracking, CSS y JavaScript personalizados"
+                                )
+                        )
+                )
+        );
     }
 
     @Test
@@ -804,6 +909,12 @@ verify(storeSettingsService, atLeastOnce())
                                 .SimpleGrantedAuthority(
                                         AdminPermission
                                                 .STORE_BRANDING_EDIT
+                                                .authority()
+                                ),
+                        new org.springframework.security.core.authority
+                                .SimpleGrantedAuthority(
+                                        AdminPermission
+                                                .WHITE_LABEL_MANAGE
                                                 .authority()
                                 ),
                         new org.springframework.security.core.authority

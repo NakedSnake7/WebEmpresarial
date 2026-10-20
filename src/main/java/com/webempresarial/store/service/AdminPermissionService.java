@@ -131,6 +131,8 @@ public class AdminPermissionService {
                         AdminPermission.INTEGRATION_VIEW,
                         AdminPermission.INTEGRATION_MANAGE,
 
+                        AdminPermission.WHITE_LABEL_MANAGE,
+
                         AdminPermission.TEAM_VIEW,
                         AdminPermission.TEAM_INVITE,
                         AdminPermission.TEAM_EDIT,
@@ -217,6 +219,8 @@ public class AdminPermissionService {
 
                         AdminPermission.INTEGRATION_VIEW,
                         AdminPermission.INTEGRATION_MANAGE,
+
+                        AdminPermission.WHITE_LABEL_MANAGE,
 
                         AdminPermission.TEAM_VIEW,
                         AdminPermission.TEAM_INVITE,

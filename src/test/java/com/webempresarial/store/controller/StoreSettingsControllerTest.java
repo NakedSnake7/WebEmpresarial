@@ -200,9 +200,6 @@ class StoreSettingsControllerTest {
         form.setTiktokPixelId("TIKTOK-123");
         form.setHotjarId("987654");
 
-        when(features.canUse(store, "WHITE_LABEL_FULL"))
-                .thenReturn(false);
-
         String result =
                 controller.saveSettings(form, request);
 
@@ -379,9 +376,6 @@ assertThat(saved.getFooterText())
                         AdminPermission.STORE_BRANDING_EDIT
                 )
         ).thenReturn(false);
-
-        when(features.canUse(store, "WHITE_LABEL_FULL"))
-                .thenReturn(false);
 
         String result =
                 controller.saveSettings(form, request);
@@ -648,6 +642,12 @@ assertThat(saved.getFooterText())
         form.setTiktokPixelId("TIKTOK-HACKED");
         form.setHotjarId("HOTJAR-HACKED");
 
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).thenReturn(true);
+
         when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(false);
 
@@ -705,6 +705,12 @@ assertThat(saved.getFooterText())
         form.setMetaPixelId("META-PREMIUM");
         form.setTiktokPixelId("TIKTOK-PREMIUM");
         form.setHotjarId("HOTJAR-PREMIUM");
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
+        ).thenReturn(true);
 
         when(features.canUse(store, "WHITE_LABEL_FULL"))
                 .thenReturn(true);

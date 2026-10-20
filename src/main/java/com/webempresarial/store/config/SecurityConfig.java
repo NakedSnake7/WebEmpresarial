@@ -274,7 +274,8 @@ public class SecurityConfig {
                  * El controlador aplica granularidad por campo:
                  * STORE_EDIT modifica configuración general;
                  * STORE_BRANDING_EDIT modifica identidad visual;
-                 * STORE_COMMERCIAL_INFO_EDIT modifica datos comerciales.
+                 * STORE_COMMERCIAL_INFO_EDIT modifica datos comerciales;
+                 * WHITE_LABEL_MANAGE modifica CSS, JS y tracking Premium.
                  */
                 .requestMatchers(
                     HttpMethod.POST,
@@ -289,6 +290,9 @@ public class SecurityConfig {
                         .authority(),
                     AdminPermission
                         .STORE_COMMERCIAL_INFO_EDIT
+                        .authority(),
+                    AdminPermission
+                        .WHITE_LABEL_MANAGE
                         .authority()
                 )
 

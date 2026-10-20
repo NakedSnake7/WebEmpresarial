@@ -298,6 +298,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canManageWhiteLabel")
+    public boolean canManageWhiteLabel(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.WHITE_LABEL_MANAGE.authority()
+        );
+    }
+
     @ModelAttribute("canManageStripeConnect")
     public boolean canManageStripeConnect(Authentication auth) {
         return hasAuthority(

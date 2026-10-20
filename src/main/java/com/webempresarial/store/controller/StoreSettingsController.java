@@ -88,6 +88,11 @@ public class StoreSettingsController {
                         AdminPermission.STORE_COMMERCIAL_INFO_EDIT
                 );
 
+        boolean canManageWhiteLabel =
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.WHITE_LABEL_MANAGE
+                );
+
         if (canManageCommercialInfo) {
             settings.setCompanyEmail(form.getCompanyEmail());
             settings.setCompanyPhone(form.getCompanyPhone());
@@ -132,18 +137,30 @@ public class StoreSettingsController {
             settings.setTiktokUrl(form.getTiktokUrl());
 
             settings.setFooterText(form.getFooterText());
+        }
 
-            if (features.canUse(store, "WHITE_LABEL_FULL")) {
-                settings.setCustomCss(form.getCustomCss());
-                settings.setCustomJs(form.getCustomJs());
+        /*
+         * White Label Full requires two independent gates:
+         *
+         * 1. administrative authorization;
+         * 2. PREMIUM plan entitlement.
+         *
+         * It is intentionally independent from STORE_EDIT because
+         * custom JavaScript and tracking are privileged capabilities.
+         */
+        if (
+                canManageWhiteLabel
+                && features.canUse(store, "WHITE_LABEL_FULL")
+        ) {
+            settings.setCustomCss(form.getCustomCss());
+            settings.setCustomJs(form.getCustomJs());
 
-                settings.setGoogleAnalyticsId(
-                        form.getGoogleAnalyticsId()
-                );
-                settings.setMetaPixelId(form.getMetaPixelId());
-                settings.setTiktokPixelId(form.getTiktokPixelId());
-                settings.setHotjarId(form.getHotjarId());
-            }
+            settings.setGoogleAnalyticsId(
+                    form.getGoogleAnalyticsId()
+            );
+            settings.setMetaPixelId(form.getMetaPixelId());
+            settings.setTiktokPixelId(form.getTiktokPixelId());
+            settings.setHotjarId(form.getHotjarId());
         }
 
         storeSettingsService.save(settings);

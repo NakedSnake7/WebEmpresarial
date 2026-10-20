@@ -102,6 +102,9 @@ public class PlatformFeatures implements PlatformModule {
                 .order(320)
                 .accessPolicy(premium())
                 .presentation(hiddenFromSidebar(true, false))
+                .dashboardPermission(
+                        AdminPermission.WHITE_LABEL_MANAGE
+                )
                 .build();
     }
 
