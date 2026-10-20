@@ -460,6 +460,12 @@ class CatalogAdminAuthorizationMockMvcTest {
                 );
 
         mockMvc.perform(
+                get("/admin/categorias")
+                        .with(privileged)
+        )
+        .andExpect(status().isForbidden());
+
+        mockMvc.perform(
                 get("/subirProducto")
                         .with(privileged)
         )
@@ -543,6 +549,11 @@ class CatalogAdminAuthorizationMockMvcTest {
 
         @GetMapping("/admin/productos")
         String products() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/categorias")
+        String categoriesAdmin() {
             return "OK";
         }
 

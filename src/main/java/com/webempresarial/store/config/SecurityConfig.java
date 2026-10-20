@@ -607,6 +607,19 @@ public class SecurityConfig {
                 )
 
                 /*
+                 * Fail closed:
+                 * the standalone category administration module is not
+                 * implemented yet. Category creation currently lives inside
+                 * the product workflows and is protected separately by
+                 * CATEGORY_MANAGE + Feature.CATEGORIES.
+                 */
+                .requestMatchers(
+                    "/admin/categorias",
+                    "/admin/categorias/**"
+                )
+                .denyAll()
+
+                /*
                  * Acceso administrativo operacional general.
                  *
                  * SALES no entra aquí: sus módulos deben declararse
