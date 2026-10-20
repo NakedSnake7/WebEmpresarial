@@ -158,6 +158,87 @@ class CrmFeatureAccessContractTest {
     }
 
     @Test
+    void crmDashboardTasksShouldRequireCrmAndTasks() {
+
+        CrmDashboardRestController controller =
+                new CrmDashboardRestController(
+                        crmDashboardService,
+                        storeContextService,
+                        featureAccessService
+                );
+
+        controller.getUpcomingTasks(request);
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.CRM
+                );
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.TASKS
+                );
+
+        verify(crmDashboardService)
+                .getUpcomingTasks(10L);
+    }
+
+    @Test
+    void lockedTasksShouldStopDashboardTaskService() {
+
+        doNothing()
+        .when(featureAccessService)
+        .requireFeature(
+                store,
+                Feature.CRM
+        );
+
+        doThrow(
+                new FeatureLockedException(
+                        Feature.TASKS
+                )
+        )
+        .when(featureAccessService)
+        .requireFeature(
+                store,
+                Feature.TASKS
+        );
+
+        CrmDashboardRestController controller =
+                new CrmDashboardRestController(
+                        crmDashboardService,
+                        storeContextService,
+                        featureAccessService
+                );
+
+        assertThatThrownBy(() ->
+                controller.getUpcomingTasks(request)
+        )
+        .isInstanceOf(
+                FeatureLockedException.class
+        );
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.CRM
+                );
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.TASKS
+                );
+
+        verify(crmDashboardService, never())
+                .getUpcomingTasks(
+                        anyLong()
+                );
+    }
+
+    @Test
     void leadApiShouldRequireLeads() {
 
         LeadRestController controller =

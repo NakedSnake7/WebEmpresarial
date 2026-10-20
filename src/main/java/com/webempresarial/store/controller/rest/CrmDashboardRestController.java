@@ -51,7 +51,19 @@ public class CrmDashboardRestController {
     @GetMapping("/tasks")
     public List<CrmUpcomingTaskDTO> getUpcomingTasks(HttpServletRequest request) {
         Store store = storeContextService.getCurrentStore(request);
-        featureAccessService.requireFeature(store, Feature.CRM);
-        return crmDashboardService.getUpcomingTasks(store.getId());
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.CRM
+        );
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.TASKS
+        );
+
+        return crmDashboardService.getUpcomingTasks(
+                store.getId()
+        );
     }
 }
