@@ -565,6 +565,23 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
+                 * WhatsApp Automation.
+                 *
+                 * El módulo tenant-facing todavía no está implementado.
+                 * WHATSAPP_AUTOMATION permanece como feature PREMIUM para
+                 * Billing/Upgrade, pero cualquier futura operación debe
+                 * recibir autorización explícita antes de ser accesible.
+                 *
+                 * Los enlaces wa.me, datos de leads y configuración manual
+                 * de WhatsApp no forman parte de esta feature automática.
+                 */
+                .requestMatchers(
+                    "/admin/whatsapp",
+                    "/admin/whatsapp/**"
+                )
+                .denyAll()
+
+                /*
                  * Dashboard principal.
                  *
                  * El acceso depende de DASHBOARD_VIEW, no del nombre
