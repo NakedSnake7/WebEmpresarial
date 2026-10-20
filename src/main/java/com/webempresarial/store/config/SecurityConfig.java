@@ -551,6 +551,20 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
+                 * Email Marketing.
+                 *
+                 * El módulo tenant-facing todavía no está implementado.
+                 * EMAIL_MARKETING permanece como feature PREMIUM para
+                 * Billing/Upgrade, pero cualquier futura operación debe
+                 * recibir autorización explícita antes de ser accesible.
+                 */
+                .requestMatchers(
+                    "/admin/email-marketing",
+                    "/admin/email-marketing/**"
+                )
+                .denyAll()
+
+                /*
                  * Dashboard principal.
                  *
                  * El acceso depende de DASHBOARD_VIEW, no del nombre
