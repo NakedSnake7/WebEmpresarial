@@ -516,6 +516,23 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
+                 * Integrations / API Access.
+                 *
+                 * El módulo tenant-facing todavía no está implementado.
+                 * INTEGRATION_VIEW e INTEGRATION_MANAGE permanecen reservados
+                 * hasta que existan operaciones reales de integraciones/API.
+                 *
+                 * Fail closed:
+                 * cualquier futura ruta bajo /admin/api debe recibir una
+                 * autorización explícita antes de ser accesible.
+                 */
+                .requestMatchers(
+                    "/admin/api",
+                    "/admin/api/**"
+                )
+                .denyAll()
+
+                /*
                  * Dashboard principal.
                  *
                  * El acceso depende de DASHBOARD_VIEW, no del nombre

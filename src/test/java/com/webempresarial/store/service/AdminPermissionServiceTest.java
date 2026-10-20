@@ -227,6 +227,44 @@ class AdminPermissionServiceTest {
     }
 
     @Test
+    void tenantIntegrationPermissionsShouldBeLimitedToOwnerAndAdmin() {
+
+        for (AdminPermission permission : new AdminPermission[] {
+                AdminPermission.INTEGRATION_VIEW,
+                AdminPermission.INTEGRATION_MANAGE
+        }) {
+
+            assertThat(
+                    service.hasPermission(
+                            AdminRole.STORE_OWNER,
+                            permission
+                    )
+            ).isTrue();
+
+            assertThat(
+                    service.hasPermission(
+                            AdminRole.STORE_ADMIN,
+                            permission
+                    )
+            ).isTrue();
+
+            assertThat(
+                    service.hasPermission(
+                            AdminRole.STORE_STAFF,
+                            permission
+                    )
+            ).isFalse();
+
+            assertThat(
+                    service.hasPermission(
+                            AdminRole.SALES,
+                            permission
+                    )
+            ).isFalse();
+        }
+    }
+
+    @Test
     void onlySuperAdminGetsPlatformPermissions() {
 
         Arrays.stream(AdminRole.values())
