@@ -55,22 +55,15 @@ class StripeConnectControllerTest {
         when(storeContextService
                 .getCurrentStore(request))
                 .thenReturn(store);
+
+        when(store.getDominio())
+                .thenReturn(
+                        "stride.web-empresarial.com"
+                );
     }
 
     @Test
-    void createOnboarding_shouldUseCurrentTenantAndRequestOrigin() {
-
-        when(request.getHeader("X-Forwarded-Proto"))
-                .thenReturn(null);
-
-        when(request.getHeader("X-Forwarded-Host"))
-                .thenReturn(null);
-
-        when(request.getScheme())
-                .thenReturn("https");
-
-        when(request.getHeader("Host"))
-                .thenReturn("stride.web-empresarial.com");
+    void createOnboarding_shouldUseCurrentTenantAndStoreDomain() {
 
         when(stripeConnectService
                 .createOnboardingLink(
@@ -95,6 +88,12 @@ class StripeConnectControllerTest {
 
         verify(storeContextService)
                 .getCurrentStore(request);
+
+        verify(featureAccessService)
+                .requireFeature(
+                        store,
+                        Feature.STRIPE_CONNECT
+                );
 
         verify(stripeConnectService)
                 .createOnboardingLink(
@@ -136,15 +135,16 @@ class StripeConnectControllerTest {
     }
 
     @Test
-    void createOnboarding_shouldHonorForwardedProtoAndHost() {
+    void createOnboarding_shouldIgnoreForwardedHostAndUseStoreDomain() {
 
         when(request.getHeader("X-Forwarded-Proto"))
-                .thenReturn("https");
+                .thenReturn("http");
 
         when(request.getHeader("X-Forwarded-Host"))
-                .thenReturn(
-                        "stride.web-empresarial.com"
-                );
+                .thenReturn("attacker.example");
+
+        when(request.getHeader("Host"))
+                .thenReturn("attacker.example");
 
         when(stripeConnectService
                 .createOnboardingLink(
@@ -162,17 +162,23 @@ class StripeConnectControllerTest {
                         store,
                         "https://stride.web-empresarial.com"
                 );
+
+        verify(request, never())
+                .getHeader("X-Forwarded-Proto");
+
+        verify(request, never())
+                .getHeader("X-Forwarded-Host");
+
+        verify(request, never())
+                .getHeader("Host");
     }
 
     @Test
-    void createOnboarding_shouldUseFirstForwardedValue() {
+    void createOnboarding_shouldNormalizeTrustedStoreDomain() {
 
-        when(request.getHeader("X-Forwarded-Proto"))
-                .thenReturn("https, http");
-
-        when(request.getHeader("X-Forwarded-Host"))
+        when(store.getDominio())
                 .thenReturn(
-                        "stride.web-empresarial.com, proxy.internal"
+                        "  STRIDE.WEB-EMPRESARIAL.COM  "
                 );
 
         when(stripeConnectService
@@ -196,20 +202,11 @@ class StripeConnectControllerTest {
     @Test
     void createOnboarding_shouldIncludeNonStandardLocalPort() {
 
-        when(request.getHeader("X-Forwarded-Proto"))
-                .thenReturn(null);
-
-        when(request.getHeader("X-Forwarded-Host"))
-                .thenReturn(null);
+        when(store.getDominio())
+                .thenReturn("stride.local");
 
         when(request.getScheme())
                 .thenReturn("http");
-
-        when(request.getHeader("Host"))
-                .thenReturn(null);
-
-        when(request.getServerName())
-                .thenReturn("stride.local");
 
         when(request.getServerPort())
                 .thenReturn(8080);
@@ -230,5 +227,24 @@ class StripeConnectControllerTest {
                         store,
                         "http://stride.local:8080"
                 );
+    }
+
+    @Test
+    void createOnboarding_shouldRejectStoreWithoutDomain() {
+
+        when(store.getDominio())
+                .thenReturn("   ");
+
+        assertThatThrownBy(() ->
+                controller.createOnboarding(request)
+        )
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+                "La tienda no tiene un dominio configurado"
+        );
+
+        verifyNoInteractions(
+                stripeConnectService
+        );
     }
 }

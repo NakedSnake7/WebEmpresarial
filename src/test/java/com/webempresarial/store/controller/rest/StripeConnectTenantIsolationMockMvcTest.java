@@ -96,9 +96,11 @@ class StripeConnectTenantIsolationMockMvcTest {
 
         stride = new Store();
         stride.setId(3L);
+        stride.setDominio("stride.local");
 
         barleyPunch = new Store();
         barleyPunch.setId(4L);
+        barleyPunch.setDominio("barleypunch.local");
     }
 
 

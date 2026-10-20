@@ -45,7 +45,10 @@ public class StripeConnectController {
         );
 
         String baseUrl =
-                resolveBaseUrl(request);
+                resolveBaseUrl(
+                        request,
+                        store
+                );
 
         String onboardingUrl =
                 stripeConnectService.createOnboardingLink(
@@ -61,45 +64,46 @@ public class StripeConnectController {
     }
 
     private String resolveBaseUrl(
-            HttpServletRequest request
+            HttpServletRequest request,
+            Store store
     ) {
 
-        String forwardedProto =
-                request.getHeader("X-Forwarded-Proto");
+        String domain = store.getDominio();
 
-        String forwardedHost =
-                request.getHeader("X-Forwarded-Host");
-
-        String scheme =
-                forwardedProto != null
-                        && !forwardedProto.isBlank()
-                        ? forwardedProto.split(",")[0].trim()
-                        : request.getScheme();
-
-        String host =
-                forwardedHost != null
-                        && !forwardedHost.isBlank()
-                        ? forwardedHost.split(",")[0].trim()
-                        : request.getHeader("Host");
-
-        if (host == null || host.isBlank()) {
-
-            host = request.getServerName();
-
-            int port = request.getServerPort();
-
-            boolean standardPort =
-                    ("http".equalsIgnoreCase(scheme)
-                            && port == 80)
-                    ||
-                    ("https".equalsIgnoreCase(scheme)
-                            && port == 443);
-
-            if (!standardPort) {
-                host += ":" + port;
-            }
+        if (domain == null || domain.isBlank()) {
+            throw new IllegalStateException(
+                    "La tienda no tiene un dominio configurado"
+            );
         }
 
-        return scheme + "://" + host;
+        String normalizedDomain =
+                domain.trim().toLowerCase();
+
+        boolean local =
+                normalizedDomain.endsWith(".local")
+                || normalizedDomain.equals("localhost")
+                || normalizedDomain.equals("127.0.0.1");
+
+        if (!local) {
+            return "https://" + normalizedDomain;
+        }
+
+        String scheme =
+                request.getScheme() == null
+                        || request.getScheme().isBlank()
+                        ? "http"
+                        : request.getScheme();
+
+        int port = request.getServerPort();
+
+        boolean standardPort =
+                ("http".equalsIgnoreCase(scheme) && port == 80)
+                ||
+                ("https".equalsIgnoreCase(scheme) && port == 443);
+
+        return scheme
+                + "://"
+                + normalizedDomain
+                + (standardPort ? "" : ":" + port);
     }
 }
