@@ -46,7 +46,7 @@ class PlatformFeaturesPlanContractTest {
     }
 
     @Test
-    void multiUserSidebarShouldAllowOwnerAndAdmin()
+    void multiUserNavigationShouldUseTeamViewPermission()
             throws IOException {
 
         String source = readSource();
@@ -54,16 +54,42 @@ class PlatformFeaturesPlanContractTest {
         assertThat(source)
                 .contains(
                         "Feature.MULTI_USER"
-                );
-
-        assertThat(source)
+                )
                 .contains(
-                        "AdminRole.STORE_OWNER"
-                );
-
-        assertThat(source)
-                .contains(
+                        "AdminPermission.TEAM_VIEW"
+                )
+                .doesNotContain(
+                        "AdminRole.STORE_OWNER",
                         "AdminRole.STORE_ADMIN"
+                );
+
+        int start = source.indexOf(
+                "private FeatureDefinition multiUser()"
+        );
+
+        int end = source.indexOf(
+                "private FeatureDefinition apiAccess()",
+                start
+        );
+
+        assertThat(start)
+                .isGreaterThanOrEqualTo(0);
+
+        assertThat(end)
+                .isGreaterThan(start);
+
+        String multiUser =
+                source.substring(start, end);
+
+        assertThat(multiUser)
+                .contains(
+                        ".accessPolicy(pro())"
+                )
+                .contains(
+                        ".dashboardPermission("
+                )
+                .contains(
+                        "AdminPermission.TEAM_VIEW"
                 );
     }
 

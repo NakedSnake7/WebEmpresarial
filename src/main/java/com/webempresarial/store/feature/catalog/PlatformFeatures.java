@@ -9,7 +9,6 @@ import com.webempresarial.store.feature.PlatformModuleDescriptor;
 import com.webempresarial.store.feature.health.checks.KernelHealthCheck;
 import com.webempresarial.store.feature.sidebar.SidebarSectionDefinition;
 import com.webempresarial.store.model.AdminPermission;
-import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.StorePlan;
 
@@ -44,9 +43,7 @@ public class PlatformFeatures implements PlatformModule {
                                         "👥",
                                         "/admin/users",
                                         Feature.MULTI_USER,
-                                        AdminRole.SUPER_ADMIN,
-                                        AdminRole.STORE_OWNER,
-                                        AdminRole.STORE_ADMIN
+                                        AdminPermission.TEAM_VIEW
                                 )
                                 .build()
                 )
@@ -122,6 +119,9 @@ public class PlatformFeatures implements PlatformModule {
                 .order(330)
                 .accessPolicy(pro())
                 .presentation(visible(true, false, false))
+                .dashboardPermission(
+                        AdminPermission.TEAM_VIEW
+                )
                 .build();
     }
 

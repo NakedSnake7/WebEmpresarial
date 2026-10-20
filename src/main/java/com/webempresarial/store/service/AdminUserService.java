@@ -124,13 +124,20 @@ public class AdminUserService {
     }
 
     @Transactional
-    public void cambiarEstado(Long id) {
+    public void cambiarEstado(
+            Long storeId,
+            Long id
+    ) {
 
         AdminUser adminUser =
-                adminUserRepository.findById(id)
+                adminUserRepository
+                        .findByIdAndStoreId(
+                                id,
+                                storeId
+                        )
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Admin no encontrado"
+                                new IllegalArgumentException(
+                                        "Admin no encontrado en esta tienda"
                                 )
                         );
 

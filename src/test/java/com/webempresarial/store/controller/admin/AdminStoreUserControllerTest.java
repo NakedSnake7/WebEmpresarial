@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -162,4 +163,24 @@ class AdminStoreUserControllerTest {
         verify(storeAdminService).buscarPorId(42L);
         verify(adminUserService).nuevoAdmin(42L);
     }
+
+    @Test
+    void shouldChangeStateInsideRequestedStore() throws Exception {
+
+        mockMvc.perform(
+                post("/admin/stores/42/admins/estado/7")
+        )
+        .andExpect(status().is3xxRedirection())
+        .andExpect(
+                view().name(
+                        "redirect:/admin/stores/42/admins"
+                )
+        );
+
+        verify(adminUserService).cambiarEstado(
+                42L,
+                7L
+        );
+    }
+
 }

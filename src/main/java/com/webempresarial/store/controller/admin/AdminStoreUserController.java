@@ -91,7 +91,10 @@ public class AdminStoreUserController {
             @PathVariable Long id
     ) {
 
-        adminUserService.cambiarEstado(id);
+        adminUserService.cambiarEstado(
+                storeId,
+                id
+        );
 
         return "redirect:/admin/stores/" + storeId + "/admins";
     }

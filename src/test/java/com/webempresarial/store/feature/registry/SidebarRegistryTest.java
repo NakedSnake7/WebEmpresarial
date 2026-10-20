@@ -55,6 +55,12 @@ class SidebarRegistryTest {
         registerPlatformSection();
 
         when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.TEAM_VIEW
+                )
+        ).thenReturn(true);
+
+        when(
                 featureAccessService.canUse(
                         store,
                         Feature.MULTI_USER
@@ -85,7 +91,7 @@ class SidebarRegistryTest {
     }
 
     @Test
-    void shouldHideMultiUserForStoreStaffEvenWhenFeatureAvailable() {
+    void shouldHideMultiUserWithoutTeamViewPermissionEvenWhenFeatureAvailable() {
 
         registerPlatformSection();
 
@@ -94,7 +100,7 @@ class SidebarRegistryTest {
          * pero STORE_STAFF no tiene permiso
          * para administrarlo.
          *
-         * El registry debe filtrar por rol antes
+         * El registry debe filtrar por TEAM_VIEW antes
          * de convertir el item.
          */
         List<SidebarSectionDTO> sections =
@@ -111,6 +117,12 @@ class SidebarRegistryTest {
     void shouldShowLockedMultiUserForStoreAdminWhenFeatureUnavailable() {
 
         registerPlatformSection();
+
+        when(
+                currentAdminAuthorizationService.hasPermission(
+                        AdminPermission.TEAM_VIEW
+                )
+        ).thenReturn(true);
 
         when(
                 featureAccessService.canUse(
@@ -360,8 +372,7 @@ class SidebarRegistryTest {
                                                 "👥",
                                                 "/admin/users",
                                                 Feature.MULTI_USER,
-                                                AdminRole.SUPER_ADMIN,
-                                                AdminRole.STORE_ADMIN
+                                                AdminPermission.TEAM_VIEW
                                         )
                                         .build()
                         )
