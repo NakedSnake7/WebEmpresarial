@@ -12,6 +12,57 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MarketingFeaturesPresentationContractTest {
 
     @Test
+    void couponsShouldRemainProButHiddenUntilImplemented() {
+
+        FeatureDefinition definition =
+                definitionFor(Feature.COUPONS);
+
+        assertThat(
+                definition
+                        .getAccessPolicy()
+                        .getMinimumPlan()
+        ).isEqualTo(StorePlan.PRO);
+
+        FeaturePresentation presentation =
+                definition.getPresentation();
+
+        assertThat(presentation.isShowInSidebar())
+                .isFalse();
+
+        assertThat(presentation.isShowInDashboard())
+                .isFalse();
+
+        assertThat(presentation.isShowInBilling())
+                .isTrue();
+
+        assertThat(presentation.isShowUpgradeCard())
+                .isTrue();
+
+        assertThat(presentation.isTrackUsage())
+                .isFalse();
+    }
+
+    @Test
+    void couponsShouldNotBeRegisteredInSidebar() {
+
+        var sidebarFeatures =
+                new MarketingFeatures()
+                        .descriptor()
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .map(item -> item.feature())
+                        .toList();
+
+        assertThat(sidebarFeatures)
+                .doesNotContain(
+                        Feature.COUPONS
+                );
+    }
+
+    @Test
     void emailMarketingShouldRemainPremiumButHiddenUntilImplemented() {
 
         FeatureDefinition definition =

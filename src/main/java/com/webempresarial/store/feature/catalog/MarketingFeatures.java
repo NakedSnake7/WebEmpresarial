@@ -41,7 +41,6 @@ public class MarketingFeatures implements PlatformModule {
                                         Feature.REVIEWS,
                                         AdminPermission.REVIEW_CREATE
                                 )
-                                .item("Cupones", "🏷️", "/admin/coupons", Feature.COUPONS)
                                 .build()
                 )
 
@@ -81,7 +80,7 @@ public class MarketingFeatures implements PlatformModule {
                 .healthWeight(3)
                 .order(200)
                 .accessPolicy(pro())
-                .presentation(premiumPresentation(false))
+                .presentation(unimplementedPresentation())
                 .build();
     }
 

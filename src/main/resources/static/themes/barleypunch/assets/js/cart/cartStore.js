@@ -26,7 +26,7 @@ export const cartStore = (() => {
 	            varianteId: p.varianteId ?? null
 	        }));
 
-	        coupon = data.coupon || null;
+	        coupon = null;
 	    }
 
 	    notify();

@@ -20,7 +20,7 @@ export const cartStore = (() => {
 	    if (saved) {
 	        const data = JSON.parse(saved);
 	        products = data.products || [];
-	        coupon = data.coupon || null;
+	        coupon = null;
 	    }
 	    notify();
 	}

@@ -537,6 +537,20 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
+                 * Coupons.
+                 *
+                 * El módulo administrativo todavía no está implementado.
+                 * COUPONS permanece registrado como feature PRO para
+                 * Billing/Upgrade, pero ninguna operación administrativa
+                 * debe quedar accesible hasta existir un contrato real.
+                 */
+                .requestMatchers(
+                    "/admin/coupons",
+                    "/admin/coupons/**"
+                )
+                .denyAll()
+
+                /*
                  * Dashboard principal.
                  *
                  * El acceso depende de DASHBOARD_VIEW, no del nombre
