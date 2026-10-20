@@ -9,6 +9,12 @@ import com.webempresarial.store.entity.LeadActivity;
 public interface LeadActivityRepository extends JpaRepository<LeadActivity, Long> {
 
     List<LeadActivity> findByLeadIdOrderByCreatedAtDesc(Long leadId);
+
+    List<LeadActivity> findByLeadIdAndLeadStoreIdOrderByCreatedAtDesc(
+            Long leadId,
+            Long storeId
+    );
+
     List<LeadActivity> findTop8ByLeadStoreIdOrderByCreatedAtDesc(Long storeId);
     List<LeadActivity> findByLeadId(Long leadId);
 }

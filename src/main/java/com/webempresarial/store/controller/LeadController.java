@@ -2,7 +2,9 @@ package com.webempresarial.store.controller;
 
 import com.webempresarial.store.dto.LeadRequestDTO;
 import com.webempresarial.store.entity.Lead;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.LeadService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +21,16 @@ public class LeadController {
 
     private final LeadService leadService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public LeadController(
             LeadService leadService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.leadService = leadService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @PostMapping
@@ -34,6 +39,11 @@ public class LeadController {
             HttpServletRequest request
     ) {
         Store store = storeResolver.getCurrentStore(request);
+
+        featureAccessService.requireFeature(
+                store,
+                Feature.LEADS
+        );
 
         Lead lead = leadService.createLead(dto, store);
 

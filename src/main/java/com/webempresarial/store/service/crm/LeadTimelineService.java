@@ -27,7 +27,10 @@ public class LeadTimelineService {
     public List<LeadTimelineItemDTO> getTimeline(Long leadId, Long storeId) {
 
         var activities = activityRepository
-                .findByLeadIdOrderByCreatedAtDesc(leadId)
+                .findByLeadIdAndLeadStoreIdOrderByCreatedAtDesc(
+                        leadId,
+                        storeId
+                )
                 .stream()
                 .map(activity -> new LeadTimelineItemDTO(
                         "activity-" + activity.getId(),
