@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
@@ -65,7 +66,7 @@ public class LeadRestController {
     public List<LeadCardDTO> getLeads(HttpServletRequest request) {
         Store store = storeContextService.getCurrentStore(request);
 
-        requireLeadsFeature(store);
+        requireSharedLeadReadFeature(store);
         return leadService.getLeadsForStore(store.getId());
     }
 
@@ -76,7 +77,7 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
-        requireLeadsFeature(store);
+        requireSharedLeadReadFeature(store);
         return leadService.getDetail(id, store.getId());
     }
 
@@ -88,7 +89,7 @@ public class LeadRestController {
     ) {
         Store store = storeContextService.getCurrentStore(request);
 
-        requireLeadsFeature(store);
+        requireSharedLeadStatusFeature(store);
 
         leadService.updateStatus(
                 id,
@@ -172,6 +173,101 @@ public class LeadRestController {
         );
     }
     
+    private void requireSharedLeadReadFeature(
+            Store store
+    ) {
+        requireSharedLeadFeature(
+                store,
+                AdminPermission.CRM_VIEW,
+                AdminPermission.PIPELINE_VIEW
+        );
+    }
+
+    private void requireSharedLeadStatusFeature(
+            Store store
+    ) {
+        requireSharedLeadFeature(
+                store,
+                AdminPermission.CRM_EDIT,
+                AdminPermission.PIPELINE_MANAGE
+        );
+    }
+
+    private void requireSharedLeadFeature(
+            Store store,
+            AdminPermission crmPermission,
+            AdminPermission pipelinePermission
+    ) {
+
+        boolean crmAuthorized =
+                hasAuthority(crmPermission);
+
+        boolean pipelineAuthorized =
+                hasAuthority(pipelinePermission);
+
+        if (crmAuthorized
+                && featureAccessService.canUse(
+                        store,
+                        Feature.LEADS
+                )) {
+            return;
+        }
+
+        if (pipelineAuthorized
+                && featureAccessService.canUse(
+                        store,
+                        Feature.PIPELINE
+                )) {
+            return;
+        }
+
+        /*
+         * No permitimos que PIPELINE_* aproveche LEADS como fallback
+         * si el usuario no posee el permiso CRM correspondiente.
+         */
+        if (pipelineAuthorized && !crmAuthorized) {
+            featureAccessService.requireFeature(
+                    store,
+                    Feature.PIPELINE
+            );
+            return;
+        }
+
+        /*
+         * También conserva el contrato de llamadas directas
+         * sin SecurityContext usado por algunos unit tests.
+         */
+        featureAccessService.requireFeature(
+                store,
+                Feature.LEADS
+        );
+    }
+
+    private boolean hasAuthority(
+            AdminPermission permission
+    ) {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        return authentication
+                .getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        permission.authority()
+                                .equals(
+                                        authority.getAuthority()
+                                )
+                );
+    }
+
     private void requireLeadsFeature(
             Store store
     ) {
