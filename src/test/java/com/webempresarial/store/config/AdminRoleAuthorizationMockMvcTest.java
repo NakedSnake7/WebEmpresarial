@@ -382,6 +382,45 @@ class AdminRoleAuthorizationMockMvcTest {
     }
 
     @Test
+    void salesWithDashboardPermissionShouldAccessUpgrade()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/upgrade")
+                        .with(
+                                user("sales@stride.test")
+                                        .authorities(
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                "ROLE_SALES"
+                                                        ),
+                                                new org.springframework.security.core.authority
+                                                        .SimpleGrantedAuthority(
+                                                                AdminPermission
+                                                                        .DASHBOARD_VIEW
+                                                                        .authority()
+                                                        )
+                                        )
+                        )
+        )
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    void salesWithoutDashboardPermissionShouldNotAccessUpgrade()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/upgrade")
+                        .with(
+                                user("sales@stride.test")
+                                        .roles("SALES")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
     void salesWithoutDashboardPermissionShouldNotAccessAdminDashboard()
             throws Exception {
 
@@ -572,6 +611,11 @@ class AdminRoleAuthorizationMockMvcTest {
 
         @GetMapping("/admin/dashboard")
         String dashboard() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/upgrade")
+        String upgrade() {
             return "OK";
         }
 

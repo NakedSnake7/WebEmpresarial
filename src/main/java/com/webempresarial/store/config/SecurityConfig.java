@@ -582,6 +582,37 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
+                 * Upgrade de funcionalidades.
+                 *
+                 * Cualquier usuario administrativo con acceso al
+                 * dashboard puede consultar por qué una feature está
+                 * bloqueada.
+                 *
+                 * Las acciones reales de billing conservan sus permisos
+                 * SUBSCRIPTION_VIEW / SUBSCRIPTION_MANAGE independientes.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/upgrade"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .DASHBOARD_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * cualquier método o ruta futura del namespace de
+                 * upgrade debe recibir autorización explícita.
+                 */
+                .requestMatchers(
+                    "/admin/upgrade",
+                    "/admin/upgrade/**"
+                )
+                .denyAll()
+
+                /*
                  * Dashboard principal.
                  *
                  * El acceso depende de DASHBOARD_VIEW, no del nombre
