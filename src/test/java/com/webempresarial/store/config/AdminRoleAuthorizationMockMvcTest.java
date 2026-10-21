@@ -83,7 +83,7 @@ class AdminRoleAuthorizationMockMvcTest {
      */
 
     @Test
-    void storeStaff_shouldAccessOperationalPanel()
+    void storeStaffShouldNotAccessUnknownAdminRoute()
             throws Exception {
 
         mockMvc.perform(
@@ -93,7 +93,7 @@ class AdminRoleAuthorizationMockMvcTest {
                                         .roles("STORE_STAFF")
                         )
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
     }
 
     @Test
@@ -260,7 +260,7 @@ class AdminRoleAuthorizationMockMvcTest {
      */
 
     @Test
-    void storeOwner_shouldAccessOperationalPanel()
+    void storeOwnerShouldNotAccessUnknownAdminRoute()
             throws Exception {
 
         mockMvc.perform(
@@ -270,7 +270,7 @@ class AdminRoleAuthorizationMockMvcTest {
                                         .roles("STORE_OWNER")
                         )
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isForbidden());
     }
 
     @Test
@@ -505,6 +505,62 @@ class AdminRoleAuthorizationMockMvcTest {
     }
 
     @Test
+    void operationalAdminRolesShouldAccessKnowledgeAndDigitalTransformation()
+            throws Exception {
+
+        String[] roles = {
+                "SUPER_ADMIN",
+                "STORE_OWNER",
+                "STORE_ADMIN",
+                "STORE_STAFF"
+        };
+
+        String[] paths = {
+                "/admin/knowledge",
+                "/admin/digital-transformation/projects"
+        };
+
+        for (String role : roles) {
+            for (String path : paths) {
+
+                mockMvc.perform(
+                        get(path)
+                                .with(
+                                        user(
+                                                role.toLowerCase()
+                                                        + "@stride.test"
+                                        )
+                                        .roles(role)
+                                )
+                )
+                .andExpect(status().isOk());
+            }
+        }
+    }
+
+    @Test
+    void salesShouldNotAccessKnowledgeOrDigitalTransformation()
+            throws Exception {
+
+        String[] paths = {
+                "/admin/knowledge",
+                "/admin/digital-transformation/projects"
+        };
+
+        for (String path : paths) {
+
+            mockMvc.perform(
+                    get(path)
+                            .with(
+                                    user("sales@stride.test")
+                                            .roles("SALES")
+                            )
+            )
+            .andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
     void tenantRolesShouldNotAccessSaasApi()
             throws Exception {
 
@@ -531,11 +587,96 @@ class AdminRoleAuthorizationMockMvcTest {
         }
     }
 
+    @Test
+    void tenantOperationalRolesShouldNotAccessSystemRegistries()
+            throws Exception {
+
+        String[] roles = {
+                "STORE_OWNER",
+                "STORE_ADMIN",
+                "STORE_STAFF"
+        };
+
+        String[] paths = {
+                "/admin/permissions",
+                "/admin/marketplace"
+        };
+
+        for (String role : roles) {
+            for (String path : paths) {
+
+                mockMvc.perform(
+                        get(path)
+                                .with(
+                                        user(
+                                                role.toLowerCase()
+                                                        + "@stride.test"
+                                        )
+                                        .roles(role)
+                                )
+                )
+                .andExpect(status().isForbidden());
+            }
+        }
+    }
+
+    @Test
+    void superAdminShouldAccessSystemRegistries()
+            throws Exception {
+
+        String[] paths = {
+                "/admin/permissions",
+                "/admin/marketplace"
+        };
+
+        for (String path : paths) {
+
+            mockMvc.perform(
+                    get(path)
+                            .with(
+                                    user(
+                                            "superadmin@webempresarial.test"
+                                    )
+                                    .roles("SUPER_ADMIN")
+                            )
+            )
+            .andExpect(status().isOk());
+        }
+    }
+
     /*
      * ---------------------------------------------------------
      * SUPER_ADMIN
      * ---------------------------------------------------------
      */
+
+    @Test
+    void storeAdminShouldNotAccessUnknownAdminRoute()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/test-operational")
+                        .with(
+                                user("admin@stride.test")
+                                        .roles("STORE_ADMIN")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void superAdminShouldNotAccessUnknownAdminRoute()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/admin/test-operational")
+                        .with(
+                                user("superadmin@webempresarial.test")
+                                        .roles("SUPER_ADMIN")
+                        )
+        )
+        .andExpect(status().isForbidden());
+    }
 
     @Test
     void superAdmin_shouldAccessStores()
@@ -636,6 +777,26 @@ class AdminRoleAuthorizationMockMvcTest {
 
         @GetMapping("/admin/stores")
         String stores() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/knowledge")
+        String knowledge() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/digital-transformation/projects")
+        String digitalTransformationProjects() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/permissions")
+        String permissions() {
+            return "OK";
+        }
+
+        @GetMapping("/admin/marketplace")
+        String marketplace() {
             return "OK";
         }
 

@@ -41,7 +41,9 @@
             <span class="sidebar-text">Billing</span>
         </a>
         
-        <!-- ======================================================
+        <th:block th:if="${!isSales}">
+
+<!-- ======================================================
      DIGITAL TRANSFORMATION
      ====================================================== -->
 
@@ -178,7 +180,9 @@
     <span class="sidebar-text flex-grow-1">
         Publicados
     </span>
-</a>      
+</a>
+
+</th:block>
 
 <th:block th:each="section : ${sidebarSections}">
 

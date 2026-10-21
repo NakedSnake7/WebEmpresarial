@@ -40,6 +40,7 @@ class AdminSidebarTemplateTest {
                 true,
                 false,
                 true,
+                false,
                 "/admin/dashboard"
         );
 
@@ -53,6 +54,7 @@ class AdminSidebarTemplateTest {
                 false,
                 true,
                 true,
+                false,
                 "/admin/dashboard"
         );
 
@@ -66,6 +68,7 @@ class AdminSidebarTemplateTest {
                 false,
                 false,
                 false,
+                false,
                 "/admin/dashboard"
         );
 
@@ -73,10 +76,37 @@ class AdminSidebarTemplateTest {
                 .doesNotContain("href=\"/admin/billing\"");
     }
 
+    @Test
+    void shouldHideKnowledgeAndDigitalTransformationForSales() {
+
+        String html = renderSidebar(
+                false,
+                false,
+                false,
+                true,
+                "/admin/dashboard"
+        );
+
+        assertThat(html)
+                .doesNotContain(
+                        "href=\"/admin/digital-transformation/projects\""
+                )
+                .doesNotContain(
+                        "href=\"/admin/knowledge\""
+                )
+                .doesNotContain(
+                        "href=\"/admin/knowledge/library\""
+                )
+                .doesNotContain(
+                        "href=\"/admin/knowledge/new\""
+                );
+    }
+
     private String renderSidebar(
             boolean isSuperAdmin,
             boolean isStoreAdmin,
             boolean canViewBilling,
+            boolean isSales,
             String currentPath
     ) {
         Context context = new Context();
@@ -85,6 +115,7 @@ class AdminSidebarTemplateTest {
                 Map.of(
                         "isSuperAdmin", isSuperAdmin,
                         "isStoreAdmin", isStoreAdmin,
+                        "isSales", isSales,
                         "canViewBilling", canViewBilling,
                         "currentPlan", "BASIC",
                         "theme", "WebEmpresarial"

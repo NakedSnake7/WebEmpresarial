@@ -629,7 +629,79 @@ public class SecurityConfig {
                         .authority()
                 )
 
+                /*
+                 * Registros internos de plataforma.
+                 *
+                 * Aunque existen vistas administrativas para inspección,
+                 * forman parte de las herramientas internas de
+                 * WebEmpresarial y no de la operación del tenant.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/permissions",
+                    "/admin/marketplace"
+                )
+                .hasRole("SUPER_ADMIN")
+
+                /*
+                 * Fail closed:
+                 * cualquier futura operación dentro de estos namespaces
+                 * deberá recibir autorización explícita.
+                 */
+                .requestMatchers(
+                    "/admin/permissions",
+                    "/admin/permissions/**",
+                    "/admin/marketplace",
+                    "/admin/marketplace/**"
+                )
+                .denyAll()
+
+                /*
+                 * Knowledge Engine API.
+                 *
+                 * La API es tenant-scoped y actualmente comparte la política
+                 * administrativa operacional del módulo Knowledge.
+                 *
+                 * La granularidad editorial create/review/publish/archive
+                 * requiere un modelo dedicado de permisos antes de poder
+                 * separarse aquí.
+                 */
                 .requestMatchers("/api/knowledge/**")
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
+                /*
+                 * Knowledge Engine administrativo.
+                 *
+                 * Política explícita mientras el módulo no disponga de
+                 * AdminPermission / Feature propios.
+                 */
+                .requestMatchers(
+                    "/admin/knowledge",
+                    "/admin/knowledge/**"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN",
+                    "STORE_STAFF"
+                )
+
+                /*
+                 * Digital Transformation.
+                 *
+                 * STORE_STAFF puede acceder al workspace; las decisiones
+                 * de governance conservan su validación adicional dentro
+                 * de StrategicGovernanceActorResolver.
+                 */
+                .requestMatchers(
+                    "/admin/digital-transformation",
+                    "/admin/digital-transformation/**"
+                )
                 .hasAnyRole(
                     "SUPER_ADMIN",
                     "STORE_OWNER",
@@ -651,18 +723,14 @@ public class SecurityConfig {
                 .denyAll()
 
                 /*
-                 * Acceso administrativo operacional general.
+                 * Fail closed administrativo global.
                  *
-                 * SALES no entra aquí: sus módulos deben declararse
-                 * explícitamente.
+                 * Toda ruta administrativa debe recibir una política
+                 * explícita antes de quedar accesible, incluso para
+                 * SUPER_ADMIN.
                  */
                 .anyRequest()
-                .hasAnyRole(
-                    "SUPER_ADMIN",
-                    "STORE_OWNER",
-                    "STORE_ADMIN",
-                    "STORE_STAFF"
-                )
+                .denyAll()
             )
 
             .formLogin(form -> form

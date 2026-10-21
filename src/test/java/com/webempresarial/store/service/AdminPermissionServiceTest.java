@@ -312,6 +312,39 @@ class AdminPermissionServiceTest {
     }
 
     @Test
+    void settingsDashboardPermissionsShouldRequireStoreViewOnSameRole() {
+
+        Arrays.stream(AdminRole.values())
+                .forEach(role -> {
+
+                    boolean exposesSettingsDashboardEntry =
+                            service.hasPermission(
+                                    role,
+                                    AdminPermission.WHITE_LABEL_MANAGE
+                            )
+                            || service.hasPermission(
+                                    role,
+                                    AdminPermission.STRIPE_CONNECT_MANAGE
+                            );
+
+                    if (exposesSettingsDashboardEntry) {
+                        assertThat(
+                                service.hasPermission(
+                                        role,
+                                        AdminPermission.STORE_VIEW
+                                )
+                        )
+                        .as(
+                                "%s must have STORE_VIEW when it can "
+                                + "open a settings-backed dashboard feature",
+                                role
+                        )
+                        .isTrue();
+                    }
+                });
+    }
+
+    @Test
     void nullRoleOrPermissionNeverGrantsAccess() {
 
         assertThat(
