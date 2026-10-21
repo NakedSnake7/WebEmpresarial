@@ -31,6 +31,7 @@ import com.webempresarial.store.service.StoreSettingsService;
 import com.webempresarial.store.service.SubscriptionAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -124,6 +125,26 @@ class KnowledgeQueryControllerMockMvcTest {
     @MockitoBean
     private FeatureAccessService featureAccessService;
     
+    @BeforeEach
+    void allowTenantInterceptorInControllerSliceTests()
+            throws Exception {
+
+        /*
+         * Tenant isolation is covered by
+         * KnowledgeAdminWebMvcConfigTest.
+         *
+         * These tests exercise controller HTTP behavior, so the
+         * mocked interceptor must allow the request to continue.
+         */
+        when(
+                adminTenantAccessInterceptor.preHandle(
+                        any(),
+                        any(),
+                        any()
+                )
+        ).thenReturn(true);
+    }
+
     @Test
     void shouldSearchKnowledgeAndReturn200()
             throws Exception {

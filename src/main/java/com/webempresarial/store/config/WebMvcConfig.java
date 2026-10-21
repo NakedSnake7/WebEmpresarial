@@ -50,6 +50,7 @@ public class WebMvcConfig
                 .addPathPatterns(
                         "/admin/**",
                         "/api/admin/**",
+                        "/api/knowledge/**",
                         "/nuevo",
                         "/editar/**",
                         "/modificar-precios",
