@@ -3,12 +3,16 @@ package com.webempresarial.store.controller;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.Cliente;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import com.webempresarial.store.theme.StoreThemeResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,17 +28,20 @@ public class AccountController {
     private final OrderService orderService;
     private final StoreThemeResolver storeThemeResolver;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public AccountController(
             UserService userService,
             OrderService orderService,
             StoreThemeResolver storeThemeResolver,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.userService = userService;
         this.orderService = orderService;
         this.storeThemeResolver = storeThemeResolver;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @GetMapping("/cuenta")
@@ -125,6 +132,15 @@ public class AccountController {
         }
 
         Store store = storeResolver.getCurrentStore(request);
+
+        if (!featureAccessService.canUse(
+                store,
+                Feature.ORDERS
+        )) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND
+            );
+        }
 
         List<Order> pedidos = orderService.findByCustomerEmail(
                 authUser.getUsername(),
