@@ -636,6 +636,17 @@ guardar orden por transferencia
 	    return orderRepository.findPendingOrdersWithItems(store);
 	}
 
+ @Transactional
+ public Order getByIdForStripeForUpdate(
+         Long id,
+         Store store
+ ) {
+     return getByIdForUpdate(
+             id,
+             store
+     );
+ }
+
  @Transactional(readOnly = true)
  public Order getByIdForStripe(
          Long id,

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,12 @@ import org.springframework.http.ResponseEntity;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.Order.PaymentMethod;
+import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.commerce.infrastructure.checkout.payment.StripeCommerceCheckoutService;
 import com.webempresarial.store.theme.StoreResolver;
 
@@ -35,7 +40,13 @@ class StripeCheckoutControllerTest {
     private StoreResolver storeResolver;
 
     @Mock
+    private FeatureAccessService featureAccessService;
+
+    @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private HttpSession httpSession;
 
     @Mock
     private Order order;
@@ -54,11 +65,37 @@ class StripeCheckoutControllerTest {
         controller = new StripeCheckoutController(
                 orderService,
                 stripeCheckoutService,
-                storeResolver
+                storeResolver,
+                featureAccessService
         );
 
         when(storeResolver.getCurrentStore(request))
                 .thenReturn(store);
+
+        lenient()
+                .when(featureAccessService.canUse(
+                        store,
+                        Feature.CHECKOUT
+                ))
+                .thenReturn(true);
+
+        lenient()
+                .when(request.getSession(false))
+                .thenReturn(httpSession);
+
+        lenient()
+                .when(httpSession.getAttribute(
+                        "CHECKOUT_CONFIRMATION_ORDER_ID"
+                ))
+                .thenReturn(100L);
+
+        lenient()
+                .when(order.getPaymentMethod())
+                .thenReturn(PaymentMethod.STRIPE);
+
+        lenient()
+                .when(order.getOrderStatus())
+                .thenReturn(OrderStatus.CREATED);
     }
 
     private void givenStripeConnectedStore() {
@@ -67,13 +104,125 @@ class StripeCheckoutControllerTest {
                 .thenReturn(true);
 }
 
+
+    @Test
+    void createStripeSession_shouldReturn404BeforeOrderLookupWhenFeatureIsLocked() {
+
+        when(featureAccessService.canUse(
+                store,
+                Feature.CHECKOUT
+        )).thenReturn(false);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(404);
+
+        verifyNoInteractions(orderService);
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+    @Test
+    void createStripeSession_shouldReturn404WithoutCheckoutSession() {
+
+        when(request.getSession(false))
+                .thenReturn(null);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(404);
+
+        verifyNoInteractions(orderService);
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+    @Test
+    void createStripeSession_shouldReturn404ForDifferentAuthorizedOrder() {
+
+        when(httpSession.getAttribute(
+                "CHECKOUT_CONFIRMATION_ORDER_ID"
+        )).thenReturn(999L);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(404);
+
+        verifyNoInteractions(orderService);
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+    @Test
+    void createStripeSession_shouldRejectTransferOrder() {
+
+        when(orderService.getByIdForStripeForUpdate(
+                100L,
+                store
+        )).thenReturn(order);
+
+        when(order.getPaymentMethod())
+                .thenReturn(PaymentMethod.TRANSFER);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
+
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
+    @Test
+    void createStripeSession_shouldRejectCancelledOrder() {
+
+        givenStripeConnectedStore();
+
+        when(orderService.getByIdForStripeForUpdate(
+                100L,
+                store
+        )).thenReturn(order);
+
+        when(order.getPaymentStatus())
+                .thenReturn(PaymentStatus.PENDING);
+
+        when(order.getOrderStatus())
+                .thenReturn(OrderStatus.CANCELLED);
+
+        ResponseEntity<?> response =
+                controller.createStripeSession(
+                        100L,
+                        request
+                );
+
+        assertThat(response.getStatusCode().value())
+                .isEqualTo(400);
+
+        verifyNoInteractions(stripeCheckoutService);
+    }
+
     @Test
     void createStripeSession_shouldRejectStoreWithoutStripeConnect() {
 
         when(store.isStripePaymentAvailable())
                 .thenReturn(false);
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
                 .thenReturn(order);
 
         ResponseEntity<?> response =
@@ -94,7 +243,7 @@ class StripeCheckoutControllerTest {
                 );
 
         verify(orderService)
-                .getByIdForStripe(100L, store);
+                .getByIdForStripeForUpdate(100L, store);
 
         verifyNoInteractions(stripeCheckoutService);
     }
@@ -102,7 +251,7 @@ class StripeCheckoutControllerTest {
     @Test
     void createStripeSession_shouldRejectStoreWhenStripePaymentIsUnavailable() {
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
                 .thenReturn(order);
 
         when(store.isStripePaymentAvailable())
@@ -125,7 +274,7 @@ ResponseEntity<?> response =
                 );
 
         verify(orderService)
-                .getByIdForStripe(100L, store);
+                .getByIdForStripeForUpdate(100L, store);
 
         verifyNoInteractions(stripeCheckoutService);
     }
@@ -135,7 +284,7 @@ ResponseEntity<?> response =
     void createStripeSession_shouldRejectPaidOrder() {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -169,7 +318,7 @@ ResponseEntity<?> response =
             throws Exception {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -220,7 +369,7 @@ ResponseEntity<?> response =
             throws Exception {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -281,7 +430,7 @@ ResponseEntity<?> response =
             throws Exception {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -333,7 +482,7 @@ ResponseEntity<?> response =
             throws Exception {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -376,7 +525,7 @@ ResponseEntity<?> response =
             throws Exception {
         givenStripeConnectedStore();
 
-        when(orderService.getByIdForStripe(100L, store))
+        when(orderService.getByIdForStripeForUpdate(100L, store))
         .thenReturn(order);
 
         when(order.getPaymentStatus())
@@ -405,7 +554,7 @@ ResponseEntity<?> response =
                 .getCurrentStore(request);
 
         verify(orderService)
-        .getByIdForStripe(100L, store);
+        .getByIdForStripeForUpdate(100L, store);
 
     }
 }

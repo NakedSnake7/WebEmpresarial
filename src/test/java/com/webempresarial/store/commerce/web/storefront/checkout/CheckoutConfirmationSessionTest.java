@@ -1,13 +1,14 @@
 package com.webempresarial.store.commerce.web.storefront.checkout;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.webempresarial.store.commerce.application.checkout.CheckoutService;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.dto.checkout.CheckoutRequestDTO;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.UserService;
 import com.webempresarial.store.theme.StoreResolver;
 
@@ -37,6 +38,9 @@ class CheckoutConfirmationSessionTest {
     private StoreResolver storeResolver;
 
     @Mock
+    private FeatureAccessService featureAccessService;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -53,8 +57,38 @@ class CheckoutConfirmationSessionTest {
                 new CheckoutController(
                         checkoutService,
                         userService,
-                        storeResolver
+                        storeResolver,
+                        featureAccessService
                 );
+    }
+
+
+    @Test
+    void checkoutShouldReturn404BeforeCreatingOrderWhenFeatureIsLocked() {
+
+        Store store = new Store();
+
+        when(storeResolver.getCurrentStore(request))
+                .thenReturn(store);
+
+        when(featureAccessService.canUse(
+                store,
+                Feature.CHECKOUT
+        )).thenReturn(false);
+
+        ResponseEntity<?> response =
+                controller.processCheckout(
+                        checkoutRequest,
+                        request
+                );
+
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+        verifyNoInteractions(checkoutService);
+
+        verify(request, never())
+                .getSession(true);
     }
 
     @Test
@@ -67,6 +101,11 @@ class CheckoutConfirmationSessionTest {
 
         when(storeResolver.getCurrentStore(request))
                 .thenReturn(store);
+
+        when(featureAccessService.canUse(
+                store,
+                Feature.CHECKOUT
+        )).thenReturn(true);
 
         when(checkoutService.createOrder(
                 checkoutRequest,

@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.Order.PaymentMethod;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
@@ -97,7 +98,7 @@ class StripeCommercePaymentHandlerTest {
 
         Session session = mock(Session.class);
         Store store = connectedStore();
-        Order order = mock(Order.class);
+        Order order = stripeOrder();
 
         when(storeRepository.findById(5L))
                 .thenReturn(Optional.of(store));
@@ -210,7 +211,7 @@ class StripeCommercePaymentHandlerTest {
 
         Session session = mock(Session.class);
         Store store = connectedStore();
-        Order order = mock(Order.class);
+        Order order = stripeOrder();
 
         when(storeRepository.findById(5L))
                 .thenReturn(Optional.of(store));
@@ -247,7 +248,7 @@ class StripeCommercePaymentHandlerTest {
 
         Session session = mock(Session.class);
         Store store = connectedStore();
-        Order order = mock(Order.class);
+        Order order = stripeOrder();
 
         when(storeRepository.findById(5L))
                 .thenReturn(Optional.of(store));
@@ -293,7 +294,7 @@ class StripeCommercePaymentHandlerTest {
 
         Session session = mock(Session.class);
         Store store = connectedStore();
-        Order order = mock(Order.class);
+        Order order = stripeOrder();
 
         when(storeRepository.findById(5L))
                 .thenReturn(Optional.of(store));
@@ -350,7 +351,7 @@ class StripeCommercePaymentHandlerTest {
 
         Session session = mock(Session.class);
         Store store = connectedStore();
-        Order order = mock(Order.class);
+        Order order = stripeOrder();
 
         when(storeRepository.findById(5L))
                 .thenReturn(Optional.of(store));
@@ -432,4 +433,61 @@ class StripeCommercePaymentHandlerTest {
                 "5"
         );
     }
+
+    @Test
+    void handlePaidCheckout_shouldRejectTransferOrder() {
+
+        Session session = mock(Session.class);
+        Store store = connectedStore();
+        Order order = stripeOrder();
+
+        when(storeRepository.findById(5L))
+                .thenReturn(Optional.of(store));
+
+        when(orderService.getById(
+                100L,
+                store
+        )).thenReturn(order);
+
+        when(order.getPaymentMethod())
+                .thenReturn(PaymentMethod.TRANSFER);
+
+        assertThatThrownBy(() ->
+                handler.handlePaidCheckout(
+                        session,
+                        ecommerceMetadata(),
+                        "acct_store_5"
+                )
+        )
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "La orden no corresponde a un pago Stripe"
+                );
+
+        verify(orderService, never())
+                .marcarOrdenComoPagada(
+                        anyLong(),
+                        any(),
+                        any(Store.class)
+                );
+
+        verify(orderService, never())
+                .procesarPostPago(
+                        anyLong(),
+                        any(Store.class)
+                );
+    }
+
+    private Order stripeOrder() {
+
+        Order order = mock(Order.class);
+
+        when(order.getPaymentMethod())
+                .thenReturn(PaymentMethod.STRIPE);
+
+        return order;
+    }
+
 }

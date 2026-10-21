@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.stripe.model.checkout.Session;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.Order.PaymentMethod;
 import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
 import com.webempresarial.store.model.Store;
@@ -90,6 +91,14 @@ public class StripeCommercePaymentHandler {
                         orderId,
                         store
                 );
+
+        if (order.getPaymentMethod()
+                != PaymentMethod.STRIPE) {
+
+            throw new IllegalStateException(
+                    "La orden no corresponde a un pago Stripe"
+            );
+        }
 
         if (order.getPaymentStatus()
                 == PaymentStatus.PAID) {

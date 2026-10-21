@@ -3,6 +3,8 @@ package com.webempresarial.store.commerce.web.admin.order;
 import com.webempresarial.store.commerce.application.order.OrderAuditService;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.OrderStatus;
+import com.webempresarial.store.commerce.infrastructure.checkout.payment.StripeCommerceCheckoutService;
 import com.webempresarial.store.exceptions.FeatureLockedException;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
@@ -44,6 +46,9 @@ class OrdersFeatureAccessContractTest {
     private FeatureAccessService featureAccessService;
 
     @Mock
+    private StripeCommerceCheckoutService stripeCheckoutService;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -76,7 +81,8 @@ class OrdersFeatureAccessContractTest {
                         orderService,
                         storeResolver,
                         orderAuditService,
-                        featureAccessService
+                        featureAccessService,
+                        stripeCheckoutService
                 );
 
         exportController =
@@ -115,6 +121,14 @@ class OrdersFeatureAccessContractTest {
                 orderService.updateOrderStatus(
                         1L,
                         "SHIPPED",
+                        store
+                )
+        )
+        .thenReturn(order);
+
+        when(
+                orderService.getByIdForStripeForUpdate(
+                        1L,
                         store
                 )
         )
@@ -264,4 +278,121 @@ class OrdersFeatureAccessContractTest {
                 orderService
         );
     }
+
+    @Test
+    void cancellingStripeOrderShouldExpireSessionBeforeCancellingOrder()
+            throws Exception {
+
+        Order order = mock(Order.class);
+
+        when(
+                orderService.getByIdForStripeForUpdate(
+                        1L,
+                        store
+                )
+        )
+        .thenReturn(order);
+
+        when(order.isPaid())
+                .thenReturn(false);
+
+        when(order.getPaymentMethod())
+                .thenReturn(
+                        Order.PaymentMethod.STRIPE
+                );
+
+        when(order.getOrderStatus())
+                .thenReturn(OrderStatus.CREATED);
+
+        when(order.getStripeSessionId())
+                .thenReturn("cs_open");
+
+        ordersController.cancelarOrden(
+                1L,
+                redirectAttributes,
+                request
+        );
+
+        var ordered =
+                inOrder(
+                        stripeCheckoutService,
+                        orderService
+                );
+
+        ordered.verify(
+                stripeCheckoutService
+        ).expireSession(
+                "cs_open",
+                store
+        );
+
+        ordered.verify(
+                orderService
+        ).cancelOrder(
+                1L,
+                store
+        );
+    }
+
+    @Test
+    void stripeExpirationFailureShouldStopOrderCancellation()
+            throws Exception {
+
+        Order order = mock(Order.class);
+
+        when(
+                orderService.getByIdForStripeForUpdate(
+                        1L,
+                        store
+                )
+        )
+        .thenReturn(order);
+
+        when(order.isPaid())
+                .thenReturn(false);
+
+        when(order.getPaymentMethod())
+                .thenReturn(
+                        Order.PaymentMethod.STRIPE
+                );
+
+        when(order.getOrderStatus())
+                .thenReturn(OrderStatus.CREATED);
+
+        when(order.getStripeSessionId())
+                .thenReturn("cs_complete");
+
+        doThrow(
+                new IllegalStateException(
+                        "La sesión Stripe ya no está abierta"
+                )
+        )
+        .when(stripeCheckoutService)
+        .expireSession(
+                "cs_complete",
+                store
+        );
+
+        ordersController.cancelarOrden(
+                1L,
+                redirectAttributes,
+                request
+        );
+
+        verify(
+                orderService,
+                never()
+        ).cancelOrder(
+                anyLong(),
+                any(Store.class)
+        );
+
+        verify(
+                redirectAttributes
+        ).addFlashAttribute(
+                "error",
+                "La sesión Stripe ya no está abierta"
+        );
+    }
+
 }

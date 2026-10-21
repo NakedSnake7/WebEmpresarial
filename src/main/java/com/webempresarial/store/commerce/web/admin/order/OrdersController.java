@@ -1,17 +1,20 @@
 package com.webempresarial.store.commerce.web.admin.order;
 
-import com.webempresarial.store.commerce.domain.order.Order; 
+import com.webempresarial.store.commerce.domain.order.Order;
+import com.webempresarial.store.commerce.domain.order.Order.PaymentMethod;
 import com.webempresarial.store.commerce.domain.order.OrderStatus;
 import com.webempresarial.store.commerce.domain.order.PaymentStatus;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.order.OrderAuditService;
 import com.webempresarial.store.commerce.application.order.OrderService;
+import com.webempresarial.store.commerce.infrastructure.checkout.payment.StripeCommerceCheckoutService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,17 +33,20 @@ public class OrdersController {
     private final StoreResolver storeResolver;
     private final OrderAuditService orderAuditService;
     private final FeatureAccessService featureAccessService;
-    
+    private final StripeCommerceCheckoutService stripeCheckoutService;
+
     public OrdersController(
             OrderService orderService,
             StoreResolver storeResolver,
             OrderAuditService orderAuditService,
-            FeatureAccessService featureAccessService
+            FeatureAccessService featureAccessService,
+            StripeCommerceCheckoutService stripeCheckoutService
     ) {
         this.orderService = orderService;
         this.storeResolver = storeResolver;
         this.orderAuditService = orderAuditService;
         this.featureAccessService = featureAccessService;
+        this.stripeCheckoutService = stripeCheckoutService;
     }
 
     @GetMapping
@@ -180,6 +186,7 @@ public class OrdersController {
     }
 
     @PostMapping("/{id}/cancel")
+    @Transactional
     public String cancelarOrden(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes,
@@ -188,7 +195,30 @@ public class OrdersController {
         Store store = currentStoreWithOrders(request);
 
         try {
-            orderService.cancelOrder(id, store);
+            Order order =
+                    orderService.getByIdForStripeForUpdate(
+                            id,
+                            store
+                    );
+
+            if (!order.isPaid()
+                    && order.getPaymentMethod()
+                            == PaymentMethod.STRIPE
+                    && order.getOrderStatus()
+                            != OrderStatus.CANCELLED
+                    && order.getStripeSessionId() != null
+                    && !order.getStripeSessionId().isBlank()) {
+
+                stripeCheckoutService.expireSession(
+                        order.getStripeSessionId(),
+                        store
+                );
+            }
+
+            orderService.cancelOrder(
+                    id,
+                    store
+            );
 
             redirectAttributes.addFlashAttribute(
                     "success",

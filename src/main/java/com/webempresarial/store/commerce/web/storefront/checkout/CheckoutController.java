@@ -16,8 +16,10 @@ import com.webempresarial.store.dto.checkout.CheckoutRequestDTO;
 import com.webempresarial.store.model.Cliente;
 import com.webempresarial.store.commerce.domain.order.Order;
 import com.webempresarial.store.model.Store;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.commerce.application.checkout.CheckoutService;
 import com.webempresarial.store.service.UserService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,15 +37,18 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
     private final UserService userService;
     private final StoreResolver storeResolver;
+    private final FeatureAccessService featureAccessService;
 
     public CheckoutController(
             CheckoutService checkoutService,
             UserService userService,
-            StoreResolver storeResolver
+            StoreResolver storeResolver,
+            FeatureAccessService featureAccessService
     ) {
         this.checkoutService = checkoutService;
         this.userService = userService;
         this.storeResolver = storeResolver;
+        this.featureAccessService = featureAccessService;
     }
 
     @PostMapping("/checkout")
@@ -54,6 +59,13 @@ public class CheckoutController {
 
         Store store =
                 storeResolver.getCurrentStore(request);
+
+        if (!featureAccessService.canUse(
+                store,
+                Feature.CHECKOUT
+        )) {
+            return ResponseEntity.notFound().build();
+        }
 
         try {
 

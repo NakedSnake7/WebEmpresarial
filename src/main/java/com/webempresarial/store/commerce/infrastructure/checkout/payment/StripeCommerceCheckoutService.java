@@ -236,6 +236,59 @@ public class StripeCommerceCheckoutService {
         return session.getUrl();
     }
 
+    public void expireSession(
+            String sessionId,
+            Store store
+    ) throws StripeException {
+
+        validateSessionId(sessionId);
+
+        if (store == null) {
+            throw new IllegalStateException(
+                    "La sesión Stripe no tiene una tienda asociada"
+            );
+        }
+
+        if (store.getStripeConnectedAccountId() == null
+                || store.getStripeConnectedAccountId().isBlank()) {
+
+            throw new IllegalStateException(
+                    "La tienda no tiene una cuenta Stripe asociada"
+            );
+        }
+
+        RequestOptions options =
+                requestOptionsForStore(store);
+
+        Session session =
+                Session.retrieve(
+                        sessionId,
+                        options
+                );
+
+        if (session == null) {
+            throw new IllegalStateException(
+                    "Sesión Stripe no encontrada"
+            );
+        }
+
+        if ("expired".equalsIgnoreCase(
+                session.getStatus()
+        )) {
+            return;
+        }
+
+        if (!"open".equalsIgnoreCase(
+                session.getStatus()
+        )) {
+            throw new IllegalStateException(
+                    "La sesión Stripe ya no está abierta"
+            );
+        }
+
+        session.expire(options);
+    }
+
     public boolean isSessionExpired(
             String sessionId,
             Store store

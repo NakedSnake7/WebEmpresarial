@@ -665,7 +665,9 @@ public class SecurityConfig {
                 .ignoringRequestMatchers(
                     "/api/checkout",
                     "/api/billing/checkout",
-                    "/api/stripe/**",
+                    "/api/stripe/create-session/*",
+                    "/api/stripe/webhook",
+                    "/api/stripe/connect/webhook",
                     "/api/leads",
                     "/api/leads/**"
                 )
@@ -708,8 +710,33 @@ public class SecurityConfig {
                     "/api/user/me"
                 ).permitAll()
 
+                /*
+                 * Storefront Stripe entry points.
+                 *
+                 * create-session is additionally protected by:
+                 *   - Feature.CHECKOUT
+                 *   - current Store
+                 *   - checkout HttpSession order binding
+                 *
+                 * Webhooks are authenticated by Stripe signature.
+                 */
                 .requestMatchers(
-                    "/api/stripe/**",
+                    HttpMethod.POST,
+                    "/api/stripe/create-session/*",
+                    "/api/stripe/webhook",
+                    "/api/stripe/connect/webhook"
+                ).permitAll()
+
+                /*
+                 * Fail closed:
+                 * no future Stripe endpoint becomes public implicitly.
+                 */
+                .requestMatchers(
+                    "/api/stripe",
+                    "/api/stripe/**"
+                ).denyAll()
+
+                .requestMatchers(
                     "/api/leads",
                     "/api/leads/**"
                 ).permitAll()
