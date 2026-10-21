@@ -2,13 +2,17 @@ package com.webempresarial.store.config;
 
 import com.webempresarial.store.dto.sidebar.SidebarSectionDTO;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
+import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminRole;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,15 +30,21 @@ public class FeatureViewAdvice {
     private final StoreContextService storeContextService;
     private final SidebarRegistry sidebarRegistry;
     private final InventoryPersistentAlertService inventoryAlertService;
+    private final ObjectProvider<FeatureAccessService>
+            featureAccessServiceProvider;
 
     public FeatureViewAdvice(
             StoreContextService storeContextService,
             SidebarRegistry sidebarRegistry,
-            InventoryPersistentAlertService inventoryAlertService
+            InventoryPersistentAlertService inventoryAlertService,
+            ObjectProvider<FeatureAccessService>
+                    featureAccessServiceProvider
     ) {
         this.storeContextService = storeContextService;
         this.sidebarRegistry = sidebarRegistry;
         this.inventoryAlertService = inventoryAlertService;
+        this.featureAccessServiceProvider =
+                featureAccessServiceProvider;
     }
 
     @ModelAttribute("currentPath")
@@ -85,6 +95,47 @@ public class FeatureViewAdvice {
             return Map.of();
         }
 
+        /*
+         * El badge forma parte de Inventory.
+         *
+         * No debe consultar el subsistema si el usuario no
+         * puede ver inventario o si el plan no habilita la
+         * feature.
+         */
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (!hasAuthority(
+                authentication,
+                AdminPermission.INVENTORY_VIEW.authority()
+        )) {
+            return Map.of();
+        }
+
+        FeatureAccessService featureAccessService =
+                featureAccessServiceProvider
+                        .getIfAvailable();
+
+        /*
+         * @WebMvcTest y otros slices pueden cargar este
+         * ControllerAdvice sin cargar el catálogo completo.
+         *
+         * Si el servicio de features no existe, el badge queda
+         * fail-closed: no se consulta Inventory.
+         */
+        if (featureAccessService == null) {
+            return Map.of();
+        }
+
+        if (!featureAccessService.canUse(
+                store,
+                Feature.INVENTORY
+        )) {
+            return Map.of();
+        }
+
         long activeAlerts =
                 inventoryAlertService.countActive(store);
 
@@ -132,39 +183,44 @@ public class FeatureViewAdvice {
             return null;
         }
 
-        if (hasRole(authentication, "ROLE_SUPER_ADMIN")) {
+        if (hasAuthority(authentication, "ROLE_SUPER_ADMIN")) {
             return AdminRole.SUPER_ADMIN;
         }
 
-        if (hasRole(authentication, "ROLE_STORE_OWNER")) {
+        if (hasAuthority(authentication, "ROLE_STORE_OWNER")) {
             return AdminRole.STORE_OWNER;
         }
 
-        if (hasRole(authentication, "ROLE_STORE_ADMIN")) {
+        if (hasAuthority(authentication, "ROLE_STORE_ADMIN")) {
             return AdminRole.STORE_ADMIN;
         }
 
-        if (hasRole(authentication, "ROLE_STORE_STAFF")) {
+        if (hasAuthority(authentication, "ROLE_STORE_STAFF")) {
             return AdminRole.STORE_STAFF;
         }
 
-        if (hasRole(authentication, "ROLE_SALES")) {
+        if (hasAuthority(authentication, "ROLE_SALES")) {
             return AdminRole.SALES;
         }
 
         return null;
     }
 
-    private boolean hasRole(
+    private boolean hasAuthority(
             Authentication authentication,
-            String role
+            String authority
     ) {
+        if (authentication == null
+                || !authentication.isAuthenticated()) {
+            return false;
+        }
+
         return authentication
                 .getAuthorities()
                 .stream()
-                .anyMatch(authority ->
-                        role.equals(
-                                authority.getAuthority()
+                .anyMatch(granted ->
+                        authority.equals(
+                                granted.getAuthority()
                         )
                 );
     }
