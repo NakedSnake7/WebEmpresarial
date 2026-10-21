@@ -116,6 +116,13 @@ class HomeControllerTest {
                 .thenReturn(Collections.emptyList());
 
         when(
+                featureAccessService.canUse(
+                        store,
+                        Feature.REVIEWS
+                )
+        ).thenReturn(true);
+
+        when(
                 resenaRepository.findByStoreOrderByEstrellasDesc(
                         any(Store.class),
                         any()
@@ -428,6 +435,13 @@ class HomeControllerTest {
 
         when(productoService.obtenerProductosIndexOptimizado(store))
                 .thenReturn(Collections.emptyList());
+
+        when(
+                featureAccessService.canUse(
+                        store,
+                        Feature.REVIEWS
+                )
+        ).thenReturn(true);
 
         when(
                 resenaRepository.findByStoreOrderByEstrellasDesc(

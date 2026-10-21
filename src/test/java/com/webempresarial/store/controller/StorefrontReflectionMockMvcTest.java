@@ -7,6 +7,7 @@ import com.webempresarial.store.feature.registry.DashboardRegistry;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.model.ThemeType;
@@ -248,6 +249,16 @@ class StorefrontReflectionMockMvcTest {
                 any(Store.class),
                 any(String.class)
         )).thenReturn(false);
+
+        when(featureAccessService.canUse(
+                storeA,
+                Feature.REVIEWS
+        )).thenReturn(true);
+
+        when(featureAccessService.canUse(
+                storeB,
+                Feature.REVIEWS
+        )).thenReturn(true);
 
         /*
          * HomeController sólo necesita colecciones vacías

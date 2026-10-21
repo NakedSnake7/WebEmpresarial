@@ -83,6 +83,8 @@ public class ResenaController {
     ) {
         Store store = currentStoreWithReviews(request);
 
+        CloudinaryUploadResult upload = null;
+
         try {
             if (resena.getImagen() == null ||
                     resena.getImagen().isEmpty()) {
@@ -92,7 +94,7 @@ public class ResenaController {
                 );
             }
 
-            CloudinaryUploadResult upload =
+            upload =
                     cloudinaryService.subirImagen(
                             resena.getImagen()
                     );
@@ -105,11 +107,17 @@ public class ResenaController {
 
             entity.setStore(store);
 
-            resenaRepository.save(entity);
+            resenaRepository.saveAndFlush(entity);
 
             return "redirect:/resenas/nueva?success";
 
         } catch (IllegalArgumentException e) {
+
+            if (upload != null) {
+                eliminarImagenRemotaBestEffort(
+                        upload.getPublicId()
+                );
+            }
 
             model.addAttribute("errorMsg", e.getMessage());
             model.addAttribute("resena", resena);
@@ -122,6 +130,13 @@ public class ResenaController {
             return "admin/reviews";
 
         } catch (Exception e) {
+
+            if (upload != null) {
+                eliminarImagenRemotaBestEffort(
+                        upload.getPublicId()
+                );
+            }
+
             e.printStackTrace();
             return "redirect:/resenas/nueva?error";
         }
@@ -140,13 +155,15 @@ public class ResenaController {
         return resenaRepository.findByIdAndStore(id, store)
                 .map(resena -> {
 
-                    if (resena.getPublicId() != null) {
-                        cloudinaryService.eliminarImagen(
-                                resena.getPublicId()
-                        );
-                    }
+                    String publicId =
+                            resena.getPublicId();
 
                     resenaRepository.delete(resena);
+                    resenaRepository.flush();
+
+                    eliminarImagenRemotaBestEffort(
+                            publicId
+                    );
 
                     response.put("success", true);
                     return response;
@@ -213,24 +230,68 @@ public class ResenaController {
                                 new RuntimeException("No encontrada")
                         );
 
-        try {
-            if (resena.getPublicId() != null) {
-                cloudinaryService.eliminarImagen(
-                        resena.getPublicId()
-                );
-            }
+        String previousImageUrl =
+                resena.getImagenUrl();
 
-            CloudinaryUploadResult upload =
+        String previousPublicId =
+                resena.getPublicId();
+
+        CloudinaryUploadResult upload;
+
+        try {
+            upload =
                     cloudinaryService.subirImagen(imagen);
 
-            resena.setImagenUrl(upload.getSecureUrl());
-            resena.setPublicId(upload.getPublicId());
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Error al subir imagen",
+                    e
+            );
+        }
 
-            return resenaRepository.save(resena);
+        resena.setImagenUrl(
+                upload.getSecureUrl()
+        );
+        resena.setPublicId(
+                upload.getPublicId()
+        );
+
+        ResenaEntity saved;
+
+        try {
+            saved =
+                    resenaRepository.saveAndFlush(resena);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al subir imagen");
+
+            resena.setImagenUrl(
+                    previousImageUrl
+            );
+            resena.setPublicId(
+                    previousPublicId
+            );
+
+            eliminarImagenRemotaBestEffort(
+                    upload.getPublicId()
+            );
+
+            throw new RuntimeException(
+                    "Error al guardar imagen",
+                    e
+            );
         }
+
+        if (previousPublicId != null &&
+                !previousPublicId.equals(
+                        upload.getPublicId()
+                )) {
+
+            eliminarImagenRemotaBestEffort(
+                    previousPublicId
+            );
+        }
+
+        return saved;
     }
 
     @DeleteMapping("/{id}/imagen")
@@ -247,18 +308,38 @@ public class ResenaController {
                                 new RuntimeException("No encontrada")
                         );
 
-        if (resena.getPublicId() != null) {
-            cloudinaryService.eliminarImagen(
-                    resena.getPublicId()
-            );
-        }
+        String previousPublicId =
+                resena.getPublicId();
 
         resena.setImagenUrl(null);
         resena.setPublicId(null);
 
-        resenaRepository.save(resena);
+        resenaRepository.saveAndFlush(resena);
+
+        eliminarImagenRemotaBestEffort(
+                previousPublicId
+        );
 
         return ResponseEntity.ok().build();
+    }
+
+    private void eliminarImagenRemotaBestEffort(
+            String publicId
+    ) {
+
+        if (publicId == null ||
+                publicId.isBlank()) {
+            return;
+        }
+
+        try {
+            cloudinaryService.eliminarImagen(
+                    publicId
+            );
+        } catch (RuntimeException ignored) {
+            // La consistencia local ya fue establecida.
+            // La limpieza remota es best-effort.
+        }
     }
 
     private void addReviewsIfAllowed(

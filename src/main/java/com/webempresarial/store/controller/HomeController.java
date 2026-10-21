@@ -121,13 +121,26 @@ public class HomeController {
         model.addAttribute("title", store.getNombre() + " | Tienda online");
         model.addAttribute("description", "Compra productos de " + store.getNombre() + " en nuestra tienda online.");
 
-        model.addAttribute(
-                "resenasIniciales",
-                resenaRepository.findByStoreOrderByEstrellasDesc(
-                        store,
-                        PageRequest.of(0, 4)
-                ).getContent()
-        );
+        if (featureAccessService.canUse(
+                store,
+                Feature.REVIEWS
+        )) {
+
+            model.addAttribute(
+                    "resenasIniciales",
+                    resenaRepository.findByStoreOrderByEstrellasDesc(
+                            store,
+                            PageRequest.of(0, 4)
+                    ).getContent()
+            );
+
+        } else {
+
+            model.addAttribute(
+                    "resenasIniciales",
+                    List.of()
+            );
+        }
 
         return storeThemeResolver.view(request, "index");
     }
@@ -187,27 +200,25 @@ public class HomeController {
 
         Store store = storeResolver.getCurrentStore(request);
 
-        model.addAttribute(
-                "resenas",
-                resenaRepository.findByStoreOrderByEstrellasDesc(store)
-        );
+        if (featureAccessService.canUse(
+                store,
+                Feature.REVIEWS
+        )) {
+
+            model.addAttribute(
+                    "resenas",
+                    resenaRepository.findByStoreOrderByEstrellasDesc(store)
+            );
+
+        } else {
+
+            model.addAttribute(
+                    "resenas",
+                    List.of()
+            );
+        }
 
         return storeThemeResolver.fragment(request, "resenas") + " :: resenas";
-    }
-
-    @GetMapping("/lista")
-    public String listarResenas(Model model, HttpServletRequest request) {
-
-        Store store = storeResolver.getCurrentStore(request);
-
-        aplicarLayout(model, request);
-
-        model.addAttribute(
-                "resenas",
-                resenaRepository.findByStoreOrderByEstrellasDesc(store)
-        );
-
-        return storeThemeResolver.view(request, "resenas");
     }
 
     @GetMapping("/checkout-cancel")
