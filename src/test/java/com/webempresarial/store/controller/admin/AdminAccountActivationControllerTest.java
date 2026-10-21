@@ -7,6 +7,7 @@ import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.entity.AdminAccountActivationToken;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.service.AdminAccountActivationService;
@@ -56,6 +57,9 @@ class AdminAccountActivationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private AdminAccountActivationService activationService;

@@ -5,6 +5,7 @@ import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.service.AdminUserDetailsService;
@@ -42,6 +43,9 @@ class AdminRoleAuthorizationMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler;

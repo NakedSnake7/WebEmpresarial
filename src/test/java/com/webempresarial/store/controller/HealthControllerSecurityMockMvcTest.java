@@ -6,6 +6,7 @@ import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.config.SecurityViewAdvice;
 import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
@@ -47,6 +48,9 @@ class HealthControllerSecurityMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler;

@@ -1,6 +1,7 @@
 package com.webempresarial.store.config;
 
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
@@ -227,5 +228,15 @@ class KnowledgeAdminWebMvcConfigTest {
         TestController testController() {
             return new TestController();
         }
+
+        @Bean
+        CustomerTenantAccessInterceptor
+        customerTenantAccessInterceptor() {
+
+            return mock(
+                    CustomerTenantAccessInterceptor.class
+            );
+        }
+
     }
 }

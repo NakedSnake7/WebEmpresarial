@@ -13,6 +13,7 @@ import com.webempresarial.store.commerce.application.inventory.InventoryPersiste
 import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.service.AdminUserDetailsService;
 import com.webempresarial.store.service.AuthUserDetailsService;
@@ -42,6 +43,9 @@ class BillingRestControllerSecurityMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private StripeSaaSCheckoutService stripeSaaSCheckoutService;

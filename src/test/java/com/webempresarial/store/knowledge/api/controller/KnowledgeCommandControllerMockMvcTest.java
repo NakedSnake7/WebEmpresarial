@@ -3,6 +3,7 @@ package com.webempresarial.store.knowledge.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.knowledge.api.dto.CreateKnowledgeRequest;
 import com.webempresarial.store.knowledge.api.dto.CreateKnowledgeVersionRequest;
@@ -78,6 +79,9 @@ class KnowledgeCommandControllerMockMvcTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private CreateKnowledgeApiService createKnowledgeApiService;

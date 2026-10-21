@@ -7,6 +7,7 @@ import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.Store;
@@ -62,6 +63,9 @@ class StoreSettingsControllerMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private StoreContextService storeContextService;

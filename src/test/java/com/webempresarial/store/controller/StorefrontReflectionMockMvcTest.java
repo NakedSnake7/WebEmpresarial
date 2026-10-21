@@ -6,6 +6,7 @@ import com.webempresarial.store.entity.StoreSettings;
 import com.webempresarial.store.feature.registry.DashboardRegistry;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
@@ -72,6 +73,9 @@ class StorefrontReflectionMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private ProductoService productoService;

@@ -4,6 +4,7 @@ import com.webempresarial.store.commerce.application.inventory.InventoryPersiste
 import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.StoreAdminService;
@@ -47,6 +48,9 @@ class StoreAdminControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private StoreAdminService storeAdminService;

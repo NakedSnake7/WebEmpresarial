@@ -2,6 +2,7 @@ package com.webempresarial.store.config;
 
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.AdminUser;
 import com.webempresarial.store.model.Store;
@@ -245,5 +246,15 @@ class CrmAdminWebMvcConfigTest {
         TestController testController() {
             return new TestController();
         }
+
+        @Bean
+        CustomerTenantAccessInterceptor
+        customerTenantAccessInterceptor() {
+
+            return mock(
+                    CustomerTenantAccessInterceptor.class
+            );
+        }
+
     }
 }

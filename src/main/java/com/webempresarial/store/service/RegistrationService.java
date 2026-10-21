@@ -46,6 +46,7 @@ public class RegistrationService {
         authUser.setPassword(passwordEncoder.encode(dto.getPassword()));
         authUser.setRole(Role.CLIENTE);
         authUser.setEnabled(true);
+        authUser.setCliente(cliente);
 
         authUserRepository.save(authUser);
     }

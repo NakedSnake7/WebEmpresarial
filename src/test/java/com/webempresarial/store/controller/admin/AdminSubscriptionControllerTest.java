@@ -5,6 +5,7 @@ import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.feature.registry.SidebarRegistry;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
@@ -54,6 +55,9 @@ class AdminSubscriptionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private CustomerTenantAccessInterceptor customerTenantAccessInterceptor;
 
     @MockitoBean
     private SubscriptionRepository subscriptionRepository;

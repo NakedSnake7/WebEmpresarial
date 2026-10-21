@@ -5,6 +5,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
+import com.webempresarial.store.interceptor.CustomerTenantAccessInterceptor;
 import com.webempresarial.store.interceptor.SubscriptionInterceptor;
 
 @Configuration
@@ -14,15 +15,22 @@ public class WebMvcConfig
     private final AdminTenantAccessInterceptor
             adminTenantAccessInterceptor;
 
+    private final CustomerTenantAccessInterceptor
+            customerTenantAccessInterceptor;
+
     private final SubscriptionInterceptor
             subscriptionInterceptor;
 
     public WebMvcConfig(
             AdminTenantAccessInterceptor adminTenantAccessInterceptor,
+            CustomerTenantAccessInterceptor customerTenantAccessInterceptor,
             SubscriptionInterceptor subscriptionInterceptor
     ) {
         this.adminTenantAccessInterceptor =
                 adminTenantAccessInterceptor;
+
+        this.customerTenantAccessInterceptor =
+                customerTenantAccessInterceptor;
 
         this.subscriptionInterceptor =
                 subscriptionInterceptor;
@@ -75,6 +83,26 @@ public class WebMvcConfig
                         "/admin/activate",
                         "/admin/activate/**",
                         "/favicon.ico"
+                );
+
+        /*
+         * =================================================
+         * CUSTOMER TENANT ISOLATION
+         * =================================================
+         *
+         * Una credencial ROLE_CLIENTE sólo puede operar
+         * sobre el tenant asociado a su Cliente.
+         */
+        registry.addInterceptor(
+                        customerTenantAccessInterceptor
+                )
+                .order(1)
+                .addPathPatterns(
+                        "/cuenta",
+                        "/cuenta/**",
+                        "/pedidos",
+                        "/pedidos/**",
+                        "/api/user/me"
                 );
 
         /*
