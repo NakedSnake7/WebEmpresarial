@@ -75,7 +75,10 @@ public interface InventoryMovementRepository
     	        Pageable pageable
     	);
 
-    boolean existsByOrderId(Long orderId);
+    boolean existsByOrderIdAndStore(
+            Long orderId,
+            Store store
+    );
     
     @Query("""
     	    SELECT m
@@ -149,8 +152,9 @@ public interface InventoryMovementRepository
     	    )
     	    FROM Producto p
     	    LEFT JOIN InventoryMovement m
-    	        ON m.producto = p
-    	        AND m.createdAt >= :from
+            ON m.producto = p
+            AND m.store = :store
+            AND m.createdAt >= :from
     	    WHERE p.store = :store
     	    GROUP BY p.id, p.productName
     	    ORDER BY COALESCE(SUM(

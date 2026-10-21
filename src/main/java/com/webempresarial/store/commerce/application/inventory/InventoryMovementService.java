@@ -49,6 +49,41 @@ public class InventoryMovementService {
             );
         }
 
+        if (!sameStore(
+                store,
+                producto.getStore()
+        )) {
+            throw new IllegalArgumentException(
+                    "El producto no pertenece a la tienda"
+            );
+        }
+
+        if (variante != null) {
+            Producto variantProduct =
+                    variante.getProducto();
+
+            if (variantProduct == null
+                    || variantProduct.getId() == null
+                    || !variantProduct.getId()
+                            .equals(producto.getId())) {
+
+                throw new IllegalArgumentException(
+                        "La variante no pertenece al producto"
+                );
+            }
+        }
+
+        if (order != null
+                && !sameStore(
+                        store,
+                        order.getStore()
+                )) {
+
+            throw new IllegalArgumentException(
+                    "La orden no pertenece a la tienda"
+            );
+        }
+
         if (quantity <= 0) {
             throw new IllegalArgumentException(
                     "La cantidad del movimiento debe ser mayor a cero"
@@ -90,13 +125,35 @@ public class InventoryMovementService {
                 to
         );
     }
-    public boolean hasMovementsForOrder(Long orderId) {
+    public boolean hasMovementsForOrder(
+            Long orderId,
+            Store store
+    ) {
         if (orderId == null) {
             throw new IllegalArgumentException(
                     "El orderId es obligatorio"
             );
         }
 
-        return repository.existsByOrderId(orderId);
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        return repository.existsByOrderIdAndStore(
+                orderId,
+                store
+        );
+    }
+
+    private boolean sameStore(
+            Store expected,
+            Store actual
+    ) {
+        return actual != null
+                && actual.getId() != null
+                && expected.getId()
+                        .equals(actual.getId());
     }
 }

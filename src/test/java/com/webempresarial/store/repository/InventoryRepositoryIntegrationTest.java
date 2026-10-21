@@ -3,16 +3,19 @@ package com.webempresarial.store.repository;
 import static org.assertj.core.api.Assertions.*; 
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.webempresarial.store.commerce.domain.inventory.InventoryAlert;
 import com.webempresarial.store.commerce.domain.inventory.InventoryMovement;
+import com.webempresarial.store.dto.inventory.InventoryTopMovementDTO;
 import com.webempresarial.store.model.Categoria;
 import com.webempresarial.store.commerce.domain.inventory.InventoryAlertLevel;
 import com.webempresarial.store.commerce.domain.inventory.InventoryAlertStatus;
@@ -506,6 +509,77 @@ class InventoryRepositoryIntegrationTest {
 
         assertThat(result)
                 .isEmpty();
+    }
+
+    @Test
+    void slowMovingProductsShouldIgnoreMovementsFromAnotherStore() {
+
+        Store storeA =
+                createStore(
+                        "Slow Moving Store A",
+                        "inventory-slow-moving-a.local"
+                );
+
+        Store storeB =
+                createStore(
+                        "Slow Moving Store B",
+                        "inventory-slow-moving-b.local"
+                );
+
+        Producto productoA =
+                createProduct(
+                        storeA,
+                        "Producto Slow Moving A",
+                        10
+                );
+
+        /*
+         * Estado deliberadamente inconsistente:
+         *
+         * movement.store    = storeB
+         * movement.producto = productoA (storeA)
+         *
+         * La consulta de Store A no debe contabilizar
+         * este movimiento.
+         */
+        createMovement(
+                storeB,
+                productoA,
+                InventoryMovementType.SALE,
+                7,
+                10,
+                3
+        );
+
+        flushAndClear();
+
+        List<InventoryTopMovementDTO> result =
+                movementRepository
+                        .findSlowMovingProducts(
+                                storeA,
+                                LocalDateTime.now()
+                                        .minusDays(1),
+                                PageRequest.of(
+                                        0,
+                                        10
+                                )
+                        );
+
+        InventoryTopMovementDTO productResult =
+                result.stream()
+                        .filter(item ->
+                                item.productId()
+                                        .equals(
+                                                productoA.getId()
+                                        )
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertThat(
+                productResult.unitsOut()
+        )
+        .isZero();
     }
 
     /*

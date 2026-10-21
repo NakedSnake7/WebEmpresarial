@@ -420,7 +420,10 @@ guardar orden por transferencia
          );
      }
 
-     if (inventoryMovementService.hasMovementsForOrder(orderId)) {
+     if (inventoryMovementService.hasMovementsForOrder(
+             orderId,
+             store
+     )) {
             throw new IllegalStateException(
                     "No se puede eliminar una orden con movimientos de inventario"
             );
