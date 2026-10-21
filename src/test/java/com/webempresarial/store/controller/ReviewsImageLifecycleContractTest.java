@@ -392,6 +392,11 @@ class ReviewsImageLifecycleContractTest {
         String result =
                 controller.guardarResena(
                         review,
+                        new org.springframework.validation
+                                .BeanPropertyBindingResult(
+                                        review,
+                                        "resena"
+                                ),
                         new ConcurrentModel(),
                         request
                 );

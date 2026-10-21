@@ -113,6 +113,11 @@ class ReviewsFeatureAccessContractTest {
                 () ->
                         controller.guardarResena(
                                 resena,
+                                new org.springframework.validation
+                                        .BeanPropertyBindingResult(
+                                                resena,
+                                                "resena"
+                                        ),
                                 model,
                                 request
                         )

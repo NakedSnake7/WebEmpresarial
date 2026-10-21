@@ -305,7 +305,7 @@
                                           th:field="*{comentario}"
                                           class="form-control"
                                           rows="5"
-                                          maxlength="1500"
+                                          maxlength="1000"
                                           required>
                                 </textarea>
 
@@ -490,6 +490,7 @@
 
                                                 <textarea class="form-control edit-comment"
                                                           rows="4"
+                                                          maxlength="1000"
                                                           th:id="'edit-comment-' + ${review.id}"
                                                           th:text="${review.comentario}">
                                                 </textarea>

@@ -111,6 +111,11 @@ class ReviewsPermissionIsolationContractTest {
         String view =
                 controller.guardarResena(
                         resena,
+                        new org.springframework.validation
+                                .BeanPropertyBindingResult(
+                                        resena,
+                                        "resena"
+                                ),
                         model,
                         request
                 );

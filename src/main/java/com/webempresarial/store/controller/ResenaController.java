@@ -14,9 +14,13 @@ import com.webempresarial.store.service.CurrentAdminAuthorizationService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,6 +59,24 @@ public class ResenaController {
         return new Resena();
     }
 
+    /*
+     * id, imagenUrl y publicId pertenecen al servidor.
+     *
+     * Aunque Resena también se usa como modelo de vista,
+     * estos campos nunca deben poder ser establecidos desde
+     * parámetros del request.
+     */
+    @InitBinder("resena")
+    void initResenaBinder(
+            WebDataBinder binder
+    ) {
+        binder.setDisallowedFields(
+                "id",
+                "imagenUrl",
+                "publicId"
+        );
+    }
+
     @GetMapping("/nueva")
     public String formResena(
             Model model,
@@ -77,11 +99,40 @@ public class ResenaController {
 
     @PostMapping("/nueva")
     public String guardarResena(
-            @ModelAttribute Resena resena,
+            @Valid
+            @ModelAttribute("resena")
+            Resena resena,
+            BindingResult bindingResult,
             Model model,
             HttpServletRequest request
     ) {
         Store store = currentStoreWithReviews(request);
+
+        /*
+         * La validación debe ocurrir antes de Cloudinary y
+         * antes de cualquier persistencia.
+         */
+        if (bindingResult.hasErrors()) {
+
+            String errorMsg =
+                    bindingResult.getFieldError() != null
+                            ? bindingResult
+                                    .getFieldError()
+                                    .getDefaultMessage()
+                            : "Revisa los datos de la reseña";
+
+            model.addAttribute(
+                    "errorMsg",
+                    errorMsg
+            );
+
+            addReviewsIfAllowed(
+                    model,
+                    store
+            );
+
+            return "admin/reviews";
+        }
 
         CloudinaryUploadResult upload = null;
 
@@ -178,7 +229,9 @@ public class ResenaController {
     @ResponseBody
     public ResenaEntity editarResena(
             @PathVariable Long id,
-            @RequestBody ResenaEditDTO dto,
+            @Valid
+            @RequestBody
+            ResenaEditDTO dto,
             HttpServletRequest request
     ) {
         Store store = currentStoreWithReviews(request);
