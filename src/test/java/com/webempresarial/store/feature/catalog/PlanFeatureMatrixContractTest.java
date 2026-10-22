@@ -185,6 +185,62 @@ class PlanFeatureMatrixContractTest {
                 );
     }
 
+    @Test
+    void navigationFeaturesMustHaveRoutableUrl() {
+
+        definitions()
+                .values()
+                .stream()
+                .filter(definition ->
+                        definition
+                                .getPresentation()
+                                .isShowInSidebar()
+                        ||
+                        definition
+                                .getPresentation()
+                                .isShowInDashboard()
+                )
+                .forEach(definition -> {
+
+                    assertThat(definition.getUrl())
+                            .as(
+                                    "%s visible en navegación "
+                                            + "debe tener URL real",
+                                    definition.getFeature()
+                            )
+                            .isNotNull()
+                            .isNotBlank()
+                            .isNotEqualTo("#")
+                            .startsWith("/");
+                });
+    }
+
+    @Test
+    void dashboardFeaturesMustDeclarePermission() {
+
+        definitions()
+                .values()
+                .stream()
+                .filter(definition ->
+                        definition
+                                .getPresentation()
+                                .isShowInDashboard()
+                )
+                .forEach(definition ->
+
+                        assertThat(
+                                definition
+                                        .getDashboardPermission()
+                        )
+                        .as(
+                                "%s visible en dashboard "
+                                        + "debe declarar permiso",
+                                definition.getFeature()
+                        )
+                        .isNotNull()
+                );
+    }
+
     private void assertMinimumPlan(
             Set<Feature> features,
             StorePlan expectedPlan
