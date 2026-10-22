@@ -23,7 +23,7 @@ class UpgradeTemplateContractTest {
 
         assertThat(template)
                 .contains(
-                        "th:if=\"${canManageBilling}\""
+                        "th:if=\"${canManageBilling and upgradeRequired}\""
                 )
                 .contains(
                         "th:action=\"@{/admin/billing/checkout}\""

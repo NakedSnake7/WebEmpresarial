@@ -3,8 +3,13 @@ package com.webempresarial.store.controller.admin;
 import com.webempresarial.store.feature.FeatureAccessPolicy;
 import com.webempresarial.store.feature.FeatureDefinition;
 import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.service.FeatureAccessService;
+import com.webempresarial.store.feature.PlatformAccessService;
+import com.webempresarial.store.service.StoreContextService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +26,12 @@ import static org.mockito.Mockito.when;
 class UpgradeControllerTest {
 
     private FeatureAccessService featureAccessService;
+    private StoreContextService storeContextService;
+    private PlatformAccessService platformAccessService;
+
+    private HttpServletRequest request;
+    private Store store;
+
     private UpgradeController controller;
 
     @BeforeEach
@@ -29,14 +40,32 @@ class UpgradeControllerTest {
         featureAccessService =
                 mock(FeatureAccessService.class);
 
+        storeContextService =
+                mock(StoreContextService.class);
+
+        platformAccessService =
+                mock(PlatformAccessService.class);
+
+        request =
+                mock(HttpServletRequest.class);
+
+        store =
+                mock(Store.class);
+
         controller =
                 new UpgradeController(
-                        featureAccessService
+                        featureAccessService,
+                        storeContextService,
+                        platformAccessService
                 );
+
+        when(
+                storeContextService.getCurrentStore(request)
+        ).thenReturn(store);
     }
 
     @Test
-    void featureShouldUseCanonicalMinimumPlan() {
+    void featureShouldUseCanonicalMinimumPlanAndRequireUpgradeWhenHigher() {
 
         FeatureDefinition definition =
                 mock(FeatureDefinition.class);
@@ -65,13 +94,18 @@ class UpgradeControllerTest {
                 definition.getAccessPolicy()
         ).thenReturn(policy);
 
+        when(
+                platformAccessService.resolveEffectivePlan(store)
+        ).thenReturn(StorePlan.PRO);
+
         Model model =
                 new ExtendedModelMap();
 
         String view =
                 controller.upgrade(
                         Feature.MULTI_USER,
-                        model
+                        model,
+                        request
                 );
 
         assertThat(view)
@@ -91,6 +125,18 @@ class UpgradeControllerTest {
                 StorePlan.PREMIUM
         );
 
+        assertThat(
+                model.getAttribute("currentPlan")
+        ).isEqualTo(
+                StorePlan.PRO
+        );
+
+        assertThat(
+                model.getAttribute("upgradeRequired")
+        ).isEqualTo(
+                true
+        );
+
         verify(featureAccessService)
                 .definition(
                         Feature.MULTI_USER
@@ -98,20 +144,92 @@ class UpgradeControllerTest {
     }
 
     @Test
-    void missingFeatureShouldDefaultToProPlan() {
+    void featureAlreadyCoveredByCurrentPlanShouldNotRequireUpgrade() {
+
+        FeatureDefinition definition =
+                mock(FeatureDefinition.class);
+
+        FeatureAccessPolicy policy =
+                FeatureAccessPolicy.builder()
+                        .minimumPlan(StorePlan.PRO)
+                        .premium(true)
+                        .enabled(true)
+                        .build();
+
+        when(
+                featureAccessService.definition(
+                        Feature.PIPELINE
+                )
+        ).thenReturn(definition);
+
+        when(
+                definition.getAccessPolicy()
+        ).thenReturn(policy);
+
+        when(
+                platformAccessService.resolveEffectivePlan(store)
+        ).thenReturn(StorePlan.PREMIUM);
 
         Model model =
                 new ExtendedModelMap();
 
         controller.upgrade(
-                null,
-                model
+                Feature.PIPELINE,
+                model,
+                request
         );
 
         assertThat(
                 model.getAttribute("requiredPlan")
         ).isEqualTo(
                 StorePlan.PRO
+        );
+
+        assertThat(
+                model.getAttribute("currentPlan")
+        ).isEqualTo(
+                StorePlan.PREMIUM
+        );
+
+        assertThat(
+                model.getAttribute("upgradeRequired")
+        ).isEqualTo(
+                false
+        );
+    }
+
+    @Test
+    void missingFeatureShouldDefaultToProPlan() {
+
+        when(
+                platformAccessService.resolveEffectivePlan(store)
+        ).thenReturn(StorePlan.BASIC);
+
+        Model model =
+                new ExtendedModelMap();
+
+        controller.upgrade(
+                null,
+                model,
+                request
+        );
+
+        assertThat(
+                model.getAttribute("requiredPlan")
+        ).isEqualTo(
+                StorePlan.PRO
+        );
+
+        assertThat(
+                model.getAttribute("currentPlan")
+        ).isEqualTo(
+                StorePlan.BASIC
+        );
+
+        assertThat(
+                model.getAttribute("upgradeRequired")
+        ).isEqualTo(
+                true
         );
 
         verifyNoInteractions(

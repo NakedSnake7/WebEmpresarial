@@ -15,12 +15,24 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-5 text-center">
 
-            <span class="badge text-bg-warning mb-3">
+            <span th:if="${upgradeRequired}"
+                  class="badge text-bg-warning mb-3">
                 Función bloqueada
             </span>
 
-            <h1 class="fw-bold mb-3">
+            <span th:unless="${upgradeRequired}"
+                  class="badge text-bg-success mb-3">
+                Función disponible
+            </span>
+
+            <h1 th:if="${upgradeRequired}"
+                class="fw-bold mb-3">
                 Esta función requiere un plan superior
+            </h1>
+
+            <h1 th:unless="${upgradeRequired}"
+                class="fw-bold mb-3">
+                Esta función ya está incluida en tu plan
             </h1>
 
             <p class="text-muted mb-1">
@@ -30,7 +42,8 @@
                 </strong>
             </p>
 
-            <p class="text-muted mb-4">
+            <p th:if="${upgradeRequired}"
+               class="text-muted mb-4">
                 Necesitas actualizar al plan
                 <strong th:text="${requiredPlan}">
                     PRO
@@ -38,7 +51,16 @@
                 para usar esta funcionalidad.
             </p>
 
-            <form th:if="${canManageBilling}"
+            <p th:unless="${upgradeRequired}"
+               class="text-muted mb-4">
+                Tu plan actual
+                <strong th:text="${currentPlan}">
+                    PRO
+                </strong>
+                ya incluye esta funcionalidad.
+            </p>
+
+            <form th:if="${canManageBilling and upgradeRequired}"
                   method="post"
                   th:action="@{/admin/billing/checkout}"
                   class="d-inline">
