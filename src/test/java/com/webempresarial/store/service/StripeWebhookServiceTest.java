@@ -52,6 +52,10 @@ class StripeWebhookServiceTest {
     @Mock
     private StripePlanMapper stripePlanMapper;
 
+    @Mock
+    private SaaSCheckoutReservationService
+            checkoutReservationService;
+
     private StripeWebhookService service;
 
     @BeforeEach
@@ -62,7 +66,8 @@ class StripeWebhookServiceTest {
                 provisioningService,
                 subscriptionService,
                 webhookEventRepository,
-                stripePlanMapper
+                stripePlanMapper,
+                checkoutReservationService
         );
     }
     

@@ -10,7 +10,15 @@ import com.webempresarial.store.model.SubscriptionStatus;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "subscriptions")
+@Table(
+        name = "subscriptions",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_subscription_stripe_subscription_id",
+                        columnNames = "stripe_subscription_id"
+                )
+        }
+)
 public class Subscription {
 
     @Id

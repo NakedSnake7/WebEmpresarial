@@ -3,8 +3,10 @@ package com.webempresarial.store.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.model.AdminRole;
@@ -51,6 +53,37 @@ public class ProvisioningService {
         this.eventPublisher = eventPublisher;
     }
 
+
+    public void validateCheckoutEligibility(
+            String domain,
+            String email
+    ) {
+
+        String normalizedDomain =
+                normalizeDomain(domain);
+
+        String finalDomain =
+                normalizedDomain
+                        + ".web-empresarial.com";
+
+        if (storeRepository.existsByDominio(finalDomain)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El dominio ya está en uso"
+            );
+        }
+
+        String normalizedEmail =
+                normalizeEmail(email);
+
+        if (adminUserRepository.existsByEmail(normalizedEmail)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El correo ya está asociado a una cuenta administrativa"
+            );
+        }
+    }
+
     @Transactional
     public Store provisionStoreFromCheckout(
             String companyName,
@@ -63,13 +96,73 @@ public class ProvisioningService {
             String stripePriceId
     ) {
 
-        String normalizedDomain = normalizeDomain(domain);
-        String finalDomain = normalizedDomain + ".web-empresarial.com";
+        if (stripeSubscriptionId == null
+                || stripeSubscriptionId.isBlank()) {
 
-        var existingStore = storeRepository.findByDominio(finalDomain);
+            throw new IllegalArgumentException(
+                    "stripeSubscriptionId es obligatorio"
+            );
+        }
+
+        String normalizedDomain =
+                normalizeDomain(domain);
+
+        String finalDomain =
+                normalizedDomain
+                        + ".web-empresarial.com";
+
+        /*
+         * La Stripe Subscription es la identidad financiera
+         * de la adquisición.
+         *
+         * Si ya existe y pertenece al mismo tenant,
+         * estamos ante un retry idempotente legítimo.
+         *
+         * Si pertenece a otro tenant, rechazamos la operación.
+         */
+        var existingStripeSubscription =
+                subscriptionRepository
+                        .findByStripeSubscriptionId(
+                                stripeSubscriptionId
+                        );
+
+        if (existingStripeSubscription.isPresent()) {
+
+            Store subscribedStore =
+                    existingStripeSubscription
+                            .get()
+                            .getStore();
+
+            if (subscribedStore != null
+                    && finalDomain.equals(
+                            subscribedStore.getDominio()
+                    )) {
+
+                return subscribedStore;
+            }
+
+            throw new IllegalStateException(
+                    "La suscripción Stripe ya está asociada "
+                    + "a otro tenant"
+            );
+        }
+
+        /*
+         * Si el dominio ya existe pero la Stripe Subscription
+         * recibida es distinta, NO es un retry.
+         *
+         * Es otra adquisición intentando ocupar un tenant
+         * que ya tiene identidad financiera propia.
+         */
+        var existingStore =
+                storeRepository
+                        .findByDominio(finalDomain);
 
         if (existingStore.isPresent()) {
-            return existingStore.get();
+            throw new IllegalStateException(
+                    "El dominio ya está asociado "
+                    + "a otra suscripción Stripe"
+            );
         }
 
         String normalizedEmail =

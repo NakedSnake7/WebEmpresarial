@@ -28,6 +28,8 @@ public class StripeWebhookService {
 	private final SubscriptionService subscriptionService;
 	private final StripeWebhookEventRepository webhookEventRepository;
 	private final StripePlanMapper stripePlanMapper;
+    private final SaaSCheckoutReservationService
+            checkoutReservationService;
 
 	public StripeWebhookService(
 	        StripeCommercePaymentHandler stripeCommercePaymentHandler,
@@ -35,7 +37,9 @@ public class StripeWebhookService {
 	        ProvisioningService provisioningService,
 	        SubscriptionService subscriptionService,
 	        StripeWebhookEventRepository webhookEventRepository,
-	        StripePlanMapper stripePlanMapper
+	        StripePlanMapper stripePlanMapper,
+            SaaSCheckoutReservationService checkoutReservationService
+
 	) {
 	    this.stripeCommercePaymentHandler =
 	            stripeCommercePaymentHandler;
@@ -54,6 +58,9 @@ public class StripeWebhookService {
 
 	    this.stripePlanMapper =
 	            stripePlanMapper;
+
+        this.checkoutReservationService =
+                checkoutReservationService;
 	}
     
     private void handleSubscriptionScheduleFinished(Event event) {
@@ -287,6 +294,11 @@ public class StripeWebhookService {
         String email = metadata.get("email");
         String planValue = metadata.get("plan");
         String stripePriceId = metadata.get("stripe_price_id");
+
+        String checkoutAttemptId =
+                metadata.get(
+                        "checkout_attempt_id"
+                );
         
         if (companyName == null ||
                 domain == null ||
@@ -313,6 +325,22 @@ public class StripeWebhookService {
                 session.getSubscription(),
                 stripePriceId
         );
+
+        /*
+         * La reserva sólo se libera después de que el
+         * provisioning haya finalizado correctamente.
+         *
+         * checkoutAttemptId permanece opcional durante
+         * la transición para aceptar Checkout Sessions
+         * creadas antes de este contrato.
+         */
+        if (checkoutAttemptId != null
+                && !checkoutAttemptId.isBlank()) {
+
+            checkoutReservationService.release(
+                    checkoutAttemptId
+            );
+        }
     }
     private void procesarUpgradeSaas(
             Session session,

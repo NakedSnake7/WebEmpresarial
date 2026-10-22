@@ -174,7 +174,7 @@ class TenantAcquisitionE2EIT {
 
         /*
          * ---------------------------------------------------------
-         * 5. STORE_ADMIN recién provisionado
+         * 5. STORE_OWNER recién provisionado
          * ---------------------------------------------------------
          */
 
@@ -185,7 +185,7 @@ class TenantAcquisitionE2EIT {
 
         assertThat(admin.getRole())
                 .isEqualTo(
-                        AdminRole.STORE_ADMIN
+                        AdminRole.STORE_OWNER
                 );
 
         assertThat(admin.getStore().getId())

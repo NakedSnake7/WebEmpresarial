@@ -3,6 +3,7 @@ package com.webempresarial.store.service;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +47,10 @@ class StripeSaaSCheckoutWebhookContractTest {
     @Mock
     private StripeCommercePaymentHandler stripeCommercePaymentHandler;
 
+    @Mock
+    private SaaSCheckoutReservationService
+            checkoutReservationService;
+
     private StripeSaaSCheckoutService checkoutService;
 
     private StripeWebhookService webhookService;
@@ -77,7 +82,8 @@ class StripeSaaSCheckoutWebhookContractTest {
                         provisioningService,
                         subscriptionService,
                         webhookEventRepository,
-                        stripePlanMapper
+                        stripePlanMapper,
+                        checkoutReservationService
                 );
     }
 
@@ -148,7 +154,11 @@ class StripeSaaSCheckoutWebhookContractTest {
             });
 
             checkoutService
-                    .createSaaSCheckoutSession(dto);
+                    .createSaaSCheckoutSession(
+                            dto,
+                            "attempt-contract-123",
+                            LocalDateTime.now().plusHours(24)
+                    );
         }
 
         SessionCreateParams stripeParams =
@@ -209,6 +219,11 @@ class StripeSaaSCheckoutWebhookContractTest {
                 .matches(
                         StorePlan.PRO,
                         "price_pro_test"
+                );
+
+        verify(checkoutReservationService)
+                .release(
+                        "attempt-contract-123"
                 );
 
         verifyNoInteractions(

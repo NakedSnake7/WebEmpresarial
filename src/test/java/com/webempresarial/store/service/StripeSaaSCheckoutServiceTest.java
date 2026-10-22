@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +118,9 @@ class StripeSaaSCheckoutServiceTest {
 
             Session result =
                     service.createSaaSCheckoutSession(
-                            dto
+                            dto,
+                            "attempt-test",
+                            LocalDateTime.now().plusHours(24)
                     );
 
             assertThat(result)
@@ -160,7 +163,7 @@ class StripeSaaSCheckoutServiceTest {
 
         assertThat(params.getClientReferenceId())
                 .isEqualTo(
-                        "SAAS-acme-store-PRO"
+                        "SAAS-attempt-test"
                 );
 
         assertThat(params.getMetadata())
@@ -214,7 +217,7 @@ class StripeSaaSCheckoutServiceTest {
 
         assertThat(options.getIdempotencyKey())
                 .isEqualTo(
-                        "saas_acme-store_PRO"
+                        "saas_checkout_attempt-test"
                 );
     }
 
@@ -284,8 +287,10 @@ class StripeSaaSCheckoutServiceTest {
             });
 
             service.createSaaSCheckoutSession(
-                    dto
-            );
+                            dto,
+                            "attempt-test",
+                            LocalDateTime.now().plusHours(24)
+                    );
         }
 
         assertThat(

@@ -421,25 +421,36 @@ assertThat(event.activationToken())
     }
 
     @Test
-    void shouldReturnExistingStoreWithoutCreatingDuplicateResources() {
+    void shouldReturnExistingStoreForSameStripeSubscriptionRetry() {
 
         Store existingStore =
                 new Store();
 
         existingStore.setId(3L);
-
         existingStore.setNombre("Existing");
 
         existingStore.setDominio(
                 "existing.web-empresarial.com"
         );
 
+        Subscription existingSubscription =
+                new Subscription();
+
+        existingSubscription.setStore(
+                existingStore
+        );
+
+        existingSubscription.setStripeSubscriptionId(
+                "sub_existing"
+        );
+
         when(
-                storeRepository.findByDominio(
-                        "existing.web-empresarial.com"
-                )
+                subscriptionRepository
+                        .findByStripeSubscriptionId(
+                                "sub_existing"
+                        )
         ).thenReturn(
-                Optional.of(existingStore)
+                Optional.of(existingSubscription)
         );
 
         Store result =
@@ -461,23 +472,149 @@ assertThat(event.activationToken())
         verify(storeRepository, never())
                 .save(any(Store.class));
 
-        verifyNoInteractions(
-                subscriptionRepository
-        );
+        verify(
+                storeRepository,
+                never()
+        ).findByDominio(any(String.class));
+
+        verify(adminUserRepository, never())
+                .save(any(AdminUser.class));
 
         verifyNoInteractions(
-                adminUserRepository
+                storeSettingsService,
+                passwordEncoder,
+                adminAccountActivationService,
+                eventPublisher
         );
-
-        verifyNoInteractions(
-                passwordEncoder
-        );
-        verifyNoInteractions(
-                adminAccountActivationService
-        );
-        verifyNoInteractions(storeSettingsService);
-        verifyNoInteractions(eventPublisher);
     }
+
+    @Test
+    void shouldRejectExistingDomainWithDifferentStripeSubscription() {
+
+        Store existingStore =
+                new Store();
+
+        existingStore.setId(3L);
+
+        existingStore.setDominio(
+                "existing.web-empresarial.com"
+        );
+
+        when(
+                subscriptionRepository
+                        .findByStripeSubscriptionId(
+                                "sub_new"
+                        )
+        ).thenReturn(Optional.empty());
+
+        when(
+                storeRepository.findByDominio(
+                        "existing.web-empresarial.com"
+                )
+        ).thenReturn(
+                Optional.of(existingStore)
+        );
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() ->
+                        provisioningService
+                                .provisionStoreFromCheckout(
+                                        "Existing",
+                                        "existing",
+                                        "Owner",
+                                        "owner@existing.test",
+                                        StorePlan.PRO,
+                                        "cus_new",
+                                        "sub_new",
+                                        "price_pro"
+                                )
+                )
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "El dominio ya está asociado "
+                        + "a otra suscripción Stripe"
+                );
+
+        verify(storeRepository, never())
+                .save(any(Store.class));
+
+        verify(adminUserRepository, never())
+                .save(any(AdminUser.class));
+
+        verifyNoInteractions(
+                storeSettingsService,
+                passwordEncoder,
+                adminAccountActivationService,
+                eventPublisher
+        );
+    }
+
+    @Test
+    void shouldRejectStripeSubscriptionAlreadyAssignedToAnotherTenant() {
+
+        Store foreignStore =
+                new Store();
+
+        foreignStore.setId(99L);
+
+        foreignStore.setDominio(
+                "foreign.web-empresarial.com"
+        );
+
+        Subscription foreignSubscription =
+                new Subscription();
+
+        foreignSubscription.setStore(
+                foreignStore
+        );
+
+        foreignSubscription.setStripeSubscriptionId(
+                "sub_reused"
+        );
+
+        when(
+                subscriptionRepository
+                        .findByStripeSubscriptionId(
+                                "sub_reused"
+                        )
+        ).thenReturn(
+                Optional.of(foreignSubscription)
+        );
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() ->
+                        provisioningService
+                                .provisionStoreFromCheckout(
+                                        "New Store",
+                                        "new-store",
+                                        "New Owner",
+                                        "owner@new.test",
+                                        StorePlan.BASIC,
+                                        "cus_new",
+                                        "sub_reused",
+                                        "price_basic"
+                                )
+                )
+                .isInstanceOf(
+                        IllegalStateException.class
+                )
+                .hasMessage(
+                        "La suscripción Stripe ya está asociada "
+                        + "a otro tenant"
+                );
+
+        verifyNoInteractions(
+                storeRepository,
+                adminUserRepository,
+                storeSettingsService,
+                passwordEncoder,
+                adminAccountActivationService,
+                eventPublisher
+        );
+    }
+
 
     @Test
     void shouldRejectProvisioningWhenAdminEmailAlreadyExists() {
@@ -516,7 +653,13 @@ assertThat(event.activationToken())
         verify(storeRepository, never())
                 .save(any(Store.class));
 
-        verifyNoInteractions(subscriptionRepository);
+        verify(subscriptionRepository)
+                .findByStripeSubscriptionId(
+                        "sub_acme"
+                );
+
+        verify(subscriptionRepository, never())
+                .save(any(Subscription.class));
 
         verify(adminUserRepository, never())
                 .save(any(AdminUser.class));

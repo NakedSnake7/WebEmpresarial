@@ -1,6 +1,7 @@
 package com.webempresarial.store.controller.rest;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +21,9 @@ import com.webempresarial.store.service.AuthUserDetailsService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
 import com.webempresarial.store.service.StoreSettingsService;
+import com.webempresarial.store.entity.SaaSCheckoutReservation;
+import com.webempresarial.store.model.StorePlan;
+import com.webempresarial.store.service.SaaSCheckoutReservationService;
 import com.webempresarial.store.service.StripeSaaSCheckoutService;
 import com.webempresarial.store.theme.StoreThemeResolver;
 
@@ -49,6 +53,9 @@ class BillingRestControllerSecurityMockMvcTest {
 
     @MockitoBean
     private StripeSaaSCheckoutService stripeSaaSCheckoutService;
+
+    @MockitoBean
+    private SaaSCheckoutReservationService reservationService;
 
     @MockitoBean
     private AuthUserDetailsService authUserDetailsService;
@@ -108,7 +115,33 @@ class BillingRestControllerSecurityMockMvcTest {
     void shouldAllowAnonymousSaaSCheckoutWithoutCsrfToken()
             throws Exception {
 
+        SaaSCheckoutReservation reservation =
+                new SaaSCheckoutReservation();
+
+        reservation.setAttemptId(
+                "attempt-controller-123"
+        );
+
+        reservation.setPlan(StorePlan.PRO);
+
+        reservation.setExpiresAt(
+                java.time.LocalDateTime.now()
+                        .plusHours(24)
+        );
+
+        when(
+                reservationService.reserve(
+                        "acme",
+                        "john@acme.test",
+                        StorePlan.PRO
+                )
+        ).thenReturn(reservation);
+
         Session session = new Session();
+
+        session.setId(
+                "cs_test_webempresarial"
+        );
 
         session.setUrl(
             "https://checkout.stripe.com/c/pay/cs_test_webempresarial"
@@ -116,7 +149,11 @@ class BillingRestControllerSecurityMockMvcTest {
 
         when(
             stripeSaaSCheckoutService
-                .createSaaSCheckoutSession(any())
+                .createSaaSCheckoutSession(
+                        any(),
+                        any(),
+                        any()
+                )
         ).thenReturn(session);
 
         mockMvc.perform(
@@ -140,5 +177,11 @@ class BillingRestControllerSecurityMockMvcTest {
                         "https://checkout.stripe.com/c/pay/cs_test_webempresarial"
                     )
             );
+
+        verify(reservationService)
+                .attachStripeSession(
+                        "attempt-controller-123",
+                        "cs_test_webempresarial"
+                );
     }
 }

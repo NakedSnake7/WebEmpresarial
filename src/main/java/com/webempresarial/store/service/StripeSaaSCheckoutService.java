@@ -1,5 +1,7 @@
 package com.webempresarial.store.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,8 +42,24 @@ public class StripeSaaSCheckoutService {
     }
 
     public Session createSaaSCheckoutSession(
-            SaaSCheckoutRequestDTO dto
+            SaaSCheckoutRequestDTO dto,
+            String checkoutAttemptId,
+            LocalDateTime expiresAt
     ) throws StripeException {
+
+        if (checkoutAttemptId == null
+                || checkoutAttemptId.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "checkoutAttemptId es obligatorio"
+            );
+        }
+
+        if (expiresAt == null) {
+            throw new IllegalArgumentException(
+                    "expiresAt es obligatorio"
+            );
+        }
 
         StorePlan plan =
                 dto.getPlan();
@@ -92,6 +110,11 @@ public class StripeSaaSCheckoutService {
                 environment
         );
 
+        metadata.put(
+                "checkout_attempt_id",
+                checkoutAttemptId
+        );
+
         String baseUrl =
                 resolvePlatformBaseUrl();
 
@@ -112,12 +135,14 @@ public class StripeSaaSCheckoutService {
                         )
                         .putAllMetadata(metadata)
                         .setClientReferenceId(
-                                "SAAS-"
-                                        + normalizeDomain(
-                                                dto.getDomain()
+                                "SAAS-" + checkoutAttemptId
+                        )
+                        .setExpiresAt(
+                                expiresAt
+                                        .atZone(
+                                                ZoneId.systemDefault()
                                         )
-                                        + "-"
-                                        + dto.getPlan().name()
+                                        .toEpochSecond()
                         )
                         .addLineItem(
                                 SessionCreateParams.LineItem
@@ -131,12 +156,8 @@ public class StripeSaaSCheckoutService {
         RequestOptions options =
                 RequestOptions.builder()
                         .setIdempotencyKey(
-                                "saas_"
-                                        + normalizeDomain(
-                                                dto.getDomain()
-                                        )
-                                        + "_"
-                                        + dto.getPlan().name()
+                                "saas_checkout_"
+                                        + checkoutAttemptId
                         )
                         .build();
 
