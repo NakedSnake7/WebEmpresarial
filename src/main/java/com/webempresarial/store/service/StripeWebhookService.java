@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.stripe.model.Event;
 import com.stripe.model.Invoice;
@@ -31,6 +33,9 @@ public class StripeWebhookService {
     private final SaaSCheckoutReservationService
             checkoutReservationService;
 
+    private final StripeWebhookFailureService
+            webhookFailureService;
+
 	public StripeWebhookService(
 	        StripeCommercePaymentHandler stripeCommercePaymentHandler,
 	        StoreRepository storeRepository,
@@ -38,7 +43,8 @@ public class StripeWebhookService {
 	        SubscriptionService subscriptionService,
 	        StripeWebhookEventRepository webhookEventRepository,
 	        StripePlanMapper stripePlanMapper,
-            SaaSCheckoutReservationService checkoutReservationService
+            SaaSCheckoutReservationService checkoutReservationService,
+            StripeWebhookFailureService webhookFailureService
 
 	) {
 	    this.stripeCommercePaymentHandler =
@@ -61,6 +67,9 @@ public class StripeWebhookService {
 
         this.checkoutReservationService =
                 checkoutReservationService;
+
+        this.webhookFailureService =
+                webhookFailureService;
 	}
     
     private void handleSubscriptionScheduleFinished(Event event) {
@@ -167,10 +176,85 @@ public class StripeWebhookService {
             webhookEvent.markProcessed();
 
         } catch (Exception e) {
+
+            /*
+             * Esta mutación conserva utilidad para tests y para
+             * el persistence context actual, pero será revertida
+             * junto con la transacción principal.
+             */
             webhookEvent.markFailed(e);
+
+            registerFailureAfterRollback(
+                    stripeEventId,
+                    event.getType(),
+                    e
+            );
+
             throw e;
         }
     }
+
+    private void registerFailureAfterRollback(
+            String stripeEventId,
+            String eventType,
+            Exception exception
+    ) {
+
+        String errorMessage =
+                exception.getMessage() != null
+                        && !exception.getMessage().isBlank()
+                        ? exception.getMessage()
+                        : exception.getClass().getSimpleName();
+
+        /*
+         * En producción handle() entra mediante el proxy
+         * @Transactional, por lo que esperamos una
+         * synchronization activa.
+         *
+         * El callback corre después del rollback y recién
+         * entonces abre REQUIRES_NEW para persistir FAILED.
+         */
+        if (TransactionSynchronizationManager
+                .isSynchronizationActive()) {
+
+            TransactionSynchronizationManager
+                    .registerSynchronization(
+                            new TransactionSynchronization() {
+
+                                @Override
+                                public void afterCompletion(
+                                        int status
+                                ) {
+
+                                    if (status ==
+                                            TransactionSynchronization
+                                                    .STATUS_ROLLED_BACK) {
+
+                                        webhookFailureService
+                                                .recordFailure(
+                                                        stripeEventId,
+                                                        eventType,
+                                                        errorMessage
+                                                );
+                                    }
+                                }
+                            }
+                    );
+
+            return;
+        }
+
+        /*
+         * Fallback para invocaciones directas fuera de un proxy
+         * transaccional, útil también para tests unitarios.
+         */
+        webhookFailureService.recordFailure(
+                stripeEventId,
+                eventType,
+                errorMessage
+        );
+    }
+
 
     private void handleCheckoutSessionCompleted(Event event) {
 

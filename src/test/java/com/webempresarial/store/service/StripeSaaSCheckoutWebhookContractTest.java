@@ -51,6 +51,10 @@ class StripeSaaSCheckoutWebhookContractTest {
     private SaaSCheckoutReservationService
             checkoutReservationService;
 
+    @Mock
+    private StripeWebhookFailureService
+            webhookFailureService;
+
     private StripeSaaSCheckoutService checkoutService;
 
     private StripeWebhookService webhookService;
@@ -83,7 +87,8 @@ class StripeSaaSCheckoutWebhookContractTest {
                         subscriptionService,
                         webhookEventRepository,
                         stripePlanMapper,
-                        checkoutReservationService
+                        checkoutReservationService,
+                        webhookFailureService
                 );
     }
 

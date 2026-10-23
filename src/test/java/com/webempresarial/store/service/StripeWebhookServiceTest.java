@@ -56,6 +56,10 @@ class StripeWebhookServiceTest {
     private SaaSCheckoutReservationService
             checkoutReservationService;
 
+    @Mock
+    private StripeWebhookFailureService
+            webhookFailureService;
+
     private StripeWebhookService service;
 
     @BeforeEach
@@ -67,7 +71,8 @@ class StripeWebhookServiceTest {
                 subscriptionService,
                 webhookEventRepository,
                 stripePlanMapper,
-                checkoutReservationService
+                checkoutReservationService,
+                webhookFailureService
         );
     }
     
@@ -829,5 +834,12 @@ class StripeWebhookServiceTest {
         ).isEqualTo(
                 "No se pudo deserializar customer.subscription.deleted"
         );
+
+        verify(webhookFailureService)
+                .recordFailure(
+                        "evt_subscription_failure",
+                        "customer.subscription.deleted",
+                        "No se pudo deserializar customer.subscription.deleted"
+                );
     }
 }
