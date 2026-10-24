@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.model.SubscriptionStatus;
@@ -21,6 +24,28 @@ public interface SubscriptionRepository
     Optional<Subscription> findByStripeCustomerId(String stripeCustomerId);
 
     Optional<Subscription> findByStripeSubscriptionId(String stripeSubscriptionId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT s
+        FROM Subscription s
+        WHERE s.stripeSubscriptionId = :stripeSubscriptionId
+    """)
+    Optional<Subscription> findByStripeSubscriptionIdForUpdate(
+            @Param("stripeSubscriptionId")
+            String stripeSubscriptionId
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT s
+        FROM Subscription s
+        WHERE s.stripeCustomerId = :stripeCustomerId
+    """)
+    Optional<Subscription> findByStripeCustomerIdForUpdate(
+            @Param("stripeCustomerId")
+            String stripeCustomerId
+    );
     
     List<Subscription> findByStripeSubscriptionIdIsNotNull();
 

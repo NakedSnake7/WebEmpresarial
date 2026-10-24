@@ -354,6 +354,58 @@ class StripeWebhookServiceTest {
                 );
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "subscription_schedule.created",
+            "subscription_schedule.updated",
+            "subscription_schedule.completed",
+            "subscription_schedule.released",
+            "subscription_schedule.canceled",
+            "subscription_schedule.aborted",
+            "customer.subscription.created",
+            "customer.subscription.updated",
+            "customer.subscription.deleted",
+            "invoice.payment_failed",
+            "invoice.paid"
+    })
+    void handle_shouldIgnoreSaasBillingEventsFromConnectedAccount(
+            String eventType
+    ) {
+        Event event = mock(Event.class);
+
+        String eventId =
+                "evt_connect_"
+                        + eventType.replace(".", "_");
+
+        when(event.getId())
+                .thenReturn(eventId);
+
+        when(event.getType())
+                .thenReturn(eventType);
+
+        when(event.getAccount())
+                .thenReturn("acct_connected_test");
+
+        when(webhookEventRepository
+                .findByStripeEventId(eventId))
+                .thenReturn(Optional.empty());
+
+        when(webhookEventRepository
+                .save(any(StripeWebhookEvent.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0)
+                );
+
+        service.handle(event);
+
+        verifyNoInteractions(
+                subscriptionService,
+                provisioningService,
+                stripeCommercePaymentHandler,
+                stripePlanMapper
+        );
+    }
+
     private void stubUnprocessedEvent(
             Event event,
             String eventId,
@@ -364,6 +416,13 @@ class StripeWebhookServiceTest {
 
         when(event.getType())
                 .thenReturn(eventType);
+
+        if (eventType.startsWith("customer.subscription.")
+                || eventType.startsWith("invoice.")) {
+
+            when(event.getCreated())
+                    .thenReturn(1_000L);
+        }
 
         when(webhookEventRepository
                 .findByStripeEventId(eventId))
@@ -407,8 +466,10 @@ class StripeWebhookServiceTest {
         service.handle(event);
 
         verify(subscriptionService)
-                .syncStripeSubscriptionUpdated(
-                        stripeSubscription
+                .syncStripeSubscriptionUpdatedFromWebhook(
+                        stripeSubscription,
+                        1_000L,
+                        eventType
                 );
     }
 
@@ -440,8 +501,10 @@ class StripeWebhookServiceTest {
         service.handle(event);
 
         verify(subscriptionService)
-                .cancelByStripeSubscriptionId(
-                        "sub_deleted_123"
+                .cancelByStripeSubscriptionIdFromWebhook(
+                        "sub_deleted_123",
+                        1_000L,
+                        "customer.subscription.deleted"
                 );
     }
 
@@ -473,8 +536,10 @@ class StripeWebhookServiceTest {
         service.handle(event);
 
         verify(subscriptionService)
-                .registerSuccessfulPayment(
-                        "sub_paid_123"
+                .registerSuccessfulPaymentFromStripeWebhook(
+                        "sub_paid_123",
+                        1_000L,
+                        "invoice.paid"
                 );
     }
 
@@ -506,8 +571,10 @@ class StripeWebhookServiceTest {
         service.handle(event);
 
         verify(subscriptionService)
-                .markPastDue(
-                        "sub_failed_123"
+                .markPastDueFromStripeWebhook(
+                        "sub_failed_123",
+                        1_000L,
+                        "invoice.payment_failed"
                 );
     }
 

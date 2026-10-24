@@ -18,6 +18,21 @@
 	
 		private final SubscriptionRepository subscriptionRepository;
 		private final StripePlanMapper stripePlanMapper;
+
+    private static final int
+            STRIPE_EVENT_PRIORITY_INVOICE_FAILED = 100;
+
+    private static final int
+            STRIPE_EVENT_PRIORITY_INVOICE_PAID = 200;
+
+    private static final int
+            STRIPE_EVENT_PRIORITY_SUBSCRIPTION_CREATED = 300;
+
+    private static final int
+            STRIPE_EVENT_PRIORITY_SUBSCRIPTION_UPDATED = 350;
+
+    private static final int
+            STRIPE_EVENT_PRIORITY_SUBSCRIPTION_DELETED = 400;
 	
 		public SubscriptionService(
 		        SubscriptionRepository subscriptionRepository,
@@ -47,6 +62,164 @@
 	                .findByStripeCustomerId(stripeCustomerId)
 	                .orElse(null);
 	    }
+
+    private Subscription findByStripeSubscriptionOrCustomerForUpdate(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        String stripeSubscriptionId =
+                stripeSubscription.getId();
+
+        if (stripeSubscriptionId != null
+                && !stripeSubscriptionId.isBlank()) {
+
+            Subscription subscription =
+                    subscriptionRepository
+                            .findByStripeSubscriptionIdForUpdate(
+                                    stripeSubscriptionId
+                            )
+                            .orElse(null);
+
+            if (subscription != null) {
+                return subscription;
+            }
+        }
+
+        String stripeCustomerId =
+                stripeSubscription.getCustomer();
+
+        if (stripeCustomerId == null
+                || stripeCustomerId.isBlank()) {
+            return null;
+        }
+
+        return subscriptionRepository
+                .findByStripeCustomerIdForUpdate(
+                        stripeCustomerId
+                )
+                .orElse(null);
+    }
+
+    private Subscription requireStripeSubscriptionForUpdate(
+            String stripeSubscriptionId
+    ) {
+        Subscription subscription =
+                subscriptionRepository
+                        .findByStripeSubscriptionIdForUpdate(
+                                stripeSubscriptionId
+                        )
+                        .orElse(null);
+
+        if (subscription == null) {
+            throw new IllegalStateException(
+                    "Suscripción Stripe local no encontrada: "
+                            + stripeSubscriptionId
+            );
+        }
+
+        return subscription;
+    }
+
+    private boolean shouldApplyStripeEvent(
+            Subscription subscription,
+            Long eventCreated,
+            int eventPriority,
+            String eventType
+    ) {
+        if (eventCreated == null) {
+            throw new IllegalStateException(
+                    "Stripe event sin created: "
+                            + eventType
+            );
+        }
+
+        Long lastCreated =
+                subscription.getLastStripeEventCreated();
+
+        if (lastCreated == null) {
+            return true;
+        }
+
+        int createdComparison =
+                eventCreated.compareTo(lastCreated);
+
+        if (createdComparison > 0) {
+            return true;
+        }
+
+        if (createdComparison < 0) {
+            return false;
+        }
+
+        Integer lastPriority =
+                subscription.getLastStripeEventPriority();
+
+        if (lastPriority == null) {
+            return true;
+        }
+
+        /*
+         * Stripe Event.created tiene precisión de segundos.
+         *
+         * En empate, eventos semánticamente más fuertes ganan:
+         *
+         * deleted > subscription update > paid > payment_failed.
+         */
+        return eventPriority >= lastPriority;
+    }
+
+    private void recordStripeEventOrder(
+            Subscription subscription,
+            Long eventCreated,
+            int eventPriority,
+            String eventType
+    ) {
+        subscription.setLastStripeEventCreated(
+                eventCreated
+        );
+
+        subscription.setLastStripeEventPriority(
+                eventPriority
+        );
+
+        subscription.setLastStripeEventType(
+                eventType
+        );
+    }
+
+    private int stripeSubscriptionEventPriority(
+            String eventType
+    ) {
+        if ("customer.subscription.updated"
+                .equals(eventType)) {
+
+            return STRIPE_EVENT_PRIORITY_SUBSCRIPTION_UPDATED;
+        }
+
+        if ("customer.subscription.created"
+                .equals(eventType)) {
+
+            return STRIPE_EVENT_PRIORITY_SUBSCRIPTION_CREATED;
+        }
+
+        throw new IllegalArgumentException(
+                "Tipo de evento Stripe de suscripción no soportado: "
+                        + eventType
+        );
+    }
+
+    private boolean isStripeCancellationStatus(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        String status =
+                stripeSubscription.getStatus();
+
+        return status != null
+                && (
+                    "canceled".equalsIgnoreCase(status)
+                    || "cancelled".equalsIgnoreCase(status)
+                );
+    }
+
 	    private LocalDateTime fromStripeEpoch(Long epochSeconds) {
 	        if (epochSeconds == null) {
 	            return null;
@@ -593,6 +766,211 @@
 	    }
 	    
 	
+
+    @Transactional
+    public Subscription markPastDueFromStripeWebhook(
+            String stripeSubscriptionId,
+            Long eventCreated,
+            String eventType
+    ) {
+        Subscription locked =
+                requireStripeSubscriptionForUpdate(
+                        stripeSubscriptionId
+                );
+
+        /*
+         * Un invoice atrasado nunca debe resucitar ni degradar
+         * una suscripción ya cancelada por Stripe.
+         */
+        if (locked.getStatus()
+                == SubscriptionStatus.CANCELLED) {
+            return locked;
+        }
+
+        if (!shouldApplyStripeEvent(
+                locked,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_INVOICE_FAILED,
+                eventType
+        )) {
+            return locked;
+        }
+
+        Subscription updated =
+                markPastDue(stripeSubscriptionId);
+
+        recordStripeEventOrder(
+                updated,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_INVOICE_FAILED,
+                eventType
+        );
+
+        return subscriptionRepository.save(updated);
+    }
+
+    @Transactional
+    public Subscription registerSuccessfulPaymentFromStripeWebhook(
+            String stripeSubscriptionId,
+            Long eventCreated,
+            String eventType
+    ) {
+        Subscription locked =
+                requireStripeSubscriptionForUpdate(
+                        stripeSubscriptionId
+                );
+
+        /*
+         * invoice.paid no es autoridad suficiente para
+         * reactivar una suscripción que Stripe ya eliminó.
+         */
+        if (locked.getStatus()
+                == SubscriptionStatus.CANCELLED) {
+            return locked;
+        }
+
+        if (!shouldApplyStripeEvent(
+                locked,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_INVOICE_PAID,
+                eventType
+        )) {
+            return locked;
+        }
+
+        Subscription updated =
+                registerSuccessfulPayment(
+                        stripeSubscriptionId
+                );
+
+        recordStripeEventOrder(
+                updated,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_INVOICE_PAID,
+                eventType
+        );
+
+        return subscriptionRepository.save(updated);
+    }
+
+    @Transactional
+    public Subscription cancelByStripeSubscriptionIdFromWebhook(
+            String stripeSubscriptionId,
+            Long eventCreated,
+            String eventType
+    ) {
+        Subscription locked =
+                requireStripeSubscriptionForUpdate(
+                        stripeSubscriptionId
+                );
+
+        if (!shouldApplyStripeEvent(
+                locked,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_SUBSCRIPTION_DELETED,
+                eventType
+        )) {
+            return locked;
+        }
+
+        Subscription updated =
+                cancelByStripeSubscriptionId(
+                        stripeSubscriptionId
+                );
+
+        recordStripeEventOrder(
+                updated,
+                eventCreated,
+                STRIPE_EVENT_PRIORITY_SUBSCRIPTION_DELETED,
+                eventType
+        );
+
+        return subscriptionRepository.save(updated);
+    }
+
+    @Transactional
+    public Subscription syncStripeSubscriptionUpdatedFromWebhook(
+            com.stripe.model.Subscription stripeSubscription,
+            Long eventCreated,
+            String eventType
+    ) {
+        Subscription locked =
+                findByStripeSubscriptionOrCustomerForUpdate(
+                        stripeSubscription
+                );
+
+        if (locked == null) {
+            /*
+             * Puede ocurrir si customer.subscription.created
+             * llega antes de checkout.session.completed.
+             *
+             * Fallar permite que el mecanismo FAILED + retry
+             * vuelva a procesarlo después del provisioning.
+             */
+            throw new IllegalStateException(
+                    "Suscripción Stripe local no encontrada: "
+                            + stripeSubscription.getId()
+            );
+        }
+
+        /*
+         * Una subscription.deleted ya aplicada es terminal
+         * para ese mismo stripeSubscriptionId.
+         *
+         * La reconciliación explícita sigue disponible mediante
+         * syncStripeSubscriptionUpdated() sin este guard.
+         */
+        boolean sameStripeSubscription =
+                java.util.Objects.equals(
+                        locked.getStripeSubscriptionId(),
+                        stripeSubscription.getId()
+                );
+
+        if (sameStripeSubscription
+                && locked.getStatus()
+                        == SubscriptionStatus.CANCELLED
+                && !isStripeCancellationStatus(
+                        stripeSubscription
+                )) {
+            return locked;
+        }
+
+        int eventPriority =
+                stripeSubscriptionEventPriority(
+                        eventType
+                );
+
+        if (!shouldApplyStripeEvent(
+                locked,
+                eventCreated,
+                eventPriority,
+                eventType
+        )) {
+            return locked;
+        }
+
+        Subscription updated =
+                syncStripeSubscriptionUpdated(
+                        stripeSubscription
+                );
+
+        if (updated == null) {
+            throw new IllegalStateException(
+                    "No se pudo sincronizar la suscripción Stripe: "
+                            + stripeSubscription.getId()
+            );
+        }
+
+        recordStripeEventOrder(
+                updated,
+                eventCreated,
+                eventPriority,
+                eventType
+        );
+
+        return subscriptionRepository.save(updated);
+    }
+
 	    @Transactional
 	    public Subscription reconcileStripeSubscription(
 	            String stripeSubscriptionId

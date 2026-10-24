@@ -70,6 +70,9 @@ class StripeWebhookFailurePersistenceIntegrationTest {
                         "customer.subscription.deleted"
                 );
 
+        when(event.getCreated())
+                .thenReturn(1_000L);
+
         when(event.getDataObjectDeserializer())
                 .thenReturn(deserializer);
 
@@ -88,8 +91,10 @@ class StripeWebhookFailurePersistenceIntegrationTest {
                         "forced webhook failure"
                 )
         ).when(subscriptionService)
-                .cancelByStripeSubscriptionId(
-                        "sub_failure_persistence_it"
+                .cancelByStripeSubscriptionIdFromWebhook(
+                        "sub_failure_persistence_it",
+                        1_000L,
+                        "customer.subscription.deleted"
                 );
 
         assertThatThrownBy(() ->
@@ -141,6 +146,9 @@ class StripeWebhookFailurePersistenceIntegrationTest {
                         "customer.subscription.deleted"
                 );
 
+        when(event.getCreated())
+                .thenReturn(1_000L);
+
         when(event.getDataObjectDeserializer())
                 .thenReturn(deserializer);
 
@@ -161,8 +169,10 @@ class StripeWebhookFailurePersistenceIntegrationTest {
          */
         when(
                 subscriptionService
-                        .cancelByStripeSubscriptionId(
-                                "sub_failure_persistence_it"
+                        .cancelByStripeSubscriptionIdFromWebhook(
+                                "sub_failure_persistence_it",
+                                1_000L,
+                                "customer.subscription.deleted"
                         )
         )
         .thenThrow(
@@ -224,8 +234,10 @@ class StripeWebhookFailurePersistenceIntegrationTest {
         verify(
                 subscriptionService,
                 times(2)
-        ).cancelByStripeSubscriptionId(
-                "sub_failure_persistence_it"
+        ).cancelByStripeSubscriptionIdFromWebhook(
+                "sub_failure_persistence_it",
+                1_000L,
+                "customer.subscription.deleted"
         );
     }
 

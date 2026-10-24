@@ -42,6 +42,15 @@ public class Subscription {
     @Column(length = 100)
     private String stripePriceId;
 
+    @Column(name = "last_stripe_event_created")
+    private Long lastStripeEventCreated;
+
+    @Column(name = "last_stripe_event_priority")
+    private Integer lastStripeEventPriority;
+
+    @Column(name = "last_stripe_event_type", length = 120)
+    private String lastStripeEventType;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private StorePlan plan = StorePlan.BASIC;
@@ -140,6 +149,39 @@ public class Subscription {
 	public void setPlan(StorePlan plan) {
 		this.plan = plan;
 	}
+
+    public Long getLastStripeEventCreated() {
+        return lastStripeEventCreated;
+    }
+
+    public void setLastStripeEventCreated(
+            Long lastStripeEventCreated
+    ) {
+        this.lastStripeEventCreated =
+                lastStripeEventCreated;
+    }
+
+    public Integer getLastStripeEventPriority() {
+        return lastStripeEventPriority;
+    }
+
+    public void setLastStripeEventPriority(
+            Integer lastStripeEventPriority
+    ) {
+        this.lastStripeEventPriority =
+                lastStripeEventPriority;
+    }
+
+    public String getLastStripeEventType() {
+        return lastStripeEventType;
+    }
+
+    public void setLastStripeEventType(
+            String lastStripeEventType
+    ) {
+        this.lastStripeEventType =
+                lastStripeEventType;
+    }
 
 	public SubscriptionStatus getStatus() {
 		return status;

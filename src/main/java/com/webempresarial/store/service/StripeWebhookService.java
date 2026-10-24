@@ -110,6 +110,34 @@ public class StripeWebhookService {
         );
     }
 
+    private boolean isConnectedAccountSaasBillingEvent(
+            Event event
+    ) {
+        String connectedAccountId =
+                event.getAccount();
+
+        if (connectedAccountId == null
+                || connectedAccountId.isBlank()) {
+            return false;
+        }
+
+        return switch (event.getType()) {
+            case "subscription_schedule.created",
+                 "subscription_schedule.updated",
+                 "subscription_schedule.completed",
+                 "subscription_schedule.released",
+                 "subscription_schedule.canceled",
+                 "subscription_schedule.aborted",
+                 "customer.subscription.created",
+                 "customer.subscription.updated",
+                 "customer.subscription.deleted",
+                 "invoice.payment_failed",
+                 "invoice.paid" -> true;
+
+            default -> false;
+        };
+    }
+
     @Transactional
     public void handle(Event event) {
 
@@ -132,6 +160,20 @@ public class StripeWebhookService {
         }
 
         try {
+
+            /*
+             * Los eventos de billing SaaS pertenecen a la
+             * cuenta plataforma.
+             *
+             * Un evento equivalente originado por una cuenta
+             * Stripe Connect no debe tocar Subscription SaaS.
+             * Se consume deliberadamente como PROCESSED.
+             */
+            if (isConnectedAccountSaasBillingEvent(event)) {
+                webhookEvent.markProcessed();
+                return;
+            }
+
             switch (event.getType()) {
             
             
@@ -279,7 +321,12 @@ public class StripeWebhookService {
             throw new IllegalStateException("No se pudo deserializar customer.subscription.updated");
         }
 
-        subscriptionService.syncStripeSubscriptionUpdated(stripeSubscription);
+        subscriptionService
+                .syncStripeSubscriptionUpdatedFromWebhook(
+                        stripeSubscription,
+                        event.getCreated(),
+                        event.getType()
+                );
     }
 
     private void handleSubscriptionDeleted(Event event) {
@@ -291,9 +338,12 @@ public class StripeWebhookService {
             throw new IllegalStateException("No se pudo deserializar customer.subscription.deleted");
         }
 
-        subscriptionService.cancelByStripeSubscriptionId(
-                stripeSubscription.getId()
-        );
+        subscriptionService
+                .cancelByStripeSubscriptionIdFromWebhook(
+                        stripeSubscription.getId(),
+                        event.getCreated(),
+                        event.getType()
+                );
     }
 
     private void handleInvoicePaymentFailed(Event event) {
@@ -304,9 +354,12 @@ public class StripeWebhookService {
             throw new IllegalStateException("Invoice sin subscription");
         }
 
-        subscriptionService.markPastDue(
-                invoice.getSubscription()
-        );
+        subscriptionService
+                .markPastDueFromStripeWebhook(
+                        invoice.getSubscription(),
+                        event.getCreated(),
+                        event.getType()
+                );
     }
 
     private void handleInvoicePaid(Event event) {
@@ -317,9 +370,12 @@ public class StripeWebhookService {
             return;
         }
 
-        subscriptionService.registerSuccessfulPayment(
-                invoice.getSubscription()
-        );
+        subscriptionService
+                .registerSuccessfulPaymentFromStripeWebhook(
+                        invoice.getSubscription(),
+                        event.getCreated(),
+                        event.getType()
+                );
     }
     @Transactional
     public void procesarCheckoutCompleted(Session session) {
