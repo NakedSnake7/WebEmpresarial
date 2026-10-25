@@ -409,7 +409,7 @@ class TenantAcquisitionE2EIT {
                                         session
                         )
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 foreignDomain
                         )
         )
@@ -454,7 +454,7 @@ class TenantAcquisitionE2EIT {
                                         session
                         )
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 domain
                         )
                         .with(csrf())
@@ -609,7 +609,7 @@ class TenantAcquisitionE2EIT {
         mockMvc.perform(
                 get("/")
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 domain
                         )
         )

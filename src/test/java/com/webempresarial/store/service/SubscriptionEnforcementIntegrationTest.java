@@ -206,7 +206,7 @@ class SubscriptionEnforcementIntegrationTest {
                 )
                         .session(ownerSession)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 FINAL_DOMAIN
                         )
         )
@@ -240,7 +240,7 @@ class SubscriptionEnforcementIntegrationTest {
                 get("/admin/dashboard")
                         .with(superAdmin())
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 FINAL_DOMAIN
                         )
         )
@@ -259,7 +259,7 @@ class SubscriptionEnforcementIntegrationTest {
                 get("/admin/dashboard")
                         .session(ownerSession)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 FINAL_DOMAIN
                         )
         )
@@ -278,7 +278,7 @@ class SubscriptionEnforcementIntegrationTest {
                 get("/admin/dashboard")
                         .session(ownerSession)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 FINAL_DOMAIN
                         )
         )

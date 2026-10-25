@@ -328,7 +328,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 get("/admin/dashboard")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
         )
@@ -372,7 +372,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 get("/admin/dashboard")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 foreignFinalDomain
                         )
         )
@@ -384,7 +384,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 get("/admin/store/settings")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
         )
@@ -405,7 +405,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 post("/admin/store/settings")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -492,7 +492,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 mockMvc.perform(
                         get("/")
                                 .header(
-                                        "X-Forwarded-Host",
+                                        "Host",
                                         finalDomain
                                 )
                 )
@@ -529,7 +529,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 post("/nuevo")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -621,7 +621,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 mockMvc.perform(
                         get("/")
                                 .header(
-                                        "X-Forwarded-Host",
+                                        "Host",
                                         finalDomain
                                 )
                 )
@@ -662,7 +662,7 @@ class SaaSTenantLifecycleIntegrationTest {
         mockMvc.perform(
                 post("/api/checkout")
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -727,7 +727,7 @@ class SaaSTenantLifecycleIntegrationTest {
                         get("/orders")
                                 .session(session)
                                 .header(
-                                        "X-Forwarded-Host",
+                                        "Host",
                                         finalDomain
                                 )
                 )
@@ -769,7 +769,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 )
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -829,7 +829,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 post("/orders/update-shipping")
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -888,7 +888,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 )
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -963,7 +963,7 @@ class SaaSTenantLifecycleIntegrationTest {
         mockMvc.perform(
                 post("/api/checkout")
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())
@@ -1025,7 +1025,7 @@ class SaaSTenantLifecycleIntegrationTest {
                 )
                         .session(session)
                         .header(
-                                "X-Forwarded-Host",
+                                "Host",
                                 finalDomain
                         )
                         .with(csrf())

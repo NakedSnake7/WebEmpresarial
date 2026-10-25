@@ -16,11 +16,18 @@ public class StoreResolver {
 
     public Store getCurrentStore(HttpServletRequest request) {
 
-        String rawHost = request.getHeader("X-Forwarded-Host");
-
-        if (rawHost == null || rawHost.isBlank()) {
-            rawHost = request.getServerName();
-        }
+        /*
+         * La identidad del tenant proviene del Host solicitado.
+         *
+         * No usar X-Forwarded-Host aquí: ese header puede llegar
+         * controlado por el cliente a través del proxy y no debe
+         * seleccionar otro tenant.
+         *
+         * Tampoco usamos getServerName() como fallback porque con
+         * ForwardedHeaderFilter puede haber sido derivado del mismo
+         * X-Forwarded-Host.
+         */
+        String rawHost = request.getHeader("Host");
 
         if (rawHost == null || rawHost.isBlank()) {
             throw new RuntimeException("No se pudo resolver el dominio actual");
