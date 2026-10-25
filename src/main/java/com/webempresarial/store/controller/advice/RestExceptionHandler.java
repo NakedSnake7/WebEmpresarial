@@ -21,6 +21,7 @@ import com.webempresarial.store.service.ProductoService;
 
 import java.io.IOException;
 import java.util.Map;
+import com.webempresarial.store.exceptions.StoreNotFoundException;
 
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
 @RestControllerAdvice(annotations = RestController.class)
@@ -168,6 +169,20 @@ public class RestExceptionHandler {
 
         return ResponseEntity
                 .status(ex.getStatusCode())
+                .build();
+    }
+
+    // =====================================
+    // TENANT / STORE NO ENCONTRADO
+    // =====================================
+    @ExceptionHandler(StoreNotFoundException.class)
+    public ResponseEntity<?> handleStoreNotFound(
+            StoreNotFoundException ex) {
+
+        log.warn("Tienda no encontrada (REST): {}", ex.getMessage());
+
+        return ResponseEntity
+                .notFound()
                 .build();
     }
 

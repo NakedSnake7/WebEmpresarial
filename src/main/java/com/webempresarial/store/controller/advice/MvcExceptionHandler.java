@@ -18,6 +18,7 @@ import com.webempresarial.store.exceptions.FeatureLockedException;
 import com.webempresarial.store.service.ProductoService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.webempresarial.store.exceptions.StoreNotFoundException;
 
 @Order(Ordered.LOWEST_PRECEDENCE)
 @ControllerAdvice
@@ -99,23 +100,33 @@ public class MvcExceptionHandler {
     }
 
     // =====================================
+    // TENANT / STORE NO ENCONTRADO
+    // =====================================
+    @ExceptionHandler(StoreNotFoundException.class)
+    public ResponseEntity<Void> handleStoreNotFound(
+            StoreNotFoundException ex) {
+
+        log.warn("Tienda no encontrada (MVC): {}", ex.getMessage());
+
+        return ResponseEntity
+                .notFound()
+                .build();
+    }
+
+    // =====================================
     // ERROR GENERAL
     // =====================================
     @ExceptionHandler(Exception.class)
-    public String handleGeneral(
+    public ResponseEntity<Void> handleGeneral(
             Exception ex,
-            Model model,
             HttpServletRequest request) {
 
         log.error("Error MVC no controlado en path={}",
                 request.getRequestURI(), ex);
 
-        model.addAttribute("error",
-                "Ocurrió un error inesperado. Intenta nuevamente.");
-
-        model.addAttribute("path", request.getRequestURI());
-
-        return "error";
+        return ResponseEntity
+                .internalServerError()
+                .build();
     }
 
  // =====================================
