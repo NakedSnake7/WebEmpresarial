@@ -320,6 +320,66 @@ class SaaSTenantLifecycleIntegrationTest {
         assertThat(session)
                 .isNotNull();
 
+        /*
+         * El dashboard real debe resolver exactamente
+         * el tenant asociado al STORE_OWNER autenticado.
+         */
+        mockMvc.perform(
+                get("/admin/dashboard")
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                finalDomain
+                        )
+        )
+        .andExpect(
+                status().isOk()
+        )
+        .andExpect(
+                view().name(
+                        "admin/dashboard"
+                )
+        );
+
+        /*
+         * Creamos un segundo tenant válido.
+         *
+         * La misma sesión autenticada del owner A no puede
+         * operar sobre el host del tenant B.
+         */
+        String foreignDomain =
+                "e2e-admin-login-foreign";
+
+        String foreignFinalDomain =
+                foreignDomain
+                + ".web-empresarial.com";
+
+        provisioningService.provisionStoreFromCheckout(
+                "E2E Foreign Store",
+                foreignDomain,
+                "Foreign Owner",
+                "foreign-owner-e2e@webempresarial.test",
+                StorePlan.PRO,
+                "cus_e2e_admin_login_foreign",
+                "sub_e2e_admin_login_foreign",
+                "price_e2e_admin_login_foreign"
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(
+                get("/admin/dashboard")
+                        .session(session)
+                        .header(
+                                "X-Forwarded-Host",
+                                foreignFinalDomain
+                        )
+        )
+        .andExpect(
+                status().isForbidden()
+        );
+
         mockMvc.perform(
                 get("/admin/store/settings")
                         .session(session)
