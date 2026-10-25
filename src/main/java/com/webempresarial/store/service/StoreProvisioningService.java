@@ -112,22 +112,29 @@ public class StoreProvisioningService {
                             initialPlan
                     );
 
-            case "PAID" ->
-                    subscriptionService.createTrial(
-                            store,
-                            initialPlan
-                    );
-
             case "INTERNAL" ->
                     subscriptionService.createInternalSubscription(
                             store,
                             initialPlan
                     );
 
+            /*
+             * Las suscripciones pagadas no pueden provisionarse
+             * manualmente desde /admin/stores.
+             *
+             * Un tenant de pago debe nacer del checkout SaaS real,
+             * porque ese flujo dispone de la identidad Stripe y
+             * confirma el pago mediante webhook.
+             */
+            case "PAID" ->
+                    throw new IllegalArgumentException(
+                            "PAID sólo puede provisionarse mediante el checkout SaaS"
+                    );
+
             default ->
-                    subscriptionService.createInternalSubscription(
-                            store,
-                            initialPlan
+                    throw new IllegalArgumentException(
+                            "Tipo de suscripción no soportado: "
+                                    + subscriptionType
                     );
         }
     }
