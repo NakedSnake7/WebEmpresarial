@@ -1,129 +1,120 @@
 package com.webempresarial.store.feature.catalog;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import com.webempresarial.store.feature.FeatureDefinition;
+import com.webempresarial.store.feature.FeaturePresentation;
+import com.webempresarial.store.feature.sidebar.SidebarItemDefinition;
+import com.webempresarial.store.model.AdminPermission;
+import com.webempresarial.store.model.Feature;
+import com.webempresarial.store.model.StorePlan;
 
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomDomainCatalogContractTest {
 
-    private static final Path PLATFORM_FEATURES =
-            Path.of(
-                    "src/main/java/com/webempresarial/store/"
-                            + "feature/catalog/PlatformFeatures.java"
-            );
-
-    private static final Path SECURITY_CONFIG =
-            Path.of(
-                    "src/main/java/com/webempresarial/store/"
-                            + "config/SecurityConfig.java"
-            );
-
     @Test
-    void customDomainShouldRemainProButHiddenUntilImplemented()
-            throws IOException {
+    void customDomainMustBeImplementedAsProFeature() {
 
-        String source = Files.readString(PLATFORM_FEATURES);
+        FeatureDefinition definition =
+                customDomain();
 
-        int start =
-                source.indexOf(
-                        "private FeatureDefinition customDomain()"
-                );
+        FeaturePresentation presentation =
+                definition.getPresentation();
 
-        int end =
-                source.indexOf(
-                        "private FeatureDefinition whiteLabelFull()",
-                        start
-                );
+        assertThat(
+                definition.getUrl()
+        ).isEqualTo(
+                "/admin/domains"
+        );
 
-        assertThat(start).isGreaterThanOrEqualTo(0);
-        assertThat(end).isGreaterThan(start);
+        assertThat(
+                definition
+                        .getAccessPolicy()
+                        .getMinimumPlan()
+        ).isEqualTo(
+                StorePlan.PRO
+        );
 
-        String customDomain =
-                source.substring(start, end);
+        assertThat(
+                presentation.isShowInSidebar()
+        ).isTrue();
 
-        assertThat(source)
-                .contains(".feature(customDomain())");
+        assertThat(
+                presentation.isShowInDashboard()
+        ).isFalse();
 
-        assertThat(customDomain)
-                .contains(
-                        "FeatureDefinition.builder(Feature.CUSTOM_DOMAIN)"
-                )
-                .contains(
-                        ".url(\"/admin/domains\")"
-                )
-                .contains(
-                        ".accessPolicy(pro())"
-                )
-                .contains(
-                        ".presentation(unimplementedPresentation())"
-                );
+        assertThat(
+                presentation.isShowInBilling()
+        ).isTrue();
 
-        assertThat(source)
-                .contains(
-                        "private FeaturePresentation "
-                                + "unimplementedPresentation()"
-                )
-                .contains(".showInSidebar(false)")
-                .contains(".showInDashboard(false)")
-                .contains(".showInBilling(true)")
-                .contains(".showUpgradeCard(true)")
-                .contains(".trackUsage(false)");
+        assertThat(
+                presentation.isShowUpgradeCard()
+        ).isTrue();
 
-        /*
-         * El dominio futuro tampoco debe registrarse manualmente
-         * en la navegación.
-         */
-        assertThat(source)
-                .doesNotContain(
-                        ".item(\"Dominio\", \"🌐\", "
-                                + "\"/admin/domains\", "
-                                + "Feature.CUSTOM_DOMAIN)"
-                );
+        assertThat(
+                presentation.isTrackUsage()
+        ).isFalse();
     }
 
     @Test
-    void customDomainRoutesShouldFailClosedUntilImplemented()
-            throws IOException {
+    void customDomainMustHavePermissionAwareSidebarItem() {
 
-        String security =
-                Files.readString(SECURITY_CONFIG);
+        List<SidebarItemDefinition> matches =
+                new PlatformFeatures()
+                        .descriptor()
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section
+                                        .getItems()
+                                        .stream()
+                        )
+                        .filter(item ->
+                                item.feature()
+                                        == Feature.CUSTOM_DOMAIN
+                        )
+                        .toList();
 
-        assertThat(security)
-                .contains(
-                        "\"/admin/domains\","
+        assertThat(matches)
+                .hasSize(1);
+
+        SidebarItemDefinition item =
+                matches.get(0);
+
+        assertThat(item.title())
+                .isEqualTo("Dominio");
+
+        assertThat(item.url())
+                .isEqualTo(
+                        "/admin/domains"
+                );
+
+        assertThat(
+                item.requiredPermission()
+        ).isEqualTo(
+                AdminPermission.DOMAIN_VIEW
+        );
+    }
+
+    private FeatureDefinition customDomain() {
+
+        return new PlatformFeatures()
+                .descriptor()
+                .getFeatures()
+                .stream()
+                .filter(definition ->
+                        definition.getFeature()
+                                == Feature.CUSTOM_DOMAIN
                 )
-                .contains(
-                        "\"/admin/domains/**\""
+                .findFirst()
+                .orElseThrow(() ->
+                        new AssertionError(
+                                "Feature.CUSTOM_DOMAIN "
+                                + "no está registrada"
+                        )
                 );
-
-        int domainMatcher =
-                security.indexOf(
-                        "\"/admin/domains\","
-                );
-
-        int denyAll =
-                security.indexOf(
-                        ".denyAll()",
-                        domainMatcher
-                );
-
-        int dashboard =
-                security.indexOf(
-                        "Dashboard principal.",
-                        domainMatcher
-                );
-
-        assertThat(domainMatcher)
-                .isGreaterThanOrEqualTo(0);
-
-        assertThat(denyAll)
-                .isGreaterThan(domainMatcher);
-
-        assertThat(dashboard)
-                .isGreaterThan(denyAll);
     }
 }

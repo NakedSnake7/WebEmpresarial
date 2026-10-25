@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.feature.PlatformAccessService;
+import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.config.StoreViewAdvice;
 import com.webempresarial.store.controller.advice.MvcExceptionHandler;
@@ -38,7 +40,11 @@ class UnknownTenantHttpStatusTest {
         )).thenReturn(Optional.empty());
 
         StoreLookupService storeLookupService =
-                new StoreLookupService(storeRepository);
+                new StoreLookupService(
+                        storeRepository,
+                        mock(PlatformAccessService.class),
+                        mock(FeatureAccessService.class)
+                );
 
         StoreResolver storeResolver =
                 new StoreResolver(storeLookupService);

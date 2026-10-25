@@ -13,9 +13,16 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     Optional<Store> findByDominioAndActivaTrue(String dominio);
 
+    Optional<Store>
+            findByCustomDomainAndCustomDomainVerifiedTrueAndActivaTrue(
+                    String customDomain
+            );
+
     Optional<Store> findByThemeAndActivaTrue(String theme);
 
     boolean existsByDominio(String dominio);
+
+    boolean existsByCustomDomain(String customDomain);
 
     boolean existsByTheme(String theme);
     

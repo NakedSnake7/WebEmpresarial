@@ -3,17 +3,26 @@ package com.webempresarial.store.service;
 import org.springframework.stereotype.Service;
 
 import com.webempresarial.store.exceptions.StoreNotFoundException;
+import com.webempresarial.store.feature.PlatformAccessService;
+import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
-
 
 @Service
 public class StoreLookupService {
 
     private final StoreRepository storeRepository;
+    private final PlatformAccessService platformAccessService;
+    private final FeatureAccessService featureAccessService;
 
-    public StoreLookupService(StoreRepository storeRepository) {
+    public StoreLookupService(
+            StoreRepository storeRepository,
+            PlatformAccessService platformAccessService,
+            FeatureAccessService featureAccessService
+    ) {
         this.storeRepository = storeRepository;
+        this.platformAccessService = platformAccessService;
+        this.featureAccessService = featureAccessService;
     }
 
     /*
@@ -31,9 +40,48 @@ public class StoreLookupService {
      * transaccional explícita.
      */
     public Store getStoreByDomain(String domain) {
-        return storeRepository.findByDominioAndActivaTrue(domain)
-                .orElseThrow(() ->
-                        new StoreNotFoundException(domain)
-                );
+
+        var platformStore =
+                storeRepository
+                        .findByDominioAndActivaTrue(domain);
+
+        /*
+         * El dominio estable de plataforma tiene precedencia
+         * absoluta sobre cualquier alias personalizado.
+         */
+        if (platformStore.isPresent()) {
+            return platformStore.get();
+        }
+
+        Store customDomainStore =
+                storeRepository
+                        .findByCustomDomainAndCustomDomainVerifiedTrueAndActivaTrue(
+                                domain
+                        )
+                        .orElseThrow(() ->
+                                new StoreNotFoundException(domain)
+                        );
+
+        /*
+         * Un custom domain sólo está activo mientras el tenant
+         * conserve acceso efectivo a la plataforma y entitlement
+         * para Feature.CUSTOM_DOMAIN.
+         *
+         * No dependemos de Store.plan como fuente de autorización.
+         */
+        if (!platformAccessService.hasPlatformAccess(
+                customDomainStore
+        )) {
+            throw new StoreNotFoundException(domain);
+        }
+
+        if (!featureAccessService.canUse(
+                customDomainStore,
+                Feature.CUSTOM_DOMAIN
+        )) {
+            throw new StoreNotFoundException(domain);
+        }
+
+        return customDomainStore;
     }
 }

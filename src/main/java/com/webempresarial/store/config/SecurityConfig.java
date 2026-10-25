@@ -509,9 +509,58 @@ public class SecurityConfig {
                 /*
                  * Custom domains.
                  *
-                 * El módulo tenant-facing todavía no está implementado.
-                 * DOMAIN_VIEW y DOMAIN_MANAGE permanecen reservados para
-                 * cuando existan operaciones reales de dominio.
+                 * La autorización administrativa y el entitlement comercial
+                 * son gates independientes:
+                 *
+                 * - SecurityConfig protege la operación HTTP.
+                 * - FeatureAccessService valida Feature.CUSTOM_DOMAIN.
+                 */
+
+                /*
+                 * Verificación concierge.
+                 *
+                 * El tenant nunca puede auto-marcar su dominio como
+                 * verificado. Durante el MVP esta operación corresponde
+                 * exclusivamente al SUPER_ADMIN.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/domains/verify"
+                )
+                .hasRole("SUPER_ADMIN")
+
+                /*
+                 * Mutaciones del dominio tenant.
+                 */
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/domains",
+                    "/admin/domains/disconnect"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .DOMAIN_MANAGE
+                        .authority()
+                )
+
+                /*
+                 * Pantalla de dominio.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/domains",
+                    "/admin/domains/"
+                )
+                .hasAuthority(
+                    AdminPermission
+                        .DOMAIN_VIEW
+                        .authority()
+                )
+
+                /*
+                 * Fail closed:
+                 * toda operación futura bajo /admin/domains debe recibir
+                 * una clasificación explícita antes de quedar accesible.
                  */
                 .requestMatchers(
                     "/admin/domains",

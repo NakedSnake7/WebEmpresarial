@@ -13,6 +13,10 @@ import jakarta.persistence.*;
         @UniqueConstraint(
             name = "uk_store_dominio",
             columnNames = "dominio"
+        ),
+        @UniqueConstraint(
+            name = "uk_store_custom_domain",
+            columnNames = "custom_domain"
         )
     }
 )
@@ -46,6 +50,15 @@ public class Store {
 
     @Column(nullable = false)
     private String dominio;
+
+    @Column(name = "custom_domain", length = 253)
+    private String customDomain;
+
+    @Column(
+        name = "custom_domain_verified",
+        nullable = false
+    )
+    private boolean customDomainVerified = false;
 
     @Column(nullable = false)
     private boolean activa = true;
@@ -169,6 +182,25 @@ public class Store {
 
     public void setDominio(String dominio) {
         this.dominio = dominio;
+    }
+
+    public String getCustomDomain() {
+        return customDomain;
+    }
+
+    public void setCustomDomain(String customDomain) {
+        this.customDomain = customDomain;
+    }
+
+    public boolean isCustomDomainVerified() {
+        return customDomainVerified;
+    }
+
+    public void setCustomDomainVerified(
+            boolean customDomainVerified
+    ) {
+        this.customDomainVerified =
+                customDomainVerified;
     }
 
     public boolean isActiva() {

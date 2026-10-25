@@ -39,6 +39,13 @@ public class PlatformFeatures implements PlatformModule {
                                         AdminPermission.ANALYTICS_VIEW
                                 )
                                 .item(
+                                        "Dominio",
+                                        "🌐",
+                                        "/admin/domains",
+                                        Feature.CUSTOM_DOMAIN,
+                                        AdminPermission.DOMAIN_VIEW
+                                )
+                                .item(
                                         "Usuarios",
                                         "👥",
                                         "/admin/users",
@@ -84,7 +91,7 @@ public class PlatformFeatures implements PlatformModule {
                 .healthWeight(8)
                 .order(310)
                 .accessPolicy(pro())
-                .presentation(unimplementedPresentation())
+                .presentation(visible(false, true, false))
                 .build();
     }
 
@@ -142,16 +149,6 @@ public class PlatformFeatures implements PlatformModule {
                 .order(340)
                 .accessPolicy(premium())
                 .presentation(hiddenFromSidebar(false, false))
-                .build();
-    }
-
-    private FeaturePresentation unimplementedPresentation() {
-        return FeaturePresentation.builder()
-                .showInSidebar(false)
-                .showInDashboard(false)
-                .showInBilling(true)
-                .showUpgradeCard(true)
-                .trackUsage(false)
                 .build();
     }
 
