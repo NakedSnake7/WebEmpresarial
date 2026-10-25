@@ -1,7 +1,6 @@
 package com.webempresarial.store.config;
 
 import com.webempresarial.store.entity.StoreSettings;
-import com.webempresarial.store.exceptions.StoreNotFoundException;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.service.StoreContextService;
@@ -33,8 +32,6 @@ public class StoreViewAdvice {
     public Store store(HttpServletRequest request) {
         try {
             return storeContextService.getCurrentStore(request);
-        } catch (StoreNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             return null;
         }
@@ -52,8 +49,6 @@ public class StoreViewAdvice {
 
             return storeSettingsService.getOrCreate(store);
 
-        } catch (StoreNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             return null;
         }
