@@ -329,6 +329,74 @@
         </div>
     </div>
 
+    <!-- ONBOARDING RECOVERY -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                        align-items-start gap-3 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">
+                        Onboarding Recovery
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        Reenvía la invitación de activación
+                        de una cuenta administrativa que
+                        todavía no ha sido activada.
+                    </p>
+                </div>
+
+                <span class="badge text-bg-warning">
+                    Platform Only
+                </span>
+            </div>
+
+            <div th:if="${platformOperationSuccess != null}"
+                 class="alert alert-success"
+                 th:text="${platformOperationSuccess}">
+            </div>
+
+            <div th:if="${platformOperationError != null}"
+                 class="alert alert-danger"
+                 th:text="${platformOperationError}">
+            </div>
+
+            <form method="post"
+                  th:action="@{/admin/platform/operations/resend-activation}"
+                  class="row g-3 align-items-end">
+
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <div class="col-md-6">
+                    <label for="adminUserId"
+                           class="form-label">
+                        Admin User ID
+                    </label>
+
+                    <input id="adminUserId"
+                           name="adminUserId"
+                           type="number"
+                           min="1"
+                           required
+                           class="form-control"
+                           placeholder="Ej. 42">
+                </div>
+
+                <div class="col-md-auto">
+                    <button type="submit"
+                            class="btn btn-dark">
+                        Reenviar activación
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
 </section>
 
 </th:block>
