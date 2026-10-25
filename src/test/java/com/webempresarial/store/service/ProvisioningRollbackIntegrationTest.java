@@ -1,14 +1,9 @@
 package com.webempresarial.store.service;
 
-import static org.assertj.core.api.Assertions
-        .assertThat;
-import static org.assertj.core.api.Assertions
-        .assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.event.AdminAccountCreatedEvent;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.repository.AdminAccountActivationTokenRepository;
 import com.webempresarial.store.repository.AdminUserRepository;
@@ -16,15 +11,22 @@ import com.webempresarial.store.repository.StoreRepository;
 import com.webempresarial.store.repository.StoreSettingsRepository;
 import com.webempresarial.store.repository.SubscriptionRepository;
 
+import jakarta.persistence.EntityManager;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.event.EventListener;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @ActiveProfiles("dev")
+@Import(
+        ProvisioningRollbackIntegrationTest
+                .FailingProvisioningEventListener.class
+)
 class ProvisioningRollbackIntegrationTest {
 
     @Autowired
@@ -48,12 +50,12 @@ class ProvisioningRollbackIntegrationTest {
     private AdminAccountActivationTokenRepository
             activationTokenRepository;
 
-    @MockitoBean
-    private AdminAccountActivationService
-            activationService;
+    @Autowired
+    private FailingProvisioningEventListener
+            failingListener;
 
     @Test
-    void failureAfterTenantPersistenceMustRollbackWholeProvisioning() {
+    void failureAfterActivationTokenPersistenceMustRollbackWholeProvisioning() {
 
         long suffix =
                 System.currentTimeMillis();
@@ -94,30 +96,23 @@ class ProvisioningRollbackIntegrationTest {
                 activationTokenRepository.count();
 
         /*
-         * createToken() ocurre después de:
+         * El listener de prueba es síncrono.
+         *
+         * ProvisioningService publica AdminAccountCreatedEvent
+         * únicamente después de que:
          *
          * - Store
          * - StoreSettings
          * - Subscription
          * - STORE_OWNER
+         * - AdminAccountActivationToken
          *
-         * Forzamos flush de todo el persistence context
-         * antes del fallo para demostrar rollback DB-real,
-         * no únicamente descarte de entidades pendientes.
+         * ya fueron creados.
+         *
+         * El listener fuerza EntityManager.flush(), verifica que
+         * el token real existe dentro de la transacción y sólo
+         * entonces lanza la excepción.
          */
-        doAnswer(invocation -> {
-
-            storeRepository.flush();
-
-            throw new IllegalStateException(
-                    "forced activation token failure"
-            );
-
-        }).when(activationService)
-                .createToken(
-                        any(AdminUser.class)
-                );
-
         assertThatThrownBy(() ->
                 provisioningService
                         .provisionStoreFromCheckout(
@@ -135,13 +130,18 @@ class ProvisioningRollbackIntegrationTest {
                 IllegalStateException.class
         )
         .hasMessage(
-                "forced activation token failure"
+                "forced post-token event failure"
         );
 
-        verify(activationService)
-                .createToken(
-                        any(AdminUser.class)
-                );
+        String observedToken =
+                failingListener.getObservedToken();
+
+        /*
+         * Demuestra que alcanzamos realmente el punto posterior
+         * a la creación del activation token.
+         */
+        assertThat(observedToken)
+                .isNotBlank();
 
         /*
          * Ninguna parte del tenant puede sobrevivir.
@@ -164,8 +164,17 @@ class ProvisioningRollbackIntegrationTest {
         ).isEmpty();
 
         /*
-         * También verificamos que las tablas completas
-         * conservan exactamente sus cardinalidades.
+         * El token fue observado como persistido dentro de la
+         * transacción y debe desaparecer después del rollback.
+         */
+        assertThat(
+                activationTokenRepository
+                        .findByToken(observedToken)
+        ).isEmpty();
+
+        /*
+         * Las tablas completas deben conservar exactamente
+         * sus cardinalidades anteriores.
          */
         assertThat(storeRepository.count())
                 .isEqualTo(storesBefore);
@@ -181,5 +190,62 @@ class ProvisioningRollbackIntegrationTest {
 
         assertThat(activationTokenRepository.count())
                 .isEqualTo(tokensBefore);
+    }
+
+    static class FailingProvisioningEventListener {
+
+        private final EntityManager entityManager;
+
+        private final AdminAccountActivationTokenRepository
+                activationTokenRepository;
+
+        private String observedToken;
+
+        FailingProvisioningEventListener(
+                EntityManager entityManager,
+                AdminAccountActivationTokenRepository
+                        activationTokenRepository
+        ) {
+            this.entityManager = entityManager;
+            this.activationTokenRepository =
+                    activationTokenRepository;
+        }
+
+        @EventListener
+        public void failAfterActivationTokenPersistence(
+                AdminAccountCreatedEvent event
+        ) {
+
+            /*
+             * Fuerza INSERT/UPDATE reales antes del fallo.
+             *
+             * El flush incluye Store, Settings, Subscription,
+             * AdminUser y ActivationToken.
+             */
+            entityManager.flush();
+
+            /*
+             * No basta con confiar en que createToken() fue llamado:
+             * verificamos que el token es consultable dentro de la
+             * misma transacción antes de provocar el rollback.
+             */
+            assertThat(
+                    activationTokenRepository
+                            .findByToken(
+                                    event.activationToken()
+                            )
+            ).isPresent();
+
+            observedToken =
+                    event.activationToken();
+
+            throw new IllegalStateException(
+                    "forced post-token event failure"
+            );
+        }
+
+        String getObservedToken() {
+            return observedToken;
+        }
     }
 }
