@@ -21,6 +21,11 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, Long> {
 
     List<AdminUser> findByRole(AdminRole role);
 
+    boolean existsByStoreIdAndRole(
+            Long storeId,
+            AdminRole role
+    );
+
     Optional<AdminUser> findByIdAndStoreId(
             Long id,
             Long storeId

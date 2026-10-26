@@ -210,7 +210,7 @@ public class ProvisioningService {
         return savedStore;
     }
 
-    private void createStoreOwner(
+    private AdminUser createStoreOwner(
             Store store,
             String ownerName,
             String email
@@ -263,6 +263,89 @@ public class ProvisioningService {
                         store.getDominio(),
                         activationToken.getToken()
                 )
+        );
+
+        return savedAdmin;
+    }
+
+    @Transactional
+    public AdminUser provisionOwnerForExistingStore(
+            Long storeId,
+            String ownerName,
+            String email
+    ) {
+
+        if (storeId == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+
+        Store store =
+                storeRepository
+                        .findById(storeId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "La tienda no existe"
+                                )
+                        );
+
+        if (!store.isActiva()) {
+            throw new IllegalStateException(
+                    "La tienda está desactivada"
+            );
+        }
+
+        /*
+         * Una Store operativa de plataforma o un registro local
+         * no debe recibir un tenant owner por esta vía.
+         *
+         * La Subscription identifica que se trata de un tenant SaaS.
+         */
+        if (subscriptionRepository
+                .findByStoreId(storeId)
+                .isEmpty()) {
+
+            throw new IllegalStateException(
+                    "La tienda no tiene una suscripción SaaS asociada"
+            );
+        }
+
+        if (adminUserRepository
+                .existsByStoreIdAndRole(
+                        storeId,
+                        AdminRole.STORE_OWNER
+                )) {
+
+            throw new IllegalStateException(
+                    "La tienda ya tiene un propietario"
+            );
+        }
+
+        if (ownerName == null
+                || ownerName.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "El nombre del propietario es obligatorio"
+            );
+        }
+
+        String normalizedEmail =
+                normalizeEmail(email);
+
+        if (adminUserRepository
+                .existsByEmail(normalizedEmail)) {
+
+            throw new IllegalStateException(
+                    "El correo ya está asociado "
+                    + "a una cuenta administrativa"
+            );
+        }
+
+        return createStoreOwner(
+                store,
+                ownerName.trim(),
+                normalizedEmail
         );
     }
 

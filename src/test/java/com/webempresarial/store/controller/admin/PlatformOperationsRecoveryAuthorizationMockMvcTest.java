@@ -42,6 +42,8 @@ import com.webempresarial.store.service
 import com.webempresarial.store.service
         .PlatformOperationsService;
 import com.webempresarial.store.service
+        .ProvisioningService;
+import com.webempresarial.store.service
         .StoreContextService;
 import com.webempresarial.store.service
         .StoreSettingsService;
@@ -76,6 +78,9 @@ class PlatformOperationsRecoveryAuthorizationMockMvcTest {
     @MockitoBean
     private AdminAccountInvitationResendService
             invitationResendService;
+
+    @MockitoBean
+    private ProvisioningService provisioningService;
 
     @MockitoBean
     private CustomerTenantAccessInterceptor
@@ -249,4 +254,137 @@ class PlatformOperationsRecoveryAuthorizationMockMvcTest {
                 invitationResendService
         );
     }
+    @Test
+    void superAdminCanCreateOwnerForExistingTenant()
+            throws Exception {
+
+        com.webempresarial.store.model.AdminUser owner =
+                new com.webempresarial.store.model.AdminUser();
+
+        owner.setId(42L);
+
+        org.mockito.Mockito.when(
+                provisioningService
+                        .provisionOwnerForExistingStore(
+                                4L,
+                                "Stride Owner",
+                                "owner@stride.test"
+                        )
+        ).thenReturn(owner);
+
+        mockMvc.perform(
+                post(
+                        "/admin/platform/operations/"
+                        + "create-owner"
+                )
+                .param("storeId", "4")
+                .param(
+                        "fullName",
+                        "Stride Owner"
+                )
+                .param(
+                        "email",
+                        "owner@stride.test"
+                )
+                .with(
+                        user("root@test")
+                                .roles("SUPER_ADMIN")
+                )
+                .with(csrf())
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        )
+        .andExpect(
+                redirectedUrl(
+                        "/admin/platform/operations"
+                )
+        )
+        .andExpect(
+                flash().attribute(
+                        "platformOperationSuccess",
+                        "Propietario creado. "
+                        + "Invitación de activación generada. "
+                        + "Admin ID: 42"
+                )
+        );
+
+        verify(provisioningService)
+                .provisionOwnerForExistingStore(
+                        4L,
+                        "Stride Owner",
+                        "owner@stride.test"
+                );
+    }
+
+    @Test
+    void tenantRolesCannotCreateOwnerForExistingTenant()
+            throws Exception {
+
+        for (String role : List.of(
+                "STORE_OWNER",
+                "STORE_ADMIN",
+                "STORE_STAFF",
+                "SALES"
+        )) {
+
+            mockMvc.perform(
+                    post(
+                            "/admin/platform/operations/"
+                            + "create-owner"
+                    )
+                    .param("storeId", "4")
+                    .param(
+                            "fullName",
+                            "Stride Owner"
+                    )
+                    .param(
+                            "email",
+                            "owner@stride.test"
+                    )
+                    .with(
+                            user(role + "@test")
+                                    .roles(role)
+                    )
+                    .with(csrf())
+            )
+            .andExpect(
+                    status().isForbidden()
+            );
+        }
+
+        org.mockito.Mockito.verifyNoInteractions(
+                provisioningService
+        );
+    }
+
+    @Test
+    void anonymousCannotCreateOwnerForExistingTenant()
+            throws Exception {
+
+        mockMvc.perform(
+                post(
+                        "/admin/platform/operations/"
+                        + "create-owner"
+                )
+                .param("storeId", "4")
+                .param(
+                        "fullName",
+                        "Stride Owner"
+                )
+                .param(
+                        "email",
+                        "owner@stride.test"
+                )
+                .with(csrf())
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        );
+
+        org.mockito.Mockito.verifyNoInteractions(
+                provisioningService
+        );
+    }
+
 }

@@ -361,6 +361,77 @@
                  th:text="${platformOperationError}">
             </div>
 
+            <div class="border rounded p-3 mb-4">
+                <h6 class="fw-bold mb-1">
+                    Crear propietario para tenant existente
+                </h6>
+
+                <p class="text-muted small">
+                    Recupera una tienda provisionada sin STORE_OWNER.
+                    La cuenta se crea deshabilitada y el propietario
+                    deberá establecer su contraseña mediante el enlace
+                    de activación.
+                </p>
+
+                <form method="post"
+                      th:action="@{/admin/platform/operations/create-owner}"
+                      class="row g-3">
+
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+
+                    <div class="col-md-2">
+                        <label for="ownerStoreId"
+                               class="form-label">
+                            Store ID
+                        </label>
+
+                        <input id="ownerStoreId"
+                               name="storeId"
+                               type="number"
+                               min="1"
+                               required
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="ownerFullName"
+                               class="form-label">
+                            Propietario
+                        </label>
+
+                        <input id="ownerFullName"
+                               name="fullName"
+                               type="text"
+                               required
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="ownerEmail"
+                               class="form-label">
+                            Email
+                        </label>
+
+                        <input id="ownerEmail"
+                               name="email"
+                               type="email"
+                               required
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            Crear owner
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
             <form method="post"
                   th:action="@{/admin/platform/operations/resend-activation}"
                   class="row g-3 align-items-end">
