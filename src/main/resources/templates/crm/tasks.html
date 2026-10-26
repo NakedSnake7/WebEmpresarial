@@ -21,15 +21,11 @@
             </p>
         </div>
 
-        <div class="crm-header-actions">
-            <a th:if="${canViewCrm}"
-               href="/crm/dashboard"
-               class="crm-btn">Dashboard</a>
-            <a th:if="${canViewPipeline}"
-               href="/crm/pipeline"
-               class="crm-btn crm-btn-primary">Pipeline</a>
-        </div>
+
     </div>
+
+    <div th:replace="~{admin/fragments/crm-workspace
+             :: tabs('tasks')}"></div>
 
     <div class="crm-toolbar">
         <input id="crmTaskSearch" class="crm-search" type="search"

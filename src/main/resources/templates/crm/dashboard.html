@@ -39,17 +39,11 @@
             </p>
         </div>
 
-        <div class="crm-header-actions">
-            <a th:if="${canViewPipeline}"
-               href="/crm/pipeline"
-               class="crm-btn crm-btn-primary">
-                Ver pipeline
-            </a>
-            <a href="/crm/tasks" class="crm-btn">
-                Tareas
-            </a>
-        </div>
+
     </div>
+
+    <div th:replace="~{admin/fragments/crm-workspace
+             :: tabs('summary')}"></div>
 
 <div class="crm-metrics-grid">
 

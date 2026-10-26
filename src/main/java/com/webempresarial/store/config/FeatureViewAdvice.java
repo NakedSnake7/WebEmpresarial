@@ -77,6 +77,27 @@ public class FeatureViewAdvice {
             return "/admin/productos";
         }
 
+        /*
+         * CRM Workspace v1:
+         *
+         * Las subsecciones mantienen sus URLs y sus reglas
+         * independientes de feature/permisos. Únicamente
+         * comparten la identidad visual del workspace CRM.
+         *
+         * /crm/reports queda fuera porque pertenece a Analytics.
+         * /admin/store/crm/** queda fuera porque pertenece
+         * a Store / Settings.
+         */
+        if (path.equals("/crm/pipeline")
+                || path.startsWith("/crm/pipeline/")
+                || path.equals("/crm/tasks")
+                || path.startsWith("/crm/tasks/")
+                || path.equals("/admin/leads")
+                || path.startsWith("/admin/leads/")
+                || path.startsWith("/crm/leads/")) {
+            return "/crm/dashboard";
+        }
+
         return path;
     }
 

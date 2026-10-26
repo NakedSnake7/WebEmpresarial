@@ -17,7 +17,7 @@ class CrmPermissionContractTest {
             );
 
     @Test
-    void crmSidebarShouldUsePermissionsInsteadOfLegacyRoles()
+    void crmSidebarWorkspaceShouldRequireCrmView()
             throws IOException {
 
         String source = Files.readString(SOURCE);
@@ -33,16 +33,25 @@ class CrmPermissionContractTest {
 
         assertThat(normalized)
                 .contains(
-                        "Feature.CRM, AdminPermission.CRM_VIEW"
+                        "\"CRM\", \"📊\", "
+                        + "\"/crm/dashboard\", "
+                        + "Feature.CRM, "
+                        + "AdminPermission.CRM_VIEW"
                 )
-                .contains(
-                        "Feature.PIPELINE, AdminPermission.PIPELINE_VIEW"
+                .doesNotContain(
+                        "\"CRM Dashboard\""
                 )
-                .contains(
-                        "Feature.LEADS, AdminPermission.CRM_VIEW"
+                .doesNotContain(
+                        "\"Pipeline\", \"🎯\", "
+                        + "\"/crm/pipeline\""
                 )
-                .contains(
-                        "Feature.TASKS, AdminPermission.CRM_VIEW"
+                .doesNotContain(
+                        "\"Leads\", \"🗂️\", "
+                        + "\"/admin/leads\""
+                )
+                .doesNotContain(
+                        "\"Tareas\", \"✅\", "
+                        + "\"/crm/tasks\""
                 );
     }
 

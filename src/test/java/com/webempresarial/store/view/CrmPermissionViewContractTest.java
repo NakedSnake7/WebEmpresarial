@@ -83,25 +83,15 @@ class CrmPermissionViewContractTest {
     }
 
     @Test
-    void crmNavigationShouldRespectModulePermissions()
+    void crmWorkspaceNavigationShouldRespectModulePermissions()
             throws IOException {
 
-        String sidebar = read(
-                "src/main/resources/templates/crm/"
-                + "crm-sidebar.html"
+        String navigation = read(
+                "src/main/resources/templates/admin/fragments/"
+                + "crm-workspace.html"
         );
 
-        String dashboard = read(
-                "src/main/resources/templates/crm/"
-                + "dashboard.html"
-        );
-
-        String adminLeads = read(
-                "src/main/resources/templates/admin/leads/"
-                + "index.html"
-        );
-
-        assertThat(sidebar)
+        assertThat(navigation)
                 .contains(
                         "th:if=\"${canViewCrm}\""
                 )
@@ -109,23 +99,22 @@ class CrmPermissionViewContractTest {
                         "th:if=\"${canViewPipeline}\""
                 )
                 .contains(
-                        "th:if=\"${canViewAnalytics}\""
-                );
-
-        assertThat(dashboard)
-                .contains(
-                        "th:if=\"${canViewPipeline}\""
+                        "th:href=\"@{/crm/dashboard}\""
                 )
                 .contains(
-                        "<a th:if=\"${canViewPipeline}\""
+                        "th:href=\"@{/crm/pipeline}\""
                 )
                 .contains(
-                        "href=\"/crm/pipeline\">"
-                );
-
-        assertThat(adminLeads)
+                        "th:href=\"@{/admin/leads}\""
+                )
                 .contains(
-                        "th:if=\"${canViewPipeline}\""
+                        "th:href=\"@{/crm/tasks}\""
+                )
+                .doesNotContain(
+                        "canViewAnalytics"
+                )
+                .doesNotContain(
+                        "/crm/reports"
                 );
     }
 
@@ -146,7 +135,7 @@ class CrmPermissionViewContractTest {
                         "th:if=\"${canEditCrm}\""
                 )
                 .contains(
-                        "th:if=\"${canViewPipeline}\""
+                        ":: tabs('leads')"
                 );
     }
 

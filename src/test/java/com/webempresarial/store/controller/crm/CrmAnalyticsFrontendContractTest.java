@@ -1,5 +1,10 @@
 package com.webempresarial.store.controller.crm;
 
+import com.webempresarial.store.feature.catalog.PlatformFeatures;
+import com.webempresarial.store.feature.sidebar.SidebarItemDefinition;
+import com.webempresarial.store.model.AdminPermission;
+import com.webempresarial.store.model.Feature;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,24 +16,39 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CrmAnalyticsFrontendContractTest {
 
     @Test
-    void reportsNavigationShouldRequireAnalyticsPermission()
-            throws IOException {
+    void reportsNavigationShouldBelongToPlatformAnalytics() {
 
-        String sidebar = Files.readString(
-                Path.of(
-                        "src/main/resources/templates/"
-                                + "crm/crm-sidebar.html"
-                )
-        );
+        SidebarItemDefinition analytics =
+                new PlatformFeatures()
+                        .descriptor()
+                        .getSidebarSections()
+                        .stream()
+                        .flatMap(section ->
+                                section.getItems().stream()
+                        )
+                        .filter(item ->
+                                "/crm/reports".equals(
+                                        item.url()
+                                )
+                        )
+                        .findFirst()
+                        .orElseThrow();
 
-        assertThat(sidebar)
-                .contains(
-                        "th:if=\"${canViewAnalytics}\""
-                )
-                .contains(
-                        "th:href=\"@{/crm/reports}\""
+        assertThat(analytics.title())
+                .isEqualTo("Analytics");
+
+        assertThat(analytics.url())
+                .isEqualTo("/crm/reports");
+
+        assertThat(analytics.feature())
+                .isEqualTo(Feature.ANALYTICS);
+
+        assertThat(analytics.requiredPermission())
+                .isEqualTo(
+                        AdminPermission.ANALYTICS_VIEW
                 );
     }
+
     @Test
     void reportsViewShouldExistAndRenderAnalyticsMetrics()
             throws IOException {
@@ -81,6 +101,4 @@ class CrmAnalyticsFrontendContractTest {
                         "${analytics.overdueTasks}"
                 );
     }
-
-
 }

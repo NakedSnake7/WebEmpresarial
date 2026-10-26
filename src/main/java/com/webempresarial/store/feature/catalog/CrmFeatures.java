@@ -50,34 +50,16 @@ public class CrmFeatures implements PlatformModule {
 	            .feature(proposals())
 
 	            .sidebarSection(
-	                    SidebarSectionDefinition.builder("CRM Comercial", "📊")
+	                    SidebarSectionDefinition.builder(
+                                    "CRM Comercial",
+                                    "📊"
+                            )
 	                            .item(
-                                    "CRM Dashboard",
+                                    "CRM",
                                     "📊",
                                     "/crm/dashboard",
                                     Feature.CRM,
-                                        AdminPermission.CRM_VIEW
-                            )
-	                            .item(
-                                    "Pipeline",
-                                    "🎯",
-                                    "/crm/pipeline",
-                                    Feature.PIPELINE,
-                                        AdminPermission.PIPELINE_VIEW
-                            )
-	                            .item(
-                                    "Leads",
-                                    "🗂️",
-                                    "/admin/leads",
-                                    Feature.LEADS,
-                                        AdminPermission.CRM_VIEW
-                            )
-	                            .item(
-                                    "Tareas",
-                                    "✅",
-                                    "/crm/tasks",
-                                    Feature.TASKS,
-                                        AdminPermission.CRM_VIEW
+                                    AdminPermission.CRM_VIEW
                             )
 	                            .build()
 	            )

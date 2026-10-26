@@ -17,7 +17,7 @@
         <div>
 
             <span class="badge text-bg-success mb-2">
-                CRM Legacy
+                CRM
             </span>
 
             <h1 class="fw-bold mb-1">
@@ -32,13 +32,7 @@
 
         <div class="d-flex gap-2">
 
-            <a th:if="${canViewPipeline}"
-               href="/crm/pipeline"
-               class="btn btn-dark">
 
-                Abrir CRM Pipeline
-
-            </a>
 
             <span class="badge rounded-pill text-bg-dark fs-6"
                   th:text="${#lists.size(leads) + ' leads'}">
@@ -47,6 +41,9 @@
         </div>
 
     </div>
+
+    <div th:replace="~{admin/fragments/crm-workspace
+             :: tabs('leads')}"></div>
 
     <div class="card border-0 shadow-sm">
 
