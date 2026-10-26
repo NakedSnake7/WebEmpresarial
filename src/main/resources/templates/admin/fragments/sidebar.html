@@ -3,13 +3,49 @@
        id="adminSidebar">
 
     <div class="sidebar-brand">
-        <div class="brand-logo">WE</div>
+
+        <div class="brand-logo">
+
+            <!-- Tenant branding -->
+            <img th:if="${store != null}"
+                 class="brand-logo-image"
+                 th:src="${
+                    !#strings.isEmpty(store.logoUrl)
+                        ? store.logoUrl
+                        : (
+                            !#strings.isEmpty(store.faviconUrl)
+                                ? store.faviconUrl
+                                : (
+                                    !#strings.isEmpty(store.theme)
+                                        ? '/themes/' + store.theme + '/favicon.ico'
+                                        : '/themes/WebEmpresarial/favicon.ico'
+                                )
+                        )
+                 }"
+                 th:alt="${store.nombre}">
+
+            <!-- Platform branding -->
+            <img th:if="${store == null}"
+                 class="brand-logo-image"
+                 src="/themes/WebEmpresarial/favicon.ico"
+                 alt="WebEmpresarial">
+
+        </div>
 
         <div class="sidebar-text">
-            <strong>WebEmpresarial</strong>
-            <small th:text="${store != null ? currentPlan : 'Commerce Admin'}">
-                Commerce Admin
+
+            <strong th:text="${store != null
+                ? store.nombre
+                : 'WebEmpresarial'}">
+                WebEmpresarial
+            </strong>
+
+            <small th:text="${store != null
+                ? store.plan
+                : 'Platform Admin'}">
+                Platform Admin
             </small>
+
         </div>
 
         <button type="button"
@@ -18,6 +54,7 @@
                 aria-label="Plegar menú">
             ☰
         </button>
+
     </div>
 
     <nav class="sidebar-nav">

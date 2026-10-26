@@ -46,7 +46,7 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.CRM, "crm_dashboard");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "CRM Dashboard | WebEmpresarial");
+        model.addAttribute("title", "CRM Dashboard");
 
         return "crm/dashboard";
     }
@@ -59,7 +59,7 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.PIPELINE, "crm_pipeline");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "Pipeline Comercial | WebEmpresarial");
+        model.addAttribute("title", "Pipeline Comercial");
 
         return "crm/pipeline";
     }
@@ -72,7 +72,7 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.TASKS, "crm_tasks");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "Tareas Comerciales | WebEmpresarial");
+        model.addAttribute("title", "Tareas Comerciales");
 
         return "crm/tasks";
     }
@@ -85,7 +85,7 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.ANALYTICS, "crm_reports");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "Analytics CRM | WebEmpresarial");
+        model.addAttribute("title", "Analytics CRM");
         model.addAttribute(
                 "analytics",
                 crmDashboardService.getDashboard(store.getId())
@@ -105,7 +105,7 @@ public class CrmViewController {
         featureUsageService.track(store, Feature.LEADS, "crm_lead_detail");
 
         model.addAttribute("crmPage", true);
-        model.addAttribute("title", "Detalle Lead | WebEmpresarial");
+        model.addAttribute("title", "Detalle Lead");
         model.addAttribute("lead", leadService.getDetail(id, store.getId()));
 
         return "crm/lead-detail";

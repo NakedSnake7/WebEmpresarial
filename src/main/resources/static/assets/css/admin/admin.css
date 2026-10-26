@@ -231,3 +231,157 @@ CSS del enlace activo
     background: currentColor;
 }
 
+
+/* ==========================================================
+   TENANT BRANDING
+   ========================================================== */
+
+.sidebar-brand .brand-logo {
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    padding: 3px;
+}
+
+.sidebar-brand .brand-logo-image {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    border-radius: 9px;
+}
+
+/* ==========================================================
+   COLLAPSED SIDEBAR TOGGLE
+   El toggle no consume espacio dentro del sidebar.
+   ========================================================== */
+
+.admin-sidebar {
+    position: relative;
+}
+
+.admin-sidebar.collapsed .sidebar-brand {
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle {
+    position: absolute;
+
+    top: 18px;
+    right: -15px;
+
+    margin-left: 0;
+
+    width: 30px;
+    height: 30px;
+
+    border-radius: 999px;
+
+    background: #1e293b;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+
+    box-shadow:
+        0 6px 18px rgba(15, 23, 42, 0.28);
+
+    z-index: 20;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle:hover {
+    background: #334155;
+}
+
+/* ==========================================================
+   COLLAPSED ACTIVE INDICATOR
+   No desplaza el icono del enlace activo.
+   ========================================================== */
+
+.admin-sidebar.collapsed .sidebar-link {
+    position: relative;
+}
+
+.admin-sidebar.collapsed .sidebar-link.active::before {
+    position: absolute;
+
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+
+    width: 3px;
+
+    align-self: auto;
+}
+
+/* ==========================================================
+   COLLAPSED NAV ITEMS
+   Iconos centrados y contenidos dentro del sidebar.
+   ========================================================== */
+
+.admin-sidebar.collapsed .sidebar-nav {
+    justify-items: center;
+}
+
+.admin-sidebar.collapsed .sidebar-link {
+    width: 48px;
+    height: 48px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+}
+
+.admin-sidebar.collapsed .sidebar-link:hover {
+    transform: none;
+}
+
+.admin-sidebar.collapsed .sidebar-icon {
+    width: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .sidebar-link.active::before {
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+}
+
+/* ==========================================================
+   COMPACT COLLAPSED SIDEBAR
+   42px logo + 8px de margen por lado
+   ========================================================== */
+
+.admin-sidebar.collapsed {
+    width: 58px;
+    min-width: 58px;
+
+    padding-left: 8px;
+    padding-right: 8px;
+
+    box-sizing: border-box;
+}
+
+.admin-sidebar.collapsed .sidebar-brand {
+    width: 42px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.admin-sidebar.collapsed .sidebar-nav {
+    width: 42px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.admin-sidebar.collapsed .sidebar-footer {
+    width: 42px;
+    margin-left: auto;
+    margin-right: auto;
+}

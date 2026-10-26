@@ -2,7 +2,7 @@
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{admin/layout/main :: layout(
-        'Dashboard | WebEmpresarial Admin',
+        'Dashboard',
         ~{::content}
 )}">
 
@@ -13,7 +13,12 @@
 <section class="container-fluid">
 
     <div class="mb-4">
-        <span class="badge text-bg-success mb-2">WebEmpresarial Admin</span>
+        <span class="badge text-bg-success mb-2"
+              th:text="${store != null
+                  ? store.nombre + ' Admin'
+                  : 'WebEmpresarial Admin'}">
+            Panel administrativo
+        </span>
         <h1 class="fw-bold mb-1">Centro de gestión</h1>
         <p class="text-muted mb-0">
             Administra leads, productos, pedidos, clientes y automatizaciones desde un solo lugar.
