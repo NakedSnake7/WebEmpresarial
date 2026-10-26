@@ -98,6 +98,18 @@ public class FeatureViewAdvice {
             return "/crm/dashboard";
         }
 
+        /*
+         * Store / Settings Workspace v1:
+         *
+         * La configuración CRM conserva sus propias rutas,
+         * permisos y feature gates. Únicamente pertenece
+         * visualmente al workspace Configuración.
+         */
+        if (path.equals("/admin/store/crm")
+                || path.startsWith("/admin/store/crm/")) {
+            return "/admin/store/settings";
+        }
+
         return path;
     }
 

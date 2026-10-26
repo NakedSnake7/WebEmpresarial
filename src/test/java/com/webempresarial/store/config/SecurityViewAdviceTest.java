@@ -131,6 +131,34 @@ class SecurityViewAdviceTest {
     }
 
     @Test
+    void storeViewPermissionShouldControlSettingsVisibility() {
+
+        Authentication viewOnly = authentication(
+                AdminPermission.STORE_VIEW.authority()
+        );
+
+        Authentication editOnly = authentication(
+                AdminPermission.STORE_EDIT.authority()
+        );
+
+        assertThat(
+                advice.canViewStoreSettings(viewOnly)
+        ).isTrue();
+
+        assertThat(
+                advice.canManageStoreSettings(viewOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canViewStoreSettings(editOnly)
+        ).isFalse();
+
+        assertThat(
+                advice.canManageStoreSettings(editOnly)
+        ).isTrue();
+    }
+
+    @Test
     void brandingPermissionShouldControlLogoManagement() {
 
         Authentication branding = authentication(

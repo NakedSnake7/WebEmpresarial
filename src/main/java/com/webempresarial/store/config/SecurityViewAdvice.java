@@ -258,6 +258,14 @@ public class SecurityViewAdvice {
         );
     }
 
+    @ModelAttribute("canViewStoreSettings")
+    public boolean canViewStoreSettings(Authentication auth) {
+        return hasAuthority(
+                auth,
+                AdminPermission.STORE_VIEW.authority()
+        );
+    }
+
     @ModelAttribute("canManageStoreSettings")
     public boolean canManageStoreSettings(Authentication auth) {
         return hasAuthority(

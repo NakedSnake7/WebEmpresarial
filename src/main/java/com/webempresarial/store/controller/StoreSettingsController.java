@@ -198,7 +198,7 @@ public class StoreSettingsController {
                         BigDecimal.ZERO
                 ) < 0) {
 
-            return "redirect:/modificar-precios?shippingError";
+            return "redirect:/admin/store/settings?tab=payments&shippingError#payments";
         }
 
         if (freeShippingEnabled
@@ -209,7 +209,7 @@ public class StoreSettingsController {
                         ) <= 0
                 )) {
 
-            return "redirect:/modificar-precios?shippingError";
+            return "redirect:/admin/store/settings?tab=payments&shippingError#payments";
         }
 
         StoreSettings settings =
@@ -236,7 +236,7 @@ public class StoreSettingsController {
 
         storeSettingsService.save(settings);
 
-        return "redirect:/modificar-precios?shippingSuccess";
+        return "redirect:/admin/store/settings?tab=payments&shippingSuccess#payments";
     }
 
     @PostMapping("/transfer")

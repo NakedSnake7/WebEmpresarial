@@ -766,7 +766,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingSuccess"
+                        "redirect:/admin/store/settings?tab=payments&shippingSuccess#payments"
                 );
 
         assertThat(settings.isFreeShippingEnabled())
@@ -799,7 +799,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingSuccess"
+                        "redirect:/admin/store/settings?tab=payments&shippingSuccess#payments"
                 );
 
         assertThat(settings.getShippingCost())
@@ -833,7 +833,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingSuccess"
+                        "redirect:/admin/store/settings?tab=payments&shippingSuccess#payments"
                 );
 
         assertThat(settings.isFreeShippingEnabled())
@@ -867,7 +867,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingError"
+                        "redirect:/admin/store/settings?tab=payments&shippingError#payments"
                 );
 
         verify(storeContextService)
@@ -894,7 +894,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingSuccess"
+                        "redirect:/admin/store/settings?tab=payments&shippingSuccess#payments"
                 );
 
         assertThat(settings.getShippingCost())
@@ -919,7 +919,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingError"
+                        "redirect:/admin/store/settings?tab=payments&shippingError#payments"
                 );
 
         verify(storeContextService)
@@ -947,7 +947,7 @@ assertThat(saved.getFooterText())
 
         assertThat(result)
                 .isEqualTo(
-                        "redirect:/modificar-precios?shippingError"
+                        "redirect:/admin/store/settings?tab=payments&shippingError#payments"
                 );
 
         verify(storeContextService)

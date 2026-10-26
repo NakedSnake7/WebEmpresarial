@@ -363,20 +363,18 @@
 
 <a href="/admin/store/settings"
    class="sidebar-link"
-   th:if="${canManageStoreSettings}"
-   th:classappend="${currentPath.startsWith('/admin/store/settings')}
-                    ? ' active' : ''">
+   th:if="${canViewStoreSettings}"
+   th:classappend="${
+       sidebarActivePath != null
+       and (
+           sidebarActivePath == '/admin/store/settings'
+           or sidebarActivePath.startsWith(
+               '/admin/store/settings/'
+           )
+       )
+   } ? ' active' : ''">
     <span class="sidebar-icon">⚙️</span>
-    <span class="sidebar-text">General tienda</span>
-</a>
-
-<a href="/admin/store/crm"
-   class="sidebar-link"
-   th:if="${canManageStoreSettings}"
-   th:classappend="${currentPath.startsWith('/admin/store/crm')}
-                    ? ' active' : ''">
-    <span class="sidebar-icon">📊</span>
-    <span class="sidebar-text">CRM Settings</span>
+    <span class="sidebar-text">Configuración</span>
 </a>
 
     <div class="sidebar-footer">

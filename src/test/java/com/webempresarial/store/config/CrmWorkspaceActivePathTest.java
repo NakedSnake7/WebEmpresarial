@@ -91,7 +91,7 @@ class CrmWorkspaceActivePathTest {
     }
 
     @Test
-    void crmStoreSettingsShouldRemainOutsideCrmWorkspace() {
+    void crmStoreSettingsShouldDelegateToSettingsWorkspace() {
 
         when(request.getRequestURI())
                 .thenReturn(
@@ -100,7 +100,7 @@ class CrmWorkspaceActivePathTest {
 
         assertThat(advice.sidebarActivePath(request))
                 .isEqualTo(
-                        "/admin/store/crm/pipeline"
+                        "/admin/store/settings"
                 );
     }
 }

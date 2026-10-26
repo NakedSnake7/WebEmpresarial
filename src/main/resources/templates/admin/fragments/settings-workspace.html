@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="tabs(activeTab)"
+     class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-2">
+
+        <nav class="nav nav-pills gap-1 flex-wrap"
+             aria-label="Secciones de configuración">
+
+            <a href="/admin/store/settings?tab=general#general"
+               class="nav-link"
+               th:classappend="${activeTab == 'general'}
+                   ? ' active'
+                   : ''">
+                General
+            </a>
+
+            <a href="/admin/store/settings?tab=identity#identity"
+               class="nav-link"
+               th:classappend="${activeTab == 'identity'}
+                   ? ' active'
+                   : ''">
+                Identidad
+            </a>
+
+            <a href="/admin/store/settings?tab=commercial#commercial"
+               class="nav-link"
+               th:classappend="${activeTab == 'commercial'}
+                   ? ' active'
+                   : ''">
+                Información comercial
+            </a>
+
+            <a href="/admin/store/settings?tab=payments#payments"
+               class="nav-link"
+               th:classappend="${activeTab == 'payments'}
+                   ? ' active'
+                   : ''">
+                Pagos
+            </a>
+
+            <a th:if="${canManageStoreSettings}"
+               href="/admin/store/crm"
+               class="nav-link"
+               th:classappend="${activeTab == 'crm'}
+                   ? ' active'
+                   : ''">
+                CRM
+            </a>
+
+            <a th:if="${canManageWhiteLabel}"
+               href="/admin/store/settings?tab=advanced#advanced"
+               class="nav-link"
+               th:classappend="${activeTab == 'advanced'}
+                   ? ' active'
+                   : ''">
+                Avanzado
+            </a>
+
+        </nav>
+
+    </div>
+</div>
+
+</body>
+</html>

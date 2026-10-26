@@ -63,6 +63,12 @@ class CommerceWorkspaceViewContractTest {
                 .doesNotContain(
                     "← Productos"
                 )
+                .doesNotContain(
+                    "Política de envío"
+                )
+                .doesNotContain(
+                    "/admin/store/settings/shipping"
+                )
                 .contains(
                     "th:if=\"${canCreateProducts}\""
                 );
