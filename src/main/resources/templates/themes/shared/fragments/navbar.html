@@ -63,9 +63,19 @@
                         Mis pedidos
                     </a>
 
-                    <a th:href="@{/logout}">
-                        Cerrar sesión
-                    </a>
+                    <form th:action="@{/logout}"
+                          method="post"
+                          class="logout-form">
+
+                        <th:block th:replace="~{fragments/csrf :: token}">
+                        </th:block>
+
+                        <button type="submit"
+                                class="customer-logout-button">
+                            Cerrar sesión
+                        </button>
+
+                    </form>
                 </div>
 
                 <div sec:authorize="isAnonymous()">

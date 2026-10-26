@@ -17,16 +17,86 @@
         Ordenar ahora
       </a>
 
-      <button type="button"
-              class="nav-auth-btn"
-              data-bs-toggle="modal"
-              data-bs-target="#registroModal">
-        Crear cuenta
-      </button>
+      <!-- Usuario anónimo -->
+      <th:block sec:authorize="isAnonymous()">
 
-      <a th:href="@{/login}" class="nav-auth-link">
-        Iniciar sesión
-      </a>
+        <button type="button"
+                class="nav-auth-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#registroModal">
+          Crear cuenta
+        </button>
+
+        <a th:href="@{/login}"
+           class="nav-auth-link">
+          Iniciar sesión
+        </a>
+
+      </th:block>
+
+      <!-- Usuario autenticado -->
+      <div class="nav-user-wrapper"
+           sec:authorize="isAuthenticated()">
+
+        <button type="button"
+                class="nav-user-toggle"
+                id="userMenuBtn"
+                aria-haspopup="true"
+                aria-expanded="false">
+
+          <svg width="18"
+               height="18"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.8"
+               aria-hidden="true">
+
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+
+          </svg>
+
+          <span>Cuenta</span>
+
+        </button>
+
+        <ul class="nav-user-dropdown"
+            id="userDropdown">
+
+          <li>
+            <a th:href="@{/cuenta}">
+              Mi cuenta
+            </a>
+          </li>
+
+          <li>
+            <a th:href="@{/pedidos}">
+              Mis pedidos
+            </a>
+          </li>
+
+          <li class="nav-user-divider"></li>
+
+          <li>
+            <form th:action="@{/logout}"
+                  method="post"
+                  class="logout-form nav-dropdown-logout">
+
+              <th:block th:replace="~{fragments/csrf :: token}">
+              </th:block>
+
+              <button type="submit"
+                      class="nav-dropdown-logout-btn">
+                Cerrar sesión
+              </button>
+
+            </form>
+          </li>
+
+        </ul>
+
+      </div>
 
       <button type="button"
               class="nav-cart-btn"
@@ -53,16 +123,51 @@
     <a href="#proceso">Proceso</a>
     <a href="#packs">Packs</a>
 
-    <a th:href="@{/login}" class="drawer-auth-link">
-      Iniciar sesión
-    </a>
-    
-        <button type="button"
-            class="drawer-auth-btn"
-            data-bs-toggle="modal"
-            data-bs-target="#registroModal">
-      Crear cuenta
-    </button>
+    <!-- Usuario anónimo -->
+    <th:block sec:authorize="isAnonymous()">
+
+      <a th:href="@{/login}"
+         class="drawer-auth-link">
+        Iniciar sesión
+      </a>
+
+      <button type="button"
+              class="drawer-auth-btn"
+              data-bs-toggle="modal"
+              data-bs-target="#registroModal">
+        Crear cuenta
+      </button>
+
+    </th:block>
+
+    <!-- Usuario autenticado -->
+    <th:block sec:authorize="isAuthenticated()">
+
+      <a th:href="@{/cuenta}"
+         class="drawer-auth-link">
+        Mi cuenta
+      </a>
+
+      <a th:href="@{/pedidos}"
+         class="drawer-auth-link">
+        Mis pedidos
+      </a>
+
+      <form th:action="@{/logout}"
+            method="post"
+            class="logout-form drawer-logout-form">
+
+        <th:block th:replace="~{fragments/csrf :: token}">
+        </th:block>
+
+        <button type="submit"
+                class="drawer-auth-link drawer-logout-btn">
+          Cerrar sesión
+        </button>
+
+      </form>
+
+    </th:block>
 
     <button type="button"
             class="drawer-cart-btn"

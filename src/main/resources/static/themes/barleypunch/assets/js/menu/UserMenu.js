@@ -26,4 +26,14 @@ export default function UserMenu() {
 
     });
 
+    document.addEventListener("keydown", (e) => {
+
+        if (e.key === "Escape") {
+            menu.classList.remove("open");
+            btn.setAttribute("aria-expanded", false);
+            btn.focus();
+        }
+
+    });
+
 }

@@ -4,8 +4,10 @@
          xmlns:th="http://www.thymeleaf.org"
          xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- LOGO -->
-<a th:href="@{/}" class="nav-logo">
+    <div class="nav-inner container">
+
+        <!-- LOGO -->
+        <a th:href="@{/}" class="nav-logo">
 
     <img th:if="${settings != null and settings.logoUrl != null and !settings.logoUrl.isBlank()}"
          th:src="${settings.logoUrl}"
@@ -127,10 +129,19 @@
                     <li class="dropdown-divider"></li>
 
                     <li>
-                        <a th:href="@{/logout}"
-                           class="logout-item">
-                            Cerrar sesión
-                        </a>
+                        <form th:action="@{/logout}"
+                              method="post"
+                              class="logout-form">
+
+                            <th:block th:replace="~{fragments/csrf :: token}">
+                            </th:block>
+
+                            <button type="submit"
+                                    class="logout-item customer-logout-button">
+                                Cerrar sesión
+                            </button>
+
+                        </form>
                     </li>
 
                 </ul>
@@ -227,9 +238,19 @@
                     Mis pedidos
                 </a>
 
-                <a th:href="@{/logout}">
-                    Cerrar sesión
-                </a>
+                <form th:action="@{/logout}"
+                      method="post"
+                      class="logout-form">
+
+                    <th:block th:replace="~{fragments/csrf :: token}">
+                    </th:block>
+
+                    <button type="submit"
+                            class="customer-logout-button">
+                        Cerrar sesión
+                    </button>
+
+                </form>
 
             </div>
 

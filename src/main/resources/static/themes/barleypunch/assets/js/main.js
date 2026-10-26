@@ -1,5 +1,6 @@
 // Auth
 import Register from "./auth/register.js";
+import UserMenu from "./menu/UserMenu.js";
 
 // Cart
 import "./cart/cartStore.js";
@@ -12,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarCarrito();
 
   Register();
+
+  UserMenu();
 
   configurarMobileMenu();
 
