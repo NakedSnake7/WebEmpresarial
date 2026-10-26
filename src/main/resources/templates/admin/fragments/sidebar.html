@@ -347,10 +347,21 @@
         </a>
 
 
-        <a href="/admin/logout" class="sidebar-link logout">
-            <span class="sidebar-icon">🚪</span>
+        <form method="post"
+              action="/admin/logout"
+              class="m-0">
+
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <button type="submit"
+                    class="sidebar-link logout border-0 bg-transparent w-100 text-start">
+                <span class="sidebar-icon">🚪</span>
             <span class="sidebar-text">Cerrar sesión</span>
-        </a>
+            </button>
+        </form>
 
     </div>
 

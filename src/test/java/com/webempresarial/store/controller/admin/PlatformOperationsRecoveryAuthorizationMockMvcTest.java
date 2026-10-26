@@ -387,4 +387,42 @@ class PlatformOperationsRecoveryAuthorizationMockMvcTest {
         );
     }
 
+    @Test
+    void adminLogoutGetMustBeRejected()
+            throws Exception {
+
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request
+                        .MockMvcRequestBuilders
+                        .get("/admin/logout")
+                .with(
+                        user("owner@test")
+                                .roles("STORE_OWNER")
+                )
+        )
+        .andExpect(
+                status().isForbidden()
+        );
+    }
+
+    @Test
+    void adminLogoutPostWithCsrfMustRedirectToLogin()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/admin/logout")
+                .with(
+                        user("owner@test")
+                                .roles("STORE_OWNER")
+                )
+                .with(csrf())
+        )
+        .andExpect(
+                status().is3xxRedirection()
+        )
+        .andExpect(
+                redirectedUrl("/admin/login")
+        );
+    }
+
 }
