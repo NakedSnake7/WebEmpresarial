@@ -106,12 +106,19 @@
 
                     </button>
 
-                    <a href="/logout"
-                       class="btn-ghost danger">
+                    <form th:action="@{/logout}"
+                          method="post"
+                          class="logout-form">
 
-                        Cerrar sesión
+                        <th:block th:replace="~{fragments/csrf :: token}">
+                        </th:block>
 
-                    </a>
+                        <button type="submit"
+                                class="btn-ghost danger">
+                            Cerrar sesión
+                        </button>
+
+                    </form>
 
                 </div>
 

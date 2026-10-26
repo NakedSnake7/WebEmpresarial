@@ -97,6 +97,7 @@ class CustomerOrdersFeatureAccessContractTest {
                 new PedidoClienteController(
                         orderService,
                         storeResolver,
+                        storeThemeResolver,
                         featureAccessService
                 );
     }
@@ -237,6 +238,16 @@ class CustomerOrdersFeatureAccessContractTest {
                         "cliente@example.com"
                 );
 
+        when(
+                storeThemeResolver.view(
+                        request,
+                        "pedido-detalle"
+                )
+        )
+        .thenReturn(
+                "themes/stride/pedido-detalle"
+        );
+
         String view =
                 pedidoClienteController
                         .verPedidoCliente(
@@ -248,7 +259,15 @@ class CustomerOrdersFeatureAccessContractTest {
                         );
 
         assertThat(view)
-                .isEqualTo("pedido-detalle");
+                .isEqualTo(
+                        "themes/stride/pedido-detalle"
+                );
+
+        verify(storeThemeResolver)
+                .view(
+                        request,
+                        "pedido-detalle"
+                );
 
         verify(model)
                 .addAttribute(

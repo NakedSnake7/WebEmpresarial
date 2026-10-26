@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<section th:fragment="content"
+         class="order-detail-page">
+
+    <div class="container">
+
+        <div class="order-detail-card">
+
+            <div class="order-detail-header-row">
+
+                <div class="order-detail-header">
+                    <h1>
+                        Pedido #<span th:text="${pedido.id}"></span>
+                    </h1>
+
+                    <p>
+                        Fecha:
+                        <span th:text="${#temporals.format(
+                            pedido.orderDate,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                        </span>
+                    </p>
+                </div>
+
+                <span class="status-badge"
+                      th:classappend="${pedido.orderStatusBadge}"
+                      th:text="${pedido.orderStatusLabel}">
+                    Estado
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="order-detail-card">
+
+            <h2>Productos</h2>
+
+            <div class="order-detail-table-wrapper">
+
+                <table class="order-detail-table">
+
+                    <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="item : ${pedido.items}">
+
+                        <td th:text="${item.producto.productName}">
+                            Producto
+                        </td>
+
+                        <td th:text="${item.quantity}">
+                            1
+                        </td>
+
+                        <td>
+                            $<span th:text="${item.price}"></span>
+                        </td>
+
+                        <td>
+                            $<span th:text="${
+                                item.quantity * item.price
+                            }"></span>
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="order-detail-total">
+                Total:
+                $<span th:text="${pedido.total}"></span>
+                MXN
+            </div>
+
+        </div>
+
+
+        <div class="order-detail-grid">
+
+            <div class="order-detail-section">
+
+                <h2>Dirección de envío</h2>
+
+                <p>
+                    <strong th:text="${pedido.customerName}">
+                        Cliente
+                    </strong>
+                </p>
+
+                <p th:text="${pedido.address}">
+                    Dirección
+                </p>
+
+                <p th:text="${pedido.customerEmail}">
+                    correo@email.com
+                </p>
+
+            </div>
+
+
+            <div class="order-detail-section">
+
+                <h2>Pago y envío</h2>
+
+                <p>
+                    Método de pago:
+                    <strong th:text="${pedido.paymentMethod}">
+                    </strong>
+                </p>
+
+                <p th:if="${pedido.paymentStatus.name() == 'PENDING'}"
+                   class="order-payment-pending">
+                    Pago pendiente de confirmación
+                </p>
+
+                <p th:if="${pedido.paymentStatus.name() == 'PAID'}"
+                   class="order-payment-paid">
+                    Pago confirmado
+                </p>
+
+                <p th:if="${pedido.trackingNumber != null}">
+                    Paquetería:
+                    <strong th:text="${pedido.carrier}"></strong>
+                    <br>
+
+                    Guía:
+                    <strong th:text="${pedido.trackingNumber}"></strong>
+                </p>
+
+                <p th:if="${pedido.trackingNumber == null}">
+                    Aún no se ha asignado número de guía.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+</html>

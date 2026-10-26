@@ -6,6 +6,7 @@ import com.webempresarial.store.model.Feature;
 import com.webempresarial.store.commerce.application.order.OrderService;
 import com.webempresarial.store.service.FeatureAccessService;
 import com.webempresarial.store.theme.StoreResolver;
+import com.webempresarial.store.theme.StoreThemeResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -22,15 +23,18 @@ public class PedidoClienteController {
 
     private final OrderService orderService;
     private final StoreResolver storeResolver;
+    private final StoreThemeResolver storeThemeResolver;
     private final FeatureAccessService featureAccessService;
 
     public PedidoClienteController(
             OrderService orderService,
             StoreResolver storeResolver,
+            StoreThemeResolver storeThemeResolver,
             FeatureAccessService featureAccessService
     ) {
         this.orderService = orderService;
         this.storeResolver = storeResolver;
+        this.storeThemeResolver = storeThemeResolver;
         this.featureAccessService = featureAccessService;
     }
 
@@ -72,6 +76,10 @@ public class PedidoClienteController {
         }
 
         model.addAttribute("pedido", order);
-        return "pedido-detalle";
+
+        return storeThemeResolver.view(
+                request,
+                "pedido-detalle"
+        );
     }
 }

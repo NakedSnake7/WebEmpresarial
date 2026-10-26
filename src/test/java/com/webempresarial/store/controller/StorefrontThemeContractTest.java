@@ -44,6 +44,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -347,5 +348,62 @@ class StorefrontThemeContractTest {
         ));
     }
 
+
+
+    static Stream<String> customerAreaThemes() throws IOException {
+
+        Path themesRoot =
+                Path.of("src/main/resources/templates/themes");
+
+        try (Stream<Path> paths = Files.list(themesRoot)) {
+
+            return paths
+                    .filter(Files::isDirectory)
+                    .filter(path ->
+                            Files.isRegularFile(
+                                    path.resolve("index.html")
+                            )
+                    )
+                    .map(path ->
+                            path.getFileName().toString()
+                    )
+                    .sorted()
+                    .toList()
+                    .stream();
+        }
+    }
+
+    @ParameterizedTest(
+            name = "{0} must expose customer account/order views"
+    )
+    @MethodSource("customerAreaThemes")
+    void shouldExposeCustomerAreaViewsForEveryStorefrontTheme(
+            String theme
+    ) {
+
+        Path themeRoot =
+                Path.of(
+                        "src/main/resources/templates/themes",
+                        theme
+                );
+
+        assertThat(
+                themeRoot.resolve("cuenta.html")
+        )
+        .as("%s must provide cuenta.html", theme)
+        .isRegularFile();
+
+        assertThat(
+                themeRoot.resolve("pedidos.html")
+        )
+        .as("%s must provide pedidos.html", theme)
+        .isRegularFile();
+
+        assertThat(
+                themeRoot.resolve("pedido-detalle.html")
+        )
+        .as("%s must provide pedido-detalle.html", theme)
+        .isRegularFile();
+    }
 
 }

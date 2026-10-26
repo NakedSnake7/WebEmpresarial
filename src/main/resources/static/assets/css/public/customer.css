@@ -1,0 +1,291 @@
+/* ==========================================================
+   CUSTOMER AREA — SHARED BASE
+   Cuenta, pedidos y detalle de pedido.
+   El CSS específico del theme se carga después y puede
+   sobrescribir estos estilos.
+   ========================================================== */
+
+#account-page,
+.orders-page,
+.order-detail-page {
+    padding: 72px 0;
+}
+
+#account-page .container,
+.orders-page .container,
+.order-detail-page .container {
+    width: min(1120px, calc(100% - 32px));
+    margin-inline: auto;
+}
+
+.account-card,
+.orders-card,
+.order-detail-card {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, .08);
+}
+
+.account-header,
+.orders-header,
+.order-detail-header {
+    margin-bottom: 28px;
+}
+
+.account-title,
+.orders-header h1,
+.order-detail-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.account-subtitle,
+.orders-header p,
+.order-detail-header p {
+    margin: 8px 0 0;
+    color: #64748b;
+}
+
+.account-grid,
+.order-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.account-field,
+.order-detail-section {
+    padding: 18px;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.account-field span {
+    display: block;
+    margin-bottom: 5px;
+    color: #64748b;
+    font-size: .85rem;
+}
+
+.account-field strong {
+    color: #0f172a;
+}
+
+.address-block {
+    margin-top: 24px;
+}
+
+.address-block h3,
+.order-detail-section h2 {
+    margin: 0 0 14px;
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.account-input {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    box-sizing: border-box;
+}
+
+.account-input:focus {
+    border-color: var(--store-accent, #2563eb);
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--store-accent, #2563eb) 15%,
+        transparent
+    );
+}
+
+.account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+#account-page .btn-primary,
+.orders-page .btn-primary,
+.order-detail-page .btn-primary,
+.btn-order-detail {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--store-primary, #111827);
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: transparent;
+    color: #334155;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-ghost.danger {
+    color: #b91c1c;
+    border-color: rgba(185, 28, 28, .25);
+}
+
+.orders-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.orders-table-wrapper,
+.order-detail-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.orders-table,
+.order-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td,
+.order-detail-table th,
+.order-detail-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.orders-table th,
+.order-detail-table th {
+    color: #64748b;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.orders-table td,
+.order-detail-table td {
+    color: #334155;
+}
+
+.status-badge {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.order-detail-card + .order-detail-card {
+    margin-top: 20px;
+}
+
+.order-detail-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.order-detail-total {
+    margin-top: 20px;
+    text-align: right;
+    color: #0f172a;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.order-detail-section p {
+    margin: 6px 0;
+    color: #475569;
+}
+
+.order-payment-pending {
+    color: #b45309 !important;
+}
+
+.order-payment-paid {
+    color: #15803d !important;
+}
+
+.d-none {
+    display: none !important;
+}
+
+@media (max-width: 720px) {
+    #account-page,
+    .orders-page,
+    .order-detail-page {
+        padding: 48px 0;
+    }
+
+    .account-card,
+    .orders-card,
+    .order-detail-card {
+        padding: 22px;
+    }
+
+    .account-grid,
+    .order-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order-detail-header-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* ==========================================================
+   CUSTOMER LOGOUT
+   Spring Security logout must use POST + CSRF.
+   ========================================================== */
+
+.logout-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.customer-logout-button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+
+    text-align: left;
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+.user-dropdown .customer-logout-button {
+    width: 100%;
+}
