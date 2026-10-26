@@ -24,8 +24,8 @@ import java.util.Map;
 @ControllerAdvice
 public class FeatureViewAdvice {
 
-    private static final String INVENTORY_ALERTS_URL =
-            "/admin/inventory/alerts";
+    private static final String INVENTORY_URL =
+            "/admin/inventory";
 
     private final StoreContextService storeContextService;
     private final SidebarRegistry sidebarRegistry;
@@ -52,6 +52,32 @@ public class FeatureViewAdvice {
             HttpServletRequest request
     ) {
         return request.getRequestURI();
+    }
+
+    @ModelAttribute("sidebarActivePath")
+    public String sidebarActivePath(
+            HttpServletRequest request
+    ) {
+        String path = request.getRequestURI();
+
+        if (path == null) {
+            return null;
+        }
+
+        /*
+         * Commerce Workspace v1:
+         *
+         * Estas URLs siguen existiendo y conservan exactamente
+         * sus reglas de seguridad. Únicamente pertenecen
+         * visualmente al workspace Productos.
+         */
+        if (path.equals("/nuevo")
+                || path.equals("/modificar-precios")
+                || path.startsWith("/editar/")) {
+            return "/admin/productos";
+        }
+
+        return path;
     }
 
     @ModelAttribute("sidebarSections")
@@ -144,7 +170,7 @@ public class FeatureViewAdvice {
         }
 
         return Map.of(
-                INVENTORY_ALERTS_URL,
+                INVENTORY_URL,
                 activeAlerts
         );
     }

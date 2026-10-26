@@ -29,66 +29,33 @@ public class EcommerceFeatures implements PlatformModule {
 	            .feature(orders())
 	            .feature(checkout())
 	            .sidebarSection(
-	                    SidebarSectionDefinition.builder(
-	                                    "WebEmpresarial Commerce™",
-	                                    "🛒"
-	                            )
-	                            .item(
-	                                    "Productos",
-	                                    "📦",
-	                                    "/admin/productos",
-	                                    Feature.PRODUCTS,
+                    SidebarSectionDefinition.builder(
+                                    "Comercio",
+                                    "🛒"
+                            )
+                            .item(
+                                    "Productos",
+                                    "📦",
+                                    "/admin/productos",
+                                    Feature.PRODUCTS,
                                     AdminPermission.PRODUCT_VIEW
-	                            )
-	                            .item(
-	                                    "Nuevo producto",
-	                                    "➕",
-	                                    "/nuevo",
-	                                    Feature.PRODUCTS,
-                                    AdminPermission.PRODUCT_CREATE
-	                            )
-	                            .item(
-	                                    "Precios y promociones",
-	                                    "💲",
-	                                    "/modificar-precios",
-	                                    Feature.PRODUCTS,
-                                    AdminPermission.PRODUCT_EDIT
-	                            )
-	                            
-	                            .item(
-	                                    "Dashboard de inventario",
-	                                    "📦",
-	                                    "/admin/inventory",
-	                                    Feature.INVENTORY,
-                                    AdminPermission.INVENTORY_VIEW
-	                            )
-
-	                            
-	                            .item(
-	                                    "Kardex de inventario",
-	                                    "📊",
-	                                    "/admin/inventory/movements",
-	                                    Feature.INVENTORY_KARDEX,
-                                    AdminPermission.INVENTORY_VIEW
-	                            )
-	                            
-	                            .item(
-	                                    "Alertas de inventario",
-	                                    "🚨",
-	                                    "/admin/inventory/alerts",
-	                                    Feature.INVENTORY,
-                                    AdminPermission.INVENTORY_VIEW
-	                            )
-	                            
-	                            .item(
-	                                    "Pedidos",
-	                                    "🧾",
-	                                    "/orders",
-	                                    Feature.ORDERS,
+                            )
+                            .item(
+                                    "Pedidos",
+                                    "🧾",
+                                    "/orders",
+                                    Feature.ORDERS,
                                     AdminPermission.ORDER_VIEW
-	                            )
-	                            .build()
-	            )
+                            )
+                            .item(
+                                    "Inventario",
+                                    "📦",
+                                    "/admin/inventory",
+                                    Feature.INVENTORY,
+                                    AdminPermission.INVENTORY_VIEW
+                            )
+                            .build()
+            )
 	            .build();
 	}
 

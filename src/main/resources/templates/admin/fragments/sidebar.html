@@ -237,10 +237,13 @@
        th:href="${item.url}"
        class="sidebar-link"
        th:classappend="${
-           currentPath == item.url
-           or (
-               item.url != '/'
-               and currentPath.startsWith(item.url + '/')
+           sidebarActivePath != null
+           and (
+               sidebarActivePath == item.url
+               or (
+                   item.url != '/'
+                   and sidebarActivePath.startsWith(item.url + '/')
+               )
            )
        } ? ' active' : ''">
 

@@ -361,7 +361,7 @@ class FeatureViewAdviceTest {
         assertThat(result)
                 .containsExactly(
                         Map.entry(
-                                "/admin/inventory/alerts",
+                                "/admin/inventory",
                                 3L
                         )
                 );

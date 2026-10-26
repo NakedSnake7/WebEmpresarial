@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EcommercePermissionContractTest {
 
     @Test
-    void productNavigationMustUseGranularPermissions() {
+    void productWorkspaceNavigationMustRequireProductView() {
 
         PlatformModuleDescriptor descriptor =
                 new EcommerceFeatures().descriptor();
@@ -35,17 +35,12 @@ class EcommercePermissionContractTest {
                 AdminPermission.PRODUCT_VIEW
         );
 
-        assertPermission(
-                items,
-                "Nuevo producto",
-                AdminPermission.PRODUCT_CREATE
-        );
-
-        assertPermission(
-                items,
-                "Precios y promociones",
-                AdminPermission.PRODUCT_EDIT
-        );
+        assertThat(items)
+                .extracting(SidebarItemDefinition::title)
+                .doesNotContain(
+                        "Nuevo producto",
+                        "Precios y promociones"
+                );
     }
 
     @Test
@@ -71,7 +66,7 @@ class EcommercePermissionContractTest {
     }
 
     @Test
-    void inventoryNavigationMustRequireInventoryView() {
+    void inventoryWorkspaceNavigationMustRequireInventoryView() {
 
         PlatformModuleDescriptor descriptor =
                 new EcommerceFeatures().descriptor();
@@ -87,21 +82,17 @@ class EcommercePermissionContractTest {
 
         assertPermission(
                 items,
-                "Dashboard de inventario",
+                "Inventario",
                 AdminPermission.INVENTORY_VIEW
         );
 
-        assertPermission(
-                items,
-                "Kardex de inventario",
-                AdminPermission.INVENTORY_VIEW
-        );
-
-        assertPermission(
-                items,
-                "Alertas de inventario",
-                AdminPermission.INVENTORY_VIEW
-        );
+        assertThat(items)
+                .extracting(SidebarItemDefinition::title)
+                .doesNotContain(
+                        "Dashboard de inventario",
+                        "Kardex de inventario",
+                        "Alertas de inventario"
+                );
     }
 
     @Test

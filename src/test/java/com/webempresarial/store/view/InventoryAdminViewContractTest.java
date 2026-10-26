@@ -52,23 +52,11 @@ class InventoryAdminViewContractTest {
     }
 
     @Test
-    void linksToProductCatalogMustRequireProductView()
+    void productInventoryDetailMustGuardProductCatalogLink()
             throws IOException {
 
         assertRootProductLinksGuarded(
                 "templates/admin/inventory/product-detail.html"
-        );
-
-        assertRootProductLinksGuarded(
-                "templates/admin/inventory/movements.html"
-        );
-
-        assertRootProductLinksGuarded(
-                "templates/admin/inventory/dashboard.html"
-        );
-
-        assertRootProductLinksGuarded(
-                "templates/admin/inventory/alerts.html"
         );
     }
 

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="productTabs(activeTab)"
+     class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2">
+
+        <nav class="nav nav-pills gap-1"
+             aria-label="Secciones de productos">
+
+            <a th:if="${canViewProducts}"
+               th:href="@{/admin/productos}"
+               class="nav-link"
+               th:classappend="${activeTab == 'catalog'}
+                   ? ' active'
+                   : ''">
+                Catálogo
+            </a>
+
+            <a th:if="${canEditProducts}"
+               th:href="@{/modificar-precios}"
+               class="nav-link"
+               th:classappend="${activeTab == 'prices'}
+                   ? ' active'
+                   : ''">
+                Precios
+            </a>
+
+        </nav>
+
+    </div>
+</div>
+
+
+<div th:fragment="inventoryTabs(activeTab)"
+     th:with="kardexEnabled=${features != null
+                             and store != null
+                             and features.canUse(
+                                 store,
+                                 'INVENTORY_KARDEX'
+                             )}"
+     class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-2">
+
+        <nav class="nav nav-pills gap-1 flex-wrap"
+             aria-label="Secciones de inventario">
+
+            <a th:href="@{/admin/inventory}"
+               class="nav-link"
+               th:classappend="${activeTab == 'summary'}
+                   ? ' active'
+                   : ''">
+                Resumen
+            </a>
+
+            <a th:href="${kardexEnabled}
+                       ? @{/admin/inventory/movements}
+                       : @{/admin/upgrade(
+                           feature='INVENTORY_KARDEX'
+                         )}"
+               class="nav-link
+                      d-inline-flex
+                      align-items-center
+                      gap-2"
+               th:classappend="${activeTab == 'movements'}
+                   ? ' active'
+                   : ''">
+
+                Movimientos
+
+                <span th:unless="${kardexEnabled}"
+                      class="badge text-bg-warning">
+                    Upgrade
+                </span>
+
+            </a>
+
+            <a th:href="@{/admin/inventory/alerts}"
+               class="nav-link
+                      d-inline-flex
+                      align-items-center
+                      gap-2"
+               th:classappend="${activeTab == 'alerts'}
+                   ? ' active'
+                   : ''">
+
+                Alertas
+
+                <span th:if="${
+                          sidebarBadges != null
+                          and sidebarBadges.containsKey(
+                              '/admin/inventory'
+                          )
+                          and sidebarBadges.get(
+                              '/admin/inventory'
+                          ) > 0
+                      }"
+                      class="badge rounded-pill text-bg-danger"
+                      th:text="${
+                          sidebarBadges.get(
+                              '/admin/inventory'
+                          )
+                      }">
+                    0
+                </span>
+
+            </a>
+
+        </nav>
+
+    </div>
+</div>
+
+</body>
+</html>

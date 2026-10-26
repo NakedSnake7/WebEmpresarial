@@ -22,6 +22,9 @@ class ModificarPreciosShippingPolicyTemplateTest {
 
         assertThat(html)
                 .contains(
+                        "th:if=\"${canManageStoreSettings}\""
+                )
+                .contains(
                         "th:action=\"@{/admin/store/settings/shipping}\""
                 )
                 .contains(

@@ -234,12 +234,6 @@ class ProductAdminViewContractTest {
         assertThat(html)
                 .contains(
                         """
-                        <a th:href="@{/modificar-precios}" \
-                        th:if="${canEditProducts}"
-                        """.strip()
-                )
-                .contains(
-                        """
                         <a th:href="@{/editar/{id}(id=${producto.id})}" \
                         th:if="${canEditProducts}"
                         """.strip()

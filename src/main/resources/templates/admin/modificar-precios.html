@@ -167,7 +167,7 @@
                             </span>
 
                             <span class="badge bg-light text-dark">
-                                Pricing
+                                Productos
                             </span>
                         </div>
 
@@ -182,15 +182,13 @@
                     </div>
 
                     <div class="d-flex flex-column flex-sm-row gap-2">
-                        <a th:href="@{/admin/productos}"
-                           class="btn btn-outline-light">
-                            ← Productos
-                        </a>
 
-                        <a th:href="@{/nuevo}"
+                        <a th:if="${canCreateProducts}"
+                           th:href="@{/nuevo}"
                            class="btn btn-light">
                             ＋ Nuevo producto
                         </a>
+
                     </div>
 
                 </div>
@@ -198,8 +196,18 @@
             </div>
         </div>
 
-        <!-- Política de envío -->
-        <div class="card pricing-card mb-4">
+        <div th:replace="~{admin/fragments/commerce-workspace
+                         :: productTabs('prices')}"></div>
+
+        <!--
+            Compatibilidad temporal de Commerce Workspace v1.
+
+            La política de envío seguirá aquí hasta auditar
+            Store / Settings, pero sólo debe verla quien
+            realmente puede modificar la tienda.
+        -->
+        <div class="card pricing-card mb-4"
+             th:if="${canManageStoreSettings}">
             <div class="card-body p-4">
 
                 <div class="d-flex flex-column
@@ -871,7 +879,8 @@
                     precios y promociones.
                 </p>
 
-                <a th:href="@{/nuevo}"
+                <a th:if="${canCreateProducts}"
+                   th:href="@{/nuevo}"
                    class="btn btn-primary">
                     Crear producto
                 </a>
