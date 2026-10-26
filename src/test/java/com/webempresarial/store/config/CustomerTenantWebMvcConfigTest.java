@@ -99,10 +99,12 @@ class CustomerTenantWebMvcConfigTest {
         authUser.setCliente(cliente);
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                requestStore
+                        )
+        ).thenReturn(Optional.empty());
 
         when(
                 storeContextService.getCurrentStore(

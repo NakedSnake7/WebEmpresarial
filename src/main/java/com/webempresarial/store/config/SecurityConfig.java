@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -28,13 +26,6 @@ public class SecurityConfig {
         this.authUserDetailsService = authUserDetailsService;
         this.adminUserDetailsService = adminUserDetailsService;
         this.adminAuthenticationSuccessHandler = adminAuthenticationSuccessHandler;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
-    ) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 
     @Bean
@@ -811,6 +802,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(
+                    "/api/auth/register",
                     "/api/checkout",
                     "/api/billing/checkout",
                     "/api/stripe/create-session/*",
@@ -849,6 +841,7 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     HttpMethod.POST,
+                    "/api/auth/register",
                     "/api/checkout",
                     "/api/billing/checkout"
                 ).permitAll()

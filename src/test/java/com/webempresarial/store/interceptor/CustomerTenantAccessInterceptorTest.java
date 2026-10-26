@@ -67,19 +67,7 @@ class CustomerTenantAccessInterceptorTest {
     void shouldRejectCustomerCredentialForDifferentTenant()
             throws Exception {
 
-        Store credentialStore = store(10L);
         Store requestStore = store(20L);
-
-        Cliente cliente = new Cliente();
-        cliente.setId(100L);
-        cliente.setEmail("cliente@example.com");
-        cliente.setStore(credentialStore);
-
-        AuthUser authUser = new AuthUser();
-        authUser.setId(200L);
-        authUser.setEmail("cliente@example.com");
-        authUser.setEnabled(true);
-        authUser.setCliente(cliente);
 
         authenticate(
                 "cliente@example.com",
@@ -87,14 +75,21 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
-
-        when(
-                storeContextService.getCurrentStore(request)
+                storeContextService
+                        .getCurrentStore(request)
         ).thenReturn(requestStore);
+
+        /*
+         * El correo existe en otro tenant,
+         * pero no en el tenant solicitado.
+         */
+        when(
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                requestStore
+                        )
+        ).thenReturn(Optional.empty());
 
         boolean allowed =
                 interceptor.preHandle(
@@ -105,9 +100,10 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
-        );
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
     }
 
     @Test
@@ -133,14 +129,19 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
+                storeContextService
+                        .getCurrentStore(request)
+        ).thenReturn(store);
 
         when(
-                storeContextService.getCurrentStore(request)
-        ).thenReturn(store);
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(authUser)
+        );
 
         boolean allowed =
                 interceptor.preHandle(
@@ -159,15 +160,24 @@ class CustomerTenantAccessInterceptorTest {
     void shouldRejectWhenAuthenticatedCustomerDoesNotExist()
             throws Exception {
 
+        Store store = store(10L);
+
         authenticate(
                 "ghost@example.com",
                 "ROLE_CLIENTE"
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "ghost@example.com"
-                )
+                storeContextService
+                        .getCurrentStore(request)
+        ).thenReturn(store);
+
+        when(
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "ghost@example.com",
+                                store
+                        )
         ).thenReturn(Optional.empty());
 
         boolean allowed =
@@ -179,16 +189,17 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
-        );
-
-        verifyNoInteractions(storeContextService);
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
     }
 
     @Test
     void shouldRejectDisabledCustomer()
             throws Exception {
+
+        Store store = store(10L);
 
         AuthUser authUser = new AuthUser();
         authUser.setEmail("cliente@example.com");
@@ -200,10 +211,19 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
+                storeContextService
+                        .getCurrentStore(request)
+        ).thenReturn(store);
+
+        when(
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(authUser)
+        );
 
         boolean allowed =
                 interceptor.preHandle(
@@ -214,16 +234,17 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
-        );
-
-        verifyNoInteractions(storeContextService);
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
     }
 
     @Test
     void shouldRejectCustomerWithoutLinkedCliente()
             throws Exception {
+
+        Store store = store(10L);
 
         AuthUser authUser = new AuthUser();
         authUser.setEmail("cliente@example.com");
@@ -236,10 +257,19 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
+                storeContextService
+                        .getCurrentStore(request)
+        ).thenReturn(store);
+
+        when(
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                store
+                        )
+        ).thenReturn(
+                Optional.of(authUser)
+        );
 
         boolean allowed =
                 interceptor.preHandle(
@@ -250,17 +280,18 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
-        );
-
-        verifyNoInteractions(storeContextService);
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
     }
 
     @Test
     void shouldRejectCustomerWhoseClienteHasNoStore()
             throws Exception {
 
+        Store requestStore = store(10L);
+
         Cliente cliente = new Cliente();
         cliente.setId(100L);
         cliente.setEmail("cliente@example.com");
@@ -276,10 +307,19 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
+                storeContextService
+                        .getCurrentStore(request)
+        ).thenReturn(requestStore);
+
+        when(
+                authUserRepository
+                        .findByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                requestStore
+                        )
+        ).thenReturn(
+                Optional.of(authUser)
+        );
 
         boolean allowed =
                 interceptor.preHandle(
@@ -290,28 +330,15 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
-        );
-
-        verifyNoInteractions(storeContextService);
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
     }
 
     @Test
     void shouldRejectWhenRequestTenantCannotBeResolved()
             throws Exception {
-
-        Store credentialStore = store(10L);
-
-        Cliente cliente = new Cliente();
-        cliente.setId(100L);
-        cliente.setEmail("cliente@example.com");
-        cliente.setStore(credentialStore);
-
-        AuthUser authUser = new AuthUser();
-        authUser.setEmail("cliente@example.com");
-        authUser.setEnabled(true);
-        authUser.setCliente(cliente);
 
         authenticate(
                 "cliente@example.com",
@@ -319,13 +346,8 @@ class CustomerTenantAccessInterceptorTest {
         );
 
         when(
-                authUserRepository.findByEmail(
-                        "cliente@example.com"
-                )
-        ).thenReturn(Optional.of(authUser));
-
-        when(
-                storeContextService.getCurrentStore(request)
+                storeContextService
+                        .getCurrentStore(request)
         ).thenThrow(
                 new RuntimeException(
                         "Tenant no encontrado"
@@ -341,8 +363,13 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isFalse();
 
-        verify(response).sendError(
-                HttpServletResponse.SC_FORBIDDEN
+        verify(response)
+                .sendError(
+                        HttpServletResponse.SC_FORBIDDEN
+                );
+
+        verifyNoInteractions(
+                authUserRepository
         );
     }
 
@@ -361,8 +388,10 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isTrue();
 
-        verifyNoInteractions(authUserRepository);
-        verifyNoInteractions(storeContextService);
+        verifyNoInteractions(
+                authUserRepository,
+                storeContextService
+        );
 
         verify(response, never())
                 .sendError(anyInt());
@@ -386,16 +415,22 @@ class CustomerTenantAccessInterceptorTest {
 
         assertThat(allowed).isTrue();
 
-        verifyNoInteractions(authUserRepository);
-        verifyNoInteractions(storeContextService);
+        verifyNoInteractions(
+                authUserRepository,
+                storeContextService
+        );
 
         verify(response, never())
                 .sendError(anyInt());
     }
 
-    private static Store store(Long id) {
+    private static Store store(
+            Long id
+    ) {
+
         Store store = new Store();
         store.setId(id);
+
         return store;
     }
 

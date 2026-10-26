@@ -30,8 +30,16 @@ public class RegistrationService {
 
         String email = dto.getEmail().trim().toLowerCase();
 
-        if (authUserRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("El usuario ya está registrado");
+        if (
+                authUserRepository
+                        .existsByEmailAndCliente_Store(
+                                email,
+                                store
+                        )
+        ) {
+            throw new IllegalArgumentException(
+                    "El usuario ya está registrado"
+            );
         }
 
         Cliente cliente = userService.registerUser(

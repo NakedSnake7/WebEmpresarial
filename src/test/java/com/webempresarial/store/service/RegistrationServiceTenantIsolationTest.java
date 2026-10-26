@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,9 +71,11 @@ class RegistrationServiceTenantIsolationTest {
                 .thenReturn("secret123");
 
         when(
-                authUserRepository.existsByEmail(
-                        "cliente@example.com"
-                )
+                authUserRepository
+                        .existsByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                store
+                        )
         ).thenReturn(false);
 
         when(
@@ -104,4 +107,156 @@ class RegistrationServiceTenantIsolationTest {
                 )
                 .isSameAs(cliente);
     }
+
+    @Test
+    void sameEmailShouldBeAllowedAcrossDifferentStores() {
+
+        Store stride = new Store();
+        stride.setId(10L);
+
+        Store barley = new Store();
+        barley.setId(20L);
+
+        Cliente strideCliente = new Cliente();
+        strideCliente.setId(100L);
+        strideCliente.setStore(stride);
+        strideCliente.setEmail("cliente@example.com");
+
+        Cliente barleyCliente = new Cliente();
+        barleyCliente.setId(200L);
+        barleyCliente.setStore(barley);
+        barleyCliente.setEmail("cliente@example.com");
+
+        when(dto.getEmail())
+                .thenReturn(" Cliente@Example.com ");
+
+        when(dto.getFullName())
+                .thenReturn("Cliente Test");
+
+        when(dto.getPhone())
+                .thenReturn("2221234567");
+
+        when(dto.getPassword())
+                .thenReturn("secret123");
+
+        when(
+                authUserRepository
+                        .existsByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                stride
+                        )
+        ).thenReturn(false);
+
+        when(
+                authUserRepository
+                        .existsByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                barley
+                        )
+        ).thenReturn(false);
+
+        when(
+                userService.registerUser(
+                        "cliente@example.com",
+                        "Cliente Test",
+                        "2221234567",
+                        stride
+                )
+        ).thenReturn(strideCliente);
+
+        when(
+                userService.registerUser(
+                        "cliente@example.com",
+                        "Cliente Test",
+                        "2221234567",
+                        barley
+                )
+        ).thenReturn(barleyCliente);
+
+        when(
+                passwordEncoder.encode("secret123")
+        ).thenReturn("encoded-password");
+
+        registrationService.register(
+                dto,
+                stride
+        );
+
+        registrationService.register(
+                dto,
+                barley
+        );
+
+        ArgumentCaptor<AuthUser> captor =
+                ArgumentCaptor.forClass(
+                        AuthUser.class
+                );
+
+        verify(authUserRepository, times(2))
+                .save(captor.capture());
+
+        assertThat(captor.getAllValues())
+                .hasSize(2);
+
+        assertThat(
+                captor.getAllValues()
+                        .get(0)
+                        .getCliente()
+                        .getStore()
+        ).isSameAs(stride);
+
+        assertThat(
+                captor.getAllValues()
+                        .get(1)
+                        .getCliente()
+                        .getStore()
+        ).isSameAs(barley);
+    }
+
+    @Test
+    void sameEmailShouldBeRejectedInsideSameStore() {
+
+        Store stride = new Store();
+        stride.setId(10L);
+
+        when(dto.getEmail())
+                .thenReturn(" Cliente@Example.com ");
+
+        when(
+                authUserRepository
+                        .existsByEmailAndCliente_Store(
+                                "cliente@example.com",
+                                stride
+                        )
+        ).thenReturn(true);
+
+        assertThatThrownBy(
+                () ->
+                        registrationService.register(
+                                dto,
+                                stride
+                        )
+        )
+        .isInstanceOf(
+                IllegalArgumentException.class
+        )
+        .hasMessage(
+                "El usuario ya está registrado"
+        );
+
+        verify(authUserRepository)
+                .existsByEmailAndCliente_Store(
+                        "cliente@example.com",
+                        stride
+                );
+
+        verifyNoInteractions(
+                userService,
+                passwordEncoder
+        );
+
+        verify(authUserRepository, never())
+                .save(any(AuthUser.class));
+    }
+
 }

@@ -6,6 +6,7 @@ import com.webempresarial.store.service.RegistrationService;
 import com.webempresarial.store.theme.StoreResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +28,7 @@ public class AuthController {
 
     public AuthController(
             RegistrationService registrationService,
+            @Qualifier("customerAuthenticationManager")
             AuthenticationManager authenticationManager,
             StoreResolver storeResolver
     ) {
