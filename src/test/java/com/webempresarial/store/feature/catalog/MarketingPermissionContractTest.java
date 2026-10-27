@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MarketingPermissionContractTest {
 
     @Test
-    void reviewNavigationMustUseIndependentPermissions() {
+    void reviewNavigationShouldExposeSingleReviewsWorkspace() {
 
         List<SidebarItemDefinition> items =
                 new MarketingFeatures()
@@ -26,29 +26,37 @@ class MarketingPermissionContractTest {
                         )
                         .toList();
 
-        SidebarItemDefinition reviews =
-                item(items, "Reseñas");
+        List<SidebarItemDefinition> reviewItems =
+                items.stream()
+                        .filter(item ->
+                                item.feature()
+                                        == Feature.REVIEWS
+                        )
+                        .toList();
 
-        SidebarItemDefinition create =
-                item(items, "Nueva reseña");
+        assertThat(reviewItems)
+                .singleElement()
+                .satisfies(reviews -> {
 
-        assertThat(
-                reviews.requiredPermission()
-        ).isEqualTo(
-                AdminPermission.REVIEW_VIEW
-        );
+                    assertThat(reviews.title())
+                            .isEqualTo("Reseñas");
 
-        assertThat(reviews.url())
-                .isEqualTo("/resenas");
+                    assertThat(
+                            reviews.requiredPermission()
+                    ).isEqualTo(
+                            AdminPermission.REVIEW_VIEW
+                    );
 
-        assertThat(
-                create.requiredPermission()
-        ).isEqualTo(
-                AdminPermission.REVIEW_CREATE
-        );
+                    assertThat(reviews.url())
+                            .isEqualTo("/resenas");
+                });
 
-        assertThat(create.url())
-                .isEqualTo("/resenas/nueva");
+        assertThat(items)
+                .noneMatch(item ->
+                        "/resenas/nueva".equals(
+                                item.url()
+                        )
+                );
     }
 
     @Test
@@ -74,18 +82,5 @@ class MarketingPermissionContractTest {
         ).isEqualTo(
                 AdminPermission.REVIEW_VIEW
         );
-    }
-
-    private SidebarItemDefinition item(
-            List<SidebarItemDefinition> items,
-            String label
-    ) {
-
-        return items.stream()
-                .filter(item ->
-                        label.equals(item.title())
-                )
-                .findFirst()
-                .orElseThrow();
     }
 }

@@ -34,13 +34,6 @@ public class MarketingFeatures implements PlatformModule {
                                         Feature.REVIEWS,
                                         AdminPermission.REVIEW_VIEW
                                 )
-                                .item(
-                                        "Nueva reseña",
-                                        "✍️",
-                                        "/resenas/nueva",
-                                        Feature.REVIEWS,
-                                        AdminPermission.REVIEW_CREATE
-                                )
                                 .build()
                 )
 
