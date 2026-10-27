@@ -29,6 +29,7 @@ public interface SubscriptionRepository
     @Query("""
         SELECT s
         FROM Subscription s
+        JOIN FETCH s.store
         WHERE s.stripeSubscriptionId = :stripeSubscriptionId
     """)
     Optional<Subscription> findByStripeSubscriptionIdForUpdate(
@@ -40,6 +41,7 @@ public interface SubscriptionRepository
     @Query("""
         SELECT s
         FROM Subscription s
+        JOIN FETCH s.store
         WHERE s.stripeCustomerId = :stripeCustomerId
     """)
     Optional<Subscription> findByStripeCustomerIdForUpdate(

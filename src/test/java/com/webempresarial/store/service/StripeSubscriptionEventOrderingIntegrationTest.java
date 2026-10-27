@@ -464,11 +464,33 @@ class StripeSubscriptionEventOrderingIntegrationTest {
             when(newStripeSubscription.getStatus())
                     .thenReturn("active");
 
-            when(newStripeSubscription.getCurrentPeriodStart())
-                    .thenReturn(1_800_000_000L);
+            com.stripe.model.SubscriptionItemCollection dahliaItems =
+                    org.mockito.Mockito.mock(
+                            com.stripe.model.SubscriptionItemCollection.class
+                    );
 
-            when(newStripeSubscription.getCurrentPeriodEnd())
-                    .thenReturn(1_802_592_000L);
+            com.stripe.model.SubscriptionItem dahliaPeriodItem =
+                    org.mockito.Mockito.mock(
+                            com.stripe.model.SubscriptionItem.class
+                    );
+
+            org.mockito.Mockito.when(
+                    newStripeSubscription.getItems()
+            ).thenReturn(dahliaItems);
+
+            org.mockito.Mockito.when(
+                    dahliaItems.getData()
+            ).thenReturn(
+                    java.util.List.of(dahliaPeriodItem)
+            );
+
+            org.mockito.Mockito.when(
+                    dahliaPeriodItem.getCurrentPeriodStart()
+            ).thenReturn(1_800_000_000L);
+
+            org.mockito.Mockito.when(
+                    dahliaPeriodItem.getCurrentPeriodEnd()
+            ).thenReturn(1_802_592_000L);
 
             subscriptionService
                     .syncStripeSubscriptionUpdatedFromWebhook(

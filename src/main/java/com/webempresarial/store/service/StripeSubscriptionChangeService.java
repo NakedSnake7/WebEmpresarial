@@ -247,10 +247,10 @@ public class StripeSubscriptionChangeService {
                 currentItem.getPrice().getId();
 
         Long currentPeriodStart =
-                stripeSubscription.getCurrentPeriodStart();
+                currentItem.getCurrentPeriodStart();
 
         Long currentPeriodEnd =
-                stripeSubscription.getCurrentPeriodEnd();
+                currentItem.getCurrentPeriodEnd();
 
         if (currentPeriodStart == null
                 || currentPeriodEnd == null) {

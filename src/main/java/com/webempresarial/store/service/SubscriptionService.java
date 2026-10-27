@@ -220,7 +220,54 @@
                 );
     }
 
-	    private LocalDateTime fromStripeEpoch(Long epochSeconds) {
+	    private com.stripe.model.SubscriptionItem
+            resolvePrimaryStripeSubscriptionItem(
+                    com.stripe.model.Subscription stripeSubscription
+            ) {
+
+        if (stripeSubscription == null
+                || stripeSubscription.getItems() == null
+                || stripeSubscription.getItems().getData() == null
+                || stripeSubscription.getItems()
+                        .getData()
+                        .isEmpty()) {
+
+            return null;
+        }
+
+        return stripeSubscription
+                .getItems()
+                .getData()
+                .get(0);
+    }
+
+    private Long resolveStripeCurrentPeriodStart(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        var item =
+                resolvePrimaryStripeSubscriptionItem(
+                        stripeSubscription
+                );
+
+        return item == null
+                ? null
+                : item.getCurrentPeriodStart();
+    }
+
+    private Long resolveStripeCurrentPeriodEnd(
+            com.stripe.model.Subscription stripeSubscription
+    ) {
+        var item =
+                resolvePrimaryStripeSubscriptionItem(
+                        stripeSubscription
+                );
+
+        return item == null
+                ? null
+                : item.getCurrentPeriodEnd();
+    }
+
+    private LocalDateTime fromStripeEpoch(Long epochSeconds) {
 	        if (epochSeconds == null) {
 	            return null;
 	        }
@@ -692,12 +739,12 @@
 	
 	        LocalDateTime periodStart =
 	                fromStripeEpoch(
-	                        stripeSubscription.getCurrentPeriodStart()
+	                        resolveStripeCurrentPeriodStart(stripeSubscription)
 	                );
 	
 	        LocalDateTime periodEnd =
 	                fromStripeEpoch(
-	                        stripeSubscription.getCurrentPeriodEnd()
+	                        resolveStripeCurrentPeriodEnd(stripeSubscription)
 	                );
 	
 	        subscription.setCurrentPeriodStart(periodStart);

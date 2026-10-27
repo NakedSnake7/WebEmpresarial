@@ -346,17 +346,44 @@ public class StripeWebhookService {
                 );
     }
 
+    private String resolveInvoiceSubscriptionId(
+            Invoice invoice
+    ) {
+        if (invoice == null
+                || invoice.getParent() == null
+                || invoice.getParent()
+                        .getSubscriptionDetails() == null) {
+
+            return null;
+        }
+
+        return invoice.getParent()
+                .getSubscriptionDetails()
+                .getSubscription();
+    }
+
     private void handleInvoicePaymentFailed(Event event) {
 
-        Invoice invoice = deserializeEventObject(event, Invoice.class);
+        Invoice invoice =
+                deserializeEventObject(
+                        event,
+                        Invoice.class
+                );
 
-        if (invoice == null || invoice.getSubscription() == null) {
-            throw new IllegalStateException("Invoice sin subscription");
+        String stripeSubscriptionId =
+                resolveInvoiceSubscriptionId(invoice);
+
+        if (stripeSubscriptionId == null
+                || stripeSubscriptionId.isBlank()) {
+
+            throw new IllegalStateException(
+                    "Invoice sin subscription"
+            );
         }
 
         subscriptionService
                 .markPastDueFromStripeWebhook(
-                        invoice.getSubscription(),
+                        stripeSubscriptionId,
                         event.getCreated(),
                         event.getType()
                 );
@@ -364,15 +391,24 @@ public class StripeWebhookService {
 
     private void handleInvoicePaid(Event event) {
 
-        Invoice invoice = deserializeEventObject(event, Invoice.class);
+        Invoice invoice =
+                deserializeEventObject(
+                        event,
+                        Invoice.class
+                );
 
-        if (invoice == null || invoice.getSubscription() == null) {
+        String stripeSubscriptionId =
+                resolveInvoiceSubscriptionId(invoice);
+
+        if (stripeSubscriptionId == null
+                || stripeSubscriptionId.isBlank()) {
+
             return;
         }
 
         subscriptionService
                 .registerSuccessfulPaymentFromStripeWebhook(
-                        invoice.getSubscription(),
+                        stripeSubscriptionId,
                         event.getCreated(),
                         event.getType()
                 );

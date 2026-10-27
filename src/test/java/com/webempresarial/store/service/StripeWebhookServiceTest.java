@@ -530,8 +530,10 @@ class StripeWebhookServiceTest {
         when(deserializer.getObject())
                 .thenReturn(Optional.of(invoice));
 
-        when(invoice.getSubscription())
-                .thenReturn("sub_paid_123");
+        mockInvoiceSubscription(
+                invoice,
+                "sub_paid_123"
+        );
 
         service.handle(event);
 
@@ -565,8 +567,10 @@ class StripeWebhookServiceTest {
         when(deserializer.getObject())
                 .thenReturn(Optional.of(invoice));
 
-        when(invoice.getSubscription())
-                .thenReturn("sub_failed_123");
+        mockInvoiceSubscription(
+                invoice,
+                "sub_failed_123"
+        );
 
         service.handle(event);
 
@@ -909,4 +913,33 @@ class StripeWebhookServiceTest {
                         "No se pudo deserializar customer.subscription.deleted"
                 );
     }
+
+    private static void mockInvoiceSubscription(
+            Invoice invoice,
+            String stripeSubscriptionId
+    ) {
+        Invoice.Parent parent =
+                org.mockito.Mockito.mock(
+                        Invoice.Parent.class
+                );
+
+        Invoice.Parent.SubscriptionDetails details =
+                org.mockito.Mockito.mock(
+                        Invoice.Parent.SubscriptionDetails.class
+                );
+
+        org.mockito.Mockito.when(
+                invoice.getParent()
+        ).thenReturn(parent);
+
+        org.mockito.Mockito.when(
+                parent.getSubscriptionDetails()
+        ).thenReturn(details);
+
+        org.mockito.Mockito.when(
+                details.getSubscription()
+        ).thenReturn(stripeSubscriptionId);
+    }
+
+
 }
