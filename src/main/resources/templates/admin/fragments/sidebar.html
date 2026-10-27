@@ -138,23 +138,6 @@
         Knowledge
     </span>
 
-    <span th:if="${
-              sidebarBadges != null
-              and sidebarBadges.containsKey(
-                  '/admin/knowledge/review'
-              )
-              and sidebarBadges.get(
-                  '/admin/knowledge/review'
-              ) > 0
-          }"
-          class="badge rounded-pill bg-danger ms-auto"
-          th:text="${
-              sidebarBadges.get(
-                  '/admin/knowledge/review'
-              )
-          }">
-        0
-    </span>
 </a>
 
 </th:block>

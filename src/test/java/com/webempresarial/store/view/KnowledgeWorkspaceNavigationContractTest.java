@@ -44,7 +44,7 @@ class KnowledgeWorkspaceNavigationContractTest {
                 .doesNotContain(
                         "status=PUBLISHED"
                 )
-                .contains(
+                .doesNotContain(
                         "/admin/knowledge/review"
                 );
     }
