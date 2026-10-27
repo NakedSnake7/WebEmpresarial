@@ -29,6 +29,16 @@ class PlatformWorkspaceViewContractTest {
         );
 
         assertTab(
+                "../permissions/index.html",
+                ":: tabs('permissions')"
+        );
+
+        assertTab(
+                "../marketplace/index.html",
+                ":: tabs('marketplace')"
+        );
+
+        assertTab(
                 "timeline-detail.html",
                 ":: tabs('operations')"
         );
@@ -64,6 +74,12 @@ class PlatformWorkspaceViewContractTest {
                 )
                 .contains(
                         "href=\"/admin/platform/dev\""
+                )
+                .contains(
+                        "href=\"/admin/permissions\""
+                )
+                .contains(
+                        "href=\"/admin/marketplace\""
                 )
                 .doesNotContain(
                         "/admin/platform/timeline/"

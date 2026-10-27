@@ -38,6 +38,26 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a href="/admin/permissions"
+               class="nav-link"
+               th:classappend="${activeTab == 'permissions'}
+                   ? ' active'
+                   : ''">
+                Permisos
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/admin/marketplace"
+               class="nav-link"
+               th:classappend="${activeTab == 'marketplace'}
+                   ? ' active'
+                   : ''">
+                Módulos
+            </a>
+        </li>
+
     </ul>
 
 </th:block>

@@ -40,7 +40,7 @@ class SaasWorkspaceActivePathTest {
     }
 
     @Test
-    void marketplaceMustRemainIndependent() {
+    void platformRegistryMustRemainOutsideSaasWorkspace() {
 
         FeatureViewAdvice advice = advice();
 
@@ -53,7 +53,7 @@ class SaasWorkspaceActivePathTest {
         assertThat(
                 advice.sidebarActivePath(request)
         )
-                .isEqualTo("/admin/marketplace");
+                .isEqualTo("/admin/platform");
     }
 
     private FeatureViewAdvice advice() {

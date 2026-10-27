@@ -21,7 +21,9 @@ class PlatformWorkspaceActivePathTest {
                 "/admin/platform/dev",
                 "/admin/platform/timeline/abc",
                 "/admin/platform/trace/abc",
-                "/admin/platform/graph/abc"
+                "/admin/platform/graph/abc",
+                "/admin/permissions",
+                "/admin/marketplace"
         }) {
             HttpServletRequest request =
                     mock(HttpServletRequest.class);
@@ -46,12 +48,12 @@ class PlatformWorkspaceActivePathTest {
                 mock(HttpServletRequest.class);
 
         when(request.getRequestURI())
-                .thenReturn("/admin/permissions");
+                .thenReturn("/admin/store/settings");
 
         assertThat(
                 advice.sidebarActivePath(request)
         )
-                .isEqualTo("/admin/permissions");
+                .isEqualTo("/admin/store/settings");
     }
 
     private FeatureViewAdvice advice() {

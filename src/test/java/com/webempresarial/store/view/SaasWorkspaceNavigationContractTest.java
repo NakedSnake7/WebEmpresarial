@@ -41,13 +41,13 @@ class SaasWorkspaceNavigationContractTest {
     }
 
     @Test
-    void marketplaceShouldRemainIndependent()
+    void marketplaceShouldNotBeIndependentSidebarDestination()
             throws Exception {
 
         String html = Files.readString(SIDEBAR);
 
         assertThat(html)
-                .contains(
+                .doesNotContain(
                         "href=\"/admin/marketplace\""
                 );
     }

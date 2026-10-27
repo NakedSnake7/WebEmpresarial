@@ -129,13 +129,15 @@ public class FeatureViewAdvice {
         /*
          * Platform Workspace v1:
          *
-         * Console, Operations, Developer Kit and diagnostic
-         * detail routes keep their existing controllers,
-         * security and URLs. They only share the visual
-         * workspace rooted at /admin/platform.
+         * Console, Operations, Developer Kit, internal kernel
+         * registries and diagnostic detail routes keep their
+         * existing controllers, security and URLs. They only
+         * share the visual workspace rooted at /admin/platform.
          */
         if (path.equals("/admin/platform")
-                || path.startsWith("/admin/platform/")) {
+                || path.startsWith("/admin/platform/")
+                || path.equals("/admin/permissions")
+                || path.equals("/admin/marketplace")) {
             return "/admin/platform";
         }
 

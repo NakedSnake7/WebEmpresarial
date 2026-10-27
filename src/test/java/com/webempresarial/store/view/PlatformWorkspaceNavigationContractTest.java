@@ -36,6 +36,12 @@ class PlatformWorkspaceNavigationContractTest {
                         "href=\"/admin/platform/dev\""
                 )
                 .doesNotContain(
+                        "href=\"/admin/permissions\""
+                )
+                .doesNotContain(
+                        "href=\"/admin/marketplace\""
+                )
+                .doesNotContain(
                         ">Platform Console<"
                 )
                 .doesNotContain(
