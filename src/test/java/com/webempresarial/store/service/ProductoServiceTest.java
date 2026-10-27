@@ -319,6 +319,70 @@ class ProductoServiceTest {
                 .setPrice(new BigDecimal("0.01"));
     }
     @Test
+    void crearProducto_shouldRejectNullBasePrice() {
+
+        Store store = mock(Store.class);
+
+        ProductoAdminDTO dto =
+                new ProductoAdminDTO();
+
+        dto.setProductName("Producto sin precio");
+        dto.setPrecio(null);
+
+        assertThatThrownBy(() ->
+                service.crearProducto(
+                        dto,
+                        Collections.emptyList(),
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "El precio base es obligatorio"
+                );
+
+        verify(productoRepository, never())
+                .save(any(Producto.class));
+
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    void crearProducto_shouldRejectNegativeBasePrice() {
+
+        Store store = mock(Store.class);
+
+        ProductoAdminDTO dto =
+                new ProductoAdminDTO();
+
+        dto.setProductName("Producto precio negativo");
+        dto.setPrecio(
+                new BigDecimal("-0.01")
+        );
+
+        assertThatThrownBy(() ->
+                service.crearProducto(
+                        dto,
+                        Collections.emptyList(),
+                        store
+                )
+        )
+                .isInstanceOf(
+                        IllegalArgumentException.class
+                )
+                .hasMessage(
+                        "El precio base no puede ser negativo"
+                );
+
+        verify(productoRepository, never())
+                .save(any(Producto.class));
+
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
     void crearProducto_shouldCreateSimpleProductWithStoreAndStock() {
 
         Store store = mock(Store.class);

@@ -198,7 +198,10 @@
 
             <input type="hidden"
                    name="variantesJson"
-                   id="variantesJson">
+                   id="variantesJson"
+                   th:value="${variantesJson != null
+                       ? variantesJson
+                       : ''}">
 
             <div th:if="${#fields.hasErrors('*')}"
                  class="alert alert-danger shadow-sm mb-4">
@@ -399,7 +402,8 @@
                                            class="form-control"
                                            min="0"
                                            step="0.01"
-                                           inputmode="decimal">
+                                           inputmode="decimal"
+                                           required>
                                 </div>
                             </div>
 
@@ -769,7 +773,7 @@
                 const category =
                     selectedCategoryName();
 
-                return presets[category] || presets.Digital;
+                return presets[category] || [];
             }
 
             function escapeHtml(value) {
@@ -800,10 +804,10 @@
                     .querySelectorAll(".variant-box")
                     .forEach(box => {
 
-                        const variantName =
+                        const attributeName =
                             box.querySelector(".variant-name")
                                 ?.value
-                                ?.trim() || "Base";
+                                ?.trim() || "Opción";
 
                         box.querySelectorAll("tbody tr")
                             .forEach(row => {
@@ -818,8 +822,8 @@
                                             ?.value || 0
                                     ),
                                     atributos: {
-                                        Color: variantName,
-                                        Talla: row.dataset.size
+                                        [attributeName]:
+                                            row.dataset.size
                                     }
                                 });
                             });
@@ -846,7 +850,13 @@
                 updateEmptyState();
             }
 
-            function addVariantRow(box, size, chip) {
+            function addVariantRow(
+                box,
+                size,
+                chip,
+                initialStock = 0,
+                initialPrice = null
+            ) {
                 const tbody =
                     box.querySelector("tbody");
 
@@ -897,11 +907,33 @@
                     </td>
                 `;
 
-                row
+
+                const stockInput =
+                    row.querySelector(".variant-stock");
+
+                const variantPriceInput =
+                    row.querySelector(".variant-price");
+
+                stockInput.value =
+                    Number(initialStock ?? 0);
+
+                variantPriceInput.value =
+                    Number(
+                        initialPrice
+                            ?? priceInput.value
+                            ?? 0
+                    );
+
+                if (initialPrice != null) {
+                    variantPriceInput.dataset.edited =
+                        "true";
+                }
+
+ row
                     .querySelector(".remove-variant-row")
                     .addEventListener("click", () => {
                         row.remove();
-                        chip.classList.remove("active");
+                        chip?.classList.remove("active");
                         syncVariants();
                     });
 
@@ -959,7 +991,95 @@
                 syncVariants();
             }
 
-            window.addVariantGroup = function () {
+            function addManualVariantOption(
+                box,
+                option,
+                initialStock = 0,
+                initialPrice = null
+            ) {
+                const normalized =
+                    String(option || "").trim();
+
+                if (!normalized) {
+                    return;
+                }
+
+                const grid =
+                    box.querySelector(".size-grid");
+
+                const existingChip =
+                    [...grid.querySelectorAll(".size-chip")]
+                        .find(chip =>
+                            chip.textContent?.trim()
+                                === normalized
+                        );
+
+                if (existingChip) {
+                    existingChip.classList.add("active");
+
+                    addVariantRow(
+                        box,
+                        normalized,
+                        existingChip,
+                        initialStock,
+                        initialPrice
+                    );
+
+                    syncVariants();
+                    return;
+                }
+
+                const chip =
+                    document.createElement("button");
+
+                chip.type = "button";
+                chip.className =
+                    "size-chip active";
+                chip.textContent =
+                    normalized;
+
+                chip.addEventListener("click", () => {
+                    chip.classList.toggle("active");
+
+                    const tbody =
+                        box.querySelector("tbody");
+
+                    if (chip.classList.contains("active")) {
+                        addVariantRow(
+                            box,
+                            normalized,
+                            chip
+                        );
+                    } else {
+                        const row =
+                            [...tbody.querySelectorAll("tr")]
+                                .find(item =>
+                                    item.dataset.size
+                                        === normalized
+                                );
+
+                        row?.remove();
+                    }
+
+                    syncVariants();
+                });
+
+                grid.appendChild(chip);
+
+                addVariantRow(
+                    box,
+                    normalized,
+                    chip,
+                    initialStock,
+                    initialPrice
+                );
+
+                syncVariants();
+            }
+
+            window.addVariantGroup = function (
+                initialName = ""
+            ) {
                 const box =
                     document.createElement("div");
 
@@ -971,12 +1091,12 @@
 
                         <div class="flex-grow-1">
                             <label class="form-label fw-semibold">
-                                Nombre del grupo
+                                Nombre del atributo
                             </label>
 
                             <input type="text"
                                    class="form-control variant-name"
-                                   placeholder="Ej. Negro, Azul, Edición especial">
+                                   placeholder="Ej. Color, Talla, Capacidad, Presentación">
                         </div>
 
                         <div class="align-self-md-end">
@@ -991,8 +1111,20 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">
-                            Selecciona las opciones
+                            Selecciona o agrega opciones
                         </label>
+
+                        <div class="input-group mb-3">
+                            <input type="text"
+                                   class="form-control variant-option-input"
+                                   placeholder="Ej. Rojo, M, 500 ml, Pack de 6">
+
+                            <button type="button"
+                                    class="btn btn-outline-primary
+                                           add-variant-option">
+                                ＋ Agregar opción
+                            </button>
+                        </div>
 
                         <div class="size-grid"></div>
                     </div>
@@ -1024,10 +1156,63 @@
                     .querySelector(".variant-name")
                     .addEventListener("input", syncVariants);
 
+                const variantNameInput =
+                    box.querySelector(".variant-name");
+
+                variantNameInput.value =
+                    initialName;
+
+                const optionInput =
+                    box.querySelector(
+                        ".variant-option-input"
+                    );
+
+                const addOptionButton =
+                    box.querySelector(
+                        ".add-variant-option"
+                    );
+
+                const addOption = () => {
+                    const value =
+                        optionInput.value.trim();
+
+                    if (!value) {
+                        return;
+                    }
+
+                    addManualVariantOption(
+                        box,
+                        value
+                    );
+
+                    optionInput.value = "";
+                    optionInput.focus();
+                };
+
+                addOptionButton.addEventListener(
+                    "click",
+                    addOption
+                );
+
+                optionInput.addEventListener(
+                    "keydown",
+                    event => {
+                        if (event.key !== "Enter") {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        addOption();
+                    }
+                );
+
+
                 variantsContainer.appendChild(box);
 
                 loadSizes(box);
                 updateEmptyState();
+
+                return box;
             };
 
             addVariantButton
@@ -1070,9 +1255,6 @@
                         newCategoryInput.value = "";
                     }
 
-                    variantsContainer
-                        .querySelectorAll(".variant-box")
-                        .forEach(loadSizes);
                 });
 
             newCategoryInput
@@ -1138,6 +1320,127 @@
                     });
                 });
 
+            function restoreVariants() {
+                const raw =
+                    variantsJsonInput?.value?.trim();
+
+                if (!raw) {
+                    updateEmptyState();
+                    syncVariants();
+                    return;
+                }
+
+                let variants;
+
+                try {
+                    variants =
+                        JSON.parse(raw);
+                } catch (error) {
+                    console.warn(
+                        "No se pudieron interpretar "
+                        + "las variantes conservadas:",
+                        error
+                    );
+
+                    updateEmptyState();
+                    return;
+                }
+
+                if (!Array.isArray(variants)
+                        || variants.length === 0) {
+                    updateEmptyState();
+                    syncVariants();
+                    return;
+                }
+
+                const groups =
+                    new Map();
+
+                variants.forEach(variant => {
+                    const atributos =
+                        variant?.atributos || {};
+
+                    const entries =
+                        Object.entries(atributos)
+                            .filter(([name, value]) =>
+                                name != null
+                                && String(name).trim()
+                                && value != null
+                                && String(value).trim()
+                            );
+
+                    let groupName = "Opción";
+                    let option = "Opción";
+
+                    if (entries.length === 1) {
+                        groupName =
+                            String(entries[0][0]).trim();
+
+                        option =
+                            String(entries[0][1]).trim();
+
+                    } else if (
+                        atributos.Color
+                        && atributos.Talla
+                    ) {
+                        /*
+                         * Compatibilidad con el JSON
+                         * generado por el formulario anterior.
+                         */
+                        groupName =
+                            String(atributos.Color).trim();
+
+                        option =
+                            String(atributos.Talla).trim();
+
+                    } else if (entries.length > 0) {
+                        groupName =
+                            String(entries[0][0]).trim();
+
+                        option =
+                            String(entries[0][1]).trim();
+                    }
+
+                    if (!groups.has(groupName)) {
+                        groups.set(
+                            groupName,
+                            []
+                        );
+                    }
+
+                    groups.get(groupName).push({
+                        option,
+                        stock:
+                            variant.stock ?? 0,
+                        precio:
+                            variant.precio ?? null
+                    });
+                });
+
+                variantsContainer.innerHTML = "";
+
+                groups.forEach(
+                    (items, groupName) => {
+
+                        const box =
+                            window.addVariantGroup(
+                                groupName
+                            );
+
+                        items.forEach(item => {
+                            addManualVariantOption(
+                                box,
+                                item.option,
+                                item.stock,
+                                item.precio
+                            );
+                        });
+                    }
+                );
+
+                syncVariants();
+            }
+
             form
                 ?.addEventListener("submit", event => {
                     syncVariants();
@@ -1196,8 +1499,7 @@
                         "Guardando producto...";
                 });
 
-            updateEmptyState();
-            syncVariants();
+            restoreVariants();
 
         })();
     </script>

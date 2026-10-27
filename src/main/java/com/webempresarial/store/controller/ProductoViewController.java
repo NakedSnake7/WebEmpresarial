@@ -103,8 +103,18 @@ public class ProductoViewController {
                 currentStoreWithFeature(request, Feature.PRODUCTS);
 
         if (result.hasErrors()) {
-            model.addAttribute("categorias", categoriaService.obtenerTodas(store));
-            model.addAttribute("marcas", marcaService.obtenerTodas(store));
+            model.addAttribute(
+                    "categorias",
+                    categoriaService.obtenerTodas(store)
+            );
+            model.addAttribute(
+                    "marcas",
+                    marcaService.obtenerTodas(store)
+            );
+            model.addAttribute(
+                    "variantesJson",
+                    variantesJson
+            );
             return "admin/subirProducto";
         }
 
@@ -175,9 +185,22 @@ public class ProductoViewController {
                     "Error al guardar producto: " + e.getMessage()
             );
 
-            model.addAttribute("categorias", categoriaService.obtenerTodas(store));
-            model.addAttribute("marcas", marcaService.obtenerTodas(store));
-            model.addAttribute("producto", dto);
+            model.addAttribute(
+                    "categorias",
+                    categoriaService.obtenerTodas(store)
+            );
+            model.addAttribute(
+                    "marcas",
+                    marcaService.obtenerTodas(store)
+            );
+            model.addAttribute(
+                    "producto",
+                    dto
+            );
+            model.addAttribute(
+                    "variantesJson",
+                    variantesJson
+            );
 
             return "admin/subirProducto";
         }

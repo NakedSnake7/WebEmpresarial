@@ -1012,6 +1012,18 @@ public class ProductoService {
             dto.getProductName().trim()
         );
 
+        if (dto.getPrecio() == null) {
+            throw new IllegalArgumentException(
+                    "El precio base es obligatorio"
+            );
+        }
+
+        if (dto.getPrecio().signum() < 0) {
+            throw new IllegalArgumentException(
+                    "El precio base no puede ser negativo"
+            );
+        }
+
         producto.setPrice(
             dto.getPrecio()
         );

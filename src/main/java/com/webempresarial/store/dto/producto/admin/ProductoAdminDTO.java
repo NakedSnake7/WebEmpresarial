@@ -3,6 +3,9 @@ package com.webempresarial.store.dto.producto.admin;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+
 import com.webempresarial.store.dto.producto.shared.ProductoVarianteDTO;
 
 public class ProductoAdminDTO {
@@ -12,6 +15,12 @@ public class ProductoAdminDTO {
     private String productName;
     private String description;
 
+    @NotNull(message = "El precio base es obligatorio")
+    @DecimalMin(
+            value = "0.00",
+            inclusive = true,
+            message = "El precio base no puede ser negativo"
+    )
     private BigDecimal precio;
 
     private Long marcaId;
