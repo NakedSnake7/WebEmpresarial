@@ -22,6 +22,8 @@
 
     <link rel="stylesheet"
           th:href="@{/assets/css/admin/knowledge/detail.css}">
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/workspace.css}">
 </head>
 
 <body>
@@ -30,12 +32,7 @@
       th:attr="data-knowledge-id=${knowledgeObjectId}">
 
     <header class="workspace-navigation">
-
-        <a class="workspace-back-link"
-           th:href="@{/admin/knowledge}">
-            ← Volver al Knowledge Engine
-        </a>
-        <a th:href="@{/admin/knowledge/library}">
+<a th:href="@{/admin/knowledge/library}">
     ← Volver a la biblioteca
 </a>
 
@@ -57,6 +54,10 @@
         </div>
 
     </header>
+
+    <div th:replace="~{admin/fragments/knowledge-workspace
+             :: tabs('library', false)}"></div>
+
 
     <div id="knowledgeDetailLoading"
          class="workspace-state">

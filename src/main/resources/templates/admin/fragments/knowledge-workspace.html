@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="tabs(activeTab, showCreateAction)"
+     class="knowledge-workspace-nav"
+     aria-label="Knowledge Engine">
+
+    <div class="knowledge-workspace-tabs">
+
+        <a th:href="@{/admin/knowledge}"
+           class="knowledge-workspace-tab"
+           th:classappend="${activeTab == 'summary'}
+               ? ' active'
+               : ''">
+            Resumen
+        </a>
+
+        <a th:href="@{/admin/knowledge/library}"
+           class="knowledge-workspace-tab"
+           th:classappend="${activeTab == 'library'}
+               ? ' active'
+               : ''">
+            Biblioteca
+        </a>
+
+    </div>
+
+    <a th:if="${showCreateAction}"
+       th:href="@{/admin/knowledge/new}"
+       class="knowledge-workspace-action">
+        + Nuevo conocimiento
+    </a>
+
+</nav>
+
+</body>
+</html>

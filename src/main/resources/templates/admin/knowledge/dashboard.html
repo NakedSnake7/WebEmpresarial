@@ -14,6 +14,8 @@
 
     <link rel="stylesheet"
           th:href="@{/assets/css/admin/knowledge/dashboard.css}">
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/workspace.css}">
 </head>
 
 <body>
@@ -35,22 +37,11 @@
                 Gobernanza y administración del conocimiento
             </p>
         </div>
+</header>
 
-        <div class="dashboard-actions">
+    <div th:replace="~{admin/fragments/knowledge-workspace
+             :: tabs('summary', true)}"></div>
 
-            <a href="/admin/knowledge/library"
-               class="button button-secondary">
-                Abrir biblioteca
-            </a>
-
-            <a href="/admin/knowledge/new"
-               class="button button-primary">
-                Nuevo conocimiento
-            </a>
-
-        </div>
-
-    </header>
 
     <section class="dashboard-metrics"
              aria-label="Métricas de conocimiento">

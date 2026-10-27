@@ -127,6 +127,11 @@ class AdminSidebarTemplateTest {
                     "currentPath",
                     currentPath
             );
+
+            context.setVariable(
+                    "sidebarActivePath",
+                    currentPath
+            );
         }
 
         return templateEngine.process(

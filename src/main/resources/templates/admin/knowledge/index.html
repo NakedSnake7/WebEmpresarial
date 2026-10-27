@@ -22,6 +22,8 @@
 
 <link rel="stylesheet"
       th:href="@{/assets/css/admin/knowledge/index.css}">
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/workspace.css}">
 </head>
 
 <body>
@@ -46,26 +48,18 @@
     </div>
 
     <div class="knowledge-header-actions">
-
-        <a th:href="@{/admin/knowledge}"
-           class="button button-ghost">
-            Dashboard
-        </a>
-
-        <button type="button"
+<button type="button"
                 class="button button-secondary"
                 id="refreshKnowledgeButton">
             Actualizar
         </button>
-
-        <a th:href="@{/admin/knowledge/new}"
-           class="button button-primary">
-            Nuevo conocimiento
-        </a>
-
-    </div>
+</div>
 
 </header>
+
+    <div th:replace="~{admin/fragments/knowledge-workspace
+             :: tabs('library', true)}"></div>
+
 
     <section class="knowledge-metrics"
              aria-label="Resumen de conocimiento">

@@ -22,6 +22,8 @@
 
     <link rel="stylesheet"
           th:href="@{/assets/css/admin/knowledge/create.css}">
+    <link rel="stylesheet"
+          th:href="@{/assets/css/admin/knowledge/workspace.css}">
 </head>
 
 <body>
@@ -50,6 +52,10 @@
         </div>
 
     </header>
+
+    <div th:replace="~{admin/fragments/knowledge-workspace
+             :: tabs('none', false)}"></div>
+
 
     <div id="knowledgeCreateError"
          class="knowledge-alert knowledge-alert-error"

@@ -1,0 +1,65 @@
+.knowledge-workspace-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+    padding: 0.45rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.9rem;
+    background: #ffffff;
+}
+
+.knowledge-workspace-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.knowledge-workspace-tab,
+.knowledge-workspace-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 0.65rem;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.knowledge-workspace-tab {
+    color: #4b5563;
+}
+
+.knowledge-workspace-tab:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.knowledge-workspace-tab.active {
+    background: #111827;
+    color: #ffffff;
+}
+
+.knowledge-workspace-action {
+    background: #111827;
+    color: #ffffff;
+}
+
+.knowledge-workspace-action:hover {
+    background: #1f2937;
+    color: #ffffff;
+}
+
+@media (max-width: 720px) {
+    .knowledge-workspace-nav {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .knowledge-workspace-action {
+        width: 100%;
+    }
+}

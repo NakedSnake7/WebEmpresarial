@@ -110,6 +110,19 @@ public class FeatureViewAdvice {
             return "/admin/store/settings";
         }
 
+        /*
+         * Knowledge Engine Workspace v1:
+         *
+         * Library, creación, detalle y versiones mantienen
+         * exactamente sus rutas y reglas de seguridad.
+         * Únicamente pertenecen visualmente al workspace
+         * Knowledge.
+         */
+        if (path.equals("/admin/knowledge")
+                || path.startsWith("/admin/knowledge/")) {
+            return "/admin/knowledge";
+        }
+
         return path;
     }
 
