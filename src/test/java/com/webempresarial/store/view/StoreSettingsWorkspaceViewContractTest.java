@@ -59,17 +59,102 @@ class StoreSettingsWorkspaceViewContractTest {
     }
 
     @Test
-    void crmSettingsShouldUseSettingsWorkspace()
+    void everyCrmSettingsViewShouldUseSettingsWorkspace()
+            throws Exception {
+
+        for (String file : new String[] {
+                "index.html",
+                "budget-ranges.html",
+                "lead-sources.html",
+                "pipeline.html",
+                "scoring.html",
+                "duplicate.html",
+                "merge.html",
+                "automation.html",
+                "ai.html",
+                "settings.html"
+        }) {
+
+            String html = read(
+                    "src/main/resources/templates/admin/store/crm/"
+                    + file
+            );
+
+            assertThat(html)
+                    .as(file)
+                    .contains(
+                            ":: tabs('crm')"
+                    );
+        }
+    }
+
+    @Test
+    void advancedShouldBeIndependentFromStoreEditFieldset()
             throws Exception {
 
         String html = read(
-                "src/main/resources/templates/admin/store/crm/"
+                "src/main/resources/templates/admin/store/"
                 + "settings.html"
+        );
+
+        int general =
+                html.indexOf(
+                        "data-store-settings-general"
+                );
+
+        int generalClose =
+                html.indexOf(
+                        "</fieldset>",
+                        general
+                );
+
+        int advanced =
+                html.indexOf(
+                        "id=\"advanced\""
+                );
+
+        int commercial =
+                html.indexOf(
+                        "id=\"commercial\""
+                );
+
+        assertThat(general)
+                .isGreaterThanOrEqualTo(0);
+
+        assertThat(generalClose)
+                .isGreaterThan(general);
+
+        assertThat(advanced)
+                .isGreaterThan(generalClose);
+
+        assertThat(commercial)
+                .isGreaterThan(advanced);
+
+        assertThat(html)
+                .contains(
+                        "canManageWhiteLabel and "
+                        + "features.canUse(store, "
+                        + "'WHITE_LABEL_FULL')"
+                );
+    }
+
+    @Test
+    void whiteLabelManagerShouldSeeMainSaveAction()
+            throws Exception {
+
+        String html = normalize(
+                read(
+                    "src/main/resources/templates/admin/store/"
+                    + "settings.html"
+                )
         );
 
         assertThat(html)
                 .contains(
-                        ":: tabs('crm')"
+                        "th:if=\"${canManageStoreSettings or "
+                        + "canManageStoreBranding or "
+                        + "canManageCommercialInfo or "
+                        + "canManageWhiteLabel}\""
                 );
     }
 

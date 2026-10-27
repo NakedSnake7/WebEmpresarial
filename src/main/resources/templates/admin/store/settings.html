@@ -364,6 +364,8 @@
 </div>
 
 
+</fieldset>
+
 <div class="col-12"
      id="advanced">
     <hr>
@@ -504,7 +506,7 @@
 
 
 
-									</fieldset>
+
 
 <fieldset
     id="commercial"
@@ -587,7 +589,7 @@
 								</fieldset>
 
 <button
-    th:if="${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo}"
+    th:if="${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo or canManageWhiteLabel}"
     class="btn btn-success"
     type="submit">Guardar
 									configuración</button>

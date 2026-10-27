@@ -26,6 +26,9 @@
         </div>
     </div>
 
+    <div th:replace="~{admin/fragments/settings-workspace
+             :: tabs('crm')}"></div>
+
     <div th:if="${param.budgetCreated}" class="alert alert-success">
         Rango creado correctamente.
     </div>

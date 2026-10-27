@@ -35,7 +35,7 @@ class StoreSettingsPermissionTemplateTest {
                 )
                 .contains("data-store-settings-proposals")
                 .contains(
-                        "th:if=\"${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo}\""
+                        "th:if=\"${canManageStoreSettings or canManageStoreBranding or canManageCommercialInfo or canManageWhiteLabel}\""
                 );
     }
     @Test
