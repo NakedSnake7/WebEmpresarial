@@ -9,26 +9,8 @@
 <body>
 
 <th:block th:fragment="content">
-
-<div th:unless="${features.canUseCRM(store)}"
-     class="alert alert-warning m-4">
-
-    <h4 class="fw-bold mb-2">CRM no disponible en tu plan</h4>
-
-    <p class="mb-3">
-        El módulo CRM está disponible para planes Pro y Premium.
-    </p>
-
-    <a href="/admin/upgrade?feature=CRM"
-       class="btn btn-warning">
-        Mejorar plan
-    </a>
-
-</div>
-
 <section class="crm-page"
-         data-crm-view="dashboard"
-         th:if="${features.canUseCRM(store)}">
+         data-crm-view="dashboard">
 
     <div class="crm-header">
         <div>
