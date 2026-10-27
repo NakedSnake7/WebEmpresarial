@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<th:block th:fragment="tabs(activeTab)">
+
+    <ul class="nav nav-tabs mb-4">
+
+        <li class="nav-item">
+            <a href="/admin/platform"
+               class="nav-link"
+               th:classappend="${activeTab == 'console'}
+                   ? ' active'
+                   : ''">
+                Console
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/admin/platform/operations"
+               class="nav-link"
+               th:classappend="${activeTab == 'operations'}
+                   ? ' active'
+                   : ''">
+                Operations
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/admin/platform/dev"
+               class="nav-link"
+               th:classappend="${activeTab == 'developer'}
+                   ? ' active'
+                   : ''">
+                Developer
+            </a>
+        </li>
+
+    </ul>
+
+</th:block>
+
+</body>
+</html>
