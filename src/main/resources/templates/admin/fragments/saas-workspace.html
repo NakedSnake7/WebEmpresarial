@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<th:block th:fragment="tabs(activeTab)">
+
+    <ul class="nav nav-tabs mb-4">
+
+        <li class="nav-item">
+            <a href="/admin/saas"
+               class="nav-link"
+               th:classappend="${activeTab == 'summary'}
+                   ? ' active'
+                   : ''">
+                Resumen
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/admin/stores"
+               class="nav-link"
+               th:classappend="${activeTab == 'stores'}
+                   ? ' active'
+                   : ''">
+                Tiendas
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/admin/subscriptions"
+               class="nav-link"
+               th:classappend="${activeTab == 'subscriptions'}
+                   ? ' active'
+                   : ''">
+                Suscripciones
+            </a>
+        </li>
+
+    </ul>
+
+</th:block>
+
+</body>
+</html>

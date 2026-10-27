@@ -233,18 +233,14 @@
     <span class="sidebar-text">Platform</span>
 </a>
 
-<a href="/admin/stores"
-   class="sidebar-link"
-   th:if="${isSuperAdmin}">
-    <span class="sidebar-icon">🏬</span>
-    <span class="sidebar-text">Tiendas</span>
-</a>
-
 <a href="/admin/saas"
    class="sidebar-link"
-   th:if="${isSuperAdmin}">
+   th:if="${isSuperAdmin}"
+   th:classappend="${
+       sidebarActivePath == '/admin/saas'
+   } ? ' active' : ''">
     <span class="sidebar-icon">🚀</span>
-    <span class="sidebar-text">SaaS Dashboard</span>
+    <span class="sidebar-text">SaaS</span>
 </a>
 
 <a href="/admin/marketplace"
@@ -254,12 +250,6 @@
     <span class="sidebar-text">Marketplace</span>
 </a>
 
-<a href="/admin/subscriptions"
-   class="sidebar-link"
-   th:if="${isSuperAdmin}">
-    <span class="sidebar-icon">💳</span>
-    <span class="sidebar-text">Suscripciones</span>
-</a>
 
 
     </nav>

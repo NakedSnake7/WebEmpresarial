@@ -140,6 +140,23 @@ public class FeatureViewAdvice {
         }
 
         /*
+         * SaaS Administration Workspace v1:
+         *
+         * Dashboard, tenant administration and subscription
+         * lifecycle keep their existing controllers, security
+         * and URLs. They only share the visual workspace rooted
+         * at /admin/saas.
+         */
+        if (path.equals("/admin/saas")
+                || path.startsWith("/admin/saas/")
+                || path.equals("/admin/stores")
+                || path.startsWith("/admin/stores/")
+                || path.equals("/admin/subscriptions")
+                || path.startsWith("/admin/subscriptions/")) {
+            return "/admin/saas";
+        }
+
+        /*
          * Knowledge Engine Workspace v1:
          *
          * Library, creación, detalle y versiones mantienen

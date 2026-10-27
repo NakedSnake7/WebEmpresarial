@@ -46,12 +46,12 @@ class PlatformWorkspaceActivePathTest {
                 mock(HttpServletRequest.class);
 
         when(request.getRequestURI())
-                .thenReturn("/admin/stores");
+                .thenReturn("/admin/permissions");
 
         assertThat(
                 advice.sidebarActivePath(request)
         )
-                .isEqualTo("/admin/stores");
+                .isEqualTo("/admin/permissions");
     }
 
     private FeatureViewAdvice advice() {

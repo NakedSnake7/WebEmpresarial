@@ -11,6 +11,9 @@
 <th:block th:fragment="content">
 
 <section class="container-fluid">
+    <div th:replace="~{admin/fragments/saas-workspace
+             :: tabs('stores')}"></div>
+
 
     <div class="mb-4">
         <span class="badge text-bg-success mb-2">Multi tienda SaaS</span>
