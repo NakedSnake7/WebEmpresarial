@@ -289,3 +289,12 @@
 .user-dropdown .customer-logout-button {
     width: 100%;
 }
+
+
+/* =========================================================
+   SHARED STOREFRONT CART STATE
+   ========================================================= */
+
+.cart-dropdown:not(.open) {
+    display: none;
+}

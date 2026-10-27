@@ -215,6 +215,68 @@ class StorefrontThemeContractTest {
         }
     }
 
+    @ParameterizedTest(name = "{0} must provide customer login view")
+    @MethodSource("storefrontThemes")
+    void storefrontThemeMustProvideCustomerLoginView(
+            String theme
+    ) {
+
+        Path login =
+                Path.of(
+                        "src/main/resources/templates/themes",
+                        theme,
+                        "login.html"
+                );
+
+        assertThat(login)
+                .exists()
+                .isRegularFile();
+    }
+
+    @Test
+    void planThemesMustReuseSharedCustomerLogin()
+            throws Exception {
+
+        for (String theme :
+                List.of("basic", "pro", "premium")) {
+
+            Path login =
+                    Path.of(
+                            "src/main/resources/templates/themes",
+                            theme,
+                            "login.html"
+                    );
+
+            assertThat(
+                    Files.readString(login)
+            ).contains(
+                    "themes/shared/customer-login :: loginPage"
+            );
+        }
+    }
+
+    @Test
+    void sharedCustomerLoginMustPostToSecurityEndpoint()
+            throws Exception {
+
+        Path sharedLogin =
+                Path.of(
+                        "src/main/resources/templates/themes/shared/"
+                        + "customer-login.html"
+                );
+
+        String template =
+                Files.readString(sharedLogin);
+
+        assertThat(template)
+                .contains("th:action=\"@{/login}\"")
+                .contains("method=\"post\"")
+                .contains("name=\"username\"")
+                .contains("name=\"password\"")
+                .contains("fragments/csrf :: token");
+    }
+
+
     @ParameterizedTest(name = "{0} must render Commerce Engine product")
     @MethodSource("storefrontThemes")
     void shouldRenderCommerceEngineProduct(String theme)

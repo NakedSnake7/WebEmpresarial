@@ -12,6 +12,7 @@ import com.webempresarial.store.service.StoreSettingsService;
 
 
 import java.math.BigDecimal;
+import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,6 +25,19 @@ import org.springframework.ui.Model;
 @Controller
 @RequestMapping("/admin/store/settings")
 public class StoreSettingsController {
+
+    private static final Pattern HEX_COLOR_PATTERN =
+            Pattern.compile("^#[0-9A-Fa-f]{6}$");
+
+    private static final String DEFAULT_PRIMARY_COLOR =
+            "#111827";
+
+    private static final String DEFAULT_SECONDARY_COLOR =
+            "#6B7280";
+
+    private static final String DEFAULT_ACCENT_COLOR =
+            "#2563EB";
+
 
     private final StoreContextService storeContextService;
     private final StoreSettingsService storeSettingsService;
@@ -104,9 +118,29 @@ public class StoreSettingsController {
 
         if (canManageStoreBranding) {
             settings.setFaviconUrl(form.getFaviconUrl());
-            settings.setPrimaryColor(form.getPrimaryColor());
-            settings.setSecondaryColor(form.getSecondaryColor());
-            settings.setAccentColor(form.getAccentColor());
+            settings.setPrimaryColor(
+                    validatedHexColor(
+                            form.getPrimaryColor(),
+                            settings.getPrimaryColor(),
+                            DEFAULT_PRIMARY_COLOR
+                    )
+            );
+
+            settings.setSecondaryColor(
+                    validatedHexColor(
+                            form.getSecondaryColor(),
+                            settings.getSecondaryColor(),
+                            DEFAULT_SECONDARY_COLOR
+                    )
+            );
+
+            settings.setAccentColor(
+                    validatedHexColor(
+                            form.getAccentColor(),
+                            settings.getAccentColor(),
+                            DEFAULT_ACCENT_COLOR
+                    )
+            );
             settings.setFontFamily(form.getFontFamily());
             settings.setHeroImageUrl(form.getHeroImageUrl());
             settings.setSlogan(form.getSlogan());
@@ -400,4 +434,44 @@ public class StoreSettingsController {
             return "redirect:/admin/store/settings?logoError";
         }
     }
+
+    static String validatedHexColor(
+            String candidate,
+            String currentValue,
+            String fallback
+    ) {
+        String normalizedCandidate =
+                normalizeHexColor(candidate);
+
+        if (normalizedCandidate != null) {
+            return normalizedCandidate;
+        }
+
+        String normalizedCurrent =
+                normalizeHexColor(currentValue);
+
+        if (normalizedCurrent != null) {
+            return normalizedCurrent;
+        }
+
+        return fallback;
+    }
+
+    private static String normalizeHexColor(
+            String value
+    ) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+
+        return HEX_COLOR_PATTERN
+                .matcher(normalized)
+                .matches()
+                        ? normalized
+                        : null;
+    }
+
+
 }

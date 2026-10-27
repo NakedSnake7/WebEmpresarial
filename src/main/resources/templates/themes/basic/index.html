@@ -179,7 +179,22 @@ th:href="@{'https://wa.me/'
 
                     <div class="basic-product-footer">
 
-                        <strong th:text="${#numbers.formatCurrency(producto.precioConDescuento)}">
+                        <strong th:text="${
+    #numbers.formatDecimal(
+        producto.precioConDescuento,
+        1,
+        'COMMA',
+        2,
+        'POINT'
+    )
+    + ' '
+    + (
+        settings != null
+        and !#strings.isEmpty(settings.currency)
+            ? settings.currency
+            : 'MXN'
+    )
+}">
                             $0.00
                         </strong>
 
