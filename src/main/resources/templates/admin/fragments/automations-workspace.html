@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<th:block th:fragment="tabs(activeTab)">
+
+    <ul class="nav nav-tabs mb-4">
+
+        <li class="nav-item">
+
+            <a href="/admin/automations/kernel"
+               class="nav-link"
+               th:classappend="${activeTab == 'kernel'}
+                   ? ' active'
+                   : ''">
+                Kernel
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a href="/admin/automations/history"
+               class="nav-link"
+               th:classappend="${activeTab == 'history'}
+                   ? ' active'
+                   : ''">
+                Historial
+            </a>
+
+        </li>
+
+    </ul>
+
+</th:block>
+
+</body>
+</html>

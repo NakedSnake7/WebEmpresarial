@@ -11,6 +11,9 @@
 <th:block th:fragment="content">
 
 <section class="container-fluid">
+    <div th:replace="~{admin/fragments/automations-workspace
+             :: tabs('history')}"></div>
+
 
     <div class="mb-4">
         <span class="badge text-bg-dark mb-2">Platform Kernel</span>

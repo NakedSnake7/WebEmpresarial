@@ -111,6 +111,22 @@ public class FeatureViewAdvice {
         }
 
         /*
+         * Automations Platform Workspace v1:
+         *
+         * Kernel registry and execution history remain separate
+         * SUPER_ADMIN endpoints. They only share one visual
+         * workspace rooted at /admin/automations/kernel.
+         *
+         * /admin/automations itself is intentionally NOT mapped:
+         * it remains the fail-closed tenant automation namespace.
+         */
+        if (path.equals("/admin/automations/kernel")
+                || path.equals("/admin/automations/history")
+                || path.startsWith("/admin/automations/history/")) {
+            return "/admin/automations/kernel";
+        }
+
+        /*
          * Knowledge Engine Workspace v1:
          *
          * Library, creación, detalle y versiones mantienen
