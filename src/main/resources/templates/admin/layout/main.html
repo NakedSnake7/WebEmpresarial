@@ -103,12 +103,55 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const sidebar = document.getElementById('adminSidebar');
-    const toggle = document.getElementById('sidebarToggle');
+    const sidebar =
+        document.getElementById('adminSidebar');
+
+    const toggle =
+        document.getElementById('sidebarToggle');
+
+    const scrollHint =
+        document.getElementById('sidebarScrollHint');
 
     if (!sidebar || !toggle) return;
 
-    const saved = localStorage.getItem('adminSidebarCollapsed');
+    const updateSidebarScrollHint = function () {
+
+        if (!scrollHint) return;
+
+        const threshold = 6;
+
+        const hasOverflow =
+            sidebar.scrollHeight >
+            sidebar.clientHeight + threshold;
+
+        const hasMoreBelow =
+            sidebar.scrollTop +
+            sidebar.clientHeight <
+            sidebar.scrollHeight - threshold;
+
+        const visible =
+            hasOverflow && hasMoreBelow;
+
+        scrollHint.hidden = !visible;
+
+        if (!visible) {
+            return;
+        }
+
+        const rect =
+            sidebar.getBoundingClientRect();
+
+        scrollHint.style.left =
+            rect.left + 'px';
+
+        scrollHint.style.width =
+            rect.width + 'px';
+    };
+
+    const saved =
+        localStorage.getItem(
+            'adminSidebarCollapsed'
+        );
 
     if (saved === 'true') {
         sidebar.classList.add('collapsed');
@@ -120,10 +163,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
         localStorage.setItem(
             'adminSidebarCollapsed',
-            sidebar.classList.contains('collapsed')
+            sidebar.classList.contains(
+                'collapsed'
+            )
+        );
+
+        requestAnimationFrame(
+            updateSidebarScrollHint
         );
 
     });
+
+    sidebar.addEventListener(
+        'scroll',
+        updateSidebarScrollHint,
+        { passive: true }
+    );
+
+    sidebar.addEventListener(
+        'transitionend',
+        updateSidebarScrollHint
+    );
+
+    window.addEventListener(
+        'resize',
+        updateSidebarScrollHint
+    );
+
+    requestAnimationFrame(
+        updateSidebarScrollHint
+    );
 
 });
 </script>

@@ -385,3 +385,131 @@ CSS del enlace activo
     margin-left: auto;
     margin-right: auto;
 }
+
+/* ==========================================================
+   INDEPENDENT SIDEBAR SCROLL
+   ========================================================== */
+
+.admin-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+
+    height: 100vh;
+    max-height: 100vh;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    overscroll-behavior-y: contain;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(255, 255, 255, 0.20)
+        transparent;
+}
+
+/*
+ * Chrome / Edge / Safari:
+ * scrollbar discreto pero visible para mantener
+ * la descubribilidad del scroll.
+ */
+.admin-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+}
+
+.admin-sidebar:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+/*
+ * En modo colapsado no sacrificamos ancho de los iconos.
+ * El scroll continúa funcionando con rueda/touchpad.
+ */
+.admin-sidebar.collapsed {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.admin-sidebar.collapsed::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/*
+ * Hint de descubrimiento.
+ *
+ * position: fixed evita que el propio indicador altere
+ * scrollHeight. Su geometría se sincroniza por JS con
+ * el ancho real del sidebar.
+ */
+.sidebar-scroll-hint {
+    position: fixed;
+    bottom: 0;
+
+    z-index: 1040;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 52px;
+    padding: 22px 10px 8px;
+
+    color: rgba(255, 255, 255, 0.82);
+
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(17, 24, 39, 0),
+            rgba(17, 24, 39, 0.96) 58%
+        );
+
+    pointer-events: none;
+    user-select: none;
+
+    opacity: 1;
+    transition: opacity 0.15s ease;
+}
+
+.sidebar-scroll-hint[hidden] {
+    display: none !important;
+}
+
+.sidebar-scroll-hint-arrow {
+    line-height: 1;
+    animation:
+        sidebar-scroll-hint-bounce
+        1.4s ease-in-out infinite;
+}
+
+.admin-sidebar.collapsed
+.sidebar-scroll-hint-label {
+    display: none;
+}
+
+@keyframes sidebar-scroll-hint-bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(3px);
+    }
+}
