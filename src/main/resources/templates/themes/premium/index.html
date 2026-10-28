@@ -215,16 +215,33 @@ th:href="@{'https://wa.me/'
                     $0.00
                 </strong>
 
-                <button type="button"
-                        class="premium-btn premium-btn-primary premium-add-cart"
-                        th:disabled="${featured.sinStock}"
-                        th:attr="
-                            data-id=${featured.id},
-                            data-nombre=${featured.productName},
-                            data-precio=${featured.precioConDescuento},
-                            data-imagen=${featured.imageUrl}">
-                    Agregar al carrito
-                </button>
+                <!-- Producto protagonista simple -->
+                <th:block th:if="${!featured.tieneVariantes}">
+
+                    <input type="hidden"
+                           th:id="|premium-featured-qty-${featured.id}|"
+                           value="1">
+
+                    <button type="button"
+                            class="premium-btn premium-btn-primary add-to-cart"
+                            th:disabled="${featured.sinStock}"
+                            th:attr="
+                                data-product-id=${featured.id},
+                                data-name=${featured.productName},
+                                data-price=${featured.precioConDescuento},
+                                data-quantity-id=|premium-featured-qty-${featured.id}|,
+                                data-original-stock=${featured.stockSimple}">
+                        Agregar al carrito
+                    </button>
+
+                </th:block>
+
+                <!-- Producto protagonista con variantes -->
+                <a th:if="${featured.tieneVariantes}"
+                   th:href="@{/producto-detalle/{id}(id=${featured.id})}"
+                   class="premium-btn premium-btn-primary">
+                    Ver opciones
+                </a>
             </div>
 
         </div>
@@ -289,16 +306,33 @@ th:href="@{'https://wa.me/'
 </small>
                     </div>
 
-                    <button type="button"
-                            class="premium-btn premium-btn-primary premium-add-cart"
-                            th:disabled="${producto.sinStock}"
-                            th:attr="
-                                data-id=${producto.id},
-                                data-nombre=${producto.productName},
-                                data-precio=${producto.precioConDescuento},
-                                data-imagen=${producto.imageUrl}">
-                        Comprar ahora
-                    </button>
+                    <!-- Producto simple -->
+                    <th:block th:if="${!producto.tieneVariantes}">
+
+                        <input type="hidden"
+                               th:id="|premium-qty-${producto.id}|"
+                               value="1">
+
+                        <button type="button"
+                                class="premium-btn premium-btn-primary add-to-cart"
+                                th:disabled="${producto.sinStock}"
+                                th:attr="
+                                    data-product-id=${producto.id},
+                                    data-name=${producto.productName},
+                                    data-price=${producto.precioConDescuento},
+                                    data-quantity-id=|premium-qty-${producto.id}|,
+                                    data-original-stock=${producto.stockSimple}">
+                            Comprar ahora
+                        </button>
+
+                    </th:block>
+
+                    <!-- Producto con variantes -->
+                    <a th:if="${producto.tieneVariantes}"
+                       th:href="@{/producto-detalle/{id}(id=${producto.id})}"
+                       class="premium-btn premium-btn-primary">
+                        Ver opciones
+                    </a>
                 </div>
 
             </article>

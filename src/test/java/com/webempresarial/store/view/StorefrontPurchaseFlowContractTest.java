@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -157,6 +158,114 @@ class StorefrontPurchaseFlowContractTest {
         assertThat(cartSource)
                 .contains("if (errorDiv)")
                 .contains("return valido;");
+    }
+
+
+
+    @Test
+    void proAndPremiumCardsMustUseSharedPurchaseContract()
+            throws Exception {
+
+        String pro =
+                Files.readString(
+                        Path.of(
+                                "src/main/resources/templates/themes/"
+                                + "pro/index.html"
+                        )
+                );
+
+        String premium =
+                Files.readString(
+                        Path.of(
+                                "src/main/resources/templates/themes/"
+                                + "premium/index.html"
+                        )
+                );
+
+        assertThat(pro)
+                .contains("!producto.tieneVariantes")
+                .contains("producto.tieneVariantes")
+                .contains("add-to-cart")
+                .contains("data-product-id")
+                .contains("data-name")
+                .contains("data-price")
+                .contains("data-quantity-id")
+                .contains("data-original-stock")
+                .contains("/producto-detalle/{id}")
+                .contains("Ver opciones")
+                .doesNotContain("pro-add-cart");
+
+        assertThat(
+                pro.split(
+                        Pattern.quote(
+                                "/producto-detalle/{id}"
+                        ),
+                        -1
+                ).length - 1
+        )
+                .isGreaterThanOrEqualTo(1);
+
+        assertThat(premium)
+                .contains("!featured.tieneVariantes")
+                .contains("featured.tieneVariantes")
+                .contains("!producto.tieneVariantes")
+                .contains("producto.tieneVariantes")
+                .contains("add-to-cart")
+                .contains("data-product-id")
+                .contains("data-name")
+                .contains("data-price")
+                .contains("data-quantity-id")
+                .contains("data-original-stock")
+                .contains("/producto-detalle/{id}")
+                .contains("Ver opciones")
+                .doesNotContain("premium-add-cart");
+
+        assertThat(
+                premium.split(
+                        Pattern.quote(
+                                "/producto-detalle/{id}"
+                        ),
+                        -1
+                ).length - 1
+        )
+                .isGreaterThanOrEqualTo(2);
+
+        assertThat(
+                premium.split(
+                        "add-to-cart",
+                        -1
+                ).length - 1
+        )
+                .isGreaterThanOrEqualTo(2);
+    }
+
+
+
+    @Test
+    void saasThemesMustProvideStylesheet()
+            throws Exception {
+
+        for (String theme :
+                new String[] {
+                        "basic",
+                        "pro",
+                        "premium"
+                }) {
+
+            Path stylesheet =
+                    Path.of(
+                            "src/main/resources/static/themes/"
+                            + theme
+                            + "/assets/css/style.css"
+                    );
+
+            assertThat(stylesheet)
+                    .exists()
+                    .isRegularFile();
+
+            assertThat(Files.size(stylesheet))
+                    .isGreaterThan(0L);
+        }
     }
 
 
