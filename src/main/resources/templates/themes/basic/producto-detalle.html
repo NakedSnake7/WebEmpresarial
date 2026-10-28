@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{themes/basic/layout :: layout(
+          ${producto.productName},
+          ~{themes/shared/producto-detalle :: content}
+      )}">
+
+<body>
+</body>
+
+</html>

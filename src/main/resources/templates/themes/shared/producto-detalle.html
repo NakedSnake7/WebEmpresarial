@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="content">
+
+<style>
+.store-product-detail {
+    padding: 48px 0 72px;
+    background: #f8fafc;
+}
+
+.store-product-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.store-product-back {
+    display: inline-flex;
+    margin-bottom: 24px;
+    color: var(--store-primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.store-product-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+    gap: 42px;
+    align-items: start;
+}
+
+.store-product-media,
+.store-product-info {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.store-product-media {
+    padding: 20px;
+}
+
+.store-product-main-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.store-product-info {
+    padding: 32px;
+}
+
+.store-product-category {
+    margin: 0 0 8px;
+    color: var(--store-primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.store-product-title {
+    margin: 0;
+    color: #111827;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+}
+
+.store-product-description {
+    margin: 18px 0;
+    color: #6b7280;
+    line-height: 1.7;
+}
+
+.store-product-price {
+    margin: 24px 0;
+    color: var(--store-primary);
+    font-size: 1.8rem;
+    font-weight: 900;
+}
+
+.store-variant-section {
+    margin: 26px 0;
+}
+
+.store-field-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #374151;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.store-variant-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.store-variant-option {
+    appearance: none;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+    color: #111827;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.store-variant-option:hover:not(:disabled) {
+    border-color: var(--store-primary);
+}
+
+.store-variant-option.active {
+    border-color: var(--store-primary);
+    background: var(--store-primary);
+    color: #fff;
+}
+
+.store-variant-option:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.store-variant-option small {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+.store-selection-note {
+    min-height: 22px;
+    margin: 10px 0 0;
+    color: #6b7280;
+    font-size: 0.84rem;
+}
+
+.store-quantity {
+    margin: 24px 0;
+}
+
+.store-quantity-control {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+}
+
+.store-quantity-control button {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    background: #f9fafb;
+    font-size: 1.2rem;
+}
+
+.store-quantity-value {
+    min-width: 48px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.store-add-cart {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    background: var(--store-primary);
+    color: #fff;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.store-add-cart:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.store-stock-message {
+    margin-top: 12px;
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 800px) {
+    .store-product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .store-product-info {
+        padding: 24px;
+    }
+}
+</style>
+
+<section class="store-product-detail">
+
+    <div class="store-product-shell">
+
+        <a th:href="@{/}"
+           class="store-product-back">
+            ← Volver a la tienda
+        </a>
+
+        <div class="store-product-grid">
+
+            <div class="store-product-media">
+
+                <img class="store-product-main-image"
+                     th:src="${producto.imageUrl}"
+                     th:alt="${producto.productName}">
+
+            </div>
+
+            <div class="store-product-info">
+
+                <p class="store-product-category"
+                   th:text="${producto.categoriaNombre != null
+                       ? producto.categoriaNombre
+                       : 'Producto'}">
+                    Producto
+                </p>
+
+                <h1 class="store-product-title"
+                    th:text="${producto.productName}">
+                    Producto
+                </h1>
+
+                <p class="store-product-description"
+                   th:if="${producto.description != null
+                       and !producto.description.isBlank()}"
+                   th:text="${producto.description}">
+                    Descripción
+                </p>
+
+                <div id="storeProductPrice"
+                     class="store-product-price"
+                     th:text="${
+                         #numbers.formatDecimal(
+                             producto.precioConDescuento != null
+                                 ? producto.precioConDescuento
+                                 : producto.precio,
+                             1,
+                             'COMMA',
+                             2,
+                             'POINT'
+                         )
+                         + ' '
+                         + (
+                             settings != null
+                             and !#strings.isEmpty(settings.currency)
+                                 ? settings.currency
+                                 : 'MXN'
+                         )
+                     }">
+                    0.00 MXN
+                </div>
+
+                <div class="store-variant-section"
+                     th:if="${producto.tieneVariantes}">
+
+                    <span class="store-field-label">
+                        Elige una opción
+                    </span>
+
+                    <div id="storeVariantGrid"
+                         class="store-variant-grid">
+                    </div>
+
+                    <p id="storeVariantSelection"
+                       class="store-selection-note">
+                        Selecciona una variante para continuar.
+                    </p>
+
+                </div>
+
+                <div class="store-quantity">
+
+                    <span class="store-field-label">
+                        Cantidad
+                    </span>
+
+                    <div class="store-quantity-control">
+
+                        <button type="button"
+                                id="storeQtyMinus">
+                            −
+                        </button>
+
+                        <span id="storeQtyValue"
+                              class="store-quantity-value">
+                            1
+                        </span>
+
+                        <button type="button"
+                                id="storeQtyPlus">
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <button type="button"
+                        id="storeAddCart"
+                        class="store-add-cart"
+                        th:disabled="${producto.tieneVariantes
+                            or producto.stockSimple == null
+                            or producto.stockSimple <= 0}">
+                    Agregar al carrito
+                </button>
+
+                <p id="storeStockMessage"
+                   class="store-stock-message">
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<script th:inline="javascript">
+(() => {
+
+    const variants =
+        /*[[${producto.variantes}]]*/ [];
+
+    const productId =
+        Number(/*[[${producto.id}]]*/ 0);
+
+    const productName =
+        /*[[${producto.productName}]]*/ "";
+
+    const simpleStock =
+        Number(/*[[${producto.stockSimple}]]*/ 0);
+
+    const hasVariants =
+        /*[[${producto.tieneVariantes}]]*/ false;
+
+    const basePrice =
+        Number(
+            /*[[${producto.precioConDescuento != null
+                ? producto.precioConDescuento
+                : producto.precio}]]*/ 0
+        );
+
+    const hasPromotion =
+        /*[[${producto.tienePromocion}]]*/ false;
+
+    const promotionPercent =
+        Number(
+            /*[[${producto.porcentajeDescuento != null
+                ? producto.porcentajeDescuento
+                : 0}]]*/ 0
+        );
+
+    const currency =
+        /*[[${settings != null
+            and settings.currency != null
+            and !settings.currency.isBlank()
+                ? settings.currency
+                : 'MXN'}]]*/ "MXN";
+
+    const grid =
+        document.getElementById(
+            "storeVariantGrid"
+        );
+
+    const selection =
+        document.getElementById(
+            "storeVariantSelection"
+        );
+
+    const priceElement =
+        document.getElementById(
+            "storeProductPrice"
+        );
+
+    const qtyElement =
+        document.getElementById(
+            "storeQtyValue"
+        );
+
+    const minusButton =
+        document.getElementById(
+            "storeQtyMinus"
+        );
+
+    const plusButton =
+        document.getElementById(
+            "storeQtyPlus"
+        );
+
+    const addButton =
+        document.getElementById(
+            "storeAddCart"
+        );
+
+    const stockMessage =
+        document.getElementById(
+            "storeStockMessage"
+        );
+
+    let selectedVariant = null;
+    let quantity = 1;
+
+    function formatMoney(value) {
+        return Number(value || 0)
+            .toFixed(2)
+            + " "
+            + currency;
+    }
+
+    function variantLabel(variant) {
+
+        const entries =
+            Object.entries(
+                variant?.atributos || {}
+            )
+            .filter(([name, value]) =>
+                name != null
+                && String(name).trim()
+                && value != null
+                && String(value).trim()
+            );
+
+        if (entries.length > 0) {
+            return entries
+                .map(([name, value]) =>
+                    `${name}: ${value}`
+                )
+                .join(" · ");
+        }
+
+        if (variant?.nombre) {
+            return String(variant.nombre);
+        }
+
+        return "Opción";
+    }
+
+    function effectiveVariantPrice(variant) {
+
+        const raw =
+            Number(
+                variant?.precio
+                ?? basePrice
+            );
+
+        if (!hasPromotion
+                || promotionPercent <= 0) {
+            return raw;
+        }
+
+        return raw
+            * (
+                1
+                - promotionPercent / 100
+            );
+    }
+
+    function currentVariantId() {
+        return selectedVariant?.id ?? null;
+    }
+
+    function currentStock() {
+
+        if (hasVariants) {
+            return Number(
+                selectedVariant?.stock || 0
+            );
+        }
+
+        return simpleStock;
+    }
+
+    function quantityInCart(
+        variantId
+    ) {
+
+        if (!window.cartStore) {
+            return 0;
+        }
+
+        const products =
+            window.cartStore
+                .getState()
+                .products || [];
+
+        const existing =
+            products.find(item =>
+                Number(
+                    item.productId
+                    ?? item.id
+                ) === productId
+                &&
+                (
+                    item.varianteId
+                    ?? null
+                ) === (
+                    variantId
+                    ?? null
+                )
+            );
+
+        return existing
+            ? Number(existing.quantity || 0)
+            : 0;
+    }
+
+    function availableStock() {
+
+        const stock =
+            currentStock();
+
+        const alreadyInCart =
+            quantityInCart(
+                currentVariantId()
+            );
+
+        return Math.max(
+            0,
+            stock - alreadyInCart
+        );
+    }
+
+    function updateQuantityUi() {
+
+        const available =
+            availableStock();
+
+        if (available <= 0) {
+            quantity = 1;
+        } else {
+            quantity = Math.min(
+                Math.max(quantity, 1),
+                available
+            );
+        }
+
+        if (qtyElement) {
+            qtyElement.textContent =
+                quantity;
+        }
+
+        if (minusButton) {
+            minusButton.disabled =
+                quantity <= 1
+                || available <= 0;
+        }
+
+        if (plusButton) {
+            plusButton.disabled =
+                available <= 0
+                || quantity >= available;
+        }
+    }
+
+    function updateAvailability() {
+
+        if (hasVariants
+                && !selectedVariant) {
+
+            if (addButton) {
+                addButton.disabled = true;
+            }
+
+            if (stockMessage) {
+                stockMessage.textContent =
+                    "Selecciona una opción "
+                    + "para agregar al carrito.";
+            }
+
+            updateQuantityUi();
+            return;
+        }
+
+        const available =
+            availableStock();
+
+        if (addButton) {
+            addButton.disabled =
+                available <= 0;
+        }
+
+        if (stockMessage) {
+            stockMessage.textContent =
+                available > 0
+                    ? `${available} disponibles`
+                    : "Agotado";
+        }
+
+        updateQuantityUi();
+    }
+
+    function selectVariant(
+        variant,
+        button
+    ) {
+
+        if (!variant
+                || Number(variant.stock || 0)
+                    <= 0) {
+            return;
+        }
+
+        selectedVariant =
+            variant;
+
+        document
+            .querySelectorAll(
+                ".store-variant-option"
+            )
+            .forEach(item =>
+                item.classList.remove(
+                    "active"
+                )
+            );
+
+        button.classList.add(
+            "active"
+        );
+
+        if (selection) {
+            selection.textContent =
+                variantLabel(variant);
+        }
+
+        if (priceElement) {
+            priceElement.textContent =
+                formatMoney(
+                    effectiveVariantPrice(
+                        variant
+                    )
+                );
+        }
+
+        quantity = 1;
+
+        updateAvailability();
+    }
+
+    function renderVariants() {
+
+        if (!hasVariants
+                || !grid
+                || !Array.isArray(variants)) {
+            return;
+        }
+
+        grid.innerHTML = "";
+
+        variants.forEach(variant => {
+
+            const stock =
+                Number(
+                    variant.stock || 0
+                );
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type = "button";
+
+            button.className =
+                "store-variant-option";
+
+            button.disabled =
+                stock <= 0;
+
+            const label =
+                document.createElement(
+                    "span"
+                );
+
+            label.textContent =
+                variantLabel(
+                    variant
+                );
+
+            const stockLabel =
+                document.createElement(
+                    "small"
+                );
+
+            stockLabel.textContent =
+                stock > 0
+                    ? `${stock} disponibles`
+                    : "Agotado";
+
+            button.appendChild(label);
+            button.appendChild(stockLabel);
+
+            if (stock > 0) {
+                button.addEventListener(
+                    "click",
+                    () =>
+                        selectVariant(
+                            variant,
+                            button
+                        )
+                );
+            }
+
+            grid.appendChild(button);
+        });
+    }
+
+    minusButton
+        ?.addEventListener(
+            "click",
+            () => {
+                quantity =
+                    Math.max(
+                        1,
+                        quantity - 1
+                    );
+
+                updateQuantityUi();
+            }
+        );
+
+    plusButton
+        ?.addEventListener(
+            "click",
+            () => {
+
+                const available =
+                    availableStock();
+
+                quantity =
+                    Math.min(
+                        available,
+                        quantity + 1
+                    );
+
+                updateQuantityUi();
+            }
+        );
+
+    addButton
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (hasVariants
+                        && !selectedVariant) {
+                    alert(
+                        "Selecciona una "
+                        + "opción primero."
+                    );
+                    return;
+                }
+
+                if (!window.cartStore) {
+                    alert(
+                        "El carrito no está "
+                        + "disponible."
+                    );
+                    return;
+                }
+
+                const variantId =
+                    currentVariantId();
+
+                const available =
+                    availableStock();
+
+                if (available <= 0) {
+                    alert(
+                        "No hay stock disponible."
+                    );
+                    return;
+                }
+
+                if (quantity > available) {
+                    alert(
+                        `Solo hay ${available} `
+                        + "unidades disponibles."
+                    );
+                    return;
+                }
+
+                const price =
+                    selectedVariant
+                        ? effectiveVariantPrice(
+                            selectedVariant
+                        )
+                        : basePrice;
+
+                const name =
+                    selectedVariant
+                        ? productName
+                            + " ("
+                            + variantLabel(
+                                selectedVariant
+                            )
+                            + ")"
+                        : productName;
+
+                window.cartStore.add({
+                    id: productId,
+                    productId,
+                    varianteId:
+                        variantId,
+                    name,
+                    price:
+                        Number(price),
+                    quantity,
+                    originalStock:
+                        currentStock()
+                });
+
+                document
+                    .getElementById(
+                        "cartDropdown"
+                    )
+                    ?.classList.add(
+                        "open"
+                    );
+
+                quantity = 1;
+
+                updateAvailability();
+            }
+        );
+
+    renderVariants();
+    updateAvailability();
+
+})();
+</script>
+
+</th:block>
+
+</html>

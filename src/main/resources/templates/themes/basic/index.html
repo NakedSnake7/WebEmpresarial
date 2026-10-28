@@ -210,16 +210,33 @@ th:href="@{'https://wa.me/'
 
                     </div>
 
-                    <button type="button"
-                            class="basic-btn basic-btn-primary basic-add-cart"
-                            th:disabled="${producto.sinStock}"
-                            th:attr="
-                                data-id=${producto.id},
-                                data-nombre=${producto.productName},
-                                data-precio=${producto.precioConDescuento},
-                                data-imagen=${producto.imageUrl}">
-                        Agregar al carrito
-                    </button>
+                    <!-- Producto simple: se puede agregar directamente -->
+                    <th:block th:if="${!producto.tieneVariantes}">
+
+                        <input type="hidden"
+                               th:id="|basic-qty-${producto.id}|"
+                               value="1">
+
+                        <button type="button"
+                                class="basic-btn basic-btn-primary add-to-cart"
+                                th:disabled="${producto.sinStock}"
+                                th:attr="
+                                    data-product-id=${producto.id},
+                                    data-name=${producto.productName},
+                                    data-price=${producto.precioConDescuento},
+                                    data-quantity-id=|basic-qty-${producto.id}|,
+                                    data-original-stock=${producto.stockSimple}">
+                            Agregar al carrito
+                        </button>
+
+                    </th:block>
+
+                    <!-- Producto con variantes: la combinación debe elegirse -->
+                    <a th:if="${producto.tieneVariantes}"
+                       th:href="@{/producto-detalle/{id}(id=${producto.id})}"
+                       class="basic-btn basic-btn-primary">
+                        Ver opciones
+                    </a>
 
                 </div>
 

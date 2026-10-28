@@ -753,19 +753,35 @@ export function configurarCarrito() {
 	function validarCampo(id) {
 	    const campo = document.getElementById(id);
 	    const regla = realTimeFields[id];
+
+	    if (!campo || !regla) {
+	        return true;
+	    }
+
 	    const valido = regla.validar(campo.value);
-	    const errorDiv = campo.parentElement.querySelector(".invalid-feedback");
 
-		if (!valido) {
-		    campo.classList.add("is-invalid");
-		    errorDiv.textContent = regla.mensaje;
-		    errorDiv.style.display = "block"; // asegura que se muestre
-		} else {
-		    campo.classList.remove("is-invalid");
-		    errorDiv.textContent = "";
-		    errorDiv.style.display = "none"; // oculta el mensaje
-		}
+	    const errorDiv =
+	        campo.parentElement
+	            ?.querySelector(".invalid-feedback");
 
+	    if (!valido) {
+	        campo.classList.add("is-invalid");
+
+	        if (errorDiv) {
+	            errorDiv.textContent = regla.mensaje;
+	            errorDiv.style.display = "block";
+	        }
+
+	    } else {
+	        campo.classList.remove("is-invalid");
+
+	        if (errorDiv) {
+	            errorDiv.textContent = "";
+	            errorDiv.style.display = "none";
+	        }
+	    }
+
+	    return valido;
 	}
 
     // Cargar carrito desde localStorage al inicio
