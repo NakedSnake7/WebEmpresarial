@@ -8,10 +8,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class StoreResolver {
 
+    private static final java.util.Set<String> PLATFORM_HOSTS =
+            java.util.Set.of(
+                    "web-empresarial.com",
+                    "www.web-empresarial.com",
+                    "webempresarial.local"
+            );
+
     private final StoreLookupService storeLookupService;
 
     public StoreResolver(StoreLookupService storeLookupService) {
         this.storeLookupService = storeLookupService;
+    }
+
+    public boolean isPlatformRequest(
+            HttpServletRequest request
+    ) {
+
+        String rawHost =
+                request.getHeader("Host");
+
+        if (rawHost == null || rawHost.isBlank()) {
+            return false;
+        }
+
+        return PLATFORM_HOSTS.contains(
+                normalizeHost(rawHost)
+        );
     }
 
     public Store getCurrentStore(HttpServletRequest request) {

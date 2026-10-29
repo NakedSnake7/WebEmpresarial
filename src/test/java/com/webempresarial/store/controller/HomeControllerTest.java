@@ -299,63 +299,51 @@ class HomeControllerTest {
     }
 
     @Test
-    void shouldRenderWebEmpresarialWithoutLoadingCommerceData() {
+    void shouldRedirectPlatformHostToAdminWithoutLoadingCommerceData() {
 
-        Store store = new Store();
+        when(
+                storeResolver.isPlatformRequest(request)
+        ).thenReturn(true);
 
-        store.setNombre("WebEmpresarial");
-
-        when(storeResolver.getCurrentStore(request))
-                .thenReturn(store);
-
-        when(storeThemeResolver.resolveTheme(store))
-                .thenReturn("WebEmpresarial");
-
-        when(storeThemeResolver.view(request, "index"))
-                .thenReturn("themes/WebEmpresarial/index");
-
-        Model model = new ConcurrentModel();
+        Model model =
+                new ConcurrentModel();
 
         String view =
-                controller.home(model, request);
+                controller.home(
+                        model,
+                        request
+                );
 
         assertThat(view)
-                .isEqualTo("themes/WebEmpresarial/index");
+                .isEqualTo("redirect:/admin");
 
-        assertThat(model.getAttribute("theme"))
-                .isEqualTo("WebEmpresarial");
+        verify(
+                storeResolver,
+                never()
+        ).getCurrentStore(request);
 
-        assertThat(model.getAttribute("showCart"))
-                .isEqualTo(false);
+        verify(
+                storeThemeResolver,
+                never()
+        ).resolveTheme(any());
 
-        assertThat(model.getAttribute("showCheckout"))
-                .isEqualTo(false);
+        verify(
+                productoService,
+                never()
+        ).obtenerCategorias(any());
 
-        assertThat(model.getAttribute("showAuth"))
-                .isEqualTo(false);
+        verify(
+                productoService,
+                never()
+        ).obtenerProductosIndexOptimizado(any());
 
-        assertThat(model.getAttribute("title"))
-                .isEqualTo(
-                        "WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales"
-                );
-
-        verify(productoService, never())
-                .obtenerCategorias(any());
-
-        verify(productoService, never())
-                .obtenerProductosIndexOptimizado(any());
-
-        verify(featureAccessService, never())
-                .requireFeature(
-                        store,
-                        Feature.PRODUCTS
-                );
-
-        verify(resenaRepository, never())
-                .findByStoreOrderByEstrellasDesc(
-                        any(Store.class),
-                        any()
-                );
+        verify(
+                featureAccessService,
+                never()
+        ).requireFeature(
+                any(),
+                any()
+        );
     }
 
     @Test

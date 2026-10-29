@@ -95,12 +95,31 @@ public class HomeController {
     @GetMapping({"/", "/inicio"})
     public String home(Model model, HttpServletRequest request) {
 
-        Store store = storeResolver.getCurrentStore(request);
+        /*
+         * El dominio principal es el entry point administrativo.
+         *
+         * Esta decisión ocurre ANTES de resolver una Store porque
+         * el host de plataforma no es un tenant.
+         */
+        if (storeResolver.isPlatformRequest(request)) {
+            return "redirect:/admin";
+        }
+
+        Store store =
+                storeResolver.getCurrentStore(request);
+
         aplicarLayout(model, request);
 
         String theme =
                 storeThemeResolver.resolveTheme(store);
 
+        /*
+         * Compatibilidad con una Store real que todavía utilice
+         * el theme histórico WebEmpresarial.
+         *
+         * No confundir con el dominio principal de plataforma,
+         * que ya fue interceptado arriba.
+         */
         if ("WebEmpresarial".equals(theme)) {
 
             model.addAttribute(
@@ -113,7 +132,10 @@ public class HomeController {
                     "Construimos ecommerce, sitios corporativos y sistemas web para empresas que quieren vender, automatizar y escalar."
             );
 
-            return storeThemeResolver.view(request, "index");
+            return storeThemeResolver.view(
+                    request,
+                    "index"
+            );
         }
 
         cargarDatosGlobales(model, store);

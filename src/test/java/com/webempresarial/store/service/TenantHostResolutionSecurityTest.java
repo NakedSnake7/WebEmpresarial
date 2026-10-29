@@ -152,4 +152,91 @@ class TenantHostResolutionSecurityTest {
                 storeLookupService
         );
     }
+
+    @Test
+    void platformHostsMustBeRecognizedExactly() {
+
+        when(request.getHeader("Host"))
+                .thenReturn(
+                        "WEB-EMPRESARIAL.COM:443",
+                        "www.web-empresarial.com",
+                        "webempresarial.local:8080"
+                );
+
+        StoreResolver resolver =
+                new StoreResolver(
+                        storeLookupService
+                );
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isTrue();
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isTrue();
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isTrue();
+
+        verifyNoInteractions(
+                storeLookupService
+        );
+    }
+
+    @Test
+    void tenantAndLookalikeHostsMustNotBePlatformHosts() {
+
+        when(request.getHeader("Host"))
+                .thenReturn(
+                        "qa-acquisition-01.web-empresarial.com",
+                        "evil-web-empresarial.com"
+                );
+
+        StoreResolver resolver =
+                new StoreResolver(
+                        storeLookupService
+                );
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isFalse();
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isFalse();
+
+        verifyNoInteractions(
+                storeLookupService
+        );
+    }
+
+    @Test
+    void platformDetectionMustIgnoreForwardedHost() {
+
+        when(request.getHeader("Host"))
+                .thenReturn(
+                        "qa-acquisition-01.web-empresarial.com"
+                );
+
+        StoreResolver resolver =
+                new StoreResolver(
+                        storeLookupService
+                );
+
+        assertThat(
+                resolver.isPlatformRequest(request)
+        ).isFalse();
+
+        verify(
+                request,
+                never()
+        ).getHeader("X-Forwarded-Host");
+
+        verifyNoInteractions(
+                storeLookupService
+        );
+    }
+
 }
