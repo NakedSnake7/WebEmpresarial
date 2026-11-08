@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
  
       const data = Object.fromEntries(new FormData(form).entries());
       const payment = data.preferenciaPagoPiloto || 'por-definir';
-      delete data.preferenciaPagoPiloto;
+      data.preferenciaPagoPiloto = payment;
 
       const cohortHint = ['A', 'B'].includes(pilotCohort)
         ? pilotCohort : 'sin asignación';
@@ -115,9 +115,11 @@ document.addEventListener('DOMContentLoaded', function () {
       ].join(' | ');
 
       data.source = 'webempresarial-pilot-landing';
+      data.cohortHint = ['A', 'B'].includes(pilotCohort) ? pilotCohort : 'UNASSIGNED';
+      data.form = 'main_form';
  
       try {
-        const response = await fetch('/api/leads', {
+        const response = await fetch('/api/platform/prospects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -154,11 +156,14 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.innerText = 'Enviando...';
  
       try {
-        const response = await fetch('/api/leads', {
+        const response = await fetch('/api/platform/prospects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
 		  body: JSON.stringify({
-		    nombre,
+		    website: heroForm.querySelector('input[name="website"]')?.value || '',
+            cohortHint: ['A', 'B'].includes(pilotCohort) ? pilotCohort : 'UNASSIGNED',
+            form: 'hero_micro',
+            nombre,
 		    whatsapp: wa,
 		    objetivo: 'Solicitó diagnóstico de piloto. Cohorte URL (no verificada): ' +
               (['A', 'B'].includes(pilotCohort) ? pilotCohort : 'sin asignación'),

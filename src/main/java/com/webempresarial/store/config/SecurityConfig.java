@@ -809,11 +809,25 @@ public class SecurityConfig {
                     "/api/stripe/webhook",
                     "/api/stripe/connect/webhook",
                     "/api/leads",
-                    "/api/leads/**"
+                    "/api/leads/**",
+                    "/api/platform/prospects"
                 )
             )
 
             .authorizeHttpRequests(auth -> auth
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/platform/prospects"
+                ).permitAll()
+
+                .requestMatchers(
+                    "/api/platform/prospects",
+                    "/api/platform/prospects/**"
+                ).denyAll()
+
+
+                .requestMatchers(HttpMethod.GET, "/piloto").permitAll()
 
                     .requestMatchers(
                             "/",
