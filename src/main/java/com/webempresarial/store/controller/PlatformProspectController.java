@@ -26,18 +26,27 @@ public class PlatformProspectController {
 
     private static final long WINDOW_MILLIS = 60_000;
     private static final int MAX_PER_MINUTE = 6;
+    // Defensa adicional por contacto, independiente de cabeceras de proxy.
+    private static final long CONTACT_WINDOW_MILLIS = 15 * 60_000L;
+    private static final int MAX_PER_CONTACT_WINDOW = 3;
+    private static final int MAX_CONTACT_WINDOWS = 5000;
 
     private final StoreResolver storeResolver;
     private final PlatformProspectRepository repository;
+    private final PilotPrivacyReadiness privacyReadiness;
     private final ConcurrentHashMap<String, AttemptWindow> attempts =
+            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AttemptWindow> contactAttempts =
             new ConcurrentHashMap<>();
 
     private record AttemptWindow(long since, int count) {}
 
     public PlatformProspectController(StoreResolver storeResolver,
-            PlatformProspectRepository repository) {
+            PlatformProspectRepository repository,
+            PilotPrivacyReadiness privacyReadiness) {
         this.storeResolver = storeResolver;
         this.repository = repository;
+        this.privacyReadiness = privacyReadiness;
     }
 
     @PostMapping
@@ -49,6 +58,8 @@ public class PlatformProspectController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
+        // No recibir datos personales hasta publicar un aviso validado.
+        privacyReadiness.requireApproved();
         enforceLocalRateLimit(request.getRemoteAddr());
 
         // Honeypot: responder como aceptado sin almacenar mensajes de bots.
@@ -75,6 +86,9 @@ public class PlatformProspectController {
         String cohortHint = "A".equalsIgnoreCase(hint) ? "A" :
                 "B".equalsIgnoreCase(hint) ? "B" : "UNASSIGNED";
 
+        // No depende de X-Forwarded-For: reduce reenvíos con el mismo contacto.
+        enforceContactRateLimit(dto.whatsapp());
+
         PlatformProspect prospect = new PlatformProspect(
                 trim(dto.nombre()),
                 trim(dto.whatsapp()),
@@ -95,18 +109,51 @@ public class PlatformProspectController {
     private void enforceLocalRateLimit(String address) {
         String key = address == null ? "unknown" : address;
         long now = System.currentTimeMillis();
+        if (attempts.size() >= MAX_CONTACT_WINDOWS) {
+            attempts.entrySet().removeIf(entry ->
+                    now - entry.getValue().since() >= WINDOW_MILLIS);
+            if (!attempts.containsKey(key)
+                    && attempts.size() >= MAX_CONTACT_WINDOWS) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS);
+            }
+        }
         AttemptWindow current = attempts.compute(key, (k, previous) -> {
             if (previous == null || now - previous.since() >= WINDOW_MILLIS) {
                 return new AttemptWindow(now, 1);
             }
             return new AttemptWindow(previous.since(), previous.count() + 1);
         });
-        if (attempts.size() > 5000) {
-            attempts.entrySet().removeIf(
-                    entry -> now - entry.getValue().since() >= WINDOW_MILLIS
-            );
-        }
         if (current.count() > MAX_PER_MINUTE) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS);
+        }
+    }
+
+    private void enforceContactRateLimit(String whatsapp) {
+        // Sólo cifras; el mismo número con espacios, guiones o + comparte ventana.
+        String key = whatsapp.replaceAll("[^0-9]", "");
+        if (key.length() < 8 || key.length() > 15) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "WhatsApp inválido");
+        }
+
+        long now = System.currentTimeMillis();
+        // Evita crecimiento indefinido ante números distintos automatizados.
+        if (contactAttempts.size() >= MAX_CONTACT_WINDOWS) {
+            contactAttempts.entrySet().removeIf(entry ->
+                    now - entry.getValue().since() >= CONTACT_WINDOW_MILLIS);
+            if (!contactAttempts.containsKey(key)
+                    && contactAttempts.size() >= MAX_CONTACT_WINDOWS) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS);
+            }
+        }
+        AttemptWindow current = contactAttempts.compute(key, (k, previous) -> {
+            if (previous == null
+                    || now - previous.since() >= CONTACT_WINDOW_MILLIS) {
+                return new AttemptWindow(now, 1);
+            }
+            return new AttemptWindow(previous.since(), previous.count() + 1);
+        });
+        if (current.count() > MAX_PER_CONTACT_WINDOW) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS);
         }
     }

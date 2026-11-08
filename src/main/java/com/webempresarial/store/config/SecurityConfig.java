@@ -828,6 +828,7 @@ public class SecurityConfig {
 
 
                 .requestMatchers(HttpMethod.GET, "/piloto").permitAll()
+                .requestMatchers(HttpMethod.GET, "/piloto/privacidad").permitAll()
 
                     .requestMatchers(
                             "/",

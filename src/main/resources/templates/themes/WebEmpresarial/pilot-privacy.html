@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Aviso de privacidad | Piloto WebEmpresarial</title>
+  <style>
+    :root{color-scheme:dark}
+    body{margin:0;background:#0c1420;color:#ecf2f8;font:16px/1.7 system-ui,sans-serif}
+    main{max-width:760px;margin:auto;padding:40px 22px 80px}
+    a{color:#75ddf0}h1,h2{line-height:1.25}h2{margin-top:32px}
+    .brand{letter-spacing:.08em;color:#75ddf0;font-weight:700}
+    .muted{color:#aebdca}
+  </style>
+</head>
+<body>
+<main>
+  <p class="brand">WEBEMPRESARIAL</p>
+  <h1>Aviso de privacidad del piloto comercial</h1>
+  <p class="muted">Información sobre los datos proporcionados al solicitar un diagnóstico o evaluar un piloto de 30 días.</p>
+  <h2>Responsable del tratamiento</h2>
+  <p>Responsable: <strong th:text="${responsibleName}">Nombre del responsable</strong>.</p>
+  <p>Domicilio: <span th:text="${responsibleAddress}">Domicilio</span>.</p>
+  <h2>Datos recopilados</h2>
+  <p>Nombre, teléfono o WhatsApp, datos de contacto del negocio y, si los proporcionas, su perfil en redes sociales, necesidades comerciales, objetivos y preferencia de contacto o pago para el piloto.</p>
+  <h2>Finalidades</h2>
+  <p>Atender tu solicitud, comunicarnos contigo para el diagnóstico, explicar las condiciones del piloto solicitado y dar seguimiento a tu decisión. La solicitud no crea una suscripción ni un cobro automático.</p>
+  <h2>Limitación de uso y derechos ARCO</h2>
+  <p>Puedes solicitar acceso, rectificación, cancelación u oposición, así como limitar comunicaciones relacionadas con tu solicitud, escribiendo a <a th:href="|mailto:${privacyEmail}|" th:text="${privacyEmail}">Correo de privacidad</a>. Describe tu solicitud e incluye información suficiente para localizar tus datos y verificar tu identidad, de acuerdo con la legislación aplicable.</p>
+  <h2>Conservación, proveedores y cambios</h2>
+  <p>Conservaremos los datos durante el tiempo necesario para las finalidades informadas y, cuando proceda, las obligaciones legales correspondientes. El funcionamiento de la plataforma puede requerir servicios tecnológicos contratados. Las condiciones concretas de conservación, encargados y posibles transferencias deberán verificarse en la revisión legal previa a su publicación.</p>
+  <p>Los cambios al aviso se comunicarán mediante la publicación de la versión actualizada en esta misma dirección.</p>
+  <p><a href="/piloto">Volver al piloto</a></p>
+</main>
+</body>
+</html>
