@@ -85,6 +85,11 @@
 
     <link rel="stylesheet"
           th:href="@{|/themes/${theme}/assets/css/style.css|}">
+
+    <!-- CSS exclusivo de WebEmpresarial -->
+    <link rel="stylesheet"
+          th:if="${theme == 'WebEmpresarial'}"
+          th:href="@{/themes/WebEmpresarial/market-validation.css}">
 </head>
 
 <body>

@@ -1,4 +1,33 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+  // Cohorte informativa. No autoriza ni determina cobros.
+  const pilotAmount = document.getElementById('pilotInitialPrivate');
+  const pilotDefault = document.getElementById('pilotInitialPublic');
+
+  const pilotCohort = new URLSearchParams(
+    window.location.search
+  ).get('cohort')?.toUpperCase();
+
+  const pilotPrices = { A: 990, B: 1490 };
+
+  if (
+    pilotAmount &&
+    Object.prototype.hasOwnProperty.call(pilotPrices, pilotCohort)
+  ) {
+    pilotAmount.textContent = new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      maximumFractionDigits: 0
+    }).format(pilotPrices[pilotCohort])
+      + ' · pago inicial del piloto';
+
+    pilotAmount.hidden = false;
+
+    if (pilotDefault) {
+      pilotDefault.hidden = true;
+    }
+  }
+
  
   // ── MENU MOBILE ──────────────────────────────────────────────────────────
   const hamburger = document.getElementById('hamburger') || document.querySelector('.hamburger');
@@ -73,7 +102,19 @@ document.addEventListener('DOMContentLoaded', function () {
       button.innerText = 'Enviando...';
  
       const data = Object.fromEntries(new FormData(form).entries());
-      data.source = 'webempresarial-landing-form';
+      const payment = data.preferenciaPagoPiloto || 'por-definir';
+      delete data.preferenciaPagoPiloto;
+
+      const cohortHint = ['A', 'B'].includes(pilotCohort)
+        ? pilotCohort : 'sin asignación';
+
+      data.objetivo = [
+        (data.objetivo || '').trim() || 'Solicita diagnóstico',
+        'Preferencia de pago: ' + payment,
+        'Cohorte indicada por URL (no verificada): ' + cohortHint
+      ].join(' | ');
+
+      data.source = 'webempresarial-pilot-landing';
  
       try {
         const response = await fetch('/api/leads', {
@@ -119,13 +160,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		  body: JSON.stringify({
 		    nombre,
 		    whatsapp: wa,
-		    source: 'webempresarial-hero-micro'
+		    objetivo: 'Solicitó diagnóstico de piloto. Cohorte URL (no verificada): ' +
+              (['A', 'B'].includes(pilotCohort) ? pilotCohort : 'sin asignación'),
+            source: 'webempresarial-hero-micro'
 		  })        });
         if (!response.ok) throw new Error('Error');
  
         btn.innerText = '✓ ¡Listo! Te contactamos pronto';
         btn.style.background = 'var(--green)';
-        heroForm.querySelector('input').value = '';
+        heroForm.reset();
         if (window.gtag) gtag('event', 'generate_lead', { method: 'hero_micro' });
         if (window.fbq)  fbq('track', 'Lead', { content_name: 'hero_micro' });
  
@@ -143,171 +186,35 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
  
-  // ── COUNTER ANIMATION (proof bar) ─────────────────────────────────────────
-  function animCount(el, to, suffix = '', decimals = 0) {
-    if (!el) return;
-    const duration = 1600;
-    const start = performance.now();
-    const run = now => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = (to * eased).toFixed(decimals) + suffix;
-      if (progress < 1) requestAnimationFrame(run);
-    };
-    requestAnimationFrame(run);
-  }
- 
-  const proofBar = document.querySelector('.proof-bar');
-  if (proofBar && 'IntersectionObserver' in window) {
-    const proofObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animCount(document.getElementById('pn1'), 40, '+');
-          animCount(document.getElementById('pn2'), 98, '%');
-          proofObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    proofObserver.observe(proofBar);
-  }
- 
-  // ── EXIT INTENT POPUP ─────────────────────────────────────────────────────
-  const overlay   = document.getElementById('exitOverlay');
-  const exitClose = document.getElementById('exitClose');
-  const exitSkip  = document.getElementById('exitSkip');
-  const exitSubmit = document.getElementById('exitSubmit');
- 
-  let exitShown = false;
-  // Persist dismissal for the session
-  if (sessionStorage.getItem('exitShown')) exitShown = true;
- 
-  function showExit() {
-    if (exitShown || !overlay) return;
-    exitShown = true;
-    sessionStorage.setItem('exitShown', '1');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    if (window.gtag) gtag('event', 'exit_popup_shown');
-  }
- 
-  function hideExit() {
-    if (!overlay) return;
-    overlay.classList.remove('show');
-    document.body.style.overflow = '';
-  }
- 
-  // Desktop: mouse leaves viewport top
-  document.addEventListener('mouseleave', e => {
-    if (e.clientY < 10) showExit();
-  });
- 
-  // Mobile: back button / page hide after 45s of scroll
-  let mobileTimer;
-  window.addEventListener('scroll', () => {
-    clearTimeout(mobileTimer);
-    if (window.scrollY > 400) {
-      mobileTimer = setTimeout(showExit, 45000);
-    }
-  }, { passive: true });
- 
-  if (exitClose) exitClose.addEventListener('click', hideExit);
-  if (exitSkip)  exitSkip.addEventListener('click', hideExit);
-  if (overlay)   overlay.addEventListener('click', e => { if (e.target === overlay) hideExit(); });
- 
-  // Close on Escape
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideExit(); });
- 
-  // Submit exit popup
-  if (exitSubmit) {
-    exitSubmit.addEventListener('click', async () => {
-      const wa   = document.getElementById('exitWhatsapp')?.value.trim();
-      const name = document.getElementById('exitNombre')?.value.trim();
-      if (!wa) { document.getElementById('exitWhatsapp').focus(); return; }
- 
-      const originalText = exitSubmit.innerText;
-      exitSubmit.disabled = true;
-      exitSubmit.innerText = 'Enviando...';
- 
-      try {
-        const response = await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre: name, whatsapp: wa, source: 'webempresarial-exit-popup' })
-        });
-        if (!response.ok) throw new Error('Error');
- 
-        exitSubmit.innerText = '✓ ¡Perfecto! Te contactamos pronto';
-        exitSubmit.style.background = 'var(--green)';
-        if (window.gtag) gtag('event', 'generate_lead', { method: 'exit_popup' });
-        if (window.fbq)  fbq('track', 'Lead', { content_name: 'exit_popup' });
-        setTimeout(hideExit, 2200);
- 
-      } catch {
-        alert('Error. Contáctanos por WhatsApp directamente.');
-        exitSubmit.disabled = false;
-        exitSubmit.innerText = originalText;
-      }
-    });
-  }
- 
-  // ── WHATSAPP FLOAT WIDGET ─────────────────────────────────────────────────
-  const waBubble  = document.getElementById('waBubble');
-  const waTooltip = document.getElementById('waTooltip');
- 
+
+  // WHATSAPP WIDGET
+  const waBubble = document.getElementById('waBubble');
+
   if (waBubble) {
-    // Show tooltip after 8s automatically
-    setTimeout(() => {
-      if (waTooltip) waTooltip.classList.add('show');
-    }, 8000);
- 
-    // Hide tooltip after 14s
-    setTimeout(() => {
-      if (waTooltip) waTooltip.classList.remove('show');
-    }, 14000);
- 
-    // Toggle tooltip on click/tap; redirect on second tap
-    let tooltipVisible = false;
-    waBubble.addEventListener('click', () => {
-      // Detect context: which section is closest to viewport center
-      const sections = [
-        { id: 'commerce',    msg: 'Hola, me interesa el plan de Ecommerce' },
-        { id: 'business',    msg: 'Hola, me interesa el plan de Página Web' },
-        { id: 'systems',     msg: 'Hola, me interesa el plan de Sistemas' },
-        { id: 'testimonios', msg: 'Hola, vi los casos de éxito y me interesa saber más' },
-      ];
- 
-      const center = window.innerHeight / 2;
-      let closest = { dist: Infinity, msg: 'Hola, quiero una auditoría gratuita de WebEmpresarial' };
-      sections.forEach(s => {
-        const el = document.getElementById(s.id);
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const dist = Math.abs(rect.top + rect.height / 2 - center);
-        if (dist < closest.dist) closest = { dist, msg: s.msg };
-      });
- 
-      const waUrl = `https://wa.me/522221521686?text=${encodeURIComponent(closest.msg)}`;
- 
-      if (!tooltipVisible) {
-        if (waTooltip) waTooltip.classList.add('show');
-        tooltipVisible = true;
-        // Second click opens WA
-        setTimeout(() => {
-          waBubble.addEventListener('click', () => window.open(waUrl, '_blank'), { once: true });
-        }, 100);
-      } else {
-        window.open(waUrl, '_blank');
-      }
- 
+    const openPilotWhatsapp = () => {
+      const msg =
+        'Hola, quiero evaluar si mi negocio es compatible con el piloto de WebEmpresarial';
+
+      window.open(
+        'https://wa.me/522221521686?text=' + encodeURIComponent(msg),
+        '_blank',
+        'noopener,noreferrer'
+      );
+
       if (window.gtag) gtag('event', 'wa_widget_click');
-      if (window.fbq)  fbq('track', 'Contact');
-    });
- 
+      if (window.fbq) fbq('track', 'Contact');
+    };
+
+    waBubble.addEventListener('click', openPilotWhatsapp);
+
     waBubble.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') waBubble.click();
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openPilotWhatsapp();
+      }
     });
   }
-  
+
   document.querySelectorAll(".saas-plan-btn").forEach(button => {
       button.addEventListener("click", () => {
           const plan = button.dataset.plan;
