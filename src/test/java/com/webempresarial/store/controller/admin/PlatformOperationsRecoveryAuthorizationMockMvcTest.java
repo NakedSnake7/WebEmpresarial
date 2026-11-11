@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller.admin;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -65,7 +67,10 @@ import org.springframework.test.web.servlet.MockMvc;
         controllers =
                 PlatformOperationsController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class PlatformOperationsRecoveryAuthorizationMockMvcTest {
 
     @Autowired

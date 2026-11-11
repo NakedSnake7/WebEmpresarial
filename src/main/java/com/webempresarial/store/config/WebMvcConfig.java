@@ -82,6 +82,8 @@ public class WebMvcConfig
                         "/webjars/**",
                         "/admin/activate",
                         "/admin/activate/**",
+                        "/admin/password/forgot",
+                        "/admin/password/reset",
                         "/favicon.ico"
                 );
 
@@ -135,6 +137,8 @@ public class WebMvcConfig
 
                 "/admin/activate",
                 "/admin/activate/**",
+                "/admin/password/forgot",
+                "/admin/password/reset",
 
                 "/admin/billing",
                 "/admin/billing/**",

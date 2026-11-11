@@ -1,5 +1,7 @@
 package com.webempresarial.store.knowledge.api.controller;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import com.fasterxml.jackson.databind.ObjectMapper;   
 import com.webempresarial.store.config.SecurityConfig;
 import com.webempresarial.store.interceptor.AdminTenantAccessInterceptor;
@@ -59,6 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = KnowledgeQueryController.class
 )
 @Import({
+        AdminAuthorizationSliceTestSupport.class,
         SecurityConfig.class,
         KnowledgeApiExceptionHandler.class
 })

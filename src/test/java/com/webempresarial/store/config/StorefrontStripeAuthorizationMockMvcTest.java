@@ -42,7 +42,10 @@ import static org.springframework.test.web.servlet.result
                 StorefrontStripeAuthorizationMockMvcTest
                         .TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class StorefrontStripeAuthorizationMockMvcTest {
 
     @Autowired

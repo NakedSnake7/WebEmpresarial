@@ -3,6 +3,9 @@ package com.webempresarial.store.config;
 import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.service.AdminUserDetailsService; 
 import com.webempresarial.store.service.AuthUserDetailsService;
+import com.webempresarial.store.config.AdminCredentialVersionFilter;
+import com.webempresarial.store.repository.AdminUserRepository;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +34,8 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain adminSecurity(
-            HttpSecurity http
+            HttpSecurity http,
+            AdminUserRepository adminUserRepository
     ) throws Exception {
 
         http
@@ -48,6 +52,53 @@ public class SecurityConfig {
                     "/admin/activate/**"
                 )
                 .permitAll()
+
+                /*
+                 * Recuperación administrativa pública.
+                 * Solo GET/POST; CSRF sigue activo.
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/password/forgot",
+                    "/admin/password/reset"
+                )
+                .permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/password/forgot",
+                    "/admin/password/reset"
+                )
+                .permitAll()
+
+                /*
+                 * Credenciales del propio administrador.
+                 * GET y POST explícitos; el resto permanece
+                 * protegido por denyAll().
+                 */
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/admin/account/password"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN",
+                    "STORE_STAFF",
+                    "SALES"
+                )
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/admin/account/password"
+                )
+                .hasAnyRole(
+                    "SUPER_ADMIN",
+                    "STORE_OWNER",
+                    "STORE_ADMIN",
+                    "STORE_STAFF",
+                    "SALES"
+                )
 
                 .requestMatchers(
                     "/admin/stores/**",
@@ -787,7 +838,13 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/admin/login")
             )
 
-            .userDetailsService(adminUserDetailsService);
+            .userDetailsService(adminUserDetailsService)
+            .addFilterBefore(
+                new AdminCredentialVersionFilter(
+                    adminUserRepository
+                ),
+                AuthorizationFilter.class
+            );
 
         return http.build();
     }

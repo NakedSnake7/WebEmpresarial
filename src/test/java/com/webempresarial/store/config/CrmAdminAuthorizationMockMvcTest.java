@@ -60,7 +60,10 @@ import static org.springframework.test.web.servlet.result
                 CrmAdminAuthorizationMockMvcTest
                         .TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class CrmAdminAuthorizationMockMvcTest {
 
     @Autowired

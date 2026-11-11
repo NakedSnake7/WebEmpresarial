@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller.admin.api;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -55,7 +57,10 @@ import jakarta.persistence.EntityNotFoundException;
         )
     }
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class PilotOfferPaymentAdminSecurityMockMvcTest {
 
     private static final String BASE =

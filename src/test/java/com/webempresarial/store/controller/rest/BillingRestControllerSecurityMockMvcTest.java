@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller.rest;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +44,10 @@ import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 @WebMvcTest(
         controllers = BillingRestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class BillingRestControllerSecurityMockMvcTest {
 
     @Autowired

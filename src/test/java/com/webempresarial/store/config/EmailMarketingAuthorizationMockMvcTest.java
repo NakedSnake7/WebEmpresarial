@@ -41,7 +41,10 @@ import static org.springframework.test.web.servlet.result
                 EmailMarketingAuthorizationMockMvcTest
                         .TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class EmailMarketingAuthorizationMockMvcTest {
 
     @Autowired

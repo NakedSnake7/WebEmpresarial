@@ -4,6 +4,7 @@ import com.webempresarial.store.entity.AdminAccountActivationToken;
 import com.webempresarial.store.entity.Subscription;
 import com.webempresarial.store.model.AdminPermission;
 import com.webempresarial.store.model.AdminUser;
+import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.model.StorePlan;
 import com.webempresarial.store.model.SubscriptionStatus;
@@ -22,6 +23,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.UUID;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -77,6 +80,9 @@ class SubscriptionEnforcementIntegrationTest {
 
     @Autowired
     private AdminUserRepository adminUserRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AdminAccountActivationTokenRepository tokenRepository;
@@ -238,7 +244,7 @@ class SubscriptionEnforcementIntegrationTest {
 
         mockMvc.perform(
                 get("/admin/dashboard")
-                        .with(superAdmin())
+                        .session(superAdminSession())
                         .header(
                                 "Host",
                                 FINAL_DOMAIN
@@ -318,21 +324,46 @@ class SubscriptionEnforcementIntegrationTest {
         entityManager.clear();
     }
 
-    private RequestPostProcessor superAdmin() {
+    private MockHttpSession superAdminSession()
+            throws Exception {
 
-        return user(
-                "superadmin-g08@webempresarial.test"
-        )
-        .authorities(
-                new SimpleGrantedAuthority(
-                        "ROLE_SUPER_ADMIN"
-                ),
-                new SimpleGrantedAuthority(
-                        AdminPermission
-                                .DASHBOARD_VIEW
-                                .authority()
-                )
+        String email = "superadmin-g08-"
+                + UUID.randomUUID()
+                + "@example.invalid";
+
+        String password =
+                "SuperAdminG08Password#2026";
+
+        AdminUser admin = new AdminUser();
+        admin.setFullName("G08 Super Admin IT");
+        admin.setEmail(email);
+        admin.setRole(AdminRole.SUPER_ADMIN);
+        admin.setEnabled(true);
+        admin.setPassword(
+                passwordEncoder.encode(password)
         );
+
+        adminUserRepository.saveAndFlush(admin);
+
+        MvcResult login = mockMvc.perform(
+                post("/admin/login")
+                    .with(csrf())
+                    .param("username", email)
+                    .param("password", password)
+        )
+        .andExpect(status().is3xxRedirection())
+        .andExpect(
+                redirectedUrl("/admin/dashboard")
+        )
+        .andReturn();
+
+        MockHttpSession session =
+                (MockHttpSession) login.getRequest()
+                        .getSession(false);
+
+        assertThat(session).isNotNull();
+
+        return session;
     }
 
     @RestController

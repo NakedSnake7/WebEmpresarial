@@ -191,6 +191,15 @@
                 </div>
 
 
+                <div th:if="${param.passwordChanged != null}"
+                     class="login-alert success"
+                     role="status">
+
+                    Tu contraseña fue actualizada correctamente.
+                    Inicia sesión con tu nueva contraseña.
+
+                </div>
+
                 <form th:action="@{/admin/login}"
                       method="post">
 
@@ -250,6 +259,13 @@
                     </button>
 
                 </form>
+                <a th:href="@{/admin/password/forgot}"
+                   style="display:block;text-align:center;
+                          margin-top:18px;color:#93c5fd;
+                          text-decoration:none;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+
 
 
                 <div class="login-meta">

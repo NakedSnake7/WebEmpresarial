@@ -38,6 +38,17 @@ public class AdminUser {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "credential_version", nullable = false)
+    private long credentialVersion = 0L;
+
+    public long getCredentialVersion() {
+        return credentialVersion;
+    }
+
+    public void rotateCredentialVersion() {
+        credentialVersion = Math.addExact(credentialVersion, 1L);
+    }
+
     public AdminUser() {}
 
     @PrePersist

@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 import com.webempresarial.store.config.FeatureViewAdvice;
 import com.webempresarial.store.config.SecurityConfig;
@@ -43,7 +45,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 )
         }
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class HealthControllerSecurityMockMvcTest {
 
     @Autowired

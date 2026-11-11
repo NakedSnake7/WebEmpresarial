@@ -38,7 +38,10 @@ import static org.springframework.test.web.servlet.result
         controllers =
                 AdminRoleAuthorizationMockMvcTest.TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class AdminRoleAuthorizationMockMvcTest {
 
     @Autowired

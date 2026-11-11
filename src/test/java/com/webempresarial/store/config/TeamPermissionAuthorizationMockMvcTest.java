@@ -45,7 +45,10 @@ import static org.springframework.test.web.servlet.result
                 TeamPermissionAuthorizationMockMvcTest
                         .TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class TeamPermissionAuthorizationMockMvcTest {
 
     @Autowired

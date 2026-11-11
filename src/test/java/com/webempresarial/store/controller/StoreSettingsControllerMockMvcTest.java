@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
@@ -58,7 +60,10 @@ import static org.springframework.test.web.servlet.result
         .MockMvcResultMatchers.view;
 
 @WebMvcTest(StoreSettingsController.class)
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class StoreSettingsControllerMockMvcTest {
 
     @Autowired

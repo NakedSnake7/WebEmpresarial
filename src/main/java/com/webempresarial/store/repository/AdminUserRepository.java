@@ -1,5 +1,10 @@
 package com.webempresarial.store.repository;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import com.webempresarial.store.model.AdminRole;
 import com.webempresarial.store.model.AdminUser;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,6 +40,17 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, Long> {
     boolean existsByEmailAndIdNot(
             String email,
             Long id
+    );
+
+
+    /*
+     * Bloqueo de fila exclusivo para operaciones
+     * de modificación de credenciales.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM AdminUser a WHERE a.email = :email")
+    Optional<AdminUser> findByEmailForUpdate(
+            @Param("email") String email
     );
 
 }

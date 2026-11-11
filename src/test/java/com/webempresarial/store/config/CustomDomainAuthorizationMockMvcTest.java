@@ -51,7 +51,10 @@ import static org.springframework.test.web.servlet.result
                 CustomDomainAuthorizationMockMvcTest
                         .TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class CustomDomainAuthorizationMockMvcTest {
 
     @Autowired

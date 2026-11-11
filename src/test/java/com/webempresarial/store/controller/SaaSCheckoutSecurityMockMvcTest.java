@@ -1,5 +1,7 @@
 package com.webempresarial.store.controller;
 
+import com.webempresarial.store.config.AdminAuthorizationSliceTestSupport;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
@@ -35,7 +37,10 @@ import com.webempresarial.store.config.AdminAuthenticationSuccessHandler;
 @WebMvcTest(
         controllers = SaaSCheckoutController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class SaaSCheckoutSecurityMockMvcTest {
 
     @Autowired

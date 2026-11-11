@@ -55,6 +55,15 @@ public class AdminAuthenticationSuccessHandler
                         );
 
         /*
+         * La sesión registra la versión vigente después
+         * de autenticar correctamente.
+         */
+        request.getSession(true).setAttribute(
+                AdminCredentialVersionFilter.SESSION_KEY,
+                admin.getCredentialVersion()
+        );
+
+        /*
          * SUPER_ADMIN pertenece a la plataforma y no
          * necesita contexto de tenant.
          */

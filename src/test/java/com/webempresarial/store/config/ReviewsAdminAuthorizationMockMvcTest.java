@@ -43,7 +43,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers =
                 ReviewsAdminAuthorizationMockMvcTest.TestController.class
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class ReviewsAdminAuthorizationMockMvcTest {
 
     @Autowired

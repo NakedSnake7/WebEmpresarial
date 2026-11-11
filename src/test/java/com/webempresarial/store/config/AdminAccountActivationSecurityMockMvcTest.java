@@ -53,7 +53,10 @@ import org.springframework.context.annotation.FilterType;
                 )
         }
 )
-@Import(SecurityConfig.class)
+@Import({
+        SecurityConfig.class,
+        AdminAuthorizationSliceTestSupport.class
+})
 class AdminAccountActivationSecurityMockMvcTest {
 
     @Autowired

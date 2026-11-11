@@ -263,6 +263,13 @@
 
     <div class="sidebar-footer">
 
+        <a href="/admin/account/password"
+           class="sidebar-link"
+           th:classappend="${sidebarActivePath == '/admin/account/password'} ? ' active' : ''">
+            <span class="sidebar-icon">🔑</span>
+            <span class="sidebar-text">Mi cuenta · Seguridad</span>
+        </a>
+
         <a href="/" target="_blank" class="sidebar-link">
             <span class="sidebar-icon">🌐</span>
             <span class="sidebar-text">Ver sitio</span>
