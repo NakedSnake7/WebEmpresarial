@@ -96,13 +96,35 @@ public class HomeController {
     public String home(Model model, HttpServletRequest request) {
 
         /*
-         * El dominio principal es el entry point administrativo.
+         * El dominio principal sirve la landing comercial publica.
          *
-         * Esta decisión ocurre ANTES de resolver una Store porque
-         * el host de plataforma no es un tenant.
+         * Esta decision ocurre antes de resolver una Store porque
+         * el host de plataforma no pertenece a ningun tenant.
          */
         if (storeResolver.isPlatformRequest(request)) {
-            return "redirect:/admin";
+            /*
+             * Landing publica del host de plataforma.
+             *
+             * Este host no es un tenant y no debe intentar
+             * resolver una Store desde la base de datos.
+             */
+            model.addAttribute("theme", "WebEmpresarial");
+            model.addAttribute("showCart", false);
+            model.addAttribute("showCheckout", false);
+            model.addAttribute("showAuth", false);
+            model.addAttribute("showScripts", true);
+
+            model.addAttribute(
+                    "title",
+                    "WebEmpresarial™ | Ecommerce, páginas web y sistemas empresariales"
+            );
+
+            model.addAttribute(
+                    "description",
+                    "Construimos ecommerce, sitios corporativos y sistemas web para empresas que quieren vender, automatizar y escalar."
+            );
+
+            return "themes/WebEmpresarial/index";
         }
 
         Store store =

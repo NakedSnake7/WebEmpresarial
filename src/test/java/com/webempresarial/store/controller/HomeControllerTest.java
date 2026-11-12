@@ -299,7 +299,7 @@ class HomeControllerTest {
     }
 
     @Test
-    void shouldRedirectPlatformHostToAdminWithoutLoadingCommerceData() {
+    void shouldRenderPlatformLandingWithoutLoadingCommerceData() {
 
         when(
                 storeResolver.isPlatformRequest(request)
@@ -315,7 +315,7 @@ class HomeControllerTest {
                 );
 
         assertThat(view)
-                .isEqualTo("redirect:/admin");
+                .isEqualTo("themes/WebEmpresarial/index");
 
         verify(
                 storeResolver,
