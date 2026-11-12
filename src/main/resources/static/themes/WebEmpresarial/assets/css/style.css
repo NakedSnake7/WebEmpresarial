@@ -40,9 +40,37 @@ header{
   transition:background var(--t) var(--ease);
 }
 .nav{min-height:68px;display:flex;justify-content:space-between;align-items:center;gap:20px}
-.logo{font-family:var(--fd);font-size:1.15rem;font-weight:900;letter-spacing:-.025em;display:flex;align-items:center;gap:7px}
-.logo-ring{width:26px;height:26px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;position:relative}
-.logo-ring::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:ring-pulse 2.2s ease-in-out infinite}
+.logo{
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:1.15rem;
+  font-weight:700;
+  letter-spacing:-.015em;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  line-height:1.2;
+  color:#fff;
+  text-decoration:none;
+}
+.logo-icon{
+  display:block;
+  width:34px;
+  height:34px;
+  flex-shrink:0;
+  object-fit:contain;
+}
+.logo-name{
+  font-family:inherit;
+  font-weight:700;
+  color:#fff;
+  white-space:nowrap;
+}
+.logo-name sup{
+  font-size:.5em;
+  vertical-align:super;
+  margin-left:2px;
+  letter-spacing:0;
+}
 @keyframes ring-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.5}}
  
 .nav-links{display:flex;align-items:center;gap:4px;font-size:.88rem;font-weight:500;color:var(--muted)}

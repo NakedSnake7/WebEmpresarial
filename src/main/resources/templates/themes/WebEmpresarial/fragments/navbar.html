@@ -1,9 +1,19 @@
 <header th:fragment="navbar" id="header">
 
   <div class="container nav">
-    <a class="logo" href="/">
-      <div class="logo-ring"></div>
-      WebEmpresarial™
+    <a class="logo" th:href="@{/}" aria-label="WebEmpresarial - Inicio">
+      <img
+        class="logo-icon"
+        th:src="@{/themes/WebEmpresarial/brand-logo.png}"
+        src="/themes/WebEmpresarial/brand-logo.png"
+        width="34"
+        height="34"
+        alt=""
+        aria-hidden="true">
+
+      <span class="logo-name">
+        WebEmpresarial<sup>™</sup>
+      </span>
     </a>
 
     <nav class="nav-links">

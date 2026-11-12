@@ -90,3 +90,30 @@
 #contacto {
   scroll-margin-top: 90px;
 }
+
+/* D3.9.14B - Global contrast for WebEmpresarial landing */
+
+/* Improve readability of low-emphasis text on dark surfaces. */
+:root {
+    --soft: #9cacc6;
+}
+
+/* Headings should not inherit dark colors from shared styles. */
+body :is(h1, h2, h3, h4, h5, h6),
+body .card :is(h2, h3, h4),
+body .sec-head h2,
+body .cta-banner h2,
+body .contact-info h2,
+body .faq-q,
+body .testi-name {
+    color: var(--text, #eef2ff);
+}
+
+/* D3.9.14D - SaaS price contrast */
+#saas .price-tag .price {
+    color: #eef2ff;
+}
+
+#saas .price-tag .price-cur {
+    color: #67e8f9;
+}
