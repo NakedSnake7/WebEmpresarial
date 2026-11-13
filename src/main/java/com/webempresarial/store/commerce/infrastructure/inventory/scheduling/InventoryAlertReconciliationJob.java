@@ -46,23 +46,7 @@ public class InventoryAlertReconciliationJob {
         	        inventoryStockQueryGateway
         	                .findProductsWithVariantsAndStock(store);
 
-            for (Producto product : products) {
-
-                if (product.tieneVariantes()) {
-                    product.getVariantes()
-                            .forEach(variant ->
-                                    alertService.evaluateVariant(
-                                            variant,
-                                            store
-                                    )
-                            );
-                } else {
-                    alertService.evaluateSimpleProduct(
-                            product,
-                            store
-                    );
-                }
-            }
+            alertService.reconcileStore(store, products);
         }
     }
 }

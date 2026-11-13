@@ -1,6 +1,8 @@
 package com.webempresarial.store.commerce.application.inventory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,81 @@ public class InventoryPersistentAlertService {
         this.lowStockThreshold = lowStockThreshold;
         this.criticalStockThreshold =
                 criticalStockThreshold;
+    }
+
+
+    /**
+     * Reconciliación por tienda: una lectura de alertas activas
+     * y una transacción para conservar dirty checking JPA.
+     */
+    @Transactional
+    public void reconcileStore(
+            Store store,
+            List<Producto> products
+    ) {
+        if (store == null || store.getId() == null) {
+            throw new IllegalArgumentException(
+                    "La tienda es obligatoria"
+            );
+        }
+        if (products == null) {
+            throw new IllegalArgumentException(
+                    "Los productos son obligatorios"
+            );
+        }
+
+        Map<String, InventoryAlert> activeAlerts =
+                new HashMap<>();
+
+        for (InventoryAlert alert :
+                repository
+                    .findByStoreAndStatusInOrderByLevelDescLastDetectedAtDesc(
+                        store,
+                        ACTIVE_STATUSES
+                    )) {
+            if (alert.getActiveKey() != null && alert.isActive()) {
+                activeAlerts.put(alert.getActiveKey(), alert);
+            }
+        }
+
+        for (Producto producto : products) {
+            validateProduct(producto, store);
+
+            if (producto.tieneVariantes()) {
+                for (ProductoVariante variante :
+                        producto.getVariantes()) {
+
+                    if (variante == null
+                            || variante.getId() == null
+                            || variante.getProducto() == null) {
+                        throw new IllegalArgumentException(
+                                "La variante es obligatoria"
+                        );
+                    }
+
+                    Producto parent = variante.getProducto();
+                    validateProduct(parent, store);
+
+                    int stock = variante.getStock() != null
+                            ? variante.getStock()
+                            : 0;
+
+                    evaluate(
+                            parent, variante, store,
+                            stock, activeAlerts
+                    );
+                }
+            } else {
+                int stock = producto.getStockSimple() != null
+                        ? producto.getStockSimple()
+                        : 0;
+
+                evaluate(
+                        producto, null, store,
+                        stock, activeAlerts
+                );
+            }
+        }
     }
 
     @Transactional
@@ -149,6 +226,19 @@ public class InventoryPersistentAlertService {
             Store store,
             int currentStock
     ) {
+        evaluate(
+                producto, variante, store,
+                currentStock, null
+        );
+    }
+
+    private void evaluate(
+            Producto producto,
+            ProductoVariante variante,
+            Store store,
+            int currentStock,
+            Map<String, InventoryAlert> activeAlerts
+    ) {
         String activeKey = buildActiveKey(
                 store,
                 producto,
@@ -158,9 +248,9 @@ public class InventoryPersistentAlertService {
         InventoryAlertLevel level =
                 resolveLevel(currentStock);
 
-        InventoryAlert activeAlert =
-                repository.findByActiveKey(activeKey)
-                        .orElse(null);
+        InventoryAlert activeAlert = activeAlerts == null
+                ? repository.findByActiveKey(activeKey).orElse(null)
+                : activeAlerts.get(activeKey);
 
         /*
          * El stock ya está saludable.
@@ -174,6 +264,9 @@ public class InventoryPersistentAlertService {
                                 + "el inventario. Stock actual: "
                                 + currentStock
                 );
+                if (activeAlerts != null) {
+                    activeAlerts.remove(activeKey);
+                }
             }
 
             return;
@@ -204,6 +297,10 @@ public class InventoryPersistentAlertService {
         alert.setActiveKey(activeKey);
 
         repository.save(alert);
+
+        if (activeAlerts != null) {
+            activeAlerts.put(activeKey, alert);
+        }
     }
 
     private InventoryAlertLevel resolveLevel(

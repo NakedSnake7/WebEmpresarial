@@ -3,7 +3,6 @@ package com.webempresarial.store.commerce.infrastructure.inventory.scheduling;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,21 +13,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.webempresarial.store.commerce.application.inventory.InventoryPersistentAlertService;
 import com.webempresarial.store.commerce.application.inventory.InventoryStockQueryGateway;
 import com.webempresarial.store.model.Producto;
-import com.webempresarial.store.model.ProductoVariante;
 import com.webempresarial.store.model.Store;
 import com.webempresarial.store.repository.StoreRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryAlertReconciliationJobTest {
 
-    @Mock
-    private StoreRepository storeRepository;
-
-    @Mock
-    private InventoryStockQueryGateway inventoryStockQueryGateway;
-
-    @Mock
-    private InventoryPersistentAlertService alertService;
+    @Mock StoreRepository storeRepository;
+    @Mock InventoryStockQueryGateway inventoryStockQueryGateway;
+    @Mock InventoryPersistentAlertService alertService;
 
     private InventoryAlertReconciliationJob job;
 
@@ -43,137 +36,65 @@ class InventoryAlertReconciliationJobTest {
 
     @Test
     void reconcile_shouldIgnoreInactiveStores() {
+        Store active = mock(Store.class);
+        Store inactive = mock(Store.class);
 
-        Store activeStore = mock(Store.class);
-        Store inactiveStore = mock(Store.class);
-
-        when(activeStore.isActiva())
-                .thenReturn(true);
-
-        when(inactiveStore.isActiva())
-                .thenReturn(false);
-
+        when(active.isActiva()).thenReturn(true);
+        when(inactive.isActiva()).thenReturn(false);
         when(storeRepository.findAll())
-                .thenReturn(
-                        List.of(
-                                activeStore,
-                                inactiveStore
-                        )
-                );
+                .thenReturn(List.of(active, inactive));
 
-        when(
-                inventoryStockQueryGateway
-                        .findProductsWithVariantsAndStock(
-                                activeStore
-                        )
-        ).thenReturn(List.of());
+        when(inventoryStockQueryGateway
+                .findProductsWithVariantsAndStock(active))
+                .thenReturn(List.of());
 
         job.reconcile();
 
-        verify(inventoryStockQueryGateway)
-                .findProductsWithVariantsAndStock(
-                        activeStore
-                );
-
+        verify(alertService).reconcileStore(
+                active, List.of()
+        );
         verify(inventoryStockQueryGateway, never())
-                .findProductsWithVariantsAndStock(
-                        inactiveStore
-                );
-
-        verifyNoInteractions(alertService);
+                .findProductsWithVariantsAndStock(inactive);
+        verifyNoMoreInteractions(alertService);
     }
 
     @Test
-    void reconcile_shouldEvaluateSimpleProduct() {
-
+    void reconcile_shouldDelegateSimpleProducts() {
         Store store = mock(Store.class);
-        Producto producto = mock(Producto.class);
+        Producto product = mock(Producto.class);
 
-        when(store.isActiva())
-                .thenReturn(true);
-
+        when(store.isActiva()).thenReturn(true);
         when(storeRepository.findAll())
                 .thenReturn(List.of(store));
-
-        when(
-                inventoryStockQueryGateway
-                        .findProductsWithVariantsAndStock(
-                                store
-                        )
-        ).thenReturn(List.of(producto));
-
-        when(producto.tieneVariantes())
-                .thenReturn(false);
+        when(inventoryStockQueryGateway
+                .findProductsWithVariantsAndStock(store))
+                .thenReturn(List.of(product));
 
         job.reconcile();
 
-        verify(alertService)
-                .evaluateSimpleProduct(
-                        producto,
-                        store
-                );
-
-        verify(alertService, never())
-                .evaluateVariant(
-                        any(),
-                        any()
-                );
+        verify(alertService).reconcileStore(
+                store, List.of(product)
+        );
+        verifyNoMoreInteractions(alertService);
     }
 
     @Test
-    void reconcile_shouldEvaluateEveryVariant() {
-
+    void reconcile_shouldDelegateVariantProducts() {
         Store store = mock(Store.class);
-        Producto producto = mock(Producto.class);
+        Producto product = mock(Producto.class);
 
-        ProductoVariante first =
-                mock(ProductoVariante.class);
-
-        ProductoVariante second =
-                mock(ProductoVariante.class);
-
-        when(store.isActiva())
-                .thenReturn(true);
-
+        when(store.isActiva()).thenReturn(true);
         when(storeRepository.findAll())
                 .thenReturn(List.of(store));
-
-        when(
-                inventoryStockQueryGateway
-                        .findProductsWithVariantsAndStock(
-                                store
-                        )
-        ).thenReturn(List.of(producto));
-
-        when(producto.tieneVariantes())
-                .thenReturn(true);
-
-        when(producto.getVariantes())
-                .thenReturn(
-                        Set.of(
-                                first,
-                                second
-                        )
-                );
+        when(inventoryStockQueryGateway
+                .findProductsWithVariantsAndStock(store))
+                .thenReturn(List.of(product));
 
         job.reconcile();
 
-        verify(alertService)
-                .evaluateVariant(
-                        first,
-                        store
-                );
-
-        verify(alertService)
-                .evaluateVariant(
-                        second,
-                        store
-                );
-
-        verify(alertService, never())
-                .evaluateSimpleProduct(
-                        any(),
-                        any()
-                );
+        verify(alertService).reconcileStore(
+                store, List.of(product)
+        );
+        verifyNoMoreInteractions(alertService);
     }
 }
