@@ -49,6 +49,31 @@ class InventoryPersistentAlertBatchTest {
     }
 
     @Test
+    void shouldSkipAlertQueryWhenStoreHasNoProducts() {
+        service.reconcileStore(store, List.of());
+
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void shouldLoadAlertsOnceForMultipleHealthyProducts() {
+        Producto first = simple(100L, 20);
+        Producto second = simple(101L, 30);
+
+        service.reconcileStore(
+                store, List.of(first, second)
+        );
+
+        verify(repository, times(1))
+                .findByStoreAndStatusInOrderByLevelDescLastDetectedAtDesc(
+                        eq(store), anyCollection()
+                );
+        verify(repository, never())
+                .findByActiveKey(anyString());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void shouldResolveExistingAlertWithOneBatchLookup() {
         Producto product = simple(10L, 8);
         InventoryAlert existing = new InventoryAlert();

@@ -73,6 +73,11 @@ public class InventoryPersistentAlertService {
             );
         }
 
+        // No ejecutar SQL de alertas para tiendas sin productos.
+        if (products.isEmpty()) {
+            return;
+        }
+
         Map<String, InventoryAlert> activeAlerts =
                 new HashMap<>();
 
